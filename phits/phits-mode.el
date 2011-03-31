@@ -6,8 +6,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 ;;         How to use:
-;;Put -*-phits-*- on the first line of your 
-;;input file to autoload this mode (often this is the title card).
+;;Put -*-phits-mode-*- on the first line of your 
+;;input file to autoload this mode.
 ;;
 ;;Your .emacs file should contain something like:
 ;;(setq load-path (cons (expand-file-name "/path/to/your/lispdirectory") load-path))
