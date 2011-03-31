@@ -69,7 +69,10 @@ class TallyOutputParser:
     dict = _default_dict
     data = []
     errors = [] # relative errors
-    
+
+    data_start = False
+    data_end = False
+
     def __init__(self, fname):
         self.fname = fname
         self.file = open(fname)
@@ -89,6 +92,11 @@ class TallyOutputParser:
     def FixSectName(self, sectionstr):
        return  sectionstr.replace(' ', '').lower()
        
+    def is_1d(self, section):
+        return self.get(section, 'axis') in AXES1D
+
+    def is_2d(self, section):
+        return self.get(section, 'axis') in AXES2D
 
 # Regular expressions for parsing section headers and options:
 # (borrowed from ConfigParser)
@@ -123,7 +131,7 @@ class TallyOutputParser:
         lineno = 0
         e = None                                  # None, or an exception
         axis = None
-        
+
         while True:
             line = self.file.readline()
             if not line:
@@ -178,9 +186,18 @@ class TallyOutputParser:
                         print "Ignoring line: ", line
                         continue
                     
+                    if not self.data_start:
+                        self.data_start = True
+                    if self.data_start and not line.strip():
+                        self.data_end = True
+                        break
+
                     if axis in AXES1D:
                         self.data.append(float(words[2]))
                         self.errors.append(float(words[3]))
+                    elif axis in AXES2D:
+                        for w in words:
+                            self.data.append(float(w))
                     # a non-fatal parsing error occurred.  set up the
                     # exception but keep going. the exception will be
                     # raised at the end of the file and will contain a
