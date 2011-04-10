@@ -134,6 +134,8 @@ class TallyOutputParser:
 
         while True:
             line = self.file.readline()
+            if re.search("z: xorg", line): # !!! temprorary fix the 2D histogram titles
+                break
             if not line:
                 break
             lineno = lineno + 1
@@ -174,6 +176,11 @@ class TallyOutputParser:
                     if optval == '""':
                         optval = ''
                     optname = optname.lower().rstrip()
+#                    try:
+#                        cursect[optname]
+#                    except KeyError:
+#                        print "current section already has option ", optname
+#                    else:
                     cursect[optname] = optval
                     # set the axis - we will need it below to parse the data format
                     if not axis and optname == 'axis':
@@ -213,7 +220,10 @@ class TallyOutputParser:
         self.file.close()
 
     def get(self, section, option):
-        return self.sections[section][option]
+        if self.has_option(section, option):
+            return self.sections[section][option]
+        else:
+            return None
 #        opt = option.lower()
 #        if section not in self.sections:
 #            return "no such section"
