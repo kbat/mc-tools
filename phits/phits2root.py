@@ -17,30 +17,44 @@ def main():
     print fname_out
         
     p = TallyOutputParser(fname_in)
-    print p.getSections()
+    print "sections: ", p.getSections()
 #    print p.FixSectName("T - H e a t")
 #    print p.has_section(" T - H e a t ")
 
     section = p.getSections()[0]
-    title = p.get(section, "title")
+#    print "options: ", p.sections[section]
+
     xtitle = p.get(section, 'x')
     ytitle = p.get(section, 'y')
     ztitle = p.get(section, 'z')
+
+    etype = p.get(section, 'e-type')
+    print "e-type: ", etype
+
+    title = p.get(section, "title")
+    axis = p.get(section, 'axis')
+    print "axis: ", axis
+
     if p.is_1d(section):
-        xmin = float(p.get(section, "emin"))
-        xmax = float(p.get(section, "emax"))
-        nbins = int(p.get(section, "ne"))
+        # using axis[0] since the 1st letter is being used in 
+        # 1-dimentional axes (eng, reg, x, y, z and r)
+        xmin = float(p.get(section, "%smin" % axis[0]))
+        xmax = float(p.get(section, "%smax" % axis[0]))
+        nbins = int(p.get(section, "n%s" % axis[0]))
+        
+        print "1d:\t", nbins, xmin, xmax
 
         hist = TH1F("h", "%s;%s;%s" % (title, xtitle, ytitle), nbins, xmin, xmax)
         for i in range(nbins):
             val = p.data[i]
+            print val
             hist.SetBinContent(i+1, val)
             if len(p.errors):
                 err = p.errors[i]*val
                 hist.SetBinError(i+1, err)
 
     elif p.is_2d(section):
-        axis = p.get(section, 'axis')
+        print "2d"
         xmin = float(p.get(section, "%smin" % axis[1]))
         xmax = float(p.get(section, "%smax" % axis[1]))
         ymin = float(p.get(section, "%smin" % axis[0]))
@@ -53,7 +67,9 @@ def main():
             for x in range(nbinsx):
                 d = p.data[x+(nbinsy-1-y)*nbinsx]
                 hist.SetBinContent(x+1, y+1, d)
-    
+    else:
+        print("neither 1D nor 2D axis -> exit")
+        return 1
 
     
     fout = TFile(fname_out, "recreate")
