@@ -1,8 +1,9 @@
 #! /usr/bin/python -W all
 
 import sys, re, string
+from array import array
 from phits import TallyOutputParser
-from ROOT import ROOT, TH1F, TH2F, TFile
+from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray
 
 
 def main():
@@ -15,7 +16,9 @@ def main():
     if fname_in == fname_out:
         fname_out = fname_in + ".root"
     print fname_out
-        
+
+    hists = TObjArray() # array of histograms to be written in the .root file
+
     p = TallyOutputParser(fname_in)
     print "sections: ", p.getSections()
 #    print p.FixSectName("T - H e a t")
@@ -44,14 +47,17 @@ def main():
         
         print "1d:\t", nbins, xmin, xmax
 
-        hist = TH1F("h", "%s;%s;%s" % (title, xtitle, ytitle), nbins, xmin, xmax)
-        for i in range(nbins):
-            val = p.data[0][i]
-            print val
-            hist.SetBinContent(i+1, val)
-            if len(p.errors[0]):
-                err = p.errors[0][i]*val
-                hist.SetBinError(i+1, err)
+        for ihist in range(2):
+            print p.xarray[ihist]
+            hist = TH1F("h%d" % ihist, "%s (%s);%s;%s" % (title, p.subtitle[ihist], xtitle, ytitle), nbins, array('f', p.xarray[ihist]))
+            for i in range(nbins):
+                val = p.data[ihist][i]
+                print val
+                hist.SetBinContent(i+1, val)
+                if len(p.errors[ihist]):
+                    err = p.errors[ihist][i]*val
+                    hist.SetBinError(i+1, err)
+            hists.Add(hist)
 
     elif p.is_2d(section):
         print "2d"
@@ -67,13 +73,14 @@ def main():
             for x in range(nbinsx):
                 d = p.data[0][x+(nbinsy-1-y)*nbinsx]
                 hist.SetBinContent(x+1, y+1, d)
+        hists.Add(hist)
     else:
         print("neither 1D nor 2D axis -> exit")
         return 1
 
     
     fout = TFile(fname_out, "recreate")
-    hist.Write()
+    hists.Write()
     fout.Close()
 
 
