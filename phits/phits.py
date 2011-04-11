@@ -69,8 +69,9 @@ class TallyOutputParser:
     dict = _default_dict
     data = {}
     errors = {} # relative errors
+    xarray = {} # array of x-boundaries
+    subtitle = {} # array of subtitles
 
-    isData = False # current line contains histogram data
     nhist = 0 # number of histogram (appears in the histogram name)
 
     def __init__(self, fname):
@@ -132,8 +133,13 @@ class TallyOutputParser:
         e = None                                  # None, or an exception
         axis = None
 
+        isData = False # current line contains histogram data
         data = []    # list of data for the current histogram (not self.data)
         errors = []  # list of errors for the current histogram (not self.errors)
+        xarray = []
+        xarray_max = None # maximum boundary of array - appended after the loop
+        isSubtitle = False # will be set to True when a line with 'newpage' is read, indicating that the next line is subtitle
+        subtitle = ""
 
         while True:
             line = self.file.readline()
@@ -143,15 +149,26 @@ class TallyOutputParser:
                 break
             lineno = lineno + 1
             line = line.strip()
+            if isSubtitle:
+                isSubtitle = False
+                subtitle = line[1:].strip() # [1:] because the line starts with #
+
+            if isSubtitle is False and re.search("newpage:", line):
+                isSubtitle = True
             if line == '' or line[0] == '#':
-                if self.isData  and line == '':
-                    self.isData = False
+                if isData  and line == '':
+                    isData = False
                     print "data end"
                     self.data[self.nhist] = data[:] # [:] makes a slice (copy) of the tuple since we are going to delete it:
                     del data[:]
+                    self.subtitle[self.nhist] = subtitle
+
                     if axis in AXES1D:
                         self.errors[self.nhist] = errors[:] # [:] makes a slice (copy) of the tuple since we are going to delete it:
                         del errors[:]
+                        xarray.append(xarray_max)
+                        self.xarray[self.nhist] = xarray[:]
+                        del xarray[:]
                     self.nhist += 1
                 continue
 #            words = line.split()
@@ -198,12 +215,12 @@ class TallyOutputParser:
                     if not axis and optname == 'axis':
                         axis = optval
 
-                if re.search("^h", line) and not self.isData:
+                if re.search("^h", line) and not isData:
                     print "data start"
-                    self.isData = True
+                    isData = True
                     continue
 
-                if self.isData:
+                if isData:
                     print "data: ", line
                     words = line.split()
                     try:
@@ -214,6 +231,8 @@ class TallyOutputParser:
                     
 
                     if axis in AXES1D:
+                        xarray.append(float(words[0]))
+                        xarray_max = float(words[1])
                         data.append(float(words[2]))
                         errors.append(float(words[3]))
                     elif axis in AXES2D:
@@ -231,7 +250,7 @@ class TallyOutputParser:
 #        if e:
 #            raise e
         print self.nhist, "histos found"
-        print self.data
+        print "xarray", self.xarray
         self.file.close()
 
     def get(self, section, option):
