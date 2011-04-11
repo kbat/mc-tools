@@ -46,11 +46,11 @@ def main():
 
         hist = TH1F("h", "%s;%s;%s" % (title, xtitle, ytitle), nbins, xmin, xmax)
         for i in range(nbins):
-            val = p.data[i]
+            val = p.data[0][i]
             print val
             hist.SetBinContent(i+1, val)
-            if len(p.errors):
-                err = p.errors[i]*val
+            if len(p.errors[0]):
+                err = p.errors[0][i]*val
                 hist.SetBinError(i+1, err)
 
     elif p.is_2d(section):
@@ -65,7 +65,7 @@ def main():
         hist = TH2F("h", "%s;%s;%s;%s" % (title, xtitle, ytitle, ztitle), nbinsx, xmin, xmax, nbinsy, ymin, ymax) # implement runtime code generation for [xyz]title here !!!
         for y in range(nbinsy-1, -1, -1):
             for x in range(nbinsx):
-                d = p.data[x+(nbinsy-1-y)*nbinsx]
+                d = p.data[0][x+(nbinsy-1-y)*nbinsx]
                 hist.SetBinContent(x+1, y+1, d)
     else:
         print("neither 1D nor 2D axis -> exit")

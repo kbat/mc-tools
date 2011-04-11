@@ -67,11 +67,11 @@ class MissingSectionHeaderError(ParsingError):
 class TallyOutputParser:
     fname = None
     dict = _default_dict
-    data = []
-    errors = [] # relative errors
+    data = {}
+    errors = {} # relative errors
 
-    data_start = False
-    data_end = False
+    isData = False # current line contains histogram data
+    nhist = 0 # number of histogram (appears in the histogram name)
 
     def __init__(self, fname):
         self.fname = fname
@@ -132,6 +132,9 @@ class TallyOutputParser:
         e = None                                  # None, or an exception
         axis = None
 
+        data = []    # list of data for the current histogram (not self.data)
+        errors = []  # list of errors for the current histogram (not self.errors)
+
         while True:
             line = self.file.readline()
             if re.search("z: xorg", line): # !!! temprorary fix the 2D histogram titles
@@ -141,6 +144,15 @@ class TallyOutputParser:
             lineno = lineno + 1
             line = line.strip()
             if line == '' or line[0] == '#':
+                if self.isData  and line == '':
+                    self.isData = False
+                    print "data end"
+                    self.data[self.nhist] = data[:] # [:] makes a slice (copy) of the tuple since we are going to delete it:
+                    del data[:]
+                    if axis in AXES1D:
+                        self.errors[self.nhist] = errors[:] # [:] makes a slice (copy) of the tuple since we are going to delete it:
+                        del errors[:]
+                    self.nhist += 1
                 continue
 #            words = line.split()
 #            for iw, w in enumerate(words):
@@ -185,26 +197,28 @@ class TallyOutputParser:
                     # set the axis - we will need it below to parse the data format
                     if not axis and optname == 'axis':
                         axis = optval
-                else:
+
+                if re.search("^h", line) and not self.isData:
+                    print "data start"
+                    self.isData = True
+                    continue
+
+                if self.isData:
+                    print "data: ", line
                     words = line.split()
                     try:
                         float(words[0])
                     except ValueError:
-                        print "Ignoring line: ", line
+#                        print "Ignoring line: ", line
                         continue
                     
-                    if not self.data_start:
-                        self.data_start = True
-                    if self.data_start and not line.strip():
-                        self.data_end = True
-                        break
 
                     if axis in AXES1D:
-                        self.data.append(float(words[2]))
-                        self.errors.append(float(words[3]))
+                        data.append(float(words[2]))
+                        errors.append(float(words[3]))
                     elif axis in AXES2D:
                         for w in words:
-                            self.data.append(float(w))
+                            data.append(float(w))
                     # a non-fatal parsing error occurred.  set up the
                     # exception but keep going. the exception will be
                     # raised at the end of the file and will contain a
@@ -216,7 +230,8 @@ class TallyOutputParser:
   # if any parsing errors occurred, raise an exception
 #        if e:
 #            raise e
-
+        print self.nhist, "histos found"
+        print self.data
         self.file.close()
 
     def get(self, section, option):
