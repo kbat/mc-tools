@@ -6,8 +6,13 @@ try:
 except ImportError:
     _default_dict = dict
 
-AXES1D = ('eng', 'reg', 'x', 'y', 'z', 'r') # list of one-dimentional axes
-AXES2D = ('xy', 'yz', 'xz', 'rz') # list of two-dimentional axes
+AXES1D = ('eng', 'charge', 'mass', 'reg', 'x', 'y', 'z', 'r') # list of one-dimentional axes
+AXES2D = ('chart', 'xy', 'yz', 'xz', 'rz') # list of two-dimentional axes
+
+def ReadSection(line):
+    """ Section is a part of the ANGEL input file starting from alphabet characters with colon ':' line H:"""
+    print "ReadSection", line
+    sys.exit(0)
 
 # exception classes
 class Error(Exception):
@@ -216,6 +221,7 @@ class TallyOutputParser:
                         axis = optval
 
                 if re.search("^h", line) and not isData:
+                    ReadSection(line)
                     print "data start"
                     isData = True
                     continue
