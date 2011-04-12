@@ -41,6 +41,9 @@ class Angel:
 
         for iline, line in enumerate(self.lines, 0):
             line.strip()
+            if re.search("title = ", line):
+                words = line.split()
+                self.title = string.join(words[2:])
             if re.search("newpage:", line):
                 ipage += 1
                 print "page: ", ipage
@@ -69,43 +72,63 @@ class Angel:
         """
         Analyzes the section header and return the number of histograms in the section data
         """
+#        SUBT = re.compile('prot*')
+        SUBT = re.compile("""
+            \(
+            (?P<subtitle>.*?)
+            \)
+            """, re.VERBOSE)
         words = line.split()
-        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
-            print "Section Header: 1D histo"
-            return 1
+        nhists = 0
+        for w in words:
+            if re.search("^y", w):
+                nhists += 1
+                mo = SUBT.search(w)
+                if mo:
+                    print "subtitle: ", mo.group('subtitle')
+#        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
+        print "Section Header: 1D histo", nhists
+        return nhists
 
     def Read1DHist(self, iline):
         nhist = self.GetNhist(self.lines[iline])
         xarray = []
         xmax = None
-        data = []
-        errors = []
+        data = {}     # dictionary for all histograms in the current section
+        errors = {}   # dictionary for all histograms in the current section
+
+        for ihist in range(nhist):  # create the empty lists, so we could append later
+            data[ihist] = []     
+            errors[ihist] = []
+
         for line in self.lines[iline+1:]:
             line = line.strip()
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
-            if nhist == 1: # a single histogram
-                xarray.append(float(words[0]))
-                xmax =        float(words[1])
-                data.append(  float(words[2]))
-                errors.append(float(words[3]))
+            xarray.append(float(words[0]))
+            xmax =        float(words[1])
+            for ihist in range(nhist):
+                data[ihist].append(  float(words[(ihist+1)*2  ]))
+                errors[ihist].append(float(words[(ihist+1)*2+1]))
+
+        nbins = len(xarray)
         xarray.append(xmax)
-        nbins = len(xarray)-1
         
-        if nhist == 1:
-            h = TH1F("h%d" % self.ihist, ";%s;%s" % (self.xtitle, self.ytitle), nbins, array('f', xarray))
+        for ihist in range(nhist):
+            h = TH1F("h%d" % self.ihist, "%s;%s;%s" % (self.title, self.xtitle, self.ytitle), nbins, array('f', xarray))
             self.ihist += 1
             for i in range(nbins):
-                val = data[i]
-                err = errors[i] * val
+                val = data[ihist][i]
+                err = errors[ihist][i] * val
                 h.SetBinContent(i+1, val)
                 h.SetBinError(i+1, err)
+        
             self.histos.Add(h)
 
-            del xarray[:]
-            del data[:]
-            del errors[:]
+#            del xarray[:]
+#            del data[:]
+#            del errors[:]
 
 def main():
     """
