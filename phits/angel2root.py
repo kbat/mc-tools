@@ -1,4 +1,11 @@
 #! /usr/bin/python -W all
+#
+# A script to convert ANGEL (PHITS) output to the ROOT format
+#  Author: Konstantin Batkov
+# Contact: kbat.phits ((at)) lizardie.com
+#
+# Usage: angel2root.py file.out [file.root]
+#
 
 import sys, re, string
 from array import array
