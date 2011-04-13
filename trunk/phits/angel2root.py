@@ -20,6 +20,7 @@ def isData(line):
 class Angel:
     fname = None
     title  = None
+    subtitles = []
     xtitle = None
     ytitle = None
     ztitle = None
@@ -75,17 +76,27 @@ class Angel:
 #        SUBT = re.compile('prot*')
         SUBT = re.compile("""
             \(
-            (?P<subtitle>.*?)
+            (?P<subtitle>.*)\s*?
             \)
             """, re.VERBOSE)
+# Let's remove all spaces between ')'. For some reason line.replace('\s*)', ')') does not work
+# so we do it in this weird way:
+        line1 = None
+        while line1 != line:
+            line1 = line
+            line = line.replace(' )', ')')
+
         words = line.split()
+#        print words
         nhists = 0
         for w in words:
             if re.search("^y", w):
                 nhists += 1
                 mo = SUBT.search(w)
                 if mo:
-                    print "subtitle: ", mo.group('subtitle')
+                    self.subtitles.append(mo.group('subtitle'))
+                else:
+                    self.subtitles.append('')
 #        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
         print "Section Header: 1D histo", nhists
         return nhists
@@ -116,7 +127,9 @@ class Angel:
         xarray.append(xmax)
         
         for ihist in range(nhist):
-            h = TH1F("h%d" % self.ihist, "%s;%s;%s" % (self.title, self.xtitle, self.ytitle), nbins, array('f', xarray))
+            if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist]
+            else: subtitle = ''
+            h = TH1F("h%d" % self.ihist, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
             self.ihist += 1
             for i in range(nbins):
                 val = data[ihist][i]
@@ -125,6 +138,7 @@ class Angel:
                 h.SetBinError(i+1, err)
         
             self.histos.Add(h)
+        del self.subtitles[:]
 
 #            del xarray[:]
 #            del data[:]
