@@ -26,7 +26,7 @@ class Angel:
     ztitle = None
     lines = []
     histos = TObjArray()
-    ihist = 0 # histogram number
+    ihist = 0 # histogram number - must start from ZERO
     fname_out = None
     def __init__(self, fname):
         self.fname = fname
@@ -51,19 +51,24 @@ class Angel:
             elif re.search("^x:", line):
                 words = line.split()
                 self.xtitle = string.join(words[1:])
-                print self.xtitle
+                #print self.xtitle
             elif re.search("^y:", line):
                 words = line.split()
                 self.ytitle = string.join(words[1:])
-                print self.ytitle
+                #print self.ytitle
             elif re.search("^z:", line):
                 print "new graph"
             elif re.search("^h:", line):
                 print "one dimentional graph section"
                 self.Read1DHist(iline)
             elif re.search("^h[2dc]:", line):
-                print "two dimentional plot section"
-                
+                if re.search("^h2", line): print "two dimentional contour plot section"
+                if re.search("^hd", line): print "two dimentional cluster plot section"
+                if re.search("^hc", line): print "two dimentional colour cluster plot section"
+                self.Read2DHist(iline)
+            elif re.search("'no. = ", line): # subtitles of 2D histogram
+                self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
+
         fout = TFile(self.fname_out, "recreate")
         self.histos.Write()
         fout.Close()
@@ -102,6 +107,9 @@ class Angel:
         return nhists
 
     def Read1DHist(self, iline):
+        """
+        Read 1D histogram section
+        """
         nhist = self.GetNhist(self.lines[iline])
         xarray = []
         xmax = None
@@ -139,6 +147,63 @@ class Angel:
         
             self.histos.Add(h)
         del self.subtitles[:]
+
+    def Read2DHist(self, iline):
+        """
+        Read 2D histogram section
+        """
+        line = self.lines[iline].replace(" =", "=") # sometimes Angel writes 'y=' and sometimes 'y ='
+        words = line.split()
+        if len(words) != 15:
+            print words
+            print len(words)
+            print "Read2DHist: format error"
+            exit(1)
+#        print words
+
+        dy = float(words[6])
+        ymin = float(words[2])
+        ymax = float(words[4])
+        if ymin<ymax:
+            ymin,ymax = ymin-dy/2.0,ymax+dy/2.0
+        else:
+            ymin,ymax = ymax-dy/2.0, ymin+dy/2.0
+        ny = int((ymax-ymin)/dy)
+
+        dx = float(words[13])
+        xmin = float(words[9])
+        xmax = float(words[11])
+        if xmin<xmax:
+            xmin,xmax = xmin-dx/2.0,xmax+dx/2.0
+        else:
+            xmin,xmax = xmax-dx/2.0, xmin+dx/2.0
+        nx = int((xmax-xmin)/dx)
+
+        data = []
+        for line in self.lines[iline+1:]:
+            line = line.strip()
+            if line == '': break
+            elif re.search("^#", line): continue
+            words = line.split()
+#            print "words: ", words
+            for w in words:
+                if w == 'z:':
+#                    print "this is a color palette -> exit"
+                    return # this was a color palette
+                data.append(float(w))
+        
+        # self.ihist+1 - start from ONE as in Angel - easy to compare
+        h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle), nx, xmin, xmax, ny, ymin, ymax)
+        self.ihist += 1
+
+        for y in range(ny-1, -1, -1):
+            for x in range(nx):
+                d = data[x+(ny-1-y)*nx]
+                h.SetBinContent(x+1, y+1, d)
+        self.histos.Add(h)
+
+        
+        
 
 #            del xarray[:]
 #            del data[:]
