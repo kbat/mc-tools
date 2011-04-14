@@ -118,6 +118,9 @@ class Angel:
         Read 1D histogram section
         """
         nhist = self.GetNhist(self.lines[iline])
+        isCharge = False
+        if re.search("x-0.5", self.lines[iline].split()[1]):
+            isCharge = True # the charge-mass-chart distribution, x-axis is defined by the 1st column only
         xarray = []
         xmax = None
         data = {}     # dictionary for all histograms in the current section
@@ -132,11 +135,17 @@ class Angel:
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
-            xarray.append(float(words[0]))
-            xmax =        float(words[1])
-            for ihist in range(nhist):
-                data[ihist].append(  float(words[(ihist+1)*2  ]))
-                errors[ihist].append(float(words[(ihist+1)*2+1]))
+            if isCharge:
+                xarray.append(float(words[0])-0.5)
+                xmax = float(words[0])+0.5
+                data[0].append(float(words[1]))
+                errors[0].append(float(words[2]))
+            else:
+                xarray.append(float(words[0]))
+                xmax =        float(words[1])
+                for ihist in range(nhist):
+                    data[ihist].append(  float(words[(ihist+1)*2  ]))
+                    errors[ihist].append(float(words[(ihist+1)*2+1]))
 
         nbins = len(xarray)
         xarray.append(xmax)
