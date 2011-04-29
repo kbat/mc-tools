@@ -89,14 +89,14 @@
      ("!.*" . 'font-lock-comment-face)         ;;
      ("^ \\{0,4\\}\\[\\<\\(cell\\|end\\|importance\\|material\\|parameters\\|mat name color\\|source\\|surface\\|t-3dshow\\|t-heat\\|t-deposit2?\\|t-gshow\\|timer\\|title\\|t-cross\\|t-product\\|t-track\\|t-yield\\|transform\\|volume\\)\\>\\] ?.*" . 'font-lock-section-face) ;; ?.* in the end mean that we color also the section title (if any)
      ("^ *\\<\\(angel\\|[aelrstxyz]-type\\|axis\\|box\\|dir\\|dmax\\|dose\\|e0\\|edel\\|[el]-dst\\|ejamnu\\|[el]-phi\\|epsout\\|[el]-the\\|eqmdmin\\|eqmdnu\\|factor\\|file\\|[rg]-show\\|heaven\\|icntl\\|icput\\|icrhi\\|ielas\\|igamma\\|igcut\\|imout\\|incut\\|info\\|inmed\\|inucr\\|ipreeq\\|isobar\\|itall\\|level\\|line\\|mat\\|ndata\\|nedisp\\|nevap\\|nlost\\|nspred\\|material\\|maxbch\\|maxcas\\|mesh\\|multiplier\\|n[ertxyz]\\|output\\|part\\|pnint\\|product\\|proj\\|r0\\|reg\\|resol\\|shadow\\|source\\|title\\|tmin\\|tmax\\|trcl\\|t[dnw]\\|unit\\|w-dst\\|w-hgt\\|width\\|w-wdt\\|[erxyz]\\(max\\|min\\)\\|[xyz]\\([01]\\|max\\|min\\|-txt\\)\\|[xyz][xyz]\\)\\>" . 'font-lock-parameter-face) ;; note that there must be no other symbols (except space) before parameter
-     ("\\<\\(area\\|chart\\|color\\|dchain\\|eng\\|gshow\\|imp\\|flux\\|[mM]t?[0-9]\\{1,4\\}\\|name\\|nucleus\\|off\\|q\\|qp\\|reg\\|r-in\\|r-out\\|rpp\\|r-z\\|set\\|so\\|size\\|t\\|tr.\\|tr..\\|vol\\|[xyz][xyz]?[xyz]?\\)\\>" . 'font-lock-keyword-face) ;; phits keywords
+     ("\\<\\(area\\|chart\\|color\\|dchain\\|eng\\|gshow\\|imp\\|flux\\|[mM]t?[0-9]\\{1,4\\}\\|name\\|nucleus\\|off\\|q\\|qp\\|reg\\|r-in\\|r-out\\|rpp\\|r-z\\|set\\|size\\|t\\|tr.\\|tr..\\|vol\\|[xyz][xyz]?[xyz]?\\)\\>" . 'font-lock-keyword-face) ;; phits keywords
      ("\\<\\(all\\|alpha\\|electron\\|neutron\\|photon\\|positron\\|proton\\)\\>" . 'font-lock-particle-face) ;;
      ("\\<\\(a?cos\\|a?sin\\|a?tan\\|atan2\\)\\>" . 'font-lock-function-face) ;;
 
      ("\\<pi\\|c[1-9]\\>" . 'font-lock-constant-face)
-     ("\\<\\(brown\\|black\\|blue\\|cyan\\|cyanblue\\|darkgray\\|gray\\|green\\|lightgray\\|lightgreen\\|magneta\\|matblack\\|mossgreen\\|orange\\|pastelblue\\|pink\\|red\\|violet\\|white\\|yellow\\)\\>" . 'font-lock-constant-face) ;; phits colors
+     ("\\<\\(brown\\|black\\|blue\\|cyan\\|cyanblue\\|darkgray\\|gray\\|green\\|lightgray\\|lightgreen\\|magneta\\|matblack\\|mossgreen\\|orange\\|pastelblue\\|pastelcyan\\|pink\\|red\\|violet\\|white\\|yellow\\|yellowgreen\\)\\>" . 'font-lock-constant-face) ;; phits colors
 
-     ("\\<\\(c\/[xyz]\\|[cp][xyz]\\|gq\\)\\>" . 'font-lock-surface-face)
+     ("\\<\\(c\/[xyz]\\|[cp][xyz]\\|gq\\|so\\)\\>" . 'font-lock-surface-face)
 
      ("\\<\\([fF][iI][lL][lL]\\|[uU]\\|[lL][aA][tT]\\|[lL][iI][kK][eE]\\|[bB][uU][tT]\\)\\>" . 'font-lock-variable-name-face) ;; fill,universe,lat,trcl variables
      ("\\<\\([bB][uU][fF][fF][eE][rR]\\|[fF][iI][lL][eE]\\|[mM][aA][xX]\\|[mM][eE][pP][hH]\\|[wW][rR][iI][tT][eE]\\|[eE][vV][eE][nN][tT]\\|[fF][iI][lL][tT][eE][rR]\\|[tT][yY][pP][eE]\\|[cC][eE][lL][lL]\\|[sS][uU][rR][fF][aA][cC][eE]\\|[tT][aA][lL][lL][yY]\\)\\>" . 'font-lock-variable-name-face) ;; ptrac variables
