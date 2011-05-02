@@ -2,21 +2,21 @@
 
 import sys, re, string
 from array import array
-from ROOT import ROOT, TFile, TH1F
+from ROOT import ROOT, TFile, TH1F, TObjArray
 
 class Tally:
     number = None
     title = None
     particle = None
-    f  = None # number of cell, surface or detector bins
     cells = None
-    d  = None
-    u  = None
-    s  = None
-    m  = None
-    c  = None
-    et = None
-    t  = None
+    f  = None       # number of cell, surface or detector bins
+    d  = None       # total / direct or flagged bin
+    u  = None       # user bin
+    s  = None       # segment or radiography s-axis bin
+    m  = None       # multiplier bin
+    c  = None       # cosine or radiography t-axis bin
+    e  = None       # energy bin
+    t  = None       # time bin
 
     energy_bins = [] # et-1 size array
     data = []
@@ -25,30 +25,34 @@ class Tally:
     
     def __init__(self, number):
         self.number = number
+        del self.energy_bins[:]
+        del self.data[:]
+        del self.errors[:]
 
-    def Print(self):
-        self.Check()
+    def Print(self, option):
         print "tally #%d:\t%s" % (self.number, self.title)
+        if option == 'title': return
+        self.Check()
         print "\tparticles:", self.particle
         print "\tcells:", self.cells
-        print "\tdimentions:", self.f, self.d, self.u, self.s, self.m, self.c, self.et, self.t
-        if self.et:
+        print "\tdimentions:", self.f, self.d, self.u, self.s, self.m, self.c, self.e, self.t
+        if self.e:
             print "\tenergy bins:", self.energy_bins[0], '...', self.energy_bins[-1]
 
     def Check(self):
-        if self.et:
+        if self.e:
             length = len(self.energy_bins)
-            if self.et-1 != length:
-                print "number of enerby bins is wrong: et=%d, len(energy_bins)=%d" % (self.et, length)
+            if self.e-1 != length:
+                print "number of enerby bins is wrong: et=%d, len(energy_bins)=%d" % (self.e, length)
                 sys.exit(1)
 
             length = len(self.data)
-            if self.et != length:
-                print "number of data bins is wrong: et=%d, len(data)=%d" % (self.et, length)
+            if self.e != length:
+                print "number of data bins is wrong: et=%d, len(data)=%d" % (self.e, length)
 
             length = len(self.errors)
-            if self.et != length:
-                print "number of error bins is wrong: et=%d, len(errors)=%d" % (self.et, length)
+            if self.e != length:
+                print "number of error bins is wrong: et=%d, len(errors)=%d" % (self.e, length)
 
     def Histogram(self):
 #        print self.energy_bins
@@ -58,8 +62,8 @@ class Tally:
 #                    print i
         title = ""
         if self.title: title = self.title
-        h = TH1F("f%d" % self.number, title, self.et-2, array('f', self.energy_bins))
-        for i in range(self.et-1): # et-1 => skip the last bin with total over all energy value (see p. 139 - E Tally Energy)
+        h = TH1F("f%d" % self.number, title, self.e-2, array('f', self.energy_bins))
+        for i in range(self.e-1): # et-1 => skip the last bin with total over all energy value (see p. 139 - E Tally Energy)
             val = self.data[i]
             dx = h.GetBinLowEdge(i+1)-h.GetBinLowEdge(i) 
             val = val/dx # divide by the bin width
@@ -97,6 +101,8 @@ def main():
 
     is_vals = False # True in the data/errors section
 
+    histos = TObjArray()
+
     for line in file_in.readlines():
         if kod is None:
             kod, ver, probid_date, probid_time, knod, nps, rnr = line.split()
@@ -124,8 +130,10 @@ def main():
 
         if words[0] == 'tally':
             if tally: 
-                tally.Print()
-                break
+                tally.Print('title')
+                if tally.number % 10 == 4:
+                    histos.Add(tally.Histogram())
+                del tally
             tally = Tally(int(words[1]))
             tally.particle = words[2:]
             if tally.number not in ntals:
@@ -142,9 +150,10 @@ def main():
         if tally.f is None and words[0] not in ['1', 'f']:
             tally.title = line.strip()
 
-        if tally.et and tally.t is None and line[0] == ' ':
+        if tally.e and tally.t is None and line[0] == ' ':
             for w in words:
                 tally.energy_bins.append(float(w))
+#            print words
 
         if   words[0] == 'f':  tally.f  = int(words[1])
         elif words[0] == 'd':  tally.d  = int(words[1])
@@ -152,7 +161,7 @@ def main():
         elif words[0] == 's':  tally.s  = int(words[1])
         elif words[0] == 'm':  tally.m  = int(words[1])
         elif words[0] == 'c':  tally.c  = int(words[1])
-        elif words[0] == 'et': tally.et = int(words[1])
+        elif words[0] == 'et' or words[0] == 'e': tally.e = int(words[1])
         elif words[0] == 't':  tally.t  = int(words[1])
 
         if words[0] == 'vals':
@@ -169,10 +178,12 @@ def main():
 
     #tally.Print()
 
+    histos.Print()
+
     file_in.close()
 
     fout = TFile(fname_out, 'recreate')
-    tally.Histogram().Write()
+    histos.Write()
     fout.Close()
 
 
