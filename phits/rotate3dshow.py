@@ -15,6 +15,8 @@ def getOut(fname_in):
 def main():
     """
     animate-3dshow (theta|phi) nsteps file.phits
+    The .gif file can be created with gifsicle:
+        gifsicle --disposal 2 *.gif > animation.gif
     """
 
     if len(sys.argv) != 4:
