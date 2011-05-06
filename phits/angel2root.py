@@ -24,6 +24,14 @@ def isData(line):
     return True
 """
 
+#        SUBT = re.compile('prot*')
+SUBT = re.compile("""
+\(
+(?P<subtitle>.*)\s*?
+\)
+""", re.VERBOSE)
+
+
 class Angel:
     fname = None
     title  = None
@@ -31,19 +39,24 @@ class Angel:
     xtitle = None
     ytitle = None
     ztitle = None
+    part = [] # list of particles
     lines = []
+
+# this group of variables is used to convert a set of 1D histograms to 2D (if necessary):
+    dict_nbins = {} # dictionary of number of bins - to guess if 2D histo is needed
+    last_nbins_read = None # last name of binning read (ne, nt, na, ...)
+    dict_edges_array = {} # dictionary of arrays with bin edges
+
     histos = TObjArray()
     ihist = 0 # histogram number - must start from ZERO
     fname_out = None
-    def __init__(self, fname):
-        self.fname = fname
-        file = open(fname)
+    def __init__(self, fname_in, fname_out):
+        self.fname = fname_in
+        file = open(self.fname)
         self.lines = tuple(file.readlines())
         file.close()
 
-        self.fname_out = re.sub("\....$", ".root", fname)
-        if fname == self.fname_out:
-            self.fname_out = fname + ".root"
+        self.fname_out = fname_out
 
         ipage = -1
 
@@ -52,9 +65,25 @@ class Angel:
             if re.search("title = ", line):
                 words = line.split()
                 self.title = string.join(words[2:])
+                continue
+            if re.search("^n[eat] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
+                words = line.split()
+                self.dict_nbins[words[0]] = int(words[2])
+                self.last_nbins_read = words[0]
+                print "dict_nbins:", self.dict_nbins
+                continue
+            if re.search("#    data = ", line):
+                self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
+                continue
+            if re.search("part = ", line):
+                words = line.split()
+# this loop is needed in case we define particles in separate lines as shown on page 121 of the Manual. Otherwise we could have used 'self.part = words[2:]'
+                for w in words[2:]: 
+                    self.part.append(w)
+                print self.part
             if re.search("newpage:", line):
                 ipage += 1
-                print "page: ", ipage
+#                print "page: ", ipage
             elif re.search("^x:", line):
                 words = line.split()
                 self.xtitle = string.join(words[1:])
@@ -66,7 +95,7 @@ class Angel:
             elif re.search("^z:", line):
                 print "new graph"
             elif re.search("^h:", line):
-                print "one dimentional graph section"
+#                print "one dimentional graph section"
                 self.Read1DHist(iline)
             elif re.search("^h[2dc]:", line):
                 if re.search("^h2", line): print "two dimentional contour plot section"
@@ -76,21 +105,50 @@ class Angel:
             elif re.search("'no. = ", line): # subtitles of 2D histogram
                 self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
 
+#        print self.dict_edges_array
+        if self.is1D():
+            print "1D"
+        else:
+            print "2D"
+            self.Make2Dfrom1D()
+
+
         fout = TFile(self.fname_out, "recreate")
         self.histos.Write()
         fout.Close()
 
+    def is1D(self):
+        """
+        Trying to guess if we have many 1D histograms which actually form a 2D one.
+        """
+        nn1 = 0 # number of cases when number of bins is not 1
+        for key in self.dict_nbins:
+            if int(self.dict_nbins[key])>1: nn1 += 1
+        print "nn1:", nn1
+        
+        if nn1 <= 1:
+            return True
+        else:
+            return False
+
+    def GetBinEdges(self, iline):
+        edges = []
+        for line in self.lines[iline+1:]:
+            if line[0] == '#':
+                words =  line[1:].split()
+                for w in words:
+                    edges.append(w)
+            else: break
+        if len(edges)-1 != self.dict_nbins[self.last_nbins_read]:
+            print "ERROR in GetBinEdges: wrong edge or bin number"
+            sys.exit(1)
+       # print 'edges:', edges
+        return tuple(edges)
 
     def GetNhist(self, line):
         """
         Analyzes the section header and return the number of histograms in the section data
         """
-#        SUBT = re.compile('prot*')
-        SUBT = re.compile("""
-            \(
-            (?P<subtitle>.*)\s*?
-            \)
-            """, re.VERBOSE)
 # Let's remove all spaces between ')'. For some reason line.replace('\s*)', ')') does not work
 # so we do it in this weird way:
         line1 = None
@@ -109,8 +167,8 @@ class Angel:
                     self.subtitles.append(mo.group('subtitle'))
                 else:
                     self.subtitles.append('')
-#        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
-        print "Section Header: 1D histo", nhists
+###        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
+#        print "Section Header: 1D histo", nhists, self.subtitles
         return nhists
 
     def Read1DHist(self, iline):
@@ -149,7 +207,7 @@ class Angel:
 
         nbins = len(xarray)
         xarray.append(xmax)
-        
+
         for ihist in range(nhist):
             if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist]
             else: subtitle = ''
@@ -218,12 +276,83 @@ class Angel:
                 h.SetBinContent(x+1, y+1, d)
         self.histos.Add(h)
 
-        
-        
+    def isSameXaxis(self):
+        """
+        Return True if all the histograms in self.histos have the same x-axis
+        """
+        nhist = self.histos.GetEntries()
+        nbins0 = self.histos[0].GetNbinsX()
+        for i in range(1,nhist):
+            h = self.histos[i]
+            if nbins0 != self.histos[i].GetNbinsX():
+                print "not the same bin number", i
+                return false
+            for bin in range(nbins0):
+                if self.histos[0].GetBinLowEdge(i+1) != self.histos[i].GetBinLowEdge(i+1):
+                    print "Low edge differ for bin %d of histo %d" % (bin, i)
+                    return False
+        return True
 
-#            del xarray[:]
-#            del data[:]
-#            del errors[:]
+    def getXarray(self, h):
+        """
+        Return the tuple with x-low-edges of TH1 'h'
+        """
+        nbins = h.GetNbinsX()
+        xarray = []
+        for i in range(nbins+1):
+            xarray.append(float(h.GetBinLowEdge(i+1)))
+
+        return xarray
+    
+    def Make2Dfrom1D(self):
+        """
+        Makes a 2D histogram from a set of 1D !!! works only with 1 set of particles requested !!!
+        """
+        # check if all histograms have the same x-range:
+        if not self.isSameXaxis():
+            print "ERROR in Make2Dfrom1D: x-axes are different"
+            sys.exit(1)
+
+        # guess which dict_edges_array correspond to 1D histos
+        nbins0 = self.histos[0].GetNbinsX()
+        second_dimention = None
+        second_dimention_nbins = None
+        for key in self.dict_edges_array:
+            nbins = len(self.dict_edges_array[key])-1
+            if nbins==1: continue # we do not care
+            if nbins0 != nbins:
+                second_dimention = key
+                second_dimention_nbins = nbins
+        
+        if second_dimention:
+            print "the second dimention is", second_dimention, second_dimention_nbins
+        else:
+            print "Second dimention was not found based on the number of bins -> bin edges comparing needed"
+            sys.exit(3)
+
+#        h2 = TH2F("hall%s" % second_dimention, "", nbins0, 0, 1, 20, 0, 1)
+        
+#        print array('f', self.getXarray(self.histos[0]))
+        second_dimention_xarray = []
+        for w in self.dict_edges_array[second_dimention]: second_dimention_xarray.append(float(w))
+#        for w in self.dict_edges_array[second_dimention]: print float(w)
+#        array('f', second_dimention_xarray)
+
+        h2 = TH2F("hall%s" % second_dimention, "%s;%s;%s;%s" % (self.histos[0].GetYaxis().GetTitle(), self.histos[0].GetXaxis().GetTitle(), "Time [nsec]", self.histos[0].GetYaxis().GetTitle()),
+                  nbins0, array('f', self.getXarray(self.histos[0])),
+                  second_dimention_nbins, array('f', second_dimention_xarray))
+
+        nhist = self.histos.GetEntries() # number of 1D histograms
+        for biny in range(nhist):
+            h1 = self.histos[biny]
+            for binx in range(nbins0):
+                h2.SetBinContent(binx+1, biny+1, h1.GetBinContent(binx+1))
+                h2.SetBinError(binx+1, biny+1, h1.GetBinError(binx+1))
+            
+
+        self.histos.Add(h2)
+
+        
 
 def main():
     """
@@ -239,76 +368,9 @@ def main():
         fname_out = fname_in + ".root"
     print fname_out
 
-    angel = Angel(fname_in)
+    angel = Angel(fname_in, fname_out)
 
-    sys.exit(0)
+    return 0
     
-
-
-    p = TallyOutputParser(fname_in)
-    print "sections: ", p.getSections()
-#    print p.FixSectName("T - H e a t")
-#    print p.has_section(" T - H e a t ")
-
-    section = p.getSections()[0]
-#    print "options: ", p.sections[section]
-
-    xtitle = p.get(section, 'x')
-    ytitle = p.get(section, 'y')
-    ztitle = p.get(section, 'z')
-
-    etype = p.get(section, 'e-type')
-    print "e-type: ", etype
-
-    title = p.get(section, "title")
-    axis = p.get(section, 'axis')
-    print "axis: ", axis
-
-    if p.is_1d(section):
-        # using axis[0] since the 1st letter is being used in 
-        # 1-dimentional axes (eng, reg, x, y, z and r)
-        xmin = float(p.get(section, "%smin" % axis[0]))
-        xmax = float(p.get(section, "%smax" % axis[0]))
-        nbins = int(p.get(section, "n%s" % axis[0]))
-        
-        print "1d:\t", nbins, xmin, xmax
-
-        for ihist in range(2):
-            print p.xarray[ihist]
-            hist = TH1F("h%d" % ihist, "%s (%s);%s;%s" % (title, p.subtitle[ihist], xtitle, ytitle), nbins, array('f', p.xarray[ihist]))
-            for i in range(nbins):
-                val = p.data[ihist][i]
-                print val
-                hist.SetBinContent(i+1, val)
-                if len(p.errors[ihist]):
-                    err = p.errors[ihist][i]*val
-                    hist.SetBinError(i+1, err)
-            hists.Add(hist)
-
-    elif p.is_2d(section):
-        print "2d"
-        xmin = float(p.get(section, "%smin" % axis[1]))
-        xmax = float(p.get(section, "%smax" % axis[1]))
-        ymin = float(p.get(section, "%smin" % axis[0]))
-        ymax = float(p.get(section, "%smax" % axis[0]))
-        nbinsx = int(p.get(section, "n%s" % axis[1]))
-        nbinsy = int(p.get(section, "n%s" % axis[0]))
-        print xmin, xmax, ymin, ymax, nbinsx, nbinsy
-        hist = TH2F("h", "%s;%s;%s;%s" % (title, xtitle, ytitle, ztitle), nbinsx, xmin, xmax, nbinsy, ymin, ymax) # implement runtime code generation for [xyz]title here !!!
-        for y in range(nbinsy-1, -1, -1):
-            for x in range(nbinsx):
-                d = p.data[0][x+(nbinsy-1-y)*nbinsx]
-                hist.SetBinContent(x+1, y+1, d)
-        hists.Add(hist)
-    else:
-        print("neither 1D nor 2D axis -> exit")
-        return 1
-
-    
-    fout = TFile(fname_out, "recreate")
-    hists.Write()
-    fout.Close()
-
-
 if __name__ == "__main__":
     sys.exit(main())

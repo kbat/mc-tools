@@ -85,6 +85,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
             tmp_file.write(line)
         tmp_file.close()
         system("phits < %s" % fname_tmp)
+        system("grep -iH error $(ls -1rt |tail -1)") # check the output file for the errors
         system("convert -transparent-color white -background white -rotate 90 %s /tmp/rotate3dshow/%.3d.gif" % (epsname, istep))
 
     print 'the output files are in /tmp/rotate3dshow'

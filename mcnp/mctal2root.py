@@ -10,15 +10,17 @@ class Tally:
     particle = None
     cells = None
     f  = None       # number of cell, surface or detector bins
-    d  = None       # total / direct or flagged bin
-    u  = None       # user bin
+    d  = None       # number of total / direct or flagged bins
+# u is the number of user bins, including the total bin if there is one.
+#   If there is a total bin, then 'ut' is used.
+#   if there is cumulative binning, then 'uc' is used
+# The same rules apply for the s, m, c, e, and t - lines
+    u  = None
     s  = None       # segment or radiography s-axis bin
     m  = None       # multiplier bin
     c  = None       # cosine or radiography t-axis bin
     e  = None       # energy bin
     t  = None       # time bin
-
-    energy_bins = [] # et-1 size array
 
     boundaries = {}
     boundaries['f'] = []
@@ -40,7 +42,6 @@ class Tally:
     
     def __init__(self, number):
         self.number = number
-        del self.energy_bins[:]
         for b in self.boundaries: del self.boundaries[b][:]
         del self.data[:]
         del self.errors[:]
@@ -49,12 +50,16 @@ class Tally:
         print "tally #%d:\t%s" % (self.number, self.title)
         print "nbins", self.getNbins(), len(self.data)
         if option == 'title': return
-        self.Check()
+#        self.Check()
         print "\tparticles:", self.particle
         print "\tcells:", self.cells
         print "\tdimentions:", self.f, self.d, self.u, self.s, self.m, self.c, self.e, self.t
-        if self.e:
-            print "\tenergy bins:", self.energy_bins[0], '...', self.energy_bins[-1]
+
+        if self.d == 1:                                   # page 262
+            print '\tthis is a cell or surface tally unless there is CF or SF card'
+        elif self.d == 2:
+            print '\tthis is a detector tally (unless thre is an ND card on the F5 tally)'
+
         for b in self.boundaries:
             if self.boundaries[b]:
                 print "\tbins", b, ":", self.boundaries[b][0], '...', self.boundaries[b][-1]
@@ -62,12 +67,27 @@ class Tally:
 #        print 2*(1+len(self.boundaries['e'])) * (1+len(self.boundaries['t'])), len(self.data)
 
     def getNbins(self):
-        nbins = 2  # !!! why 2? written on page 263, but still not clear !!!
+        nbins = 1 #2  # !!! why 2? written on page 263, but still not clear Guess: value+error pairs?!!!
         for b in self.boundaries:
             l = len(self.boundaries[b])
             if l != 0: 
                 nbins = nbins * (l+1)
         return nbins
+
+    def getNdimentions(self):
+        """
+        wrong...
+        """
+        n = 0
+        if self.f[1]: n += 1
+        if self.d[1]: n += 1 
+        if self.u[1]: n += 1
+        if self.s[1]: n += 1
+        if self.m[1]: n += 1
+        if self.c[1]: n += 1
+        if self.e[1]: n += 1
+        if self.t[1]: n += 1
+        return n
 
     def Check(self):
         if len(self.tfc_jtf) != 8:
@@ -81,7 +101,7 @@ class Tally:
         if self.number % 10 != 4:            return 0   # everything below is for tally #4 only:
 
         if self.e:
-            length = len(self.energy_bins)
+            length = len(self.boundaries['e'])
             if self.e-1 != length:
                 print "number of enerby bins is wrong: et=%d, len(energy_bins)=%d" % (self.e, length)
                 sys.exit(1)
@@ -103,19 +123,22 @@ class Tally:
 #            if i>0:
 #                if self.energy_bins[i] < self.energy_bins[i-1]:
 #                    print i
-        title = ""
-        if self.title: title = self.title
+        print "ndim:",self.getNdimentions()
+        title = ";energy [MeV]"
+        if self.title: title = self.title + title
         if self.number % 10 == 4:
-            h = TH1F("f%d" % self.number, title, self.e-2, array('f', self.energy_bins))
-            for i in range(self.e-1): # et-1 => skip the last bin with total over all energy value (see p. 139 - E Tally Energy)
+            nbins = self.getNbins()
+            print nbins, self.e[1]
+            h = TH1F("f%d" % self.number, title, nbins-2, array('f', self.boundaries['e']))
+            for i in range(nbins-1): # et-1 => skip the last bin with total over all energy value (see p. 139 - E Tally Energy)
                 val = self.data[i]
                 dx = h.GetBinLowEdge(i+1)-h.GetBinLowEdge(i) 
                 val = val/dx # divide by the bin width
                 h.SetBinContent(i, val)
                 h.SetBinError(i, val*self.errors[i])
         elif self.number % 10 == 5:
-            h = TH1F("f%d" % self.number, title, self.e, array('f', [0] + self.energy_bins))
-            for i in range(self.e):
+            h = TH1F("f%d" % self.number, title, self.e[1], array('f', [0] + self.boundaries['e']))
+            for i in range(self.e[1]):
                 val = self.data[i] # !!! not normalized by the bin width !!! 
                 h.SetBinContent(i+1, val)
                 h.SetBinError(i+1, val*self.errors[i])
@@ -180,11 +203,12 @@ def main():
 
         if words[0] == 'tally':
             if tally: 
-                tally.Print('title')
+                tally.Print()
+#                histos.Add(tally.Histogram())
                 if tally.number % 10 == 4 or tally.number == 5 or tally.number == 15:
                     histos.Add(tally.Histogram())
-                elif tally.number == 125:
-                    tally.Print()
+#                elif tally.number == 125:
+#                    tally.Print()
 #                    histos.Add(tally.Histogram())
                 del tally
             tally = Tally(int(words[1]))
@@ -210,18 +234,17 @@ def main():
 
         if tally.e and tally.t is None and line[0] == ' ':
             for w in words:
-                tally.energy_bins.append(float(w))
                 tally.boundaries['e'].append(float(w))
 
-        if   words[0] == 'f':  tally.f  = int(words[1])
-        elif words[0] == 'd':  tally.d  = int(words[1])
-        elif words[0] == 'u' or words[0] == 'ut':  tally.u  = int(words[1])
-        elif words[0] == 's':  tally.s  = int(words[1])
-        elif words[0] == 'm':  tally.m  = int(words[1])
-        elif words[0] == 'c':  tally.c  = int(words[1])
-        elif words[0] == 'et' or words[0] == 'e': tally.e = int(words[1])
-        elif words[0] == 't' or words[0] == 'tt':  tally.t  = int(words[1])
-        elif words[0] == 'tfc':
+        if   not tally.f and re.search('^f', line[0]):  tally.f  = words[0], int(words[1])
+        elif not tally.d and re.search('^d', line[0]):  tally.d  = words[0], int(words[1])
+        elif not tally.u and re.search ("u[tc]?", line[0:1]):  tally.u  = words[0], int(words[1])
+        elif not tally.s and re.search('^s[tc]?', line[0:1]):  tally.s  = words[0], int(words[1])
+        elif not tally.m and re.search('^m[tc]?', line[0:1]):  tally.m  = words[0], int(words[1])
+        elif not tally.c and re.search('^c[tc]?', line[0:1]):  tally.c  = words[0], int(words[1])
+        elif not tally.e and re.search("^e[y]?",  line[0:1]): tally.e = words[0], int(words[1])
+        elif not tally.t and re.search("^t[tc]?", line[0:1]): tally.t = words[0], int(words[1])
+        elif line[0:2] == 'tfc':
             tally.tfc_n = words[1]
             tally.tfc_jtf = words[2:]
 
