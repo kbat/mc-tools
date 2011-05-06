@@ -1,6 +1,8 @@
 #! /usr/bin/python -W all
 
 import sys, re, string
+from math import *
+
 try:
     from collections import OrderedDict as _default_dict
 except ImportError:
@@ -267,4 +269,78 @@ class TallyOutputParser:
 #        opt = option.lower()
 #        if section not in self.sections:
 #            return "no such section"
+
+
+
+class Input:
+    inp = None
+    pars = {} # dictionary of parameters
+
+    def __init__(self, fname):
+        self.inp = open(fname, 'w')
+
+    def FixLine1(self, line):
+        # we sort the dictionary by the key length, so we replace the longer keys first
+        # in order avoid mistakes like AA = 5, AAB = 6 -> '5B'
+        for key, value in sorted(self.pars.iteritems(), key=lambda(k,v):(len(k),v), reverse=True):
+            line = line.replace("%s" % key, "%s" % str(value))
+
+#            line = line.replace(" %s " % i, " %s " % str(self.pars[i]))
+#            line = line.replace(" %s\n" % i, " %s\n" % str(self.pars[i]))
+#            line = line.replace("(%s)" % i, "(%s)" % str(self.pars[i]))
+#            line = line.replace("(%s " % i, "(%s " % str(self.pars[i]))
+#            line = line.replace("-%s " % i, "-%s " % str(self.pars[i]))
+        return line
+
+    def FixLine(self, line):
+        line1 = None
+        while True:
+            line1 = self.FixLine1(line)
+            if line1 != line:
+                line = line1
+            else:
+                return line
+
+    def Line(self, line, comment=None):
+        line = self.FixLine(line)
+        if comment:
+            line = line + " $ " + comment
+        print >> self.inp, line
+
+    def Section(self, sectname):
+        self.Line('[%s]' % sectname)
+
+    def Title(self, title):
+        self.Line('[title]')
+        self.Line(title)
+        self.Line('')
+
+    def End(self):
+        self.Section('end')
+        self.inp.close()
+
+    def Set(self, name, value, comment=None):
+        value_orig = value
+        try:
+            float(value)
+        except ValueError:
+            value = self.FixLine("%s" % value)
+            eval(value)
+            try:
+                value = eval(value)
+            except NameError:
+                print "ERROR: cannot eval value '%s'" % value
+                sys.exit(1)
+
+        name = name.strip()
+        self.pars[name] = value
+        if value_orig != value:
+            value_orig = value_orig + " = " + str(value)
+        if comment: value_orig = str(value_orig) + "\t(%s)" % str(comment)
+        print >> self.inp, "c %s = %s" % (name, value_orig)
+        
+
+    def Get(self, name):
+        return self.pars[name]
+
 
