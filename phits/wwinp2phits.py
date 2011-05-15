@@ -7,19 +7,35 @@
 import re, sys
 from string import join, replace
 
-def print_weights(weights, ni):
+def print_weights(weights, ncells):
     """
     Print weights for ni energy/time intervals
     """
+    weights = dict(weights)
+    intervals = weights.keys()
+    
+    tmparray = []
+    for icell in range(1,ncells+1):
+        for i in intervals:
+            tmparray.append(weights[i][icell-1])
+        print "    %4d" % icell, join(tmparray)
+        del tmparray[:]
+#    ncells =    weights[1]
+#    print len(weights[1])
+#    if weights.has_key(1):       
+#        print weights[1]
+#        print len(weights[1])
 
 def main():
     """Usage: wwin2phits wwinp [wwinp.phits]
     """
-    particle = {"n" : "neutron", "h":"proton", "/":"pion", "z":"z", "d":"d", "t":"t", "s":"s", "a":"a"}
+    particle = {"n" : "neutron", "h":"proton", "/":"pion+ pion-", "z":"pion0", "d":"deuteron", "t":"triton", "s":"3he", "a":"alpha", "p":"photon", "e":"electron positron", "|":"muon+ muon-"}
     energies = []
     weights = {}
     wwe = False
     wwn = False
+    ncells = 0
+    ncells_tmp = 0
     i = 0 # energy/time interval
 
     fin = open("wwinp")
@@ -29,7 +45,12 @@ def main():
         line = line.rstrip()
         if re.search("^wwe", line):
             wwe = True
+            print_weights(weights, ncells)
+            for k in weights.keys():
+                del weights[k][:]
+            weights = {}
             wwn = False
+
 
             print "\n[Weight Window]"
             tmp = join(line.split(":")[1]).split()
@@ -44,26 +65,34 @@ def main():
             wwe = False
             
 
-            if weights.has_key(i):
-                print weights[i]
+            if ncells == 0 and ncells_tmp != 0:
+                ncells = ncells_tmp
 
-            print "   eng = %d" % len(energies)
-            print "         %s" % join(energies)
-
-            i = replace(line.split(":")[0], "wwn", "") # energy / time interval
+            i = int(line.split(":")[0][3:]) # energy / time interval: wwn1 -> 1
             weights[i] = []
+
+            if i == 1:
+                print "   eng = %d" % len(energies)
+                print "         %s" % join(energies)
+
+
             for w in line.split()[1:]:
                 weights[i].append(w)
+                ncells_tmp += 1
             continue
 
         if wwn and not wwe:
             for w in line.split():
                 weights[i].append(w)
+                ncells_tmp += 1
 
         if wwe and not wwn:
             for w in line.split():
                 energies.append(w)
                 continue
+
+    print_weights(weights, ncells)
+
 
 if __name__ == "__main__":
     sys.exit(main())
