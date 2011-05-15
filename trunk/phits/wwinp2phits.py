@@ -6,6 +6,7 @@
 
 import re, sys
 from string import join, replace
+import phits
 
 def print_weights(weights, ncells):
     """
