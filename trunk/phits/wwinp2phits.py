@@ -6,7 +6,7 @@
 
 import re, sys
 from string import join, replace
-import phits
+from phits import mcnp_phits_particles as particle
 
 def print_weights(weights, ncells):
     """
@@ -21,16 +21,10 @@ def print_weights(weights, ncells):
             tmparray.append(weights[i][icell-1])
         print "    %4d" % icell, join(tmparray)
         del tmparray[:]
-#    ncells =    weights[1]
-#    print len(weights[1])
-#    if weights.has_key(1):       
-#        print weights[1]
-#        print len(weights[1])
 
 def main():
     """Usage: wwin2phits wwinp [wwinp.phits]
     """
-    particle = {"n" : "neutron", "h":"proton", "/":"pion+ pion-", "z":"pion0", "d":"deuteron", "t":"triton", "s":"3he", "a":"alpha", "p":"photon", "e":"electron positron", "|":"muon+ muon-"}
     energies = []
     weights = {}
     wwe = False

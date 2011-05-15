@@ -11,6 +11,9 @@ except ImportError:
 AXES1D = ('eng', 'charge', 'mass', 'reg', 'x', 'y', 'z', 'r') # list of one-dimentional axes
 AXES2D = ('chart', 'xy', 'yz', 'xz', 'rz') # list of two-dimentional axes
 
+mcnp_phits_particles = {"n" : "neutron", "h":"proton", "/":"pion+ pion-", "z":"pion0", "d":"deuteron", "t":"triton", "s":"3he", "a":"alpha", "p":"photon", "e":"electron positron", "|":"muon+ muon-"}
+
+
 def ReadSection(line):
     """ Section is a part of the ANGEL input file starting from alphabet characters with colon ':' line H:"""
     print "ReadSection", line
