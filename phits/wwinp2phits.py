@@ -1,12 +1,48 @@
 #! /usr/bin/python -W all
 #
-# Convertw wwinp file to the Wheight Window format of PHITS
+# Converts wwinp file to the Wheight Window format of PHITS
 #
 #
 
 import re, sys
-from string import join, replace
+from string import join
 from phits import mcnp_phits_particles as particle
+
+def getCells(fname):
+    """
+    Return array with cell numbers from the input file named fname.
+    Used in wwinp2phits.py
+    """
+    isCellSection = False
+    f = open(fname)
+    cells = []
+    c = 0 # current cell
+    for line in f.readlines():
+        if re.search("\[cell\]", line):
+            print "found: ", line
+            isCellSection = True
+        elif isCellSection and re.search("^\[", line):
+            isCellSection = False
+            break
+
+        words = line.split()
+        if len(words) == 0:
+            continue
+        try:
+            c = int(words[0])
+        except ValueError:
+            continue
+
+        cells.append(c)
+        
+    f.close()
+    return cells
+
+def get_weight_titles(ni):
+    tmparray = ["     reg"]
+    for i in range(ni):
+        tmparray.append("%9s%d" % ('ww', i+1))
+    return join(tmparray)
 
 def print_weights(weights, ncells):
     """
@@ -16,14 +52,21 @@ def print_weights(weights, ncells):
     intervals = weights.keys()
     
     tmparray = []
+#    outarray = []
     for icell in range(1,ncells+1):
         for i in intervals:
             tmparray.append(weights[i][icell-1])
         print "    %4d" % icell, join(tmparray)
+#        outarray.append("    %4d %s" % (icell, join(tmparray)))
         del tmparray[:]
+#    return outarray
 
 def main():
-    """Usage: wwin2phits wwinp [wwinp.phits]
+    """Converts wwinp file to the Wheight Window format of PHITS.
+The output can be forwarded in a separate file and included in the PHTIS input by
+      infl: {file-name}
+Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
+       input.phits - the PHITS input file - needed to optain the cell numbers
     """
     energies = []
     weights = {}
@@ -33,8 +76,15 @@ def main():
     ncells_tmp = 0
     i = 0 # energy/time interval
 
-    fin = open("wwinp")
+    if len(sys.argv) != 3:
+        print main.__doc__
+        sys.exit(1)
 
+    cells = getCells(sys.argv[1])
+    print cells, len(cells)
+    sys.exit(0)
+
+    fin = open(sys.argv[2])
     
     for line in fin.readlines():
         line = line.rstrip()
@@ -69,7 +119,7 @@ def main():
             if i == 1:
                 print "   eng = %d" % len(energies)
                 print "         %s" % join(energies)
-
+                print get_weight_titles(len(energies))
 
             for w in line.split()[1:]:
                 weights[i].append(w)
@@ -88,6 +138,7 @@ def main():
 
     print_weights(weights, ncells)
 
+    fin.close()
 
 if __name__ == "__main__":
     sys.exit(main())
