@@ -1,0 +1,27 @@
+#!/bin/sh
+# @ output = job.$(jobid).out
+# @ error = job.$(jobid).err
+# @ node_usage = shared
+## @ job_type = parallel
+# @ class = all
+# @ notification = error
+## @ node = 1
+## @ tasks_per_node = 7
+# @ queue
+
+echo "==="
+echo LOADL_TOTAL_TASKS: $LOADL_TOTAL_TASKS
+echo LOADL_HOSTFILE: $LOADL_HOSTFILE
+cat $LOADL_HOSTFILE | wc -l
+echo "==="
+
+inp=inp
+home=$(pwd)
+
+# set the working directory under /scratch in order to
+# minimise the network traffic (which could be a bottleneck)
+scratch=$(mktemp -d -p /scratch) || exit 1
+cp $inp $scratch
+cd $scratch && echo file = $inp > phits.in && phits < phits.in
+gzip -9 *.eps
+mv $scratch/* $home
