@@ -19,7 +19,6 @@ def getCells(fname):
     c = 0 # current cell
     for line in f.readlines():
         if re.search("\[cell\]", line):
-            print "found: ", line
             isCellSection = True
         elif isCellSection and re.search("^\[", line):
             isCellSection = False
@@ -44,21 +43,53 @@ def get_weight_titles(ni):
         tmparray.append("%9s%d" % ('ww', i+1))
     return join(tmparray)
 
-def print_weights(weights, ncells):
+def print_weights(weights, cells):
     """
     Print weights for ni energy/time intervals
     """
     weights = dict(weights)
     intervals = weights.keys()
+    ncells = len(cells)-4
     
     tmparray = []
 #    outarray = []
     for icell in range(1,ncells+1):
         for i in intervals:
             tmparray.append(weights[i][icell-1])
-        print "    %4d" % icell, join(tmparray)
+        if len(tmparray) != 0:
+            print "    %4d" % cells[icell-1], join(tmparray)
 #        outarray.append("    %4d %s" % (icell, join(tmparray)))
         del tmparray[:]
+#    return outarray
+
+def my_print_weights(weights, cells):
+    """
+    Print weights for ni energy/time intervals
+    also print my weights 442-462
+    """
+    weights = dict(weights)
+    intervals = weights.keys()
+    ncells = len(cells)-4
+    
+    tmparray = []
+#    outarray = []
+    w442, w460, w461, w462 = None, None, None, None
+    the_line = None
+    for icell in range(1,ncells+1):
+        for i in intervals:
+            tmparray.append(weights[i][icell-1])
+        if len(tmparray) != 0:
+            the_line = "    %4d %s"  % (cells[icell-1], join(tmparray))
+            print the_line
+            if cells[icell-1] == 242: w442 = "    %4d %s"  % (442, join(tmparray))
+            if cells[icell-1] == 260: w460 = "    %4d %s"  % (460, join(tmparray))
+            if cells[icell-1] == 260: w461 = "    %4d %s"  % (461, join(tmparray))
+            if cells[icell-1] == 260: w462 = "    %4d %s"  % (462, join(tmparray))
+        del tmparray[:]
+    print w442
+    print w460
+    print w461
+    print w462
 #    return outarray
 
 def main():
@@ -81,8 +112,8 @@ Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
         sys.exit(1)
 
     cells = getCells(sys.argv[1])
-    print cells, len(cells)
-    sys.exit(0)
+#    print cells, len(cells)
+#    sys.exit(0)
 
     fin = open(sys.argv[2])
     
@@ -90,7 +121,7 @@ Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
         line = line.rstrip()
         if re.search("^wwe", line):
             wwe = True
-            print_weights(weights, ncells)
+            my_print_weights(weights, cells)
             for k in weights.keys():
                 del weights[k][:]
             weights = {}
@@ -136,7 +167,7 @@ Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
                 energies.append(w)
                 continue
 
-    print_weights(weights, ncells)
+    my_print_weights(weights, cells)
 
     fin.close()
 

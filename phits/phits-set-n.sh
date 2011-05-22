@@ -21,3 +21,4 @@ perl -pi -e "s/maxcas = \d+/maxcas = $maxcas/" $file
 perl -pi -e "s/maxbch = \d+/maxbch = $maxbch/" $file
 
 egrep "(maxcas|maxbch)" $file
+
