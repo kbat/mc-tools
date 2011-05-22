@@ -69,7 +69,8 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
 
                 if isFirst:                                     # get the value of initial angle
                     if words[0] == parameter:
-                        angle0 = int(words[2])
+                        print words[2]
+                        angle0 = float(words[2])
                         isFirst = False
                 else:                                           # rotate
                     if words[0] == parameter:
