@@ -7,14 +7,14 @@ from ROOT import ROOT, TH1F, TFile
 from array import array
 
 def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
-    file = open(fname)
+    f = open(fname)
     vx = []  # upper border of the energy bin
     vy = []  # flux
     vey = [] # relative error
     line_number = 0
     x, dx, y, ey = 0, 0, 0, 0
 
-    for line in file.readlines():
+    for line in f.readlines():
         words = line.split()
 #        print words;
         if len(words) == 0:
@@ -36,6 +36,8 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
         vey.append(y*ey)
 
         line_number = line_number+1
+
+    f.close()
 
     print vx
     print vy
