@@ -212,6 +212,7 @@ class Angel:
         for ihist in range(nhist):
             if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist]
             else: subtitle = ''
+            self.FixTitles()
             h = TH1F("h%d" % self.ihist, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
             self.ihist += 1
             for i in range(nbins):
@@ -222,6 +223,16 @@ class Angel:
         
             self.histos.Add(h)
         del self.subtitles[:]
+
+    def FixTitles(self):
+        """
+        Makes some ROOT fixes
+
+        """
+        self.ytitle = self.ytitle.replace("cm^2", "cm^{2}")
+        self.ytitle = self.ytitle.replace("cm^3", "cm^{3}")
+        self.title = self.title.replace("cm^2", "cm^{2}")
+        self.title = self.title.replace("cm^3", "cm^{3}")
 
     def Read2DHist(self, iline):
         """
