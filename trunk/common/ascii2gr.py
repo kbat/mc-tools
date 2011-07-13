@@ -3,28 +3,49 @@
 # ASCII to TH1F converter
 
 import sys,time,os,re
-from ROOT import ROOT, TGraph, TGraphErrors, TFile
+from ROOT import ROOT, TGraph, TGraphErrors, TFile, TObjArray
 from array import array
 import argparse
 
-def GetGraph(colx, colex, coly, coley, fname, l1, l2, name):
+def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name):
+    graphs = TObjArray()
+    GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs)
+    return graphs
+
+def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0):
     """
     Read between lines l1 and l2
     """
 
-    f = open(fname)
     vx = []  # vector of x-values
     vex = [] # vector of x-errors
     vy = []  #
     vey = [] #
     npoints = 0
 
+    if l1 == None: l1 = int(1) # we count lines from one
+    if l2 == None:
+        ftmp = open(fname)
+        l2 = len(ftmp.readlines()) # set to the number of lines in the file
+        ftmp.close()
+
+    print "--->reading between lines", l1, l2
+
+    f = open(fname)
     for nline, line in enumerate(f.readlines(), 1):
         if l1 and nline<l1: continue
         if l2 and nline>l2: break
 
         words = line.split()
-#        print words;
+#        print words, len(words)
+
+        if len(words) == 0:
+            if npoints == 0:
+                continue # we have not read any points yet -> just continue
+            else:
+#            print "creating new graph object"
+                break
+
         if words[0][0] == '#':
             continue
         if len(words) < 2:
@@ -43,22 +64,30 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name):
 
     f.close()
 
-    print "number of points: ", npoints
+#    print "number of points: ", npoints
 
-    print colex, coley
+    if npoints>0:
 
-    if not colex and not coley:
-        gr = TGraph(npoints)
-    else:
-        gr = TGraphErrors(npoints)
+        if not colex and not coley: gr = TGraph(npoints)
+        else:                       gr = TGraphErrors(npoints)
+    
+        if  name_index==0:
+            gr.SetName(name)
+        else:
+            gr.SetName("%s%d" % (name, name_index))
 
-    gr.SetName(name)
+        name_index = name_index+1
+        
+        for i in range(npoints):
+            gr.SetPoint(i, vx[i], vy[i])
+            if colex or coley: gr.SetPointError(i, vex[i], vey[i])
 
-    for i in range(npoints):
-        gr.SetPoint(i, vx[i], vy[i])
-        if colex or coley: gr.SetPointError(i, vex[i], vey[i])
+        graphs.Add(gr)
 
-    return gr
+#    print "nlines:", nline, l2
+    if nline<l2:
+#        print "again"
+        GetGraph(colx, colex, coly, coley, fname, nline+1, l2, name, graphs, name_index)
 
 def main():
     """
@@ -74,6 +103,8 @@ def main():
                      x2   y2  ey2
                      x3   y3  ey3
                     so, in order to convert it in ROOT you write: ascii2th1 1 0 2 3 file.txt
+
+           It is assumed that different graphs are separated by an empty line. In this case a sequental prefix is appended to the graph's names.
     """
     
     parser = argparse.ArgumentParser(description=main.__doc__, epilog='epilog')
@@ -82,11 +113,11 @@ def main():
     parser.add_argument('-y',  dest='coly',  type=int, help='y-column number', required=True)
     parser.add_argument('-ey', dest='coley', type=int, help='ey-column number')
     parser.add_argument('inname', type=str, help='input file')
-    parser.add_argument('-start', type=int, help='line to start, >=1')
-    parser.add_argument('-end',   type=int, help='line to end, >=1')
+    parser.add_argument('-start', type=int, help='line to start', default=1)
+    parser.add_argument('-end',   type=int, help='line to end, >=1, read until the end of file, if skipped')
     parser.add_argument('-o', dest='outname', type=str, help='output file name')
-    parser.add_argument('-recreate', action="store_true", default=False)
-    parser.add_argument('-name', type=str, help='Graph\'s name', default='gr')
+    parser.add_argument('-update', action="store_true", default=False, help='if set, the file will be updated, otherwise - recreated')
+    parser.add_argument('-grname', type=str, help='Graph\'s name', default='gr')
 
     print parser.parse_args()
 
@@ -101,13 +132,14 @@ def main():
     if fname_in == fname_out: fname_out = fname_in + ".root"
     print fname_in, '=>',fname_out
 
-    if results.recreate:
-        fout_option = 'recreate'
-    else:
+    if results.update:
         fout_option = 'update'
+    else:
+        fout_option = 'recreate'
 
     fout = TFile(fname_out, fout_option)
-    GetGraph(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.name).Write()
+    GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.grname).Write()
+    fout.ls()
     fout.Close()
     
 
