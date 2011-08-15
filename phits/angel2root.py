@@ -66,7 +66,7 @@ class Angel:
                 words = line.split()
                 self.title = string.join(words[2:])
                 continue
-            if re.search("^n[eatxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
+            if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
                 self.last_nbins_read = words[0]
