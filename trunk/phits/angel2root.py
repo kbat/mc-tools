@@ -10,7 +10,7 @@
 import sys, re, string
 from array import array
 from phits import TallyOutputParser
-from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray
+from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray, TGraphErrors
 
 """
 def isData(line):
@@ -73,15 +73,16 @@ class Angel:
                 print "dict_nbins:", self.dict_nbins
                 continue
             if re.search("#    data = ", line):
-                print self.last_nbins_read
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
                 continue
             if re.search("part = ", line):
                 words = line.split()
 # this loop is needed in case we define particles in separate lines as shown on page 121 of the Manual. Otherwise we could have used 'self.part = words[2:]'
-                for w in words[2:]: 
-                    self.part.append(w)
-                print self.part
+                for w in words[2:]: self.part.append(w)
+                print "particles:", self.part
+            if re.search("output = ", line):
+                print line.strip()
+                continue
             if re.search("newpage:", line):
                 ipage += 1
 #                print "page: ", ipage
@@ -95,9 +96,11 @@ class Angel:
                 #print self.ytitle
             elif re.search("^z:", line):
                 print "new graph"
-            elif re.search("^h:", line):
+            elif re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
 #                print "one dimentional graph section"
                 self.Read1DHist(iline)
+            elif re.search("h:              x", line):
+                self.Read1DGraphErrors(iline)
             elif re.search("^h[2dc]:", line):
                 if re.search("^h2", line): print "two dimentional contour plot section"
                 if re.search("^hd", line): print "two dimentional cluster plot section"
@@ -149,6 +152,7 @@ class Angel:
     def GetNhist(self, line):
         """
         Analyzes the section header and return the number of histograms in the section data
+        (but not in the entire file!)
         """
 # Let's remove all spaces between ')'. For some reason line.replace('\s*)', ')') does not work
 # so we do it in this weird way:
@@ -158,7 +162,6 @@ class Angel:
             line = line.replace(' )', ')')
 
         words = line.split()
-#        print words
         nhists = 0
         for w in words:
             if re.search("^y", w):
@@ -176,7 +179,8 @@ class Angel:
         """
         Read 1D histogram section
         """
-        nhist = self.GetNhist(self.lines[iline])
+        nhist = self.GetNhist(self.lines[iline]) # number of histograms to read in the current section
+#        print 'nhist: ', nhist
         isCharge = False
         if re.search("x-0.5", self.lines[iline].split()[1]):
             isCharge = True # the charge-mass-chart distribution, x-axis is defined by the 1st column only
@@ -223,6 +227,49 @@ class Angel:
         
             self.histos.Add(h)
         del self.subtitles[:]
+
+    def Read1DGraphErrors(self, iline):
+        """
+        Read 1D graph section
+        """
+        ngraphs = self.GetNhist(self.lines[iline]) # graph and hist format is the same
+        xarray = []
+        data = {}
+        errors = {}
+
+        for igraph in range(ngraphs):
+            data[igraph] = []
+            errors[igraph] = []
+
+        for line in self.lines[iline+1:]:
+            line = line.strip()
+            if line == '': break
+            elif re.search("^#", line): continue
+            words = line.split()
+            xarray.append(float(words[0]))
+            for igraph in range(ngraphs):
+                data[igraph].append(  float(words[(igraph+1)*2-1  ]))
+                errors[igraph].append(float(words[(igraph+1)*2    ]))
+
+        npoints = len(xarray)
+
+        for igraph in range(ngraphs):
+            if self.subtitles[igraph]: subtitle = ' - ' + self.subtitles[igraph]
+            else: subtitle = ''
+            self.FixTitles()
+            g = TGraphErrors(npoints)
+            g.SetNameTitle("g%d" % self.ihist, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle))
+            self.ihist += 1
+            for i in range(npoints):
+                x = xarray[i]
+                y = data[igraph][i]
+                ey = errors[igraph][i]
+                g.SetPoint(i, x, y)
+                g.SetPointError(i, 0, ey*y)
+            
+            self.histos.Add(g)
+        del self.subtitles[:]
+
 
     def FixTitles(self):
         """
