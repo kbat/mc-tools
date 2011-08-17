@@ -94,7 +94,7 @@
      ("\\<\\(a?cos\\|a?sin\\|a?tan\\|atan2\\)\\>" . 'font-lock-function-face) ;;
 
      ("\\<pi\\|c[1-9]\\>" . 'font-lock-constant-face)
-     ("\\<\\(brown\\|black\\|blue\\|cyan\\|cyanblue\\|darkgray\\|gray\\|green\\|lightgray\\|lightgreen\\|magneta\\|matblack\\|mossgreen\\|orange\\|pastelblue\\|pastelcyan\\|pastelpink\\|pastelpurple\\|pastelviolet\\|pink\\|red\\|violet\\|white\\|yellow\\|yellowgreen\\)\\>" . 'font-lock-constant-face) ;; phits colors
+     ("\\<\\(brown\\|black\\|blue\\|cyan\\|cyanblue\\|darkgray\\|gray\\|green\\|lightgray\\|lightgreen\\|magneta\\|matblack\\|mossgreen\\|orange\\|orangeyellow\\|pastelblue\\|pastelcyan\\|pastelpink\\|pastelpurple\\|pastelviolet\\|pink\\|red\\|violet\\|white\\|yellow\\|yellowgreen\\)\\>" . 'font-lock-constant-face) ;; phits colors
 
      ("\\<\\(c\/[xyz]\\|[cp][xyz]\\|gq\\|so\\)\\>" . 'font-lock-surface-face)
 
