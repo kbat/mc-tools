@@ -7,12 +7,12 @@ from ROOT import ROOT, TGraph, TGraphErrors, TFile, TObjArray
 from array import array
 import argparse
 
-def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name):
+def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name, relerr):
     graphs = TObjArray()
-    GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs)
+    GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, 0, relerr)
     return graphs
 
-def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0):
+def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0, relerr=False):
     """
     Read between lines l1 and l2
     """
@@ -117,6 +117,7 @@ def main():
     parser.add_argument('-end',   type=int, help='line to end, >=1, read until the end of file, if skipped')
     parser.add_argument('-o', dest='outname', type=str, help='output file name')
     parser.add_argument('-update', action="store_true", default=False, help='if set, the file will be updated, otherwise - recreated')
+    parser.add_argument('-relerr', action="store_true", default=False, help='if set, the errors are assumed to be relative')
     parser.add_argument('-grname', type=str, help='Graph\'s name', default='gr')
 
     print parser.parse_args()
@@ -138,7 +139,7 @@ def main():
         fout_option = 'recreate'
 
     fout = TFile(fname_out, fout_option)
-    GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.grname).Write()
+    GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.grname, results.relerr).Write()
     fout.ls()
     fout.Close()
     
