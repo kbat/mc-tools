@@ -218,6 +218,7 @@ class Angel:
             else: subtitle = ''
             self.FixTitles()
             h = TH1F("h%d" % self.ihist, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
+            h.SetBit(TH1F.kIsAverage)
             self.ihist += 1
             for i in range(nbins):
                 val = data[ihist][i]

@@ -37,4 +37,6 @@ for i in range(njobs):
 	print dir
 	if system("mkdir %s" % dir): exit(4)
         if system("cp %s %s" % (inp, dir)): exit(6)
-        system("cd %s && %s" % (dir, join(command)))
+        if system("cd %s && %s" % (dir, join(command))):
+		print "Error: can't submit job"
+		exit(7)
