@@ -6,7 +6,8 @@ from sys import argv, exit
 name_in = argv[1]
 name_out = argv[2]
 branchDescriptor=""
-if argv[3]: branchDescriptor=argv[3]
+if len(argv)==4:
+        branchDescriptor=argv[3]
 
 print branchDescriptor
 
