@@ -80,8 +80,12 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0
         
         for i in range(npoints):
             gr.SetPoint(i, vx[i], vy[i])
-            if colex or coley: gr.SetPointError(i, vex[i], vey[i])
-
+            if colex or coley: 
+                if relerr:
+                    gr.SetPointError(i, vex[i]*vx[i], vey[i]*vy[i])
+                else:
+                    gr.SetPointError(i, vex[i], vey[i])
+                    
         graphs.Add(gr)
 
 #    print "nlines:", nline, l2
