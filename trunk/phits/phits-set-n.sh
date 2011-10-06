@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Sets the values of maxcas and maxbch of the PHTIS input file
+# Sets the values of maxcas and maxbch of a PHTIS input file
 #
 #
 
