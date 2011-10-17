@@ -96,7 +96,7 @@
      ("\\<pi\\|c[1-9]\\>" . 'font-lock-constant-face)
      ("\\<\\(brown\\|black\\|blue\\|cyan\\|cyanblue\\|darkgray\\|gray\\|green\\|lightgray\\|lightgreen\\|magneta\\|matblack\\|mossgreen\\|orange\\|orangeyellow\\|pastelblue\\|pastelcyan\\|pastelpink\\|pastelpurple\\|pastelviolet\\|pink\\|red\\|violet\\|white\\|yellow\\|yellowgreen\\)\\>" . 'font-lock-constant-face) ;; phits colors
 
-     ("\\<\\(c\/[xyz]\\|[cp][xyz]\\|gq\\|so\\)\\>" . 'font-lock-surface-face)
+     ("\\<\\(box\\|[ck]\/[xyz]\\|[ckpst][xyz]\\|[gs]q\\|hex\\|[ps]\\|rcc\\|rhp\\|rpp\\|so\\|sph\\|xy\\|zp\\)\\>" . 'font-lock-surface-face)
 
      ("\\<\\([fF][iI][lL][lL]\\|[uU]\\|[lL][aA][tT]\\|[lL][iI][kK][eE]\\|[bB][uU][tT]\\)\\>" . 'font-lock-variable-name-face) ;; fill,universe,lat,trcl variables
      ("\\<\\([bB][uU][fF][fF][eE][rR]\\|[fF][iI][lL][eE]\\|[mM][aA][xX]\\|[mM][eE][pP][hH]\\|[wW][rR][iI][tT][eE]\\|[eE][vV][eE][nN][tT]\\|[fF][iI][lL][tT][eE][rR]\\|[tT][yY][pP][eE]\\|[cC][eE][lL][lL]\\|[sS][uU][rR][fF][aA][cC][eE]\\|[tT][aA][lL][lL][yY]\\)\\>" . 'font-lock-variable-name-face) ;; ptrac variables
