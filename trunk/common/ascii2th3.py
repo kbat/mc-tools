@@ -33,9 +33,16 @@ def main():
     j = 0 # bin y
     k = 0 # bin z
 
+    title, xtitle, ytitle, ztitle = "title", "x-title", "y-title", "z-title"
+
     # first make a list of all coordinates:
-    for line in f.readlines():
-        if re.search("^#", line): continue # skip comments
+    for i, line in enumerate(f.readlines()):
+        if re.search("^#", line):
+            if i==0: title = line[1:].strip()
+            elif i==1: xtitle = line[1:].strip()
+            elif i==2: ytitle = line[1:].strip()
+            elif i==3: ztitle = line[1:].strip()
+            continue # skip comments
         w = line.split()
 
         if nline == 0:
@@ -71,7 +78,7 @@ def main():
     
     print nx, ny, nz
 
-    h = TH3F("h", "title;x;y", nx, array('f', vx), ny, array('f', vy), nz, array('f', vz))
+    h = TH3F("h", "%s;%s;%s;%s" % (title, xtitle, ytitle, ztitle), nx, array('f', vx), ny, array('f', vy), nz, array('f', vz))
 
 
     f.seek(0)

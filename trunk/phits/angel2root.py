@@ -32,6 +32,17 @@ SUBT = re.compile("""
 """, re.VERBOSE)
 
 
+def is_float(s):
+    """
+    Return True if s is float. Otherwise return False
+    """
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
 class Angel:
     fname = None
     title  = None
@@ -73,7 +84,9 @@ class Angel:
                 print "dict_nbins:", self.dict_nbins
                 continue
             if re.search("#    data = ", line):
+#                print "here start"
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
+#                print "here end"
                 continue
             if re.search("part = ", line):
                 words = line.split()
@@ -135,16 +148,38 @@ class Angel:
         else:
             return False
 
+    # def GetBinEdgesOrig(self, iline):
+    #     print "iline:", iline
+    #     edges = []
+    #     for line in self.lines[iline+1:]:
+    #         print "line: ", line
+    #         if line[0] == '#':
+    #             words =  line[1:].split()
+    #             print words
+    #             for w in words:
+    #                 edges.append(w)
+    #         else: break
+    #     if len(edges)-1 != self.dict_nbins[self.last_nbins_read]:
+    #         print "ERROR in GetBinEdges: wrong edge or bin number:", len(edges)-1, self.dict_nbins[self.last_nbins_read]
+    #         sys.exit(1)
+    #    # print 'edges:', edges
+    #     return tuple(edges)
+
+
     def GetBinEdges(self, iline):
         edges = []
         for line in self.lines[iline+1:]:
-            if line[0] == '#':
-                words =  line[1:].split()
-                for w in words:
+            words =  line.split()
+            if line[0] == '#': # if the distribution type is 1 or 2 then '#' is used
+                print words[1:]
+                for w in words[1:]:
+                    edges.append(w)
+            elif is_float(words[0]):
+                for w in words: # if the distribution type is 3 then there is no "#"
                     edges.append(w)
             else: break
         if len(edges)-1 != self.dict_nbins[self.last_nbins_read]:
-            print "ERROR in GetBinEdges: wrong edge or bin number"
+            print "ERROR in GetBinEdges: wrong edge or bin number:", len(edges)-1, self.dict_nbins[self.last_nbins_read]
             sys.exit(1)
        # print 'edges:', edges
         return tuple(edges)
