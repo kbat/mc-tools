@@ -50,6 +50,7 @@ class Angel:
     xtitle = None
     ytitle = None
     ztitle = None
+    mesh = None
     part = [] # list of particles
     lines = []
 
@@ -77,6 +78,10 @@ class Angel:
                 words = line.split()
                 self.title = string.join(words[2:])
                 continue
+            if re.search("mesh = ", line):
+                words = line.split()
+                self.mesh = words[2]
+                continue
             if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
@@ -84,9 +89,7 @@ class Angel:
                 print "dict_nbins:", self.dict_nbins
                 continue
             if re.search("#    data = ", line):
-#                print "here start"
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
-#                print "here end"
                 continue
             if re.search("part = ", line):
                 words = line.split()
@@ -102,11 +105,11 @@ class Angel:
             elif re.search("^x:", line):
                 words = line.split()
                 self.xtitle = string.join(words[1:])
-                #print self.xtitle
+                print "xtitle:", self.xtitle
             elif re.search("^y:", line):
                 words = line.split()
                 self.ytitle = string.join(words[1:])
-                #print self.ytitle
+                print "ytitle:", self.ytitle
             elif re.search("^z:", line):
                 print "new graph"
             elif re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
@@ -115,9 +118,9 @@ class Angel:
             elif re.search("h:              x", line):
                 self.Read1DGraphErrors(iline)
             elif re.search("^h[2dc]:", line):
-                if re.search("^h2", line): print "two dimentional contour plot section"
-                if re.search("^hd", line): print "two dimentional cluster plot section"
-                if re.search("^hc", line): print "two dimentional colour cluster plot section"
+                if re.search("^h2", line): print "h2: two dimentional contour plot section"
+                if re.search("^hd", line): print "hd: two dimentional cluster plot section"
+                if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
                 self.Read2DHist(iline)
             elif re.search("'no. = ", line): # subtitles of 2D histogram
                 self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
@@ -127,7 +130,7 @@ class Angel:
             print "1D"
         else:
             print "2D"
-            self.Make2Dfrom1D()
+#            self.Make2Dfrom1D()
 
 
         fout = TFile(self.fname_out, "recreate")
@@ -338,6 +341,7 @@ class Angel:
         else:
             ymin,ymax = ymax-dy/2.0, ymin+dy/2.0
         ny = int((ymax-ymin)/dy)
+        print "y:", dy, ymin, ymax, ny
 
         dx = float(words[13])
         xmin = float(words[9])
@@ -360,7 +364,8 @@ class Angel:
 #                    print "this is a color palette -> exit"
                     return # this was a color palette
                 data.append(float(w))
-        
+#        print data
+       
         # self.ihist+1 - start from ONE as in Angel - easy to compare
         h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle), nx, xmin, xmax, ny, ymin, ymax)
         self.ihist += 1
