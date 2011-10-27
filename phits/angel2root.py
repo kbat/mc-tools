@@ -51,6 +51,10 @@ class Angel:
     ytitle = None
     ztitle = None
     mesh = None
+    output = None
+    output_title = None # commented part of output line - for z-title
+    unit = None
+    unit_title = None # commented part of the unit line - for z-title
     part = [] # list of particles
     lines = []
 
@@ -97,7 +101,16 @@ class Angel:
                 for w in words[2:]: self.part.append(w)
                 print "particles:", self.part
             if re.search("output = ", line):
-                print line.strip()
+                words = line.split()
+                self.output = words[2]
+                self.output_title = string.join(words[4:])
+                if self.unit_title != None: self.ztitle = self.output_title + " " + self.unit_title
+                continue
+            if re.search("unit = ", line):
+                words = line.split()
+                self.unit = words[2]
+                self.unit_title = string.join(words[6:])
+                if self.output_title != None: self.ztitle = self.output_title + " " + self.unit_title
                 continue
             if re.search("newpage:", line):
                 ipage += 1
@@ -367,7 +380,7 @@ class Angel:
 #        print data
        
         # self.ihist+1 - start from ONE as in Angel - easy to compare
-        h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle), nx, xmin, xmax, ny, ymin, ymax)
+        h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
         self.ihist += 1
 
         for y in range(ny-1, -1, -1):
