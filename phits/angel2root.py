@@ -32,6 +32,7 @@ SUBT = re.compile("""
 """, re.VERBOSE)
 
 DEBUG = False
+#DEBUG = True
 
 def is_float(s):
     """
@@ -53,6 +54,7 @@ class Angel:
     ztitle = None
     mesh = None
     axis = [] # there might be several axes -> list
+    reg = []
     output = None
     output_title = None # commented part of output line - for z-title
     unit = None
@@ -95,6 +97,12 @@ class Angel:
                     if a == '#': break
                     self.axis.append(a)
                 if DEBUG: print "axis: ", self.axis
+                continue
+            if re.search("reg = ", line):
+                for r in line.split()[2:]:
+                    if r == '#': break
+                    self.reg.append(r)
+                if DEBUG: print "reg: ", self.reg
                 continue
             if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
                 words = line.split()
