@@ -154,7 +154,7 @@ class Angel:
                     self.Read2DHist(iline)
                     continue
                 elif self.axis == "reg": # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
-                    print "here"
+                    self.Read1DHist(iline)
                     continue
             elif re.search("'no. = ", line): # subtitles of 2D histogram
                 self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
@@ -280,6 +280,11 @@ class Angel:
                 xmax = float(words[0])+0.5
                 data[0].append(float(words[1]))
                 errors[0].append(float(words[2]))
+            elif self.axis == 'reg':
+                xarray.append(   float(words[0])-0.5)
+                xmax =           float(words[0])+0.5
+                data[0].append(  float(words[3])    )
+                errors[0].append(float(words[4])    )
             else:
                 xarray.append(float(words[0]))
                 xmax =        float(words[1])
