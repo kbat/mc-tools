@@ -31,7 +31,7 @@ SUBT = re.compile("""
 \)
 """, re.VERBOSE)
 
-DEBUG = True # False
+DEBUG = False
 
 def is_float(s):
     """
@@ -52,7 +52,7 @@ class Angel:
     ytitle = None
     ztitle = None
     mesh = None
-    axis = None
+    axis = [] # there might be several axes -> list
     output = None
     output_title = None # commented part of output line - for z-title
     unit = None
@@ -91,7 +91,9 @@ class Angel:
                 self.mesh = words[2]
                 continue
             if re.search("axis = ", line):
-                self.axis = line.split()[2]
+                for a in line.split()[2:]:
+                    if a == '#': break
+                    self.axis.append(a)
                 if DEBUG: print "axis: ", self.axis
                 continue
             if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
@@ -153,7 +155,7 @@ class Angel:
                         if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
                     self.Read2DHist(iline)
                     continue
-                elif self.axis == "reg": # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
+                elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                     self.Read1DHist(iline)
                     continue
             elif re.search("'no. = ", line): # subtitles of 2D histogram
@@ -265,6 +267,7 @@ class Angel:
         xmax = None
         data = {}     # dictionary for all histograms in the current section
         errors = {}   # dictionary for all histograms in the current section
+        bin_labels = [] # relevant for self.axis == 'reg' only
 
         for ihist in range(nhist):  # create the empty lists, so we could append later
             data[ihist] = []     
@@ -280,9 +283,10 @@ class Angel:
                 xmax = float(words[0])+0.5
                 data[0].append(float(words[1]))
                 errors[0].append(float(words[2]))
-            elif self.axis == 'reg':
+            elif 'reg' in self.axis:
                 xarray.append(   float(words[0])-0.5)
                 xmax =           float(words[0])+0.5
+                bin_labels.append(words[1]) # region number
                 data[0].append(  float(words[3])    )
                 errors[0].append(float(words[4])    )
             else:
@@ -307,6 +311,11 @@ class Angel:
                 err = errors[ihist][i] * val
                 h.SetBinContent(i+1, val)
                 h.SetBinError(i+1, err)
+
+            if 'reg' in self.axis:
+                for i in range(nbins):
+                    h.GetXaxis().SetBinLabel(i+1, bin_labels[i])
+                h.GetXaxis().SetTitle("Region number")
         
             self.histos.Add(h)
         del self.subtitles[:]
