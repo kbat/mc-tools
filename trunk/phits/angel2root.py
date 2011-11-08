@@ -31,8 +31,7 @@ SUBT = re.compile("""
 \)
 """, re.VERBOSE)
 
-#global DEBUG
-DEBUG = False
+DEBUG = True # False
 
 def is_float(s):
     """
@@ -53,12 +52,14 @@ class Angel:
     ytitle = None
     ztitle = None
     mesh = None
+    axis = None
     output = None
     output_title = None # commented part of output line - for z-title
     unit = None
     unit_title = None # commented part of the unit line - for z-title
     part = [] # list of particles
     lines = []
+    return_value = 0
 
 # this group of variables is used to convert a set of 1D histograms to 2D (if necessary):
     dict_nbins = {} # dictionary of number of bins - to guess if 2D histo is needed
@@ -89,6 +90,10 @@ class Angel:
                 words = line.split()
                 self.mesh = words[2]
                 continue
+            if re.search("axis = ", line):
+                self.axis = line.split()[2]
+                if DEBUG: print "axis: ", self.axis
+                continue
             if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
@@ -103,6 +108,7 @@ class Angel:
 # this loop is needed in case we define particles in separate lines as shown on page 121 of the Manual. Otherwise we could have used 'self.part = words[2:]'
                 for w in words[2:]: self.part.append(w)
                 if DEBUG: print "particles:", self.part
+                continue
             if re.search("output = ", line):
                 words = line.split()
                 self.output = words[2]
@@ -118,27 +124,38 @@ class Angel:
             if re.search("newpage:", line):
                 ipage += 1
 #                if DEBUG: print "page: ", ipage
+                continue
             elif re.search("^x:", line):
                 words = line.split()
                 self.xtitle = string.join(words[1:])
                 if DEBUG: print "xtitle:", self.xtitle
+                continue
             elif re.search("^y:", line):
                 words = line.split()
                 self.ytitle = string.join(words[1:])
                 if DEBUG: print "ytitle:", self.ytitle
+                continue
             elif re.search("^z:", line):
-                if DEBUG: print "new graph"
-            elif re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
-#                if DEBUG: print "one dimentional graph section"
-                self.Read1DHist(iline)
-            elif re.search("h:              x", line):
-                self.Read1DGraphErrors(iline)
-            elif re.search("^h[2dc]:", line):
-                if DEBUG:
-                    if re.search("^h2", line): print "h2: two dimentional contour plot section"
-                    if re.search("^hd", line): print "hd: two dimentional cluster plot section"
-                    if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
-                self.Read2DHist(iline)
+                print "new graph - not yet implemented"
+                continue
+            elif re.search("^h:", line):
+                if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
+                    if DEBUG: print "one dimentional graph section"
+                    self.Read1DHist(iline)
+                    continue
+                elif re.search("h:              x", line):
+                    self.Read1DGraphErrors(iline)
+                    continue
+                elif re.search("^h[2dc]:", line):
+                    if DEBUG:
+                        if re.search("^h2", line): print "h2: two dimentional contour plot section"
+                        if re.search("^hd", line): print "hd: two dimentional cluster plot section"
+                        if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
+                    self.Read2DHist(iline)
+                    continue
+                elif self.axis == "reg": # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
+                    print "here"
+                    continue
             elif re.search("'no. = ", line): # subtitles of 2D histogram
                 self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
 
@@ -150,9 +167,14 @@ class Angel:
 #            self.Make2Dfrom1D()
 
 
-        fout = TFile(self.fname_out, "recreate")
-        self.histos.Write()
-        fout.Close()
+        if self.histos.GetEntries():
+            fout = TFile(self.fname_out, "recreate")
+            self.histos.Write()
+            fout.Close()
+            self.return_value = 0
+        else:
+            print "Have not found any histograms/graphs in this file"
+            self.return_value = 1
 
     def is1D(self):
         """
@@ -485,9 +507,9 @@ def main():
         fname_out = fname_in + ".root"
     print fname_in, "->" ,fname_out
 
-    angel = Angel(fname_in, fname_out)
-
-    return 0
+    angel =  Angel(fname_in, fname_out)
     
+    return angel.return_value
+
 if __name__ == "__main__":
     sys.exit(main())
