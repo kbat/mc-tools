@@ -31,6 +31,8 @@ SUBT = re.compile("""
 \)
 """, re.VERBOSE)
 
+#global DEBUG
+DEBUG = False
 
 def is_float(s):
     """
@@ -67,6 +69,7 @@ class Angel:
     ihist = 0 # histogram number - must start from ZERO
     fname_out = None
     def __init__(self, fname_in, fname_out):
+#        global DEBUG
         self.fname = fname_in
         file = open(self.fname)
         self.lines = tuple(file.readlines())
@@ -90,7 +93,7 @@ class Angel:
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
                 self.last_nbins_read = words[0]
-                print "dict_nbins:", self.dict_nbins
+                if DEBUG: print "dict_nbins:", self.dict_nbins
                 continue
             if re.search("#    data = ", line):
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
@@ -99,7 +102,7 @@ class Angel:
                 words = line.split()
 # this loop is needed in case we define particles in separate lines as shown on page 121 of the Manual. Otherwise we could have used 'self.part = words[2:]'
                 for w in words[2:]: self.part.append(w)
-                print "particles:", self.part
+                if DEBUG: print "particles:", self.part
             if re.search("output = ", line):
                 words = line.split()
                 self.output = words[2]
@@ -114,35 +117,36 @@ class Angel:
                 continue
             if re.search("newpage:", line):
                 ipage += 1
-#                print "page: ", ipage
+#                if DEBUG: print "page: ", ipage
             elif re.search("^x:", line):
                 words = line.split()
                 self.xtitle = string.join(words[1:])
-                print "xtitle:", self.xtitle
+                if DEBUG: print "xtitle:", self.xtitle
             elif re.search("^y:", line):
                 words = line.split()
                 self.ytitle = string.join(words[1:])
-                print "ytitle:", self.ytitle
+                if DEBUG: print "ytitle:", self.ytitle
             elif re.search("^z:", line):
-                print "new graph"
+                if DEBUG: print "new graph"
             elif re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
-#                print "one dimentional graph section"
+#                if DEBUG: print "one dimentional graph section"
                 self.Read1DHist(iline)
             elif re.search("h:              x", line):
                 self.Read1DGraphErrors(iline)
             elif re.search("^h[2dc]:", line):
-                if re.search("^h2", line): print "h2: two dimentional contour plot section"
-                if re.search("^hd", line): print "hd: two dimentional cluster plot section"
-                if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
+                if DEBUG:
+                    if re.search("^h2", line): print "h2: two dimentional contour plot section"
+                    if re.search("^hd", line): print "hd: two dimentional cluster plot section"
+                    if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
                 self.Read2DHist(iline)
             elif re.search("'no. = ", line): # subtitles of 2D histogram
                 self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
 
 #        print self.dict_edges_array
         if self.is1D():
-            print "1D"
+            if DEBUG: print "1D"
         else:
-            print "2D"
+            if DEBUG: print "2D"
 #            self.Make2Dfrom1D()
 
 
@@ -157,7 +161,7 @@ class Angel:
         nn1 = 0 # number of cases when number of bins is not 1
         for key in self.dict_nbins:
             if int(self.dict_nbins[key])>1: nn1 += 1
-        print "nn1:", nn1
+        if DEBUG: print "nn1:", nn1
         
         if nn1 <= 1:
             return True
@@ -187,7 +191,7 @@ class Angel:
         for line in self.lines[iline+1:]:
             words =  line.split()
             if line[0] == '#': # if the distribution type is 1 or 2 then '#' is used
-                print words[1:]
+                if DEBUG: print words[1:]
                 for w in words[1:]:
                     edges.append(w)
             elif is_float(words[0]):
@@ -223,7 +227,7 @@ class Angel:
                 else:
                     self.subtitles.append('')
 ###        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
-#        print "Section Header: 1D histo", nhists, self.subtitles
+#        if DEBUG: print "Section Header: 1D histo", nhists, self.subtitles
         return nhists
 
     def Read1DHist(self, iline):
@@ -231,7 +235,7 @@ class Angel:
         Read 1D histogram section
         """
         nhist = self.GetNhist(self.lines[iline]) # number of histograms to read in the current section
-#        print 'nhist: ', nhist
+#        if DEBUG: print 'nhist: ', nhist
         isCharge = False
         if re.search("x-0.5", self.lines[iline].split()[1]):
             isCharge = True # the charge-mass-chart distribution, x-axis is defined by the 1st column only
@@ -354,7 +358,7 @@ class Angel:
         else:
             ymin,ymax = ymax-dy/2.0, ymin+dy/2.0
         ny = int((ymax-ymin)/dy)
-        print "y:", dy, ymin, ymax, ny
+        if DEBUG: print "y:", dy, ymin, ymax, ny
 
         dx = float(words[13])
         xmin = float(words[9])
@@ -371,13 +375,13 @@ class Angel:
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
-#            print "words: ", words
+#            if DEBUG: print "words: ", words
             for w in words:
                 if w == 'z:':
-#                    print "this is a color palette -> exit"
+#                    if DEBUG: print "this is a color palette -> exit"
                     return # this was a color palette
                 data.append(float(w))
-#        print data
+#        if DEBUG: print data
        
         # self.ihist+1 - start from ONE as in Angel - easy to compare
         h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
@@ -438,17 +442,17 @@ class Angel:
                 second_dimention_nbins = nbins
         
         if second_dimention:
-            print "the second dimention is", second_dimention, second_dimention_nbins
+            if DEBUG: print "the second dimention is", second_dimention, second_dimention_nbins
         else:
-            print "Second dimention was not found based on the number of bins -> bin edges comparing needed"
+            if DEBUG: print "Second dimention was not found based on the number of bins -> bin edges comparing needed"
             sys.exit(3)
 
 #        h2 = TH2F("hall%s" % second_dimention, "", nbins0, 0, 1, 20, 0, 1)
         
-#        print array('f', self.getXarray(self.histos[0]))
+#        if DEBUG: print array('f', self.getXarray(self.histos[0]))
         second_dimention_xarray = []
         for w in self.dict_edges_array[second_dimention]: second_dimention_xarray.append(float(w))
-#        for w in self.dict_edges_array[second_dimention]: print float(w)
+#        for w in self.dict_edges_array[second_dimention]: if DEBUG: print float(w)
 #        array('f', second_dimention_xarray)
 
         h2 = TH2F("hall%s" % second_dimention, "%s;%s;%s;%s" % (self.histos[0].GetYaxis().GetTitle(), self.histos[0].GetXaxis().GetTitle(), "Time [nsec]", self.histos[0].GetYaxis().GetTitle()),
@@ -479,7 +483,7 @@ def main():
     fname_out = re.sub("\....$", ".root", fname_in)
     if fname_in == fname_out:
         fname_out = fname_in + ".root"
-    print fname_out
+    print fname_in, "->" ,fname_out
 
     angel = Angel(fname_in, fname_out)
 
