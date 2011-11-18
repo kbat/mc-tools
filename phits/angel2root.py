@@ -32,7 +32,7 @@ SUBT = re.compile("""
 """, re.VERBOSE)
 
 DEBUG = False
-#DEBUG = True
+DEBUG = True
 
 def is_float(s):
     """
@@ -146,9 +146,10 @@ class Angel:
                 if DEBUG: print "ytitle:", self.ytitle
                 continue
             elif re.search("^z:", line):
+                print line
                 print "new graph - not yet implemented"
                 continue
-            elif re.search("^h:", line):
+            elif re.search("^h", line):
                 if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                     if DEBUG: print "one dimentional graph section"
                     self.Read1DHist(iline)
@@ -259,7 +260,7 @@ class Angel:
                 else:
                     self.subtitles.append('')
 ###        if re.search("^n", words[1]) and re.search("^x", words[2]) and re.search("^y", words[3]) and re.search("^n", words[4]):
-#        if DEBUG: print "Section Header: 1D histo", nhists, self.subtitles
+        if DEBUG: print "Section Header: 1D histo", nhists, self.subtitles
         return nhists
 
     def Read1DHist(self, iline):
@@ -267,10 +268,11 @@ class Angel:
         Read 1D histogram section
         """
         nhist = self.GetNhist(self.lines[iline]) # number of histograms to read in the current section
-#        if DEBUG: print 'nhist: ', nhist
+        if DEBUG: print 'nhist: ', nhist
         isCharge = False
         if re.search("x-0.5", self.lines[iline].split()[1]):
             isCharge = True # the charge-mass-chart distribution, x-axis is defined by the 1st column only
+            if DEBUG: print "isCharge = True"
         xarray = []
         xmax = None
         data = {}     # dictionary for all histograms in the current section
@@ -286,6 +288,7 @@ class Angel:
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
+#            if DEBUG: print words
             if isCharge:
                 xarray.append(float(words[0])-0.5)
                 xmax = float(words[0])+0.5
@@ -295,17 +298,20 @@ class Angel:
                 xarray.append(   float(words[0])-0.5)
                 xmax =           float(words[0])+0.5
                 bin_labels.append(words[1]) # region number
-                data[0].append(  float(words[3])    )
-                errors[0].append(float(words[4])    )
+                for ihist in range(nhist):
+                    data[ihist].append(  float(words[(ihist+1)*2+1])    )
+                    errors[ihist].append(float(words[(ihist+1)*2+2])    )
             else:
                 xarray.append(float(words[0]))
                 xmax =        float(words[1])
                 for ihist in range(nhist):
                     data[ihist].append(  float(words[(ihist+1)*2  ]))
                     errors[ihist].append(float(words[(ihist+1)*2+1]))
-
+ 
         nbins = len(xarray)
         xarray.append(xmax)
+
+#        if DEBUG: print "data: ", data
 
         for ihist in range(nhist):
             if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist]
@@ -385,6 +391,7 @@ class Angel:
         """
         Read 2D histogram section
         """
+
         line = self.lines[iline].replace(" =", "=") # sometimes Angel writes 'y=' and sometimes 'y ='
         words = line.split()
         if len(words) != 15:
