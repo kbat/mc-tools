@@ -32,7 +32,7 @@ SUBT = re.compile("""
 """, re.VERBOSE)
 
 DEBUG = False
-DEBUG = True
+#DEBUG = True
 
 def is_float(s):
     """
