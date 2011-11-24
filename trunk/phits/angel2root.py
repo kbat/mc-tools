@@ -10,6 +10,7 @@
 import sys, re, string
 from array import array
 from phits import TallyOutputParser
+import ROOT
 from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray, TGraphErrors
 
 """
