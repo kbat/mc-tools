@@ -146,8 +146,9 @@ class Angel:
                 if DEBUG: print "ytitle:", self.ytitle
                 continue
             elif re.search("^z:", line):
-                print line
-                print "new graph - not yet implemented"
+                if not re.search("xorg", line):
+                    print line
+                    print "new graph - not yet implemented"
                 continue
             elif re.search("^h", line):
                 if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
