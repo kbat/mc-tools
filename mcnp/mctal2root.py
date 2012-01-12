@@ -63,10 +63,14 @@ class Tally:
         for b in self.boundaries:
             if self.boundaries[b]:
                 print "\tbins", b, ":", self.boundaries[b][0], '...', self.boundaries[b][-1]
+        
+        print "\tData:", self.data
+        print "\tRelative Errors:", self.errors
 
 #        print 2*(1+len(self.boundaries['e'])) * (1+len(self.boundaries['t'])), len(self.data)
 
     def getNbins(self):
+        # Why don't just return len(self.data) ?
         nbins = 1 #2  # !!! why 2? written on page 263, but still not clear Guess: value+error pairs?!!!
         for b in self.boundaries:
             l = len(self.boundaries[b])
@@ -142,6 +146,18 @@ class Tally:
                 val = self.data[i] # !!! not normalized by the bin width !!! 
                 h.SetBinContent(i+1, val)
                 h.SetBinError(i+1, val*self.errors[i])
+        elif self.number % 10 == 6:
+            print "histogramming"
+            nbins = len(self.data)
+            print self.boundaries['f']
+            # !!! this works for a specific case only:
+            h = TH1F("f%d" % self.number, title, nbins, array('f', self.boundaries['f']+ [self.boundaries['f'][9]+1]))
+            print h.GetNbinsX()
+            for i in range(nbins):
+                print i+1, h.GetBinCenter(i+1)
+                val = self.data[i] # !!! not normalized by the bin width !!! 
+                h.SetBinContent(i+1, val)
+                h.SetBinError(i+1, val*self.errors[i])
         return h
 
 def main():
@@ -193,19 +209,20 @@ def main():
         words = line.split()
 
         if not ntal and words[0] == 'ntal':
-            ntal = words[1]
+            ntal = int(words[1])
             continue
 
         if ntal and not tally and words[0] != 'tally':
             for w in words:
                 ntals.append(int(w))
-            print ntal, 'tallies:', ntals
+            if ntal>1: print ntal, 'tallies:', ntals
+            else: print ntal, 'tally:', ntals
 
         if words[0] == 'tally':
             if tally: 
                 tally.Print()
 #                histos.Add(tally.Histogram())
-                if tally.number % 10 == 4 or tally.number == 5 or tally.number == 15:
+                if tally.number % 10 == 4 or tally.number == 5 or tally.number == 6 or tally.number == 15:
                     histos.Add(tally.Histogram())
 #                elif tally.number == 125:
 #                    tally.Print()
@@ -223,6 +240,8 @@ def main():
 
         if tally.f and tally.d is None and line[0] == ' ':
             tally.cells = words
+            for w in words:
+                tally.boundaries['f'].append(float(w))
 
         if tally.f is None and words[0] not in ['1', 'f']:
             tally.title = line.strip()
@@ -263,7 +282,8 @@ def main():
             else:
                 is_vals = False
 
-    #tally.Print()
+    tally.Print()
+    histos.Add(tally.Histogram())
 
     histos.Print()
 
