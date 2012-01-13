@@ -128,7 +128,7 @@ class Tally:
 #                if self.energy_bins[i] < self.energy_bins[i-1]:
 #                    print i
         print "ndim:",self.getNdimentions()
-        title = ";energy [MeV]"
+        title = "" # ";energy [MeV]"
         if self.title: title = self.title + title
         if self.number % 10 == 4:
             nbins = self.getNbins()
@@ -146,18 +146,24 @@ class Tally:
                 val = self.data[i] # !!! not normalized by the bin width !!! 
                 h.SetBinContent(i+1, val)
                 h.SetBinError(i+1, val*self.errors[i])
-        elif self.number % 10 == 6:
+        elif self.number % 10 == 6: # energy deposit
             print "histogramming"
             nbins = len(self.data)
-            print self.boundaries['f']
-            # !!! this works for a specific case only:
-            h = TH1F("f%d" % self.number, title, nbins, array('f', self.boundaries['f']+ [self.boundaries['f'][9]+1]))
-            print h.GetNbinsX()
-            for i in range(nbins):
-                print i+1, h.GetBinCenter(i+1)
-                val = self.data[i] # !!! not normalized by the bin width !!! 
-                h.SetBinContent(i+1, val)
-                h.SetBinError(i+1, val*self.errors[i])
+            print "nbins: ", nbins
+            if self.getNbins()-1 == len(self.boundaries['f']): # region binning only
+                
+#                h = TH1F("f%d" % self.number, title, nbins, array('f', self.boundaries['f']+ [self.boundaries['f'][len(self.boundaries['f'])-1]+1]))
+                h = TH1F("f%d" % self.number, title + ";Cell", nbins, 0, nbins)
+                print h.GetNbinsX()
+                for i in range(nbins):
+                    print i+1, h.GetBinCenter(i+1)
+                    val = self.data[i] # !!! not normalized by the bin width !!! 
+                    h.SetBinContent(i+1, val)
+                    h.SetBinError(i+1, val*self.errors[i])
+                    h.GetXaxis().SetBinLabel(i+1, "%d" % self.boundaries['f'][i])
+            else:
+                print "Error from Histogram: this binning not yet supported"
+                exit(1)
         return h
 
 def main():
