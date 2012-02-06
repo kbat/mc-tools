@@ -4,6 +4,55 @@ import sys, re, string
 from array import array
 from ROOT import ROOT, TFile, TH1F, TObjArray, THnSparseF
 
+class Axis:
+    name = None
+    number = None
+    boundaries = None
+
+    def __init__(self, name, number):
+#        del self.boundaries[:]
+        self.boundaries = []
+        self.name = name
+        self.number = number
+
+    def Print(self):
+        """
+        The printer
+        """
+        print "Axis", self.name, self.number
+        if len(self.boundaries)<10:
+            print "\tbins:", self.boundaries
+        else:
+            print "\tbins:", self.boundaries[0], '...', self.boundaries[-1]
+
+    def hasTotalBin(self):
+        """
+        Checks whether the axis has Total Bin set
+        """
+        if number == len(self.boundaries):
+            return False
+        else:
+            return True
+
+    def getNbins(self, remove_zeros=True):
+        """
+        Return number of bins on the given axis
+        """
+        n = len(self.boundaries) # this takes into account NT (total bin) by removing it - in any case we can get it by TH1::Integral()
+
+        # this is needed for Histogram():
+        if remove_zeros and n == 0:
+            n = 1
+        return n
+
+#    def getStrippedBoundaries(self):
+#        """
+#        Return boundaries without entries which have 0 or 1 entries
+#        """
+#        return filter(lambda item: item>1, self.boundaries)
+        
+
+
 class Tally:
     number = None
     title = None
@@ -23,15 +72,15 @@ class Tally:
     e  = None       # energy bin
     t  = None       # time bin
 
-    boundaries = {}
-    boundaries['f'] = []
-    boundaries['d'] = []
-    boundaries['u'] = []
-    boundaries['s'] = []
-    boundaries['m'] = []
-    boundaries['c'] = []
-    boundaries['e'] = []
-    boundaries['t'] = []
+    axes = {}
+    axes['f'] = None
+    axes['d'] = None
+    axes['u'] = None
+    axes['s'] = None
+    axes['m'] = None
+    axes['c'] = None
+    axes['e'] = None
+    axes['t'] = None
 
     data = []
     errors = [] # errors are relative
@@ -43,13 +92,13 @@ class Tally:
     
     def __init__(self, number):
         self.number = number
-        for b in self.boundaries: del self.boundaries[b][:]
+#        for b in self.boundaries: del self.boundaries[b][:]
         del self.data[:]
         del self.errors[:]
 
     def Print(self, option=''):
         print "tally #%d:\t%s" % (self.number, self.title)
-        print "nbins", self.getNbins(), len(self.data)
+#        print "nbins", self.getNbins(), len(self.data)
         if option == 'title': return
 #        self.Check()
         print "\tparticles:", self.particle
@@ -63,38 +112,36 @@ class Tally:
         elif self.d == 2:
             print '\tthis is a detector tally (unless thre is an ND card on the F5 tally)'
 
-        for b in self.boundaries:
-            if self.boundaries[b]:
-                if len(self.boundaries[b])<10:
-                    print "\tbins", b, ":", self.boundaries[b]
-                else:
-                    print "\tbins", b, ":", self.boundaries[b][0], '...', self.boundaries[b][-1]
+        for b in self.axes.keys():
+            self.axes[b].Print()
         
 #        print "\tData:", self.data
 #        print "\tRelative Errors:", self.errors
 
 #        print 2*(1+len(self.boundaries['e'])) * (1+len(self.boundaries['t'])), len(self.data)
 
-    def getNbinsAxis(self, axis, remove_zeros=True):
-        n = 0
-        n = len(self.boundaries[axis]) # this takes into account NT (total bin) by removing it - in any case we can get it by TH1::Integral()
-        # if   axis == 't': n = self.t[1]
-        # elif axis == 'e': n = self.e[1]
-        # elif axis == 'c': n = self.c[1]
-        # elif axis == 'm': n = self.m[1]
-        # elif axis == 's': n = self.s[1]
-        # elif axis == 'u': n = self.u[1]
-        # elif axis == 'd': n = self.d[1]
-        # elif axis == 'f': n = self.f[1]
-        # else:
-        #     print "Error - no such axis in getNbins", axis
-        #     sys.exit(1)
+    def getAxis(self, name):
+        """
+        Return axis with the given name
+        """
+        return self.axes[name]
+#
+#        if name in self.axes.keys:
+#            return self.axes[name]
+#        else:
+#            print "ERROR in getAxis: no axis called", name
+#            sys.exit(1)
 
-        # this is needed for Histogram():
-        if remove_zeros and n == 0:
-            n = 1
-        return n
-
+    def getNonZeroAxes(self):
+        """
+        Return the list with non-zero axes
+        """
+# both 3 lines below give the same result:
+#        while 0 in bins:  bins.remove(0)
+#        bins = [x for x in bins if x]
+#        bins = filter(lambda item: item>1, bins)
+#        return vals
+        return filter(lambda item: item.getNbins(False), self.axes.values())
 
     def getNbins(self):
         # Why don't just return len(self.data) ? - because it only works for 1D histos
@@ -109,39 +156,17 @@ class Tally:
         """
         Return number of non-empty dimensions of the tally (histogram)
         """
-        return len(self.GetStrippedBoundaries())
+        n = 0
+        for b in self.axes.keys():
+            if len(self.axes[b].boundaries): n += 1
+        return n
+#        return len(self.GetStrippedBoundaries())
 
     def GetStrippedBoundaries(self):
         """
         Return boundaries without entries which have 0 or 1 bins
         """
         return dict( (b, v) for b,v in self.boundaries.iteritems() if len(v)>0 )
-
-    def GetGlobalBinNumber(self, f, d, u, s, m, c, e, t):
-        """
-        Return global bin number to get value from self.data and self.error
-        !!! not yet checked for all dimensions !!!
-        checked for: t, et, ut
-        """
-        bt = len(self.boundaries['t'])+1
-        be = len(self.boundaries['e'])+1
-        bc = len(self.boundaries['c'])+1
-        bm = len(self.boundaries['m'])+1
-        bs = len(self.boundaries['s'])+1
-        bu = len(self.boundaries['u'])+1
-        bd = len(self.boundaries['d'])+1
-        bf = len(self.boundaries['f'])+1
-
-        gb  = t
-        gb += e*bt
-        gb += c*bt*be
-        gb += m*bt*be*bc
-        gb += s*bt*be*bc*bm
-        gb += u*bt*be*bc*bm*bs
-        gb += d*bt*be*bc*bm*bs*bu
-        gb += f*bt*be*bc*bm*bs*bu*bd
-
-        return gb
 
     def Check(self):
         """
@@ -155,110 +180,63 @@ class Tally:
             print 'length of tfc_data array is not 4 but', len(self.tfc_data)
             sys.exit(1)
 
-        if self.number % 10 != 4:            return 0   # everything below is for tally #4 only:
-
-        if self.e:
-            length = len(self.boundaries['e'])
-            if self.e-1 != length:
-                print "number of enerby bins is wrong: et=%d, len(energy_bins)=%d" % (self.e, length)
-                sys.exit(1)
-
-            length = len(self.data)
-            if self.e != length:
-                print "number of data bins is wrong: et=%d, len(data)=%d" % (self.e, length)
-                sys.exit(1)
-
-            length = len(self.errors)
-            if self.e != length:
-                print "number of error bins is wrong: et=%d, len(errors)=%d" % (self.e, length)
-                sys.exit(1)
-
     def Histogram(self):
         """
         Histograms the current tally
         """
         print "->Histogram"
-        stripped_boundaries = self.GetStrippedBoundaries()
-#        print self.e[1]
-#        print "nbins: ", self.getNbins(), len(self.data)
+#        stripped_boundaries = self.GetStrippedBoundaries()
 
+        # bins = []
+        # for a in self.axes.values():
+        #     print bins, a.boundaries
+        #     if a.getNbins()>0:
+        #         bins.extend(a.boundaries)
+
+        # print "bins: ", bins
+
+#        for a in self.getNonZeroAxes(): a.Print()
+
+        non_zero_axes = self.getNonZeroAxes()
+        dim = len(non_zero_axes)
         bins = []
-        for i in stripped_boundaries.keys():
-            bins.append(self.getNbinsAxis(i))
-        # bins.append(self.f[1])
-        # bins.append(self.d[1])
-        # bins.append(self.u[1])
-        # bins.append(self.s[1])
-        # bins.append(self.m[1])
-        # bins.append(self.c[1])
-        # bins.append(self.e[1])
-        # bins.append(self.t[1])
-        print "bins: ", bins
-# both 3 lines below give the same result:
-#        while 0 in bins:  bins.remove(0)
-#        bins = [x for x in bins if x]
-        bins = filter(lambda item: item>1, bins)
+        for a in non_zero_axes:
+            bins.append(a.getNbins())
+        print "dim, bins:", dim, bins
 
-        dim = len(bins)
-
-        """ test """
-        print "test"
-        print "before: ", self.boundaries
-        stripped_boundaries = self.GetStrippedBoundaries()
-        print "after: ", stripped_boundaries
-        print len(stripped_boundaries)
-
-        print "dim,bins: ", dim,bins
-        print "boundaries: ", stripped_boundaries
         hs = THnSparseF("f%d" % self.number, "", dim, array('i', bins));
         hs.Print()
         print hs.GetNdimensions()
         # set bin edges:
-        for i,b in enumerate(stripped_boundaries):
-            print "here: ", self.getNbinsAxis(b), stripped_boundaries[b]
-            edges = [0.0] + stripped_boundaries[b]
-            print "setting bin edges for ", i,b,edges
+        for i,a in enumerate(non_zero_axes):
+            edges = [0.0] + a.boundaries
+            print "setting bin edges for ", a.name, edges
             hs.SetBinEdges(i, array('d', edges)) # !!! max edge is just +1 to the previous edge
-            hs.GetAxis(i).SetTitle("%s" % b)
-            print stripped_boundaries[b]
-
-
-#        print "hs bins: ", hs.GetNbins()
-#        for bin in range(self.getNbins()):
-#            print bin, self.data[bin]
-#            hs.SetBinContent(bin+1, 1.0) #self.data[bin])
-        print self.data
-        print "length: ", len(self.data)
+            hs.GetAxis(i).SetTitle("%s" % a.name)
 
         coords = []
-        print "here"
-#        print self.boundaries
-#        print stripped_boundaries.keys(), bins
-
-        print self.boundaries['t'], self.t
 
         gbin = 0
-        for f in range(self.getNbinsAxis("f")):
-            for d in range(self.getNbinsAxis("d")):
-                for u in range(self.getNbinsAxis("u")):
-                    for s in range(self.getNbinsAxis("s")):
-                        for m in range(self.getNbinsAxis("m")):
-                            for c in range(self.getNbinsAxis("c")):
-                                for e in range(self.getNbinsAxis("e")):
-                                    for t in range(self.getNbinsAxis("t")):
-#                                        gbin = self.GetGlobalBinNumber(f,d,u,s,m,c,e,t)
-#                                        print "gbin ", gbin
+        for f in range(self.getAxis('f').getNbins()):
+            for d in range(self.getAxis('d').getNbins()):
+                for u in range(self.getAxis('u').getNbins()):
+                    for s in range(self.getAxis('s').getNbins()):
+                        for m in range(self.getAxis('m').getNbins()):
+                            for c in range(self.getAxis('c').getNbins()):
+                                for e in range(self.getAxis('e').getNbins()):
+                                    for t in range(self.getAxis('t').getNbins()):
+                                        print "global bin:", gbin
                                         val = self.data[gbin]
                                         err = self.errors[gbin]
-                                        for thekey in stripped_boundaries.keys():
-                                            if   thekey == 't': coords.append(t+1) # t+1 - checked
-                                            elif thekey == 'e': coords.append(e+1)
-                                            elif thekey == 'c': coords.append(c+1)
-                                            elif thekey == 'm': coords.append(m+1)
-                                            elif thekey == 's': coords.append(s+1)
-                                            elif thekey == 'u': coords.append(u+1)
-                                            elif thekey == 'd': coords.append(d+1)
-                                            elif thekey == 'f': coords.append(f+1)
+                                        for a in non_zero_axes:
+                                            if   a.name == 't': coords.append(t+1) # t+1 - checked
+                                            elif a.name == 'e': coords.append(e+1)
+                                            elif a.name == 'c': coords.append(c+1)
+                                            elif a.name == 'm': coords.append(m+1)
+                                            elif a.name == 's': coords.append(s+1)
+                                            elif a.name == 'u': coords.append(u+1)
+                                            elif a.name == 'd': coords.append(d+1)
+                                            elif a.name == 'f': coords.append(f+1)
                                         print coords, gbin, val,err
                                         hs.SetBinContent(array('i', coords), val)
                                         hs.SetBinError(array('i', coords), err*val)
@@ -400,36 +378,33 @@ def main():
 
         if not tally: continue
 
-        if tally.f and tally.d is None and line[0] == ' ':
+        if tally.axes['f'] and tally.axes['d']is None and line[0] == ' ':
             tally.cells = words
             for w in words:
                 tally.boundaries['f'].append(float(w))
 
-        if tally.f is None and words[0] not in ['1', 'f']:
+        if tally.axes['f'] is None and words[0] not in ['1', 'f']:
             tally.title = line.strip()
             print "tally.title:", tally.title
             
 
-        if tally.t and is_vals == False and len(tally.data) == 0 and line[0] == ' ':
-            for w in words:
-                tally.boundaries['t'].append(float(w))
+        if tally.axes['t'] and is_vals == False and len(tally.data) == 0 and line[0] == ' ':
+            for w in words: tally.axes['t'].boundaries.append(float(w))
 
-        if tally.e and tally.t is None and line[0] == ' ':
-#            if len(tally.boundaries['e']) == 0: tally.boundaries['e'].append(0.0)
-            for w in words: tally.boundaries['e'].append(float(w))
+        if tally.axes['e'] and tally.axes['t']is None and line[0] == ' ':
+            for w in words: tally.axes['e'].boundaries.append(float(w))
 
-        if tally.u and tally.s is None and line[0] == ' ':
-#            if len(tally.boundaries['u']) == 0: tally.boundaries['u'].append(0.0)
-            for w in words: tally.boundaries['u'].append(float(w))
+        if tally.axes['u'] and tally.axes['s']is None and line[0] == ' ':
+            for w in words: tally.axes['u'].boundaries.append(float(w))
 
-        if   not tally.f and re.search('^f', line[0]):        tally.f = words[0], int(words[1])
-        elif not tally.d and re.search('^d', line[0]):        tally.d = words[0], int(words[1])
-        elif not tally.u and re.search ("u[tc]?", line[0:1]): tally.u = words[0], int(words[1])
-        elif not tally.s and re.search('^s[tc]?', line[0:1]): tally.s = words[0], int(words[1])
-        elif not tally.m and re.search('^m[tc]?', line[0:1]): tally.m = words[0], int(words[1])
-        elif not tally.c and re.search('^c[tc]?', line[0:1]): tally.c = words[0], int(words[1])
-        elif not tally.e and re.search("^e[y]?",  line[0:1]): tally.e = words[0], int(words[1])
-        elif not tally.t and re.search("^t[tc]?", line[0:1]): tally.t = words[0], int(words[1])
+        if   not tally.axes['f'] and re.search('^f', line[0]):        tally.axes['f'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['d'] and re.search('^d', line[0]):        tally.axes['d'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['u'] and re.search ("u[tc]?", line[0:1]): tally.axes['u'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]): tally.axes['s'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]): tally.axes['m'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['c'] and re.search('^c[tc]?', line[0:1]): tally.axes['c'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['e'] and re.search("^e[y]?",  line[0:1]): tally.axes['e'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['t'] and re.search("^t[tc]?", line[0:1]): tally.axes['t'] = Axis(words[0], int(words[1]))
         elif line[0:2] == 'tfc':
             tally.tfc_n = words[1]
             tally.tfc_jtf = words[2:]
