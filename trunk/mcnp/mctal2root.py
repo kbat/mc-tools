@@ -13,6 +13,7 @@ class Axis:
     def __init__(self, name, number):
 #        del self.boundaries[:]
         self.boundaries = []
+        self.binlabels = []
         self.name = name
         self.number = number
 
@@ -33,7 +34,11 @@ class Axis:
         if number == len(self.boundaries):
             return False
         else:
-            return True
+            if self.name[1] is 't':
+                return True
+            else:
+                print "ERROR in hasTotalBin"
+                sys.exit(5)
 
     def getNbins(self, remove_zeros=True):
         """
@@ -44,22 +49,38 @@ class Axis:
         # this is needed for Histogram():
         if remove_zeros and n == 0:
             n = 1
+        if self.name is 'f': n = n-1
         return n
+
+    # def getBoundaries(self):
+    #     """
+    #     Returm the list of boundaries.
+    #     If this is an f-axis (cells), the method returns just the array of sequential numbers, since in thes case what we call 'boundaries' does not have any meaning for histogram binning
+    #     """
+    #     if self.name is 'f':
 
 #    def getStrippedBoundaries(self):
 #        """
 #        Return boundaries without entries which have 0 or 1 entries
 #        """
 #        return filter(lambda item: item>1, self.boundaries)
-        
+
+    def Fix(self):
+        """
+        Performs some actions necessary after reading the tally
+        """
+        print "Fixing axis", self.name
+        if self.name[0] is 'f' and len(self.boundaries) == 0: # we have defined several detectors
+            for i in range(self.number+1):
+                self.boundaries.append(i)
+            print self.boundaries
 
 
 class Tally:
     number = None
-    title = None
+    title = ""
     particle = None
     type = None     # tally type: 0=nondetector, 1=point detector; 2=ring; 3=FIP; 4=FIR; 5=FIC
-    cells = None
     f  = None       # number of cell, surface or detector bins
     d  = None       # number of total / direct or flagged bins
 # u is the number of user bins, including the total bin if there is one.
@@ -74,14 +95,6 @@ class Tally:
     t  = None       # time bin
 
     axes = {}
-    axes['f'] = None
-    axes['d'] = None
-    axes['u'] = None
-    axes['s'] = None
-    axes['m'] = None
-    axes['c'] = None
-    axes['e'] = None
-    axes['t'] = None
 
     data = []
     errors = [] # errors are relative
@@ -92,8 +105,15 @@ class Tally:
 
     
     def __init__(self, number):
-        del self.axes['f']
         self.axes['f'] = None
+        self.axes['d'] = None
+        self.axes['u'] = None
+        self.axes['s'] = None
+        self.axes['m'] = None
+        self.axes['c'] = None
+        self.axes['e'] = None
+        self.axes['t'] = None
+
         self.number = number
 #        for b in self.boundaries: del self.boundaries[b][:]
         del self.data[:]
@@ -106,7 +126,6 @@ class Tally:
 #        self.Check()
         print "\tparticles:", self.particle
         print "\ttype:", self.type
-        print "\tcells:", self.cells
         print "\tnumber of dimensions:", self.getNdimensions()
 
         if self.d == 1:                                   # page 262
@@ -123,6 +142,14 @@ class Tally:
 #        print "\tRelative Errors:", self.errors
 
 #        print 2*(1+len(self.boundaries['e'])) * (1+len(self.boundaries['t'])), len(self.data)
+
+    def Fix(self):
+        """
+        Performs some actions necessary after reading the tally from the MCTAL file
+        """
+        print "Fixing tally", self.number
+        print len(self.axes)
+        for a in self.axes.keys(): self.axes[a].Fix()
 
     def getAxis(self, name):
         """
@@ -162,9 +189,9 @@ class Tally:
         """
         n = 0
         for b in self.axes.keys():
+#            print b, self.axes[b].boundaries
             if len(self.axes[b].boundaries): n += 1
         return n
-#        return len(self.GetStrippedBoundaries())
 
     def GetStrippedBoundaries(self):
         """
@@ -189,17 +216,6 @@ class Tally:
         Histograms the current tally
         """
         print "->Histogram"
-#        stripped_boundaries = self.GetStrippedBoundaries()
-
-        # bins = []
-        # for a in self.axes.values():
-        #     print bins, a.boundaries
-        #     if a.getNbins()>0:
-        #         bins.extend(a.boundaries)
-
-        # print "bins: ", bins
-
-#        for a in self.getNonZeroAxes(): a.Print()
 
         non_zero_axes = self.getNonZeroAxes()
         dim = len(non_zero_axes)
@@ -210,11 +226,16 @@ class Tally:
 
         hs = THnSparseF("f%d" % self.number, "", dim, array('i', bins));
         hs.Print()
-        print hs.GetNdimensions()
+        print "created THnSparse: ok"
+#        print hs.GetNdimensions()
         # set bin edges:
         for i,a in enumerate(non_zero_axes):
-            edges = [0.0] + a.boundaries
+            if a.name is 'f':
+                edges = a.boundaries
+            else:
+                edges = [0.0] + a.boundaries
             print "setting bin edges for ", a.name, edges
+            if a.name is 'f': print " bin labels for the f-axis:", a.binlabels
             hs.SetBinEdges(i, array('d', edges)) # !!! max edge is just +1 to the previous edge
             hs.GetAxis(i).SetTitle("%s" % a.name)
 
@@ -229,19 +250,21 @@ class Tally:
                             for c in range(self.getAxis('c').getNbins()):
                                 for e in range(self.getAxis('e').getNbins()):
                                     for t in range(self.getAxis('t').getNbins()):
-                                        print "global bin:", gbin
+#                                        print "global bin:", gbin
                                         val = self.data[gbin]
                                         err = self.errors[gbin]
                                         for a in non_zero_axes:
-                                            if   a.name == 't': coords.append(t+1) # t+1 - checked
-                                            elif a.name == 'e': coords.append(e+1)
-                                            elif a.name == 'c': coords.append(c+1)
-                                            elif a.name == 'm': coords.append(m+1)
-                                            elif a.name == 's': coords.append(s+1)
-                                            elif a.name == 'u': coords.append(u+1)
-                                            elif a.name == 'd': coords.append(d+1)
-                                            elif a.name == 'f': coords.append(f+1)
-                                        print coords, gbin, val,err
+                                            if   a.name[0] == 't': coords.append(t+1) # t+1 - checked
+                                            elif a.name[0] == 'e': coords.append(e+1)
+                                            elif a.name[0] == 'c': coords.append(c+1)
+                                            elif a.name[0] == 'm': coords.append(m+1)
+                                            elif a.name[0] == 's': coords.append(s+1)
+                                            elif a.name[0] == 'u': coords.append(u+1)
+                                            elif a.name[0] == 'd': coords.append(d+1)
+                                            elif a.name[0] == 'f': coords.append(f+1)
+                                            else:
+                                                print "ERROR in Histogram: no such axis:", a.name
+#                                        print coords, gbin, val,err
                                         hs.SetBinContent(array('i', coords), val)
                                         hs.SetBinError(array('i', coords), err*val)
                                         del coords[:]
@@ -341,7 +364,6 @@ def main():
             kod, ver, probid_date, probid_time, knod, nps, rnr = line.split()
             probid.append(probid_date)
             probid.append(probid_time)
-#            print kod, ver, probid, knod, nps, rnr
             continue
         else:
             if problem_title is None and line[0] == " ":
@@ -363,10 +385,11 @@ def main():
 
         if words[0] == 'tally':
             if tally: 
+                tally.Fix()
                 tally.Print()
-#                histos.Add(tally.Histogram())
-                if tally.number % 10 == 4 or tally.number == 5 or tally.number == 6 or tally.number == 15:
-                    histos.Add(tally.Histogram())
+                histos.Add(tally.Histogram())
+#                if tally.number % 10 == 4 or tally.number == 5 or tally.number == 6 or tally.number == 15:
+#                    histos.Add(tally.Histogram())
 #                elif tally.number == 125:
 #                    tally.Print()
 #                    histos.Add(tally.Histogram())
@@ -384,17 +407,15 @@ def main():
         if not tally: continue
 
         if tally.axes['f'] and tally.axes['d']is None and line[0] == ' ':
-            tally.cells = words
             for i,w in enumerate(words):
-                if w == '0': # cell is a union of the other cells
-                    w = tally.axes['f'].boundaries[i-1] + 1
-                tally.axes['f'].boundaries.append(float(w))
+                tally.axes['f'].binlabels.append(float(w))
+                tally.axes['f'].boundaries.append(i) # in case of 'f'-axis the values written in mctal are not boundaries but just cell names => form the array of boundaries with ordinal numbers
+            tally.axes['f'].boundaries.append(i+1)
 
         if tally.axes['f'] is None and words[0] not in ['1', 'f']:
             tally.title = line.strip()
-            print "tally.title:", tally.title
+#            print "tally.title:", tally.title
             
-
         if tally.axes['t'] and is_vals == False and len(tally.data) == 0 and line[0] == ' ':
             for w in words: tally.axes['t'].boundaries.append(float(w))
 
@@ -410,7 +431,7 @@ def main():
         elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]): tally.axes['s'] = Axis(words[0], int(words[1]))
         elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]): tally.axes['m'] = Axis(words[0], int(words[1]))
         elif not tally.axes['c'] and re.search('^c[tc]?', line[0:1]): tally.axes['c'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['e'] and re.search("^e[y]?",  line[0:1]): tally.axes['e'] = Axis(words[0], int(words[1]))
+        elif not tally.axes['e'] and re.search("^e[tc]?",  line[0:1]):tally.axes['e'] = Axis(words[0], int(words[1]))
         elif not tally.axes['t'] and re.search("^t[tc]?", line[0:1]): tally.axes['t'] = Axis(words[0], int(words[1]))
         elif line[0:2] == 'tfc':
             tally.tfc_n = words[1]
@@ -435,7 +456,7 @@ def main():
     
 #    if tally.number == 15:
 #        print "histogramming tally", tally.name
-    histos.Add(tally.Histogram())
+#    histos.Add(tally.Histogram())
 
     histos.Print()
 
