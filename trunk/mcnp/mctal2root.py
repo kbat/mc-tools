@@ -7,7 +7,8 @@ from ROOT import ROOT, TFile, TH1F, TObjArray, THnSparseF
 class Axis:
     name = None
     number = None
-    boundaries = None
+#    boundaries = None
+#    binlabels = None
 
     def __init__(self, name, number):
 #        del self.boundaries[:]
@@ -19,11 +20,11 @@ class Axis:
         """
         The printer
         """
-        print "Axis", self.name, self.number
+        print "\t\tAxis", self.name, self.number
         if len(self.boundaries)<10:
-            print "\tbins:", self.boundaries
+            print "\t\t\tbins:", self.boundaries
         else:
-            print "\tbins:", self.boundaries[0], '...', self.boundaries[-1]
+            print "\t\t\tbins:", self.boundaries[0], self.boundaries[1], '...', self.boundaries[-2], self.boundaries[-1]
 
     def hasTotalBin(self):
         """
@@ -91,6 +92,8 @@ class Tally:
 
     
     def __init__(self, number):
+        del self.axes['f']
+        self.axes['f'] = None
         self.number = number
 #        for b in self.boundaries: del self.boundaries[b][:]
         del self.data[:]
@@ -104,7 +107,6 @@ class Tally:
         print "\tparticles:", self.particle
         print "\ttype:", self.type
         print "\tcells:", self.cells
-        print "\tdimensions:", self.f, self.d, self.u, self.s, self.m, self.c, self.e, self.t
         print "\tnumber of dimensions:", self.getNdimensions()
 
         if self.d == 1:                                   # page 262
@@ -112,8 +114,10 @@ class Tally:
         elif self.d == 2:
             print '\tthis is a detector tally (unless thre is an ND card on the F5 tally)'
 
+        print "\taxes:"
         for b in self.axes.keys():
-            self.axes[b].Print()
+            if self.axes[b].getNbins(remove_zeros=False):
+                self.axes[b].Print()
         
 #        print "\tData:", self.data
 #        print "\tRelative Errors:", self.errors
@@ -367,6 +371,7 @@ def main():
 #                    tally.Print()
 #                    histos.Add(tally.Histogram())
                 del tally
+# temporary
             tally = Tally(int(words[1]))
             tally.particle = int(words[2])
             tally.type = int(words[3])
@@ -380,8 +385,10 @@ def main():
 
         if tally.axes['f'] and tally.axes['d']is None and line[0] == ' ':
             tally.cells = words
-            for w in words:
-                tally.boundaries['f'].append(float(w))
+            for i,w in enumerate(words):
+                if w == '0': # cell is a union of the other cells
+                    w = tally.axes['f'].boundaries[i-1] + 1
+                tally.axes['f'].boundaries.append(float(w))
 
         if tally.axes['f'] is None and words[0] not in ['1', 'f']:
             tally.title = line.strip()
@@ -425,6 +432,9 @@ def main():
                 is_vals = False
 
     tally.Print()
+    
+#    if tally.number == 15:
+#        print "histogramming tally", tally.name
     histos.Add(tally.Histogram())
 
     histos.Print()
