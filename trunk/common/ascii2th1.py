@@ -7,14 +7,16 @@ from ROOT import ROOT, TH1F, TFile
 from array import array
 
 def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
+#    print colxmin, colxmax, coly, coley, opt, fname
     f = open(fname)
     vx = []  # upper border of the energy bin
     vy = []  # flux
     vey = [] # relative error
     line_number = 0
     x, dx, y, ey = 0, 0, 0, 0
+    xmin = [] # array of xmin - used with 'mcnp' option
 
-    for line in f.readlines():
+    for iline,line in enumerate(f.readlines()):
         words = line.split()
 #        print words;
         if len(words) == 0:
@@ -23,11 +25,14 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
             continue
 
         if line_number == 0:
-            x = float(words[colxmin])
-            vx.append(x)
+            if opt!='mcnp':
+                x = float(words[colxmin])
+                vx.append(x)
             if opt=='center': 
                 line_number = line_number + 1
                 continue
+            elif opt=='mcnp':
+                vx.append(0.0)
         x = float(words[colxmax])
         vx.append(x)
         y  = float(words[coly])
@@ -39,8 +44,9 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
 
     f.close()
 
-    print vx
-    print vy
+#    print "vx", vx
+#    print "vy", vy
+#    print "ey", vey
 
     nbins = len(vy)
     h = TH1F("h%d" % (coly), "", nbins, array('f', vx))
@@ -57,7 +63,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
 def main():
     """
     Converts ASCII table to TH1
-    Usage: ascii2th1 coly opt fname
+    Usage: ascii2th1 colxmin coly opt fname
            coly - number of column with data
                   relative data errors are assumed to be in coly+1
                   xbins are assumed to be in the columns 0 and 1
@@ -70,26 +76,28 @@ def main():
                      x1   x2    y1 ey1
                      x2   x3    y2 ey2
                      x3   x4    y3 ey3
-                    so, in order to convert it in ROOT you write: ascii2th1 2 width file.txt
+                    so, in order to convert it in ROOT you write: ascii2th1 0 2 width file.txt
     """
     if len(sys.argv) == 1:
         print main.__doc__
         sys.exit(1)
 
-    colxmin = 0
-    coly = int(sys.argv[1])
+    colxmin = int(sys.argv[1])
+    coly = int(sys.argv[2])
     coley = coly+1
-    opt = sys.argv[2]
-    if opt not in ('no', 'width', 'center'):
-        print "opt must be either 'no' or 'width'"
+    opt = sys.argv[3]
+    supported_options = ['no', 'width', 'center', 'mcnp']
+    if opt not in (supported_options):
+        print "opt", opt, "is not supported."
+        print "Option must take one of these values:", supported_options
         sys.exit(1)
 
-    if opt=='center':
+    if opt=='center' or opt=='mcnp':
         colxmax = colxmin
     else:
         colxmax = colxmin+1
 
-    fname_in = sys.argv[3]
+    fname_in = sys.argv[4]
     fname_out = fname_in.replace(".dat", ".root")
     if fname_in == fname_out: fname_out = fname_in + ".root"
     print fname_in, '=>',fname_out
