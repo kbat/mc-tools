@@ -73,9 +73,12 @@ class Axis:
         """
         Performs some actions necessary after reading the tally
         """
-        if self.name[0] is 'f' and len(self.boundaries) == 0 and self.number>1: # we have defined several detectors
+        n = len(self.boundaries)
+        if self.name[0] is 'f' and n == 0 and self.number>1: # we have defined several detectors
             for i in range(self.number+1):
                 self.boundaries.append(i)
+        if self.name[0] is 'f' and n > 0:
+            self.boundaries.append(self.number) # fixed for f6 with regions in f-bins to work
             print "Fixing axis", self.name
             print " boundaries:", self.boundaries
 
@@ -291,9 +294,6 @@ class Tally:
         for a in non_zero_axes: total_bins[a] = False
 
         for f in range(self.getAxis('f').getNbins(True,True, True)):
-#            if len(self.getAxis('f').binlabels)>0: # does not work!!!
-#                print self.axes['f'].binlabels[f]
-#                hs.GetAxis(f_axis_index).SetBinLabel(f+1, self.axes['f'].binlabels[f])
             if self.getAxis('f').hasTotalBin() and f == self.getAxis('f').getNbins(True,True, True)-1: total_bins['f'] = True
             else: total_bins['f'] = False
             for d in range(self.getAxis('d').getNbins(True)):
@@ -340,8 +340,8 @@ class Tally:
                                         gbin += 1
 
 
-        print "data length:", len(self.data)
-        print "gbin after loop:", gbin
+#        print "data length:", len(self.data)
+#        print "gbin after loop:", gbin
         if gbin != len(self.data):
             print "ERROR: Global bin number after the loops != data array length - 1"
             print "data length:", len(self.data)
@@ -413,7 +413,7 @@ def main():
     many features are not yet supported!
     """
 
-    good_tallies = [5] # list of 'good' tally types - to be saved in the ROOT file
+    good_tallies = [5,6] # list of 'good' tally types - to be saved in the ROOT file
 
     fname_in = sys.argv[1]
     fname_out = re.sub("\....$", ".root", fname_in)
