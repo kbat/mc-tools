@@ -129,6 +129,13 @@ class Tally:
         del self.data[:]
         del self.errors[:]
 
+    def getName(self):
+        """
+        Return the name of the tally
+        """
+        return "f%s" % self.number
+    
+
     def Print(self, option=''):
         print "tally #%d:\t%s" % (self.number, self.title)
 #        print "nbins", self.getNbins(), len(self.data)
@@ -221,11 +228,31 @@ class Tally:
             print 'length of tfc_data array is not 4 but', len(self.tfc_data)
             sys.exit(1)
 
+    def GetMaximum(self):
+        """
+        Return the max and its error saved in the tally
+        """
+        val = max(self.data)
+        p   = self.data.index(val)
+        err = self.errors[p]
+        print val,"+-",err*val
+        return val,err
+
     def Histogram(self):
         """
         Histograms the current tally
         """
         print "->Histogram"
+
+        # temporary fix for the mesh tally 3: saving only max value
+        if self.number % 10 == 3:
+            val, err = self.GetMaximum()
+            hist = TH1F(self.getName(), self.getName(), 1, 0, 1)
+            hist.SetBinContent(1, val)
+            hist.SetBinError(1, val*err)
+            return hist
+
+
 
         total_bins = {}
         def is_total_bin_set():
@@ -416,10 +443,12 @@ def main():
     many features are not yet supported!
     """
 
-    good_tallies = [5,6] # list of 'good' tally types - to be saved in the ROOT file
-
+    good_tallies = [3,5,6] # list of 'good' tally types - to be saved in the ROOT file
     fname_in = sys.argv[1]
-    fname_out = re.sub("\....$", ".root", fname_in)
+    if len(sys.argv) == 3:
+        fname_out = sys.argv[2]
+    else:
+        fname_out = re.sub("\....$", ".root", fname_in)
     if fname_in == fname_out:
         fname_out = fname_in + ".root"
     print fname_out
