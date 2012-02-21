@@ -19,6 +19,9 @@ def main():
         print line.rstrip()
         if line[2:25] == "### SOURCE 2D PARABOLIC":
             words = line.split()
+            if words[-1] != '###':
+                print >> sys.stderr, "ERROR in mcnp-source: wrong source definition format"
+                return 1
             AA = float(words[5])
             BB = float(words[6])
             NX = int(words[7])
