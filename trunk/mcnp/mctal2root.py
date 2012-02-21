@@ -1,4 +1,7 @@
 #! /usr/bin/python -W all
+#
+# $URL$
+# $Id$
 
 import sys, re, string
 from array import array
