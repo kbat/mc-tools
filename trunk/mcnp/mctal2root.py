@@ -221,6 +221,13 @@ class Tally:
         """
         print "->Histogram"
 
+        total_bins = {}
+        def is_total_bin_set():
+            for b in total_bins.keys():
+                if total_bins[b] == True:
+                    return True
+            return False
+        
         non_zero_axes = self.getNonZeroAxes()
         dim = len(non_zero_axes)
         bins = []
@@ -229,8 +236,6 @@ class Tally:
         print "dim, bins (total bins not included):", dim, bins
 
         hs = THnSparseF("f%d" % self.number, "", dim, array('i', bins));
-        hs.Print("all")
-        print hs.GetNbins()
         print "created THnSparse: ok"
 #        print hs.GetNdimensions()
         # set bin edges:
@@ -251,6 +256,8 @@ class Tally:
             hs.SetBinEdges(i, array('d', edges)) # !!! max edge is just +1 to the previous edge
             hs.GetAxis(i).SetName("%s" % a.name)
             hs.GetAxis(i).SetTitle("%s" % a.name)
+        hs.Print("all")
+        print hs.GetNbins()
 
         coords = []
 
@@ -279,21 +286,37 @@ class Tally:
         # The bin numbers should include total bins.
         # Total bins should be skipped in such a way that gbin is incremented by one.
         is_total_bin = False
+
+        # Reset total bins
+        for a in non_zero_axes: total_bins[a] = False
+
         for f in range(self.getAxis('f').getNbins(True,True, True)):
 #            if len(self.getAxis('f').binlabels)>0: # does not work!!!
 #                print self.axes['f'].binlabels[f]
 #                hs.GetAxis(f_axis_index).SetBinLabel(f+1, self.axes['f'].binlabels[f])
-            if self.getAxis('f').hasTotalBin() and f == self.getAxis('f').getNbins(True,True, True)-1: is_total_bin = True
+            if self.getAxis('f').hasTotalBin() and f == self.getAxis('f').getNbins(True,True, True)-1: total_bins['f'] = True
+            else: total_bins['f'] = False
             for d in range(self.getAxis('d').getNbins(True)):
                 for u in range(self.getAxis('u').getNbins(True)):
-                    if self.getAxis('u').hasTotalBin() and u == self.getAxis('u').getNbins(True,True, True)-1: is_total_bin = True
+                    if self.getAxis('u').hasTotalBin() and u == self.getAxis('u').getNbins(True,True,True)-1: total_bins['u'] = True
+                    else: total_bins['u'] = False
                     for s in range(self.getAxis('s').getNbins(True)):
+                        if self.getAxis('s').hasTotalBin() and s == self.getAxis('s').getNbins(True)-1: total_bins['s'] = True
+                        else: total_bins['s'] = False
                         for m in range(self.getAxis('m').getNbins(True)):
+                            if self.getAxis('m').hasTotalBin() and m == self.getAxis('m').getNbins(True)-1: total_bins['m'] = True
+                            else: total_bins['m'] = False
                             for c in range(self.getAxis('c').getNbins(True)):
+                                if self.getAxis('c').hasTotalBin() and c == self.getAxis('c').getNbins(True)-1: total_bins['c'] = True
+                                else: total_bins['c'] = False
                                 for e in range(self.getAxis('e').getNbins(True)):
+                                    if self.getAxis('e').hasTotalBin() and e == self.getAxis('e').getNbins(True)-1: total_bins['e'] = True
+                                    else: total_bins['e'] = False
                                     for t in range(self.getAxis('t').getNbins(True)):
-                                        if self.getAxis('t').hasTotalBin() and t == self.getAxis('t').getNbins(True,True,True)-1: is_total_bin = True
-                                        if not is_total_bin:
+                                        if self.getAxis('t').hasTotalBin() and t == self.getAxis('t').getNbins(True,True,True)-1: total_bins['t'] = True
+                                        else: total_bins['t'] = False
+
+                                        if not is_total_bin_set():
                                             val = self.data[gbin]
                                             err = self.errors[gbin]
                                             for a in non_zero_axes:
@@ -308,13 +331,14 @@ class Tally:
                                                 else:
                                                     print "ERROR in Histogram: no such axis:", a.name
                                                     sys.exit(4)
-                                        #if not is_total_bin:
-                                            print "set bin:", coords, gbin, val,err, is_total_bin
+                                            print "set bin:", coords, gbin, val,err, is_total_bin_set()
                                             hs.SetBinContent(array('i', coords), val)
                                             hs.SetBinError(array('i', coords), err*val)
                                             del coords[:]
+                                        else:
+                                            print "total bin:",  gbin, val,err, is_total_bin_set()
                                         gbin += 1
-                                        is_total_bin = False
+
 
         print "data length:", len(self.data)
         print "gbin after loop:", gbin
