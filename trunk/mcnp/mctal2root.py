@@ -23,43 +23,45 @@ class Axis:
         """
         print "\t\tAxis", self.name, self.number
         if len(self.boundaries)<10:
-            print "\t\t\tbins:", self.boundaries
+            print "\t\t\tboundaries:", self.boundaries
         else:
-            print "\t\t\tbins:", self.boundaries[0], self.boundaries[1], '...', self.boundaries[-2], self.boundaries[-1]
+            print "\t\t\tboundaries:", self.boundaries[0], self.boundaries[1], '...', self.boundaries[-2], self.boundaries[-1]
 
     def hasTotalBin(self):
         """
         Checks whether the axis has Total Bin set
         """
-        if number == len(self.boundaries):
-            return False
+        if len(self.name)>1 and self.name[1] is 't':
+            return True
         else:
-            if self.name[1] is 't':
-                return True
-            else:
-                print "ERROR in hasTotalBin"
-                sys.exit(5)
+            return False
 
-    def getNbins(self, remove_zeros=True, correct_f=True):
+    def getNbins(self, include_total=False, remove_zeros=True, correct_f=True):
         """
         Return number of bins on the given axis
         correct_f is used in the loop in Histogram
         """
+# this method does not work since there are axes like this 'd':
+# d 1
+# t 1
+#   2.857E-5
+#        n = self.number # total bin included
+#        if remove_zeros and n == 0: n = 1
+#        if self.hasTotalBin() and not include_total: n -= 1
+#        if correct_f is True and self.name is 'f': n = n-1
+#        return n
+
         n = len(self.boundaries) # this takes into account NT (total bin) by removing it - in any case we can get it by TH1::Integral()
         #print "nboundaries", self.name, n
 
+        if include_total and self.hasTotalBin(): n += 1
+
         # this is needed for Histogram():
-        if remove_zeros and n == 0:
-            n = 1
+        if remove_zeros and n == 0: n = 1
+
         if correct_f is True and self.name is 'f': n = n-1
         return n
 
-    # def getBoundaries(self):
-    #     """
-    #     Returm the list of boundaries.
-    #     If this is an f-axis (cells), the method returns just the array of sequential numbers, since in thes case what we call 'boundaries' does not have any meaning for histogram binning
-    #     """
-    #     if self.name is 'f':
 
 #    def getStrippedBoundaries(self):
 #        """
@@ -71,11 +73,11 @@ class Axis:
         """
         Performs some actions necessary after reading the tally
         """
-        print "Fixing axis", self.name
         if self.name[0] is 'f' and len(self.boundaries) == 0 and self.number>1: # we have defined several detectors
             for i in range(self.number+1):
                 self.boundaries.append(i)
-            print self.boundaries
+            print "Fixing axis", self.name
+            print " boundaries:", self.boundaries
 
 
 class Tally:
@@ -137,7 +139,7 @@ class Tally:
 
         print "\taxes:"
         for b in self.axes.keys():
-            if self.axes[b].getNbins(remove_zeros=False):
+            if self.axes[b].getNbins(include_total=False,remove_zeros=False):
                 self.axes[b].Print()
         
 #        print "\tData:", self.data
@@ -174,7 +176,7 @@ class Tally:
 #        bins = [x for x in bins if x]
 #        bins = filter(lambda item: item>1, bins)
 #        return vals
-        return filter(lambda item: item.getNbins(remove_zeros=False)>0, self.axes.values())
+        return filter(lambda item: item.getNbins(include_total=False,remove_zeros=False)>0, self.axes.values())
 
     # def getNbins(self):
     #     # Why don't just return len(self.data) ? - because it only works for 1D histos
@@ -224,27 +226,30 @@ class Tally:
         bins = []
         for a in non_zero_axes:
             bins.append(a.getNbins())
-        print "dim, bins:", dim, bins
+        print "dim, bins (total bins not included):", dim, bins
 
         hs = THnSparseF("f%d" % self.number, "", dim, array('i', bins));
+        hs.Print("all")
+        print hs.GetNbins()
         print "created THnSparse: ok"
 #        print hs.GetNdimensions()
         # set bin edges:
         f_axis_index = -1
         for i,a in enumerate(non_zero_axes):
-            print "boundaries:", a.boundaries
+#            print "boundaries %s:" % a.name, a.boundaries
             if a.name is 'f':
                 edges = a.boundaries
             else:
                 edges = [0.0] + a.boundaries
-            print "setting bin edges for ", a.name, edges
+            print "setting bin edges for %s:" % a.name, edges
             if a.name is 'f':
-                print " bin labels for the f-axis:", a.binlabels
-                print "number of bin labels: ", len(a.binlabels)
-                print "number of boundaries: ", len(a.boundaries)
+#                print " bin labels for the f-axis:", a.binlabels
+#                print "number of bin labels: ", len(a.binlabels)
+#                print "number of boundaries: ", len(a.boundaries)
                 f_axis_index = i
 
             hs.SetBinEdges(i, array('d', edges)) # !!! max edge is just +1 to the previous edge
+            hs.GetAxis(i).SetName("%s" % a.name)
             hs.GetAxis(i).SetTitle("%s" % a.name)
 
         coords = []
@@ -253,50 +258,71 @@ class Tally:
         print "bin numbers:"
         for a in self.axes.keys():
             if a == 'f':
-                print a, self.axes[a].getNbins(True, False)
+                print a, self.axes[a].getNbins(False,True, True)
                 print self.axes[a].boundaries
             else:
                 print a, self.axes[a].getNbins()
 
         gbin = 0
-        for f in range(self.getAxis('f').getNbins(True, True)):
-            if len(self.getAxis('f').binlabels)>0: # does not work!!!
-                print self.axes['f'].binlabels[f]
-                hs.GetAxis(f_axis_index).SetBinLabel(f+1, self.axes['f'].binlabels[f])
-            for d in range(self.getAxis('d').getNbins()):
-                for u in range(self.getAxis('u').getNbins()):
-                    for s in range(self.getAxis('s').getNbins()):
-                        for m in range(self.getAxis('m').getNbins()):
-                            for c in range(self.getAxis('c').getNbins()):
-                                for e in range(self.getAxis('e').getNbins()):
-                                    for t in range(self.getAxis('t').getNbins()):
-#                                        print "global bin:", gbin
-                                        print "data length:", len(self.data)
-                                        print "gbin:", gbin
-                                        val = self.data[gbin]
-                                        err = self.errors[gbin]
-                                        for a in non_zero_axes:
-                                            if   a.name[0] == 't': coords.append(t+1) # t+1 - checked
-                                            elif a.name[0] == 'e': coords.append(e+1)
-                                            elif a.name[0] == 'c': coords.append(c+1)
-                                            elif a.name[0] == 'm': coords.append(m+1)
-                                            elif a.name[0] == 's': coords.append(s+1)
-                                            elif a.name[0] == 'u': coords.append(u+1)
-                                            elif a.name[0] == 'd': coords.append(d+1)
-                                            elif a.name[0] == 'f': coords.append(f+1)
-                                            else:
-                                                print "ERROR in Histogram: no such axis:", a.name
-#                                        print coords, gbin, val,err
-                                        hs.SetBinContent(array('i', coords), val)
-                                        hs.SetBinError(array('i', coords), err*val)
-                                        del coords[:]
+
+        print "checking nbins in the big loop (totals included):"
+
+        print 'f', self.getAxis('f').getNbins(True) #True, True)
+        print 'd', self.getAxis('d').getNbins(True)
+        print 'u', self.getAxis('u').getNbins(True)
+        print 's', self.getAxis('s').getNbins(True)
+        print 'm', self.getAxis('m').getNbins(True)
+        print 'c', self.getAxis('c').getNbins(True)
+        print 'e', self.getAxis('e').getNbins(True)
+        print 't', self.getAxis('t').getNbins(True)
+
+        # The bin numbers should include total bins.
+        # Total bins should be skipped in such a way that gbin is incremented by one.
+        is_total_bin = False
+        for f in range(self.getAxis('f').getNbins(True,True, True)):
+#            if len(self.getAxis('f').binlabels)>0: # does not work!!!
+#                print self.axes['f'].binlabels[f]
+#                hs.GetAxis(f_axis_index).SetBinLabel(f+1, self.axes['f'].binlabels[f])
+            if self.getAxis('f').hasTotalBin() and f == self.getAxis('f').getNbins(True,True, True)-1: is_total_bin = True
+            for d in range(self.getAxis('d').getNbins(True)):
+                for u in range(self.getAxis('u').getNbins(True)):
+                    if self.getAxis('u').hasTotalBin() and u == self.getAxis('u').getNbins(True,True, True)-1: is_total_bin = True
+                    for s in range(self.getAxis('s').getNbins(True)):
+                        for m in range(self.getAxis('m').getNbins(True)):
+                            for c in range(self.getAxis('c').getNbins(True)):
+                                for e in range(self.getAxis('e').getNbins(True)):
+                                    for t in range(self.getAxis('t').getNbins(True)):
+                                        if self.getAxis('t').hasTotalBin() and t == self.getAxis('t').getNbins(True,True,True)-1: is_total_bin = True
+                                        if not is_total_bin:
+                                            val = self.data[gbin]
+                                            err = self.errors[gbin]
+                                            for a in non_zero_axes:
+                                                if   a.name[0] == 't': coords.append(t+1) # t+1 - checked
+                                                elif a.name[0] == 'e': coords.append(e+1)
+                                                elif a.name[0] == 'c': coords.append(c+1)
+                                                elif a.name[0] == 'm': coords.append(m+1)
+                                                elif a.name[0] == 's': coords.append(s+1)
+                                                elif a.name[0] == 'u': coords.append(u+1)
+                                                elif a.name[0] == 'd': coords.append(d+1)
+                                                elif a.name[0] == 'f': coords.append(f+1)
+                                                else:
+                                                    print "ERROR in Histogram: no such axis:", a.name
+                                                    sys.exit(4)
+                                        #if not is_total_bin:
+                                            print "set bin:", coords, gbin, val,err, is_total_bin
+                                            hs.SetBinContent(array('i', coords), val)
+                                            hs.SetBinError(array('i', coords), err*val)
+                                            del coords[:]
                                         gbin += 1
+                                        is_total_bin = False
+
         print "data length:", len(self.data)
         print "gbin after loop:", gbin
-        if gbin != len(self.data)-1:
+        if gbin != len(self.data):
             print "ERROR: Global bin number after the loops != data array length - 1"
             print "data length:", len(self.data)
             print "gbin after loop:", gbin
+            sys.exit(5)
             
 
         return hs
@@ -363,6 +389,8 @@ def main():
     many features are not yet supported!
     """
 
+    good_tallies = [5] # list of 'good' tally types - to be saved in the ROOT file
+
     fname_in = sys.argv[1]
     fname_out = re.sub("\....$", ".root", fname_in)
     if fname_in == fname_out:
@@ -420,7 +448,8 @@ def main():
         # add the latest boundary to the f-axis:  (MUST ALWAYS GO BEFORE tally.Histogram())
 #                if tally.axes['f']: tally.axes['f'].boundaries.append(f_boundary_number)
 
-                histos.Add(tally.Histogram())
+                if tally.number % 10 in good_tallies:
+                    histos.Add(tally.Histogram())
 #                if tally.number % 10 == 4 or tally.number == 5 or tally.number == 6 or tally.number == 15:
 #                    histos.Add(tally.Histogram())
 #                elif tally.number == 125:
@@ -493,7 +522,8 @@ def main():
 
 # add the latest boundary to the f-axis: (MUST ALWAYS GO BEFORE tally.Histogram())
 #    if tally.axes['f']:  tally.axes['f'].boundaries.append(f_boundary_number)
-    histos.Add(tally.Histogram())
+    if tally.number % 10 in good_tallies:
+        histos.Add(tally.Histogram())
 
     histos.Print()
 
