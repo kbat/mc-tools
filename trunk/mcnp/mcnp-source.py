@@ -15,17 +15,19 @@ def getParabola(fullwidth, x):
     return 1.0-(x*x)/(d*d)
 
 def main():
+    is_fixed = False
     for line in fileinput.input():
-        print line.rstrip()
-        if line[2:25] == "### SOURCE 2D PARABOLIC":
+        if line[0:23] == "### SOURCE 2D PARABOLIC":
+            print "c %s" % line.rstrip()
+            is_fixed = True
             words = line.split()
             if words[-1] != '###':
                 print >> sys.stderr, "ERROR in mcnp-source: wrong source definition format"
                 return 1
-            AA = float(words[5])
-            BB = float(words[6])
-            NX = int(words[7])
-            NY = int(words[8])
+            AA = float(words[4])
+            BB = float(words[5])
+            NX = int(words[6])
+            NY = int(words[7])
             xmin = -AA/2.0
             dx = AA/NX
             ymin = -BB/2.0
@@ -52,7 +54,11 @@ def main():
                     print "SP2     ", getParabola(BB, ymin+y*dy)
                 else:
                     print " "*8, getParabola(BB, ymin+y*dy)
-
+        else:
+            print line.rstrip()
+    
+    if is_fixed == False:
+        print >> sys.stderr, "WARNING in mcnp-source.py: source definition not found"
 
 if __name__ == "__main__":
     sys.exit(main())
