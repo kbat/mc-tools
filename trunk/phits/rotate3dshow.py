@@ -1,4 +1,5 @@
 #! /usr/bin/python -W all
+# $Id$
 
 import re, sys, string
 from os import system, unlink
@@ -6,18 +7,47 @@ from os import system, unlink
 def main():
     """
     rotate3dshow - a script to rotate [t-3dshow] output.
-The PHITS input file must contain a [t-3dshow] section with description of the 1st shot of the animation.
-Then, one of the selected angles will be changed 'nsteps' times, so it will loop full revolution of 360 deg.
 
 Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
-    As it is stated in the PHITS manual, e-the and e-phi rotate the view point angle, while l-the and l-phi correspond to the light source angle.
-    Individual .gif files produced by the program can be viewed with any image viewer. For instance: qiv -m -s -d 0.3 /tmp/rotate3dshow
-    If the file 'output.gif' is specified and a program 'gifsicle' is installed in your system then all the output files will be merged in a single 'output.gif'
+
+    e-the, e-phi, l-the or l-phi - parameter to rotate.
+    nsteps - number of images per full revolution (360 deg) of selected parameter.
+
+    The PHITS input file must contain a [t-3dshow] section with description of the 1st shot of the animation.
+    The script does nothing than generating 'nsteps' input files and running PHITS with each of them
+    in order to make a full revolution of the selected parameter.
+    
+    As it is stated in the PHITS manual, e-the and e-phi rotate the view point angle,
+    while l-the and l-phi correspond to the light source angle.
+    
+    Individual .gif files produced by the program can be viewed with any image viewer.
+    For instance: qiv -m -s -d 0.3 /tmp/rotate3dshow
+    
+    If the file 'output.gif' is specified and a program 'gifsicle' is installed in your system 
+    then all the output files will be merged in a single 'output.gif'
+
+    NOTE
+    The parameter 'file' in the [t-3dshow] section should be called '3dshow.dat':
+       file = 3dshow.dat
+
+
+    DEPENDENCIES
+
+    REQUIRED DEPENDENCIES
+    python      - of course!
+    imagemagick - a standard Linux package to work with bitmap images [http://www.imagemagick.org].
+                  This script uses imagemagick to convert the EPS files produced by PHTIS to GIF.
+
+    OPTIONAL DEPENDENCIES
+    gifsicle    - a tool used to produced an animated gif out of the bunch of files produced by PHITS [http://www.lcdf.org/gifsicle].
     """
 
     allowed_parameters = ('e-the', 'e-phi', 'l-the', 'l-phi')
 
-    if len(sys.argv) != 4 and len(sys.argv) != 5:
+    if len(sys.argv) == 1:
+        print main.__doc__
+        return 1
+    elif len(sys.argv) != 4 and len(sys.argv) != 5:
         print 'ERROR: wrong usage.'
         print main.__doc__
         return 1
@@ -89,7 +119,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
         system("grep -iH error $(ls -1rt |tail -1)") # check the output file for the errors
         system("convert -transparent-color white -background white -rotate 90 %s /tmp/rotate3dshow/%.3d.gif" % (epsname, istep))
 
-    print 'the output files are in /tmp/rotate3dshow'
+    print 'The output files are in /tmp/rotate3dshow'
 
     if fname_out:
         if fname_out[-4:] == '.gif':
