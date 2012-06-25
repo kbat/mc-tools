@@ -81,7 +81,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
         print '       Allowed are', allowed_parameters
         return 2
 
-    parameter = sys.argv[1] # parameter which we will rotate
+    parameter = sys.argv[1] # parameter to rotate
 
     try:
         nsteps = int(sys.argv[2])
