@@ -69,8 +69,7 @@ def main():
         file = 3dshow.dat
       epsout = 1
 
-    Produce an animation of e-phi rotation with 10 frames based on the PHITS input file 'inp'
-    and save it in a GIF file '3dshow.gif':
+    Produce an animation of e-phi rotation with 10 frames based on the PHITS input file 'inp' and save it in a GIF file '3dshow.gif':
         rotate3dshow e-phi 10 inp 3dshow.gif
     """
 
