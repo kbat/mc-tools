@@ -47,7 +47,7 @@ def main():
     gifsicle    - a tool used to produced an animated gif out of the bunch of files produced by PHITS [http://www.lcdf.org/gifsicle].
 
     EXAMPLE
-    Below is an example of a 3dshow tally to be used with rotate3dshow:
+    Below is an example of a [t-3dshow] tally to be used with rotate3dshow:
     [t-3dshow]
       output = 3
           x0 =   0
