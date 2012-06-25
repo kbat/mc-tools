@@ -1,16 +1,100 @@
 #! /usr/bin/env python
 #
-# ASCII to TH1F converter
+# ASCII to TGraph  converter
 
 import sys,time,os,re
-from ROOT import ROOT, TGraph, TGraphErrors, TFile, TObjArray
+from ROOT import ROOT, TGraph, TGraphErrors, TGraphAsymmErrors, TFile, TObjArray
 from array import array
 import argparse
+
+def GetAsymmGraphs(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name):
+    graphs = TObjArray()
+    GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name, graphs, 0)
+    return graphs
 
 def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name, relerr):
     graphs = TObjArray()
     GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, 0, relerr)
     return graphs
+
+def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name, graphs, name_index):
+    """
+    Read between lines l1 and l2
+    """
+
+    vx = []  # vector of x-values
+    vexlow = [] # vector of x-errors
+    vexhigh = [] # vector of x-errors
+    vy = []  #
+    veylow = [] #
+    veyhigh = []
+    npoints = 0
+
+    if l1 == None: l1 = int(1) # we count lines from one
+    if l2 == None:
+        ftmp = open(fname)
+        l2 = len(ftmp.readlines()) # set to the number of lines in the file
+        ftmp.close()
+
+    print "--->reading between lines", l1, l2
+
+    f = open(fname)
+    for nline, line in enumerate(f.readlines(), 1):
+        if l1 and nline<l1: continue
+        if l2 and nline>l2: break
+
+        words = line.split()
+#        print words, len(words)
+
+        if len(words) == 0:
+            if npoints == 0:
+                continue # we have not read any points yet -> just continue
+            else:
+#            print "creating new graph object"
+                break
+
+        if words[0][0] == '#':
+            continue
+        if len(words) < 2:
+            print "Skipping line ", line.strip()
+            continue
+
+        vx.append(float(words[colx-1]))
+        vy.append(float(words[coly-1]))
+
+        vexlow.append(float(words[exlow-1]))
+        vexhigh.append(float(words[exhigh-1]))
+
+        veylow.append(float(words[eylow-1]))
+        veyhigh.append(float(words[eyhigh-1]))
+
+        npoints = npoints+1
+
+    f.close()
+
+#    print "number of points: ", npoints
+
+    if npoints>0:
+
+        gr = TGraphAsymmErrors(npoints)
+    
+        if  name_index==0:
+            gr.SetName(name)
+        else:
+            gr.SetName("%s%d" % (name, name_index))
+
+        name_index = name_index+1
+        
+        for i in range(npoints):
+            gr.SetPoint(i, vx[i], vy[i])
+            gr.SetPointError(i, vexlow[i], vexhigh[i], veylow[i], veyhigh[i])
+                    
+        graphs.Add(gr)
+
+#    print "nlines:", nline, l2
+    if nline<l2:
+        GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, nline+1, l2, name, graphs, name_index)
+
 
 def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0, relerr=False):
     """
@@ -95,7 +179,7 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0
 
 def main():
     """
-    Converts ASCII table to TGraph or TGraphErrors
+    Converts ASCII file to TGraph or TGraphErrors
     Usage: ascii2gr colx colex coly coley fname
            colx, coly - column numbers with x and y values
            colex, coley - column numbers with x and y errors
@@ -124,6 +208,11 @@ def main():
     parser.add_argument('-relerr', action="store_true", default=False, help='if set, the errors are assumed to be relative')
     parser.add_argument('-grname', type=str, help='Graph\'s name', default='gr')
 
+    parser.add_argument('-exlow', dest='exlow', type=int, help='low abs error on X in the case of TGraphAsymmErrors')
+    parser.add_argument('-exhigh', dest='exhigh', type=int, help='high abs error on X in the case of TGraphAsymmErrors')
+    parser.add_argument('-eylow', dest='eylow', type=int, help='low abs error on Y in the case of TGraphAsymmErrors')
+    parser.add_argument('-eyhigh', dest='eyhigh', type=int, help='high abs error on Y in the case of TGraphAsymmErrors')
+
     print parser.parse_args()
 
     results = parser.parse_args()
@@ -143,7 +232,12 @@ def main():
         fout_option = 'recreate'
 
     fout = TFile(fname_out, fout_option)
-    GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.grname, results.relerr).Write()
+    if results.eylow is None:
+        GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.grname, results.relerr).Write()
+    else:
+        GetAsymmGraphs(results.colx, results.exlow, results.exhigh,
+                       results.coly, results.eylow, results.eyhigh,
+                       fname_in, results.start, results.end, results.grname).Write()
     fout.ls()
     fout.Close()
     

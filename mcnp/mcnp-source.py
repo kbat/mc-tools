@@ -6,6 +6,8 @@
 ### SOURCE UNIFORM AA BB NX NY ###
 # AA and BB are full x and y widths
 # NX and NY are numbers of bins along x and y axes
+# or
+### SOURCE GAUS SIGMAX SIGMAY NX NY TH ### - not yet implemented
 #
 
 import fileinput
@@ -84,6 +86,46 @@ def main():
                 return 2
             AA = float(words[3])
             BB = float(words[4])
+            NX = int(words[5])
+            NY = int(words[6])
+            xmin = -AA/2.0
+            dx = AA/NX
+            ymin = -BB/2.0
+            dy = BB/NY
+            print "c     Full x-width:", AA, "     Number of x-bins:", NX
+            print "c     Full y-width:", BB, "     Number of y-bins:", NY
+            for x in range(NX+1):
+                if x == 0:
+                    print "SI1  A  ", xmin + x*dx
+                else:
+                    print " "*8, xmin + x*dx
+            for x in range(NX+1):
+                if x == 0:
+                    if getUniform(AA, xmin+x*dx) != 0:
+                        print >> sys.stderr, "First bin is not zero"
+                        return 3
+                    print "SP1     ", getUniform(AA, xmin+x*dx)
+                else:
+                    print " "*8, getUniform(AA, xmin+x*dx)
+            for y in range(NY+1):
+                if y == 0:
+                    print "SI2  A  ", ymin + y*dy
+                else:
+                    print " "*8, ymin + y*dy
+            for y in range(NY+1):
+                if y == 0:
+                    print "SP2     ", getUniform(BB, ymin+y*dy)
+                else:
+                    print " "*8, getUniform(BB, ymin+y*dy)
+        elif line[0:18] == "### SOURCE GAUS": # !!! not yet implemented - below is just copied from UNIFORM
+            print "c %s" % line.rstrip()
+            is_fixed = True
+            words = line.split()
+            if words[-1] != '###':
+                print >> sys.stderr, "ERROR in mcnp-source: wrong source definition format"
+                return 2
+            SIGMAX = float(words[3])
+            SIGMAY = float(words[4])
             NX = int(words[5])
             NY = int(words[6])
             xmin = -AA/2.0

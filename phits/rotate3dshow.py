@@ -8,16 +8,17 @@ def main():
     """
     rotate3dshow - a script to rotate [t-3dshow] output.
 
-Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gif]
+    USAGE
+    rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nimages file.phits [output.gif]
 
     e-the, e-phi, l-the, l-phi or w-ang - the parameter to rotate.
-    nsteps - number of images per full revolution (360 deg) of selected parameter.
+    nimages - number of images per full revolution (360 deg) of selected parameter.
     file.phits - PHITS input file (see an example of the [t-3dshow] tally setup below).
     output.gif - optional parameter of the animated GIF file.
-                 If not specified, the 'nsteps' GIF images will be generated in /tmp/rotate3dshow
+                 If not specified, the 'nimages' GIF images will be generated in /tmp/rotate3dshow
 
     The PHITS input file must contain a [t-3dshow] section with description of the 1st shot of the animation.
-    The script does nothing than generating 'nsteps' input files and running PHITS with each of them
+    The script does nothing than generating 'nimages' input files and running PHITS with each of them
     in order to make a full revolution of the selected parameter.
     
     As it is stated in the PHITS manual, e-the and e-phi rotate the view point angle,
@@ -47,29 +48,35 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
 
     EXAMPLE
     Below is an example of a 3dshow tally to be used with rotate3dshow:
-[t-3dshow]
-  output = 3
-      x0 =   0
-      y0 =   0
-      z0 =   100
-    e-the = 178.0
-   e-phi =  20
-   e-dst =  200
-   l-the =  20
-   l-phi =   0
-   l-dst = 100
-   w-wdt =  350
-   w-hgt =  350
-   w-dst =  100
-   w-mnw = 100
-   w-mnh = 100
-   w-ang = 30
-  heaven = z
-    file = 3dshow.dat
-  epsout = 1
+    [t-3dshow]
+      output = 3
+          x0 =   0
+          y0 =   0
+          z0 =   100
+       e-the = 178.0
+       e-phi =  20
+       e-dst =  200
+       l-the =  20
+       l-phi =   0
+       l-dst = 100
+       w-wdt =  350
+       w-hgt =  350
+       w-dst =  100
+       w-mnw = 100
+       w-mnh = 100
+       w-ang = 30
+      heaven = z
+        file = 3dshow.dat
+      epsout = 1
+
+    Produce an animation of e-phi rotation with 10 frames based on the PHITS input file 'inp'
+    and save it in a GIF file '3dshow.gif':
+        rotate3dshow e-phi 10 inp 3dshow.gif
     """
 
     allowed_parameters = ('e-the', 'e-phi', 'l-the', 'l-phi', 'w-ang')
+    tmpinp = '/tmp/panimate.phits'
+    tmpdir = '/tmp/rotate3dshow'
 
     if len(sys.argv) == 1:
         print main.__doc__
@@ -87,7 +94,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
     parameter = sys.argv[1] # parameter to rotate
 
     try:
-        nsteps = int(sys.argv[2])
+        nimages = int(sys.argv[2])
     except ValueError:
         print 'ERROR: Parameter "%s" must be an integer.' % sys.argv[2]
         return 3
@@ -95,7 +102,6 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
     fname_in = sys.argv[3] # phits input file
     fname_out = None
     if len(sys.argv) == 5: fname_out = sys.argv[4]
-    fname_tmp = "/tmp/panimate.phits"
     epsname = "3dshow.eps" # name of the eps file - parameter 'file' in the [t-3dshow] section must be 3dshow.dat
 
     file_in = open(fname_in)
@@ -105,14 +111,14 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
     output_data = []
 
     angle0 = 0 # the value of the parameter set in the input file. we will start rotation from this position
-    angleStep = 360/nsteps # [deg]
-#    print "number of steps:", nsteps
+    angleStep = 360/nimages # [deg]
+#    print "number of steps:", nimages
     isFirst = True
 
-    system('rm -fr /tmp/rotate3dshow')
-    system('mkdir /tmp/rotate3dshow')
+    system('rm -fr %s' % tmpdir)
+    system('mkdir %s' % tmpdir)
 
-    for istep in range(nsteps):
+    for istep in range(nimages):
         del output_data[:]
         for i, line in enumerate(input_data):
             words = line.split()
@@ -135,11 +141,11 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
                 
             output_data.append(line)
 
-        tmp_file = open(fname_tmp, 'w+')
+        tmp_file = open(tmpinp, 'w+')
         for line in output_data:
             tmp_file.write(line)
         tmp_file.close()
-        system("phits < %s" % fname_tmp)
+        system("phits < %s" % tmpinp)
         system("grep -iH error $(ls -1rt |tail -1)") # check the output file for the errors
         system("convert -transparent-color white -background white -rotate 90 %s /tmp/rotate3dshow/%.3d.gif" % (epsname, istep))
 

@@ -439,11 +439,11 @@ class Tally:
 def main():
     """
     mctal2root - MCTAL to ROOT converter
-    Usage: mctal2root mctal [output.root]
-    many features are not yet supported!
+    Usage: mctal2root.py mctal [output.root]
+    ... many features are not yet supported!
     """
 
-    good_tallies = [3,5,6] # list of 'good' tally types - to be saved in the ROOT file
+    good_tallies = [5] # list of 'good' tally types - to be saved in the ROOT file
     fname_in = sys.argv[1]
     if len(sys.argv) == 3:
         fname_out = sys.argv[2]
