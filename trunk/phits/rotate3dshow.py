@@ -38,7 +38,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
     DEPENDENCIES
 
     REQUIRED DEPENDENCIES
-    python      - of course!
+    Python and PHITS - of course!
     ImageMagick - a standard Linux package to work with bitmap images [http://www.imagemagick.org].
                   This script uses the ImageMagick tool 'convert' to convert the EPS files produced by PHTIS to GIF.
 
