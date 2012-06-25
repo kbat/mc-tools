@@ -10,7 +10,7 @@ def main():
 
 Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gif]
 
-    e-the, e-phi, l-the or l-phi - parameter to rotate.
+    e-the, e-phi, l-the, l-phi or w-ang - the parameter to rotate.
     nsteps - number of images per full revolution (360 deg) of selected parameter.
 
     The PHITS input file must contain a [t-3dshow] section with description of the 1st shot of the animation.
@@ -95,15 +95,13 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
     fname_tmp = "/tmp/panimate.phits"
     epsname = "3dshow.eps" # name of the eps file - parameter 'file' in the [t-3dshow] section must be 3dshow.dat
 
-#    print fname_in, fname_out
-
     file_in = open(fname_in)
     input_data = file_in.readlines()
     file_in.close()
     
     output_data = []
 
-    angle0 = 0 # the value of e-the or e-phi set in the input file. we will start rotation from this position
+    angle0 = 0 # the value of the parameter set in the input file. we will start rotation from this position
     angleStep = 360/nsteps # [deg]
 #    print "number of steps:", nsteps
     isFirst = True
@@ -112,7 +110,6 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
     system('mkdir /tmp/rotate3dshow')
 
     for istep in range(nsteps):
-#        print "step #", istep
         del output_data[:]
         for i, line in enumerate(input_data):
             words = line.split()
