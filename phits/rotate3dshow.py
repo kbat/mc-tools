@@ -8,7 +8,7 @@ def main():
     """
     rotate3dshow - a script to rotate [t-3dshow] output.
 
-Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
+Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gif]
 
     e-the, e-phi, l-the or l-phi - parameter to rotate.
     nsteps - number of images per full revolution (360 deg) of selected parameter.
@@ -18,7 +18,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
     in order to make a full revolution of the selected parameter.
     
     As it is stated in the PHITS manual, e-the and e-phi rotate the view point angle,
-    while l-the and l-phi correspond to the light source angle.
+    while l-the and l-phi correspond to the light source angle, and w-ang being the angle of frame.
     
     Individual .gif files produced by the program can be viewed with any image viewer.
     For instance: qiv -m -s -d 0.3 /tmp/rotate3dshow
@@ -27,8 +27,9 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
     then all the output files will be merged in a single 'output.gif'
 
     NOTE
-    The parameter 'file' in the [t-3dshow] section should be called '3dshow.dat':
+    The parameter 'file' in the [t-3dshow] section should be called '3dshow.dat' and epsout should be enabled:
        file = 3dshow.dat
+       epsout = 1
 
 
     DEPENDENCIES
@@ -40,9 +41,32 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
 
     OPTIONAL DEPENDENCIES
     gifsicle    - a tool used to produced an animated gif out of the bunch of files produced by PHITS [http://www.lcdf.org/gifsicle].
+
+    EXAMPLE
+    Below is an example of a 3dshow tally to be used with rotate3dshow:
+[t-3dshow]
+  output = 3
+      x0 =   0
+      y0 =   0
+      z0 =   100
+    e-the = 178.0
+   e-phi =  20
+   e-dst =  200
+   l-the =  20
+   l-phi =   0
+   l-dst = 100
+   w-wdt =  350
+   w-hgt =  350
+   w-dst =  100
+   w-mnw = 100
+   w-mnh = 100
+   w-ang = 30
+  heaven = z
+    file = 3dshow.dat
+  epsout = 1
     """
 
-    allowed_parameters = ('e-the', 'e-phi', 'l-the', 'l-phi')
+    allowed_parameters = ('e-the', 'e-phi', 'l-the', 'l-phi', 'w-ang')
 
     if len(sys.argv) == 1:
         print main.__doc__
@@ -81,7 +105,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
 
     angle0 = 0 # the value of e-the or e-phi set in the input file. we will start rotation from this position
     angleStep = 360/nsteps # [deg]
-    print "number of steps:", nsteps
+#    print "number of steps:", nsteps
     isFirst = True
 
     system('rm -fr /tmp/rotate3dshow')
@@ -99,7 +123,7 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi) nsteps file.phits [output.gif]
 
                 if isFirst:                                     # get the value of initial angle
                     if words[0] == parameter:
-                        print words[2]
+                        print "angle:", words[2]
                         angle0 = float(words[2])
                         isFirst = False
                 else:                                           # rotate
