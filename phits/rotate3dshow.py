@@ -12,6 +12,9 @@ Usage: rotate3dshow (e-the|e-phi|l-the|l-phi|w-ang) nsteps file.phits [output.gi
 
     e-the, e-phi, l-the, l-phi or w-ang - the parameter to rotate.
     nsteps - number of images per full revolution (360 deg) of selected parameter.
+    file.phits - PHITS input file (see an example of the [t-3dshow] tally setup below).
+    output.gif - optional parameter of the animated GIF file.
+                 If not specified, the 'nsteps' GIF images will be generated in /tmp/rotate3dshow
 
     The PHITS input file must contain a [t-3dshow] section with description of the 1st shot of the animation.
     The script does nothing than generating 'nsteps' input files and running PHITS with each of them
