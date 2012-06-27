@@ -55,7 +55,7 @@ def main():
     tmpdir = 'rotate3d-gifs' # should not be allowed as an argument since this folder is being purged by the script (a user can set an existing folder here)
     tmpinp = os.path.join(tmpdir, 'panimate.phits')
 
-    input_data = arguments.input_file.readlines()# open(fname_in).readlines()
+    input_data = arguments.input_file.readlines() # open(fname_in).readlines()
     
     output_data = []
 
@@ -64,10 +64,9 @@ def main():
     angleStep = 360/arguments.nimages # [deg]
     isFirst = True
 
-    # remove .gif files from tmpdir
     if not os.path.exists(tmpdir): 
         os.mkdir(tmpdir, 0700)
-    else:
+    else:    # remove the .gif files from tmpdir
         for the_file in os.listdir(tmpdir):
             file_path = os.path.join(tmpdir, the_file)
             try:
@@ -89,7 +88,6 @@ def main():
 
                 if isFirst:                                     # get the value of initial angle
                     if words[0] == arguments.parameter:
-#                        print words[2], 'deg'
                         angle = float(words[2])
                         angle0 = angle  # the value of the parameter set in the input file. we will start rotation from this position
                         isFirst = False
@@ -100,7 +98,6 @@ def main():
                         words[2] = str(angle)
                         line = string.join(words) + '\n'
                         isFound = True
-#                        print angle, 'deg'
                 
             output_data.append(line)
         if not isFound:
@@ -129,8 +126,6 @@ def main():
             if arguments.verbosity:
                 print "Generating the gif-animation file '%s': %s" % (arguments.outname, command)
             os.system(command)
-
-            #os.system('which gifsicle >/dev/null && gifsicle --loopcount=forever --disposal 2 /tmp/rotate3dshow/*.gif > %s' % arguments.outname)
 
     return 0
 
