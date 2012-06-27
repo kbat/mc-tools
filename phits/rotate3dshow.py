@@ -4,13 +4,13 @@
 #
 # rotate3dshow.py - a script to rotate the [t-3dshow] output of PHITS.
 #
-# Dependencies 
+# Dependencies:
 #   Python: Programming language to compile & execute *.py files
 #           Download site (http://www.python.org/download/)
 # 	    Version >= 2.6 is recommended.
 #   ImageMagick: Software suite to create, edit, compose and convert image files.
 #
-# Sample Procedure for Execution (Windows)
+# Example for Windows users:
 #   1. Open "Command prompt" in your Windows
 #   2. Change directory to the folder where PHITS input file is included
 #   3. Type "python rotate3dshow.py e-phi 10 phits.in -o 3dshow.gif"
