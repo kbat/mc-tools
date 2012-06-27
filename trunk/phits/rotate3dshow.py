@@ -21,9 +21,11 @@
 #   3. Type "python rotate3dshow.py e-phi 10 phits.in -o 3dshow.gif"
 #   for creating an animation of e-phi rotation with 10 frames based on 
 #   PHITS input file 'phits.in' and save it in a GIF file '3dshow.gif'
+#
+# http://code.google.com/p/mc-tools
 
 
-import re, sys, string, argparse, shutil, os
+import re, sys, string, argparse, os
 
 def main():
     """
