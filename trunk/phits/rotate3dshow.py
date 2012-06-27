@@ -1,8 +1,7 @@
 #! /usr/bin/python -W all
 # $Id$
 
-import re, sys, string
-from os import system, unlink
+import re, sys, string, argparse, shutil, os
 
 def main():
     """
@@ -74,50 +73,36 @@ def main():
     """
 
     allowed_parameters = ('e-the', 'e-phi', 'l-the', 'l-phi', 'w-ang')
-    tmpinp = '/tmp/panimate.phits'
-    tmpdir = '/tmp/rotate3dshow'
 
-    if len(sys.argv) == 1:
-        print main.__doc__
-        return 1
-    elif len(sys.argv) != 4 and len(sys.argv) != 5:
-        print 'ERROR: wrong usage.'
-        print main.__doc__
-        return 1
+    parser = argparse.ArgumentParser(description="main.__doc__", epilog='Homepage: http://code.google.com/p/mc-tools', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('parameter', type=str, help='parameter to rotate', choices=allowed_parameters) #, metavar='(e-the|e-phi)')
+    parser.add_argument('nimages', type=int, default='10', help='number of images per full revolution (360 deg) of selected parameter')
+    parser.add_argument('input', type=argparse.FileType('rt'), help='PHITS input file')
+    parser.add_argument('-o', type=str, dest='outname', help='If specified, the produced images will be merged in the animated GIF file with this name.', required=False)
+    parser.add_argument('-copt', type=str, dest='copt', help='Options passed to the convert tool used to convert from EPS to GIF. See the "Format conversion" section of the ImageMagick manual: http://www.imagemagick.org', required=False, default='-transparent-color white -background white -rotate 90 -density 100x100')
+    parser.add_argument('-aopt', type=str, dest='aopt', help='Options passed to the convert tool used to produce the animated GIF file. See the "Format conversion" section of the ImageMagick manual for details: http://www.imagemagick.org', required=False, default='-delay 5 -dispose background')
+    parser.add_argument('-epsname', type=str, dest='epsname', help='Name of the EPS file produced by the [t-3dshow] tally of PHITS', required=False, default='3dshow.eps')
+    parser.add_argument('-phits', type=str, dest='phits', help='PHITS executable file', required=False, default='phits') # for Win set to 'c:/phits/bin/phits_c.exe'
 
-    if sys.argv[1] not in allowed_parameters:
-        print 'ERROR: Wrong parameter: ', sys.argv[1]
-        print '       Allowed are', allowed_parameters
-        return 2
+    arguments = parser.parse_args()
+    tmpdir = 'rotate3dtmp' # should not be allowed as an argument since this folder is being purged by the script (a user can set an existing folder here)
+    tmpinp = os.path.join(tmpdir, 'panimate.phits')
+    print tmpinp
 
-    parameter = sys.argv[1] # parameter to rotate
+    print arguments.parameter, arguments.nimages, arguments.outname
 
-    try:
-        nimages = int(sys.argv[2])
-    except ValueError:
-        print 'ERROR: Parameter "%s" must be an integer.' % sys.argv[2]
-        return 3
-
-    fname_in = sys.argv[3] # phits input file
-    fname_out = None
-    if len(sys.argv) == 5: fname_out = sys.argv[4]
-    epsname = "3dshow.eps" # name of the eps file - parameter 'file' in the [t-3dshow] section must be 3dshow.dat
-
-    file_in = open(fname_in)
-    input_data = file_in.readlines()
-    file_in.close()
+    input_data = arguments.input.readlines()# open(fname_in).readlines()
     
     output_data = []
 
     angle0 = 0 # the value of the parameter set in the input file. we will start rotation from this position
-    angleStep = 360/nimages # [deg]
-#    print "number of steps:", nimages
+    angleStep = 360/arguments.nimages # [deg]
     isFirst = True
 
-    system('rm -fr %s' % tmpdir)
-    system('mkdir %s' % tmpdir)
+    shutil.rmtree(tmpdir, ignore_errors=True)
+    os.mkdir(tmpdir, 0700)
 
-    for istep in range(nimages):
+    for istep in range(arguments.nimages):
         del output_data[:]
         for i, line in enumerate(input_data):
             words = line.split()
@@ -127,12 +112,12 @@ def main():
                     line = string.join(words) + '\n'
 
                 if isFirst:                                     # get the value of initial angle
-                    if words[0] == parameter:
+                    if words[0] == arguments.parameter:
                         print "angle:", words[2]
                         angle0 = float(words[2])
                         isFirst = False
                 else:                                           # rotate
-                    if words[0] == parameter:
+                    if words[0] == arguments.parameter:
                         angle = angle0+istep*angleStep
                         words[2] = str(angle)
                         line = string.join(words) + '\n'
@@ -144,16 +129,23 @@ def main():
         for line in output_data:
             tmp_file.write(line)
         tmp_file.close()
-        system("phits < %s" % tmpinp)
-        system("grep -iH error $(ls -1rt |tail -1)") # check the output file for the errors
-        system("convert -transparent-color white -background white -rotate 90 %s /tmp/rotate3dshow/%.3d.gif" % (epsname, istep))
+        os.system("%s < %s" % (arguments.phits, tmpinp))
+#        os.system("grep -iH error $(ls -1rt |tail -1)") # check the output file for the errors
+        os.system("convert %s %s %s" % (arguments.copt, arguments.epsname, os.path.join(tmpdir, "%.3d.gif" % istep)))
 
-    print 'The output files are in /tmp/rotate3dshow'
+    print 'The output files are in %s' % tmpdir
 
-    if fname_out:
-        if fname_out[-4:] == '.gif':
-            print 'generating gif file', fname_out
-            system('which gifsicle >/dev/null && gifsicle --loopcount=forever --disposal 2 /tmp/rotate3dshow/*.gif > %s' % fname_out)
+    if arguments.outname:
+        if arguments.outname[-4:] == '.gif':
+            print 'Generating gif-animation file: %s' % arguments.outname
+            speed = rotate_time/nimages*100
+            left_up_margin = '265x50'  # left and up margin
+            campus_size = '1460+1420'  # campus size (width+height)
+            os.system('convert -delay %.4d -dispose background %s/*.gif %s' % (speed, tmpdir, fname_out))
+            os.system('convert -chop %s %s %s' % (left_up_margin, fname_out, fname_out))
+            os.system('convert -chop 10000x10000+%s %s %s' % (campus_size, fname_out, fname_out))
+
+            #os.system('which gifsicle >/dev/null && gifsicle --loopcount=forever --disposal 2 /tmp/rotate3dshow/*.gif > %s' % arguments.outname)
 
     return 0
 
