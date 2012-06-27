@@ -1,12 +1,33 @@
 #! /usr/bin/python -W all
 # $Id: rotate3dshow.py 100 2012-06-27 10:19:30Z batkov $
 # $URL$
+#
+# rotate3dshow.py - a script to rotate the [t-3dshow] output of PHITS.
+#
+# Dependencies 
+#   Python: Programming language to compile & execute *.py files
+#           Download site (http://www.python.org/download/)
+# 	    Version >= 2.6 is recommended.
+#   ImageMagick: Software suite to create, edit, compose and convert image files
+#           In this script, it is used for converting eps file to gif-animation
+#           Download site (http://www.imagemagick.org/script/download.php)
+#           In the FTP sites in each country, you have to download
+#           binaries/ImageMagick-*****-Q16-windows-dll.exe for 32bit Windows or
+#           binaries/ImageMagick-*****-Q16-windows-x64-dll.exe for 64bit Windows
+#
+# Sample Procedure for Execution (Windows)
+#   1. Open "Command prompt" in your Windows
+#   2. Change directory to the folder where PHITS input file is included
+#   3. Type "python rotate3dshow.py e-phi 10 phits.in -o 3dshow.gif"
+#   for creating an animation of e-phi rotation with 10 frames based on 
+#   PHITS input file 'phits.in' and save it in a GIF file '3dshow.gif'
+
 
 import re, sys, string, argparse, shutil, os
 
 def main():
     """
-    A script to rotate [t-3dshow] output of PHITS.
+    A script to rotate the [t-3dshow] output of PHITS.
     The PHITS input file must contain a [t-3dshow] section with description of the 1st scene of the animation.
 
     The script does nothing than generating 'nimages' input files and running PHITS with each of them
