@@ -3,8 +3,8 @@
 
 import sys
 from ssw import SSW
-from ROOT import TFile, TTree, gROOT
-# from ROOT import *
+# from ROOT import TFile, TTree, gROOT
+from ROOT import *
 
 gROOT.ProcessLine(
 "struct hit_t {\
@@ -57,6 +57,8 @@ def main():
 	T.Fill()
 
     T.Print()
+    T.SetAlias("theta", "TMath::RadToDeg()*(TMath::ATan2(x,z) > 0 ? TMath::ATan2(x,z) : 2*TMath::Pi()+TMath::ATan2(x,z))");
+    T.SetAlias("ID","int(abs(id/1E+6))");
     T.Write()
 
 
