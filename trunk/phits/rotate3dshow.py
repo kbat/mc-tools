@@ -65,15 +65,15 @@ def main():
     isFirst = True
 
     if not os.path.exists(tmpdir): 
-        os.mkdir(tmpdir, 0700)
+        os.mkdir(tmpdir)
     else:    # remove the .gif files from tmpdir
         for the_file in os.listdir(tmpdir):
             file_path = os.path.join(tmpdir, the_file)
             try:
                 if os.path.isfile(file_path) and file_path[-4:] == '.gif':
                     os.unlink(file_path)
-            except Exception, e:
-                print e
+            except (Exception, e):
+                print (e)
 
 
     for istep in range(arguments.nimages):
@@ -84,7 +84,7 @@ def main():
             if len(words)>=3:
                 if words[0] == 'icntl':
                     words[2] = str(11) # 3dshow
-                    line = string.join(words) + '\n'
+                    line = " ".join((words)) + '\n'
 
                 if isFirst:                                     # get the value of initial angle
                     if words[0] == arguments.parameter:
@@ -96,12 +96,12 @@ def main():
                     if words[0] == arguments.parameter:
                         angle = angle0+istep*angleStep
                         words[2] = str(angle)
-                        line = string.join(words) + '\n'
+                        line = " ".join(words) + '\n'
                         isFound = True
                 
             output_data.append(line)
         if not isFound:
-            print >>sys.stderr, "ERROR: '%s' not found in the input file." % arguments.parameter
+            print("ERROR: '%s' not found in the input file." % arguments.parameter) # file=sys.stderr
             return 1
 
         tmp_file = open(tmpinp, 'w+')
@@ -109,22 +109,22 @@ def main():
             tmp_file.write(line)
         tmp_file.close()
         command = "%s < %s" % (arguments.phits, tmpinp)
-        if arguments.verbosity: print "Producing the image at %.0f deg:\t%s" % (angle, command)
+        if arguments.verbosity: print ( "Producing the image at %.0f deg:\t%s" % (angle, command) )
         os.system(command)
 #        os.system("grep -iH error $(ls -1rt |tail -1)") # check the output file for the errors
         gifname = os.path.join(tmpdir, "%.3d.gif" % istep)
         command = "%s %s %s %s" % (arguments.convert, arguments.copt, arguments.epsname, gifname)
-        if arguments.verbosity: print command
+        if arguments.verbosity: print ( command )
         os.system(command)
         if not os.path.isfile(arguments.epsname) or not os.path.isfile(gifname): return 2
 
-    if arguments.verbosity: print 'The output files are in %s' % tmpdir
+    if arguments.verbosity: print ( 'The output files are in %s' % tmpdir )
 
     if arguments.outname:
         if arguments.outname[-4:] == '.gif':
             command = '%s %s %s/*.gif %s' % (arguments.convert, arguments.aopt, tmpdir, arguments.outname)
             if arguments.verbosity:
-                print "Generating the gif-animation file '%s': %s" % (arguments.outname, command)
+                print ( "Generating the gif-animation file '%s': %s" % (arguments.outname, command) )
             os.system(command)
 
     return 0
