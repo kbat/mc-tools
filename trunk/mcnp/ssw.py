@@ -17,19 +17,6 @@ def fortranRead(f):
                 raise IOError("Reading fortran block")
         return data
 
-#-------------------------------------------------------------------------------
-# Skip a fortran block from a binary file
-# @return size, None for EOF
-#-------------------------------------------------------------------------------
-def fortranSkip(f):
-        blen = f.read(4)
-        if len(blen)==0: return 0
-        (size,) = struct.unpack("=i", blen)
-        f.seek(size, 1)
-        blen2 = f.read(4)
-        if blen != blen2:
-                raise IOError("Skipping fortran block")
-        return size
 
 #-------------------------------------------------------------------------------
 # Unpack an array of floating point numbers
@@ -37,7 +24,11 @@ def fortranSkip(f):
 def unpackArray(data):
         return struct.unpack("=%df"%(len(data)//4),  data)
 
+
 class SSW:
+	"""
+	Class to read the SSW output file (wssa)
+	"""
     def __init__(self, filename=None):
         """Initialise a SSW structure"""
         self.reset()
@@ -84,16 +75,20 @@ class SSW:
         # This is according to Esben's subs.f, but the format seems to be wrong
 #        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
         # This has been modified to fix the format:
-        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s28s19s19s80si", data)
+        (self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods) = struct.unpack("=8s5s28s19s19s80si", data)
 
+        print "Code:\t\t%s" % self.kods
+        print "Version:\t%s" % self.vers
+        print "Date:\t\t%s" % self.lods
+        print "Machine designator:", self.idtms
+        print "Problem id:\t%s" % self.probs
+        print "Title:\t\t%s" % self.aids.strip()
+        print "knods:", self.knods
 
-        print "Code:\t\t%s" % kods
-        print "Version:\t%s" % vers
-        print "Date:\t\t%s" % lods
-        print "Machine designator:", idtms
-        print "Problem id:\t%s" % probs
-        print "Title:\t\t%s" % aids.strip()
-        print "knods:", knods
+	if self.kods.strip() != 'mcnpx' or self.vers != '2.7.0':
+		print >> sys.stderr, """
+WARNING: this version of MCNPx (%s) might not be supported. The code was developed for SSW files produced by the version 2.7.0
+""" % self.vers
 
         data = fortranRead(self.file)
         size = len(data)
@@ -143,15 +138,4 @@ class SSW:
         data = fortranRead(self.file)
 #        print self.nrcd, len(data)
         ssb = struct.unpack("=%dd" % int(self.nrcd+1), data) # ??? why +1 Esben does not have it
-#        print len(ssb)
-        # print "1 history:", ssb[0]
-        # print "2 particle:", ssb[1]
-        # print "3 weight:", ssb[2]
-        # print "4 time:", ssb[3]
-        # print "5 time [sec]:", ssb[4]
-        # print "6 x:", ssb[5]
-        # print "7 y:", ssb[6]
-        # print "8 z:", ssb[7]
-        # print "9 wx:", ssb[8] # ??? is it correct ???
-        # print "10 wy:", ssb[9] # ??? is it correct ???
         return ssb

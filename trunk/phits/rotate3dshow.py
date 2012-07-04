@@ -84,7 +84,7 @@ def main():
             if len(words)>=3:
                 if words[0] == 'icntl':
                     words[2] = str(11) # 3dshow
-                    line = " ".join((words)) + '\n'
+                    line = " ".join(words) + '\n'
 
                 if isFirst:                                     # get the value of initial angle
                     if words[0] == arguments.parameter:
