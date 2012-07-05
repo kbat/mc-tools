@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # $Id$
+#
 
 import sys, math, struct
 
@@ -25,10 +26,8 @@ def unpackArray(data):
         return struct.unpack("=%df"%(len(data)//4),  data)
 
 
+#	"""Class to read the SSW output file (wssa)"""
 class SSW:
-	"""
-	Class to read the SSW output file (wssa)
-	"""
     def __init__(self, filename=None):
         """Initialise a SSW structure"""
         self.reset()
@@ -39,12 +38,13 @@ class SSW:
         """Reset header information"""
         self.file = None
         self.fname = ""
-        self.kods = "" # 8 Code
+        self.kods = "" # 8 Code ID
         self.vers = "" # 5 Version
         self.lods = "" # 8 Date
-        self.idtms = "" # 19 Machine Designator
+        self.idtms = "" # 19 Machine Designator and date of SSW-run
         self.probs = "" # 19 Problem ID
         self.aids = ""  # 80 Creation-Run Problem-Title-Card
+	self.knods = 0 #  last dump of SSW-run
         self.nevt = 0 # number of events (hits)
 
         self.isurfs = [] # 10 Array fur Oberflachen
@@ -52,7 +52,7 @@ class SSW:
         self.ntppsp = [] # 10 Array fur Anzahl der Oberflachen-Parameter
         self.tpps = [] # 10,64 Array for surface parameters
 
-        self.nrcd = 0
+        self.nrcd = 0 # length of ssb-array (?) = evtl+1 (?)
         self.nrcdo = 0
 
 #     Structure of SSB-Arrays -- see Harold Breitkreutz thesis for details
@@ -92,14 +92,24 @@ WARNING: this version of MCNPx (%s) might not be supported. The code was develop
 
         data = fortranRead(self.file)
         size = len(data)
+	# np1 - history number in ssw-run
+	# nrss - number of tracks in RSSA data
+	# njsw - number of surfaces in RSSA data
+	# niss - number of histories in RSSA data
+	# niwr - number of cells in RSSA data (np1<0)
+	# mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
         (np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
-        print np1,nrss,self.nrcd,njsw,niss
+	print("history number:\t%i" % np1)
+	print("number of tracks:\t%i" % nrss)
+	print("length of ssb array:\t%i" % self.nrcd)
+	print("number of surfaces in RSSA data:\t%i" % njsw)
+	print("number of histories in RSSA data:\t%i" % niss)
 
         nevt = nrss
         self.nrcdo = self.nrcd
         np1o = np1
 
-        print "Number of hits:", nevt
+#        print "Number of tracks:", nevt
         self.nevt = nevt
         tmp = []
         if np1 < 0:
