@@ -43,22 +43,26 @@ def main():
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
 #        print >>fout,  " ".join(map(str, ssb))
-        hits.history = ssb[0]
-	hits.id = ssb[1]
+        hits.history = ssb[0] # >0 = with collision, <0 = without collision
+	hits.id = ssb[1] # surface + particle type + multigroup problem info
 	hits.weight = ssb[2]
-	hits.energy = ssb[3]
-	hits.time = ssb[4]
-	hits.x = ssb[5]
-	hits.y = ssb[6]
-	hits.z = ssb[7]
+	hits.energy = ssb[3] # [MeV]
+	hits.time = ssb[4] # [sec]
+	hits.x = ssb[5] # [cm]
+	hits.y = ssb[6] # [cm]
+	hits.z = ssb[7] # [cm]
 	hits.wx = ssb[8]
 	hits.wy = ssb[9]
-	hits.k = ssb[10]
+	hits.k = ssb[10] # what is this ???
 	T.Fill()
 
     T.Print()
     T.SetAlias("theta", "TMath::RadToDeg()*(TMath::ATan2(x,z) > 0 ? TMath::ATan2(x,z) : 2*TMath::Pi()+TMath::ATan2(x,z))");
-    T.SetAlias("ID","int(abs(id/1E+6))");
+    T.SetAlias("i","TMath::Nint(TMath::Abs(id/1E+6))"); # particle type
+    T.SetAlias("JGP","-TMath::Nint(i/200.0)");         # energy group
+    T.SetAlias("JC","TMath::Nint(i/100.0) + 2*JGP");   #
+    T.SetAlias("IPT","i-100*JC+200*JGP");              # particle type: 1=neutron, 2=photon, 3=electron
+    T.SetAlias("w", "TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id)")
     T.Write()
 
 
