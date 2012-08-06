@@ -99,7 +99,7 @@ WARNING: this version of MCNPx (%s) might not be supported. The code was develop
 	# niwr - number of cells in RSSA data (np1<0)
 	# mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
         (np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
-	print("history number:\t%i" % np1)
+	print("number of incident particles:\t%i" % np1)
 	print("number of tracks:\t%i" % nrss)
 	print("length of ssb array:\t%i" % self.nrcd)
 	print("number of surfaces in RSSA data:\t%i" % njsw)
