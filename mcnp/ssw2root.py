@@ -35,11 +35,11 @@ def main():
 
     ssw = SSW(fin_name)
 
-    fout = TFile(fout_name, "recreate")
-    T = TTree("T", ssw.getTitle())
+    fout = TFile(fout_name, "recreate", ssw.getTitle())
+    T = TTree("T", ssw.probs)
     T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
 
-    print "Number of hits:", ssw.nevt
+    print "Number of tracks:", ssw.nevt
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
 #        print >>fout,  " ".join(map(str, ssb))
