@@ -7,7 +7,7 @@
 import sys, re, string
 from array import array
 from ROOT import ROOT, TFile, TH1F, TObjArray, THnSparseF
-from mctal import Tally
+from mctal import Tally, Axis
 
 def main():
     """

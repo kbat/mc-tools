@@ -47,7 +47,7 @@ def main():
 	hits.id = ssb[1] # surface + particle type + multigroup problem info
 	hits.weight = ssb[2]
 	hits.energy = ssb[3] # [MeV]
-	hits.time = ssb[4] # [sec]
+	hits.time = ssb[4] # [shakes]
 	hits.x = ssb[5] # [cm]
 	hits.y = ssb[6] # [cm]
 	hits.z = ssb[7] # [cm]
