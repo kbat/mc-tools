@@ -6,9 +6,10 @@
 
 import sys, re, string
 from array import array
-from mctal import Header, Tally, Axis
+from mctal import Header, Tally, Axis, MCTAL
 from mcnp import GetParticleNames
-    
+from ROOT import ROOT, TH3F, TH1F
+
 
 def main():
     """
@@ -19,8 +20,48 @@ def main():
     Homepage: http://code.google.com/p/mc-tools
     """
 
-    good_tallies = [4] # list of 'good' tally types
+#    good_tallies = [4] # list of 'good' tally types
     fname_in = sys.argv[1]
+
+
+    mctal = MCTAL(fname_in)
+    mctal.good_tallies = [4]
+    mctal.verbose = False
+    tallies = mctal.read()
+    print "total number of good tallies:", len(tallies)
+
+    t = None
+    for tt in tallies:
+        if tt.number == 4: t = tt
+
+#    t.axes['f'].Print()
+    # xyz? xzy- yxz- yzx- zxy? zyx-
+    # yxz?
+    # 3 loops XYZ -> yzx? zyx?
+    # 3 loops ZYX -> yxz? xyz?  back: t.data[len(t.data)-ii-1]: 
+
+    xbins = map(float, t.axes['f'].getBins('i'))
+    ybins = map(float, t.axes['f'].getBins('j'))
+    zbins = map(float, t.axes['f'].getBins('k'))
+
+    h = TH3F("h", "", len(xbins)-1, array('f', xbins),
+             len(ybins)-1, array('f', ybins),
+             len(zbins)-1, array('f', zbins))
+    if (len(xbins)-1) * (len(ybins)-1) * (len(zbins)-1) != len(t.data):
+        print "data array length is not equal to ni*nj*nk"
+
+    ii = 0
+    for i in range(h.GetNbinsX()):
+        for j in range(h.GetNbinsY()):
+            for k in range(h.GetNbinsZ()):
+                h.SetBinContent(i+1, j+1, k+1, t.data[ii])
+                h.SetBinError(i+1, j+1, k+1, t.data[ii]*t.errors[ii])
+                ii = ii + 1
+
+    h.SaveAs("a.root")
+    
+    return 0
+
 
     verbose = True           # verbosity switch
     probid_date = None       # date from probid

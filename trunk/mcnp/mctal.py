@@ -131,7 +131,7 @@ class Axis:
             self.ni, self.nj, self.nk = self.numbers[2:]
 
 
-        print "Axis %s added" % self.name
+#        print "Axis %s added" % self.name
 
 
     def Print(self):
@@ -142,10 +142,30 @@ class Axis:
             
         print "\t\tcsn %s" % self.arraycsn
 
+    def getBins(self, i):
+        """Return array of bins in the directon of 'i' (can be i, j, or k)
+Meaningful only for non-detector tallies  if len(self.numbers)>1"""
+        if len(self.arraycsn) == 0 or len(self.numbers)<=1:
+            print "Axis::getBins has no sense in this context"
+            return []
+        start, end = 0, 0
+        if i=='i':
+            start = 0
+            end = self.ni+1
+        elif i=='j':
+            start = self.ni+1
+            end = start+self.nj+1
+        elif i=='k':
+            start = self.ni+1 + self.nj+1
+            end = start + self.nk+1
+
+        return self.arraycsn[start:end]
+
 
 class MCTAL:
     """mctal container"""
-    good_tallies = [5] # list of 'good' tally types
+    good_tallies = [5, 4] # list of 'good' tally types (only implemented types are listed here, but a user can narrow this list even more)
+    verbose = True          # verbosity switch
 
     def __init__(self, fname):
         """Constructor"""
@@ -155,7 +175,6 @@ class MCTAL:
 
     def read(self):
         """method to parse the mctal file"""
-        verbose = True          # verbosity switch
         probid_date = None       # date from probid
         probid_time = None       # time from probid
         tally = None             # current tally
@@ -164,4 +183,121 @@ class MCTAL:
         
         h = Header()
 
-        # to be continued - see readmctal.py
+        is_list_of_particles = False # True if the line with the list of particles follows the ^tally line           
+                                                                                                             
+        h = Header()                                                                                         
+                                                                                                             
+        file_in = open(self.fname)
+    
+
+        for line in file_in.readlines():                                                                                                                      
+            if h.kod == 0:                                                                                                                                    
+                h.kod, h.ver, probid_date, probid_time, h.knod, h.nps, h.rnr = line.split()                                                                   
+                h.probid.append(probid_date)                                                                                                                  
+                h.probid.append(probid_time)                                                                                                                  
+                continue                                                                                                                                      
+            else:                                                                                                                                             
+                if h.title is None and line[0] == " ":                                                                                                        
+                    h.title = line.strip()                                                                                                                    
+                    continue                                                                                                                                  
+                                                                                                                                                              
+            words = line.split()                                                                                                                              
+                                                                                                                                                              
+            if not h.ntal and words[0] == 'ntal':                                                                                                             
+                h.ntal = int(words[1])                                                                                                                        
+                if len(words) == 4 and words[2] == 'npert':                                                                                                   
+                    h.npert = int(words[3])                                                                                                                   
+                continue                                                                                                                                      
+                                                                                                                                                              
+            if h.ntal and not tally and words[0] != 'tally':                                                                                                  
+                for w in words:                                                                                                                               
+                    h.ntals.append(int(w))                                                                                                                    
+                                                                                                                                                              
+                if self.verbose:                                                                                                                                   
+                    h.Print()                                                                                                                                 
+                                                                                                                                                              
+            if words[0] == 'tally':                                                                                                                           
+                if self.verbose: print("")                                                                                                                         
+                if tally:                                                  
+                    if tally.number and tally.number % 10 in self.good_tallies:                                                                                    
+                        self.tallies.append(tally)                                                                                                                 
+                    del tally                                                                                                                                 
+    # temporary                                                                                                                                               
+                tally = Tally(int(words[1]))                                                                                                                  
+                tally.particle = int(words[2])                                                                                                                
+                if tally.particle < 0: # then tally.particle is number of particle types and the next line lists them                                         
+                    is_list_of_particles = True                                                                                                               
+                tally.type = int(words[3])                                                                                                                    
+                if self.verbose:                                                                                                                                   
+                    print "tally number %d particle %d of type %d" % (tally.number, tally.particle, tally.type)                                               
+                if tally.number not in h.ntals:                                                                                                               
+                    print 'tally %d is not in ntals' % tally.number                                                                                           
+                    print h.ntals                                                                                                                             
+                    return 1                                                                                                                                  
+    #            is_bin_labels = True                                                                                                                         
+                continue                                                                                                                                      
+                                                                                                                                                              
+            if is_list_of_particles:                                                                                                                          
+                tally.particle = map(int, words)                                                                                                              
+                if self.verbose:                                                                                                                                   
+                    print "list of particles: ", GetParticleNames(tally.particle)                                                                             
+                is_list_of_particles = False                                                                                                                  
+                                                                                                                                                              
+                                                                                                                                                              
+            if not tally: continue                                                                                                                            
+                                                                                                                                                              
+            if tally.axes['f'] and tally.axes['d'] is None and line[0] == ' ':                                                                                
+                for w in words:                                                                                                                               
+                    tally.axes['f'].arraycsn.append(str(w))                                                                                                   
+    #            print "axis", tally.axes['f'].arraycsn                                                                                                       
+                                                                                                                                                              
+    #        if tally.axes['f'] is None and words[0] not in ['1', 'f']:                                                                                       
+    #            tally.title = line.strip()                                                                                                                   
+    #            print "tally.title:", tally.title                                                                                                            
+    #            return 0                                                                                                                                     
+                                                                                                                                                              
+            if tally.axes['t'] and is_vals == False and len(tally.data) == 0 and line[0] == ' ':                                                              
+                for w in words: tally.axes['t'].arraycsn.append(float(w))                                                                                     
+                                                                                                                                                              
+            if tally.axes['e'] and tally.axes['t'] is None and line[0] == ' ':                                                                                
+                for w in words: tally.axes['e'].arraycsn.append(float(w))                                                                                     
+                                                                                                                                                              
+            if tally.axes['u'] and tally.axes['s']is None and line[0] == ' ':                                                                                 
+                for w in words: tally.axes['u'].arraycsn.append(float(w))                                                                                     
+                                                                                                                                                              
+            if   not tally.axes['f'] and re.search('^f', line[0]):        tally.axes['f'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['d'] and re.search('^d', line[0]):        tally.axes['d'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['u'] and re.search ("u[tc]?", line[0:1]): tally.axes['u'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]): tally.axes['s'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]): tally.axes['m'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['c'] and re.search('^c[tc]?', line[0:1]): tally.axes['c'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['e'] and re.search("^e[tc]?",  line[0:1]):tally.axes['e'] = Axis(words[0], map(int, words[1:]))                               
+            elif not tally.axes['t'] and re.search("^t[tc]?", line[0:1]): tally.axes['t'] = Axis(words[0], map(int, words[1:]))                               
+            elif line[0:2] == 'tfc':                                                                                                                          
+                tally.tfc_n = words[1]                                                                                                                        
+                tally.tfc_jtf = words[2:]                                                                                                                     
+                                                                                                                                                              
+            if tally.tfc_n and line[0] == ' ':                                                                                                                
+                tally.tfc_data = words                                                                                                                        
+                                                                                                                                                              
+            if words[0] == 'vals':                                                                                                                            
+                is_vals = True                                                                                                                                
+                continue                                                                                                                                      
+                                                                                                                                                              
+            if is_vals:                                                                                                                                       
+                if line[0] == ' ':                                                                                                                            
+                    for iw, w in enumerate(words):                                                                                                            
+                        if not iw % 2: tally.data.append(float(w))                                                                                            
+                        else: tally.errors.append(float(w))                                                                                                   
+                else:                                                                                                                                         
+                    is_vals = False                                                                                                                           
+
+
+        if tally:  # save the latest tally
+            if tally.number and tally.number % 10 in self.good_tallies:                                                                                    
+                self.tallies.append(tally)                                                                                                                 
+            del tally                                                                                                                                 
+
+                    
+        file_in.close()
+        return self.tallies
