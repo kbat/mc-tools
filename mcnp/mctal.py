@@ -3,6 +3,7 @@
 # $URL$
 # $Id$
 #
+# Page numbers refer to MCNPX 2.7.0 manual
 
 import sys, re, string
 from array import array
@@ -41,7 +42,7 @@ class Tally:
     number = None
     title = ""
     particle = None
-    type = None     # tally type: 0=nondetector, 1=point detector; 2=ring; 3=FIP; 4=FIR; 5=FIC
+    type = None     # tally type: 0=nondetector, 1=point detector; 2=ring; 3=pinhole radiograph; 4=transmitted image radiograph (rectangular grid); 5=transmitted image radiograph (cylindrical grid) - see page 320 of MCNPX 2.7.0 Manual
     f  = None       # number of cell, surface or detector bins
     d  = None       # number of total / direct or flagged bins
 # u is the number of user bins, including the total bin if there is one.
@@ -81,6 +82,7 @@ class Tally:
 
     def Print(self, option=''):
         """Tally printer"""
+        print "\nprinting tally:"
         types = ['nondetector', 'point detector', 'ring', 'FIP', 'FIR', 'FIC']
         print "tally #%d:\t%s" % (self.number, self.title)
         if option == 'title': return
@@ -88,7 +90,7 @@ class Tally:
         print "\tparticles:", self.particle
         print "\ttype: %s (%s)" % (self.type, types[self.type])
 
-        if self.d == 1:                                   # page 262
+        if self.d == 1:
             print '\tthis is a cell or surface tally unless there is CF or SF card'
         elif self.d == 2:
             print '\tthis is a detector tally (unless thre is an ND card on the F5 tally)'
@@ -96,6 +98,11 @@ class Tally:
         print "\taxes:"
         for b in self.axes.keys():
             self.axes[b].Print()
+
+        print "\tdata:"
+        print self.data
+        print "\terrors:"
+        print self.errors
 
 
     def getName(self):
@@ -107,16 +114,30 @@ class Tally:
 
 class Axis:
     """Axis of a tally"""
-    def __init__(self, name, number):
+    def __init__(self, name, numbers):
         """Axis Constructor"""
         self.name = name
-        self.number = int(number) # number of cell or surfae bins
-        self.arraycsn = [] # array of cell or surface numbers
+        self.numbers = numbers # we keep all array numbers, but not the first one only (in the case of mesh tally there are > than 1 number)
+        self.number = int(self.numbers[0]) # see page 320
+        self.arraycsn = [] # array of cell or surface numbers (written for non-detector tallies only)
+        
+        # ni, nj and nk make sense for mesh tallies only (see e.g. tally 4 in figs/cold-neutron-map/2/case001/small-stat/mctal)
+        # these are number of bins in i,j,k directions
+        self.ni = None
+        self.nj = None
+        self.nk = None
+        if len(self.numbers)>1:
+            self.ni, self.nj, self.nk = self.numbers[2:]
+            print self.ni, self.nj, self.nk
+
+
         print "Axis %s added" % self.name
+
 
     def Print(self):
         """Axis printer"""
         print "\t Axis %s" % self.name
+        print "\t\tcsn %s" % self.arraycsn
 
 
 class MCTAL:
@@ -140,4 +161,4 @@ class MCTAL:
         
         h = Header()
 
-
+        # to be continued - see readmctal.py

@@ -65,7 +65,7 @@ def main():
             if verbose:
                 print ("code:\t\t%s" % kod)
                 print ("version:\t%s" % ver)
-                print ("date and time:j\t%s" % probid)
+                print ("date and time:\t%s" % probid)
                 print ("dump number:\t%s" % knod)
                 print ("number of histories:\t%s" % nps)
                 print ("number of pseudorandom numbers used:\t%s" % rnr)

@@ -8,6 +8,24 @@ import sys, re, string
 from array import array
 from mctal import Header, Tally, Axis
 
+def GetParticleNames(a):
+    """Convert the array of 1 and 0 to the list of particles
+       according to the Table 4-1 on page 4-10 (48) of the MCNP 2.7.0 Manual
+    """
+    # '!' stands for 'anti'
+    names = ['neutron', '-neutron', 'photon', 'electron', 'positron',
+             'mu-', '!mu-', 'tau-', 'nue', '!nue', 'num', 'nut',
+             'proton', '!proton', 'lambda0', 'sigma+', 'sigma-', 'cascade0', 'cascade-', 'omega-', 'lambdac+', 'cascadec+', 'cascadec0', 'lambdab0',
+             'pion+', 'pion-', 'pion0', 'kaon+', 'kaon-', 'K0short', 'K0long', 'D+', 'D0', 'Ds+', 'B+', 'B0', 'Bs0',
+             'deuteron', 'triton', 'He3', 'He4', 'heavy ions']
+    vals = []
+    for i in range(len(a)):
+        if a[i] == 1: vals.append(names[i])
+        elif a[i] != 0:
+            print 'strange values (not 0 or 1) found in the list of particles:', a
+    return vals
+    
+
 def main():
     """
     readmctal - an example how to read the mctal file
@@ -17,10 +35,10 @@ def main():
     Homepage: http://code.google.com/p/mc-tools
     """
 
-    good_tallies = [5] # list of 'good' tally types
+    good_tallies = [4] # list of 'good' tally types
     fname_in = sys.argv[1]
 
-    verbose = True          # verbosity switch
+    verbose = True           # verbosity switch
     probid_date = None       # date from probid
     probid_time = None       # time from probid
 
@@ -28,7 +46,8 @@ def main():
     tallies = []             # list of tallies read so far
 
     is_vals = False          # True in the data/errors section
-    is_bin_labels = False    # True in the line after the "^tally" line
+#    is_bin_labels = False    # True in the line after the "^tally" line
+    is_list_of_particles = False # True if the line with the list of particles follows the ^tally line
 
     h = Header()
 
@@ -57,17 +76,20 @@ def main():
             for w in words:
                 h.ntals.append(int(w))
 
-            if verbose: h.Print()
+            if verbose: 
+                h.Print()
 
         if words[0] == 'tally':
             if verbose: print("")
             if tally: 
-                if tally.number % 10 in good_tallies:
+                if tally.number and tally.number % 10 in good_tallies:
                     tallies.append(tally)
                 del tally
 # temporary
             tally = Tally(int(words[1]))
             tally.particle = int(words[2])
+            if tally.particle < 0: # then tally.particle is number of particle types and the next line lists them
+                is_list_of_particles = True
             tally.type = int(words[3])
             if verbose:
                 print "tally number %d particle %d of type %d" % (tally.number, tally.particle, tally.type)
@@ -75,29 +97,27 @@ def main():
                 print 'tally %d is not in ntals' % tally.number
                 print h.ntals
                 return 1
-            is_bin_labels = True
+#            is_bin_labels = True
             continue
 
-        if is_bin_labels:
-            tally.binlabels = words
-            print "bin labels: %s" % tally.binlabels
-            is_bin_labels = False
-            continue
+        if is_list_of_particles:
+            tally.particle = map(int, words)
+            if verbose:
+                print "list of particles: ", GetParticleNames(tally.particle)
+            is_list_of_particles = False
+
         
-        #return 0 # tmp exit here
-
-
         if not tally: continue
 
         if tally.axes['f'] and tally.axes['d'] is None and line[0] == ' ':
             for w in words:
                 tally.axes['f'].arraycsn.append(str(w))
-            print tally.axes['f'].arraycsn
+#            print "axis", tally.axes['f'].arraycsn
 
-        if tally.axes['f'] is None and words[0] not in ['1', 'f']:
-            tally.title = line.strip()
-            print "tally.title:", tally.title
-            return 0
+#        if tally.axes['f'] is None and words[0] not in ['1', 'f']:
+#            tally.title = line.strip()
+#            print "tally.title:", tally.title
+#            return 0
 
         if tally.axes['t'] and is_vals == False and len(tally.data) == 0 and line[0] == ' ':
             for w in words: tally.axes['t'].arraycsn.append(float(w))
@@ -108,14 +128,14 @@ def main():
         if tally.axes['u'] and tally.axes['s']is None and line[0] == ' ':
             for w in words: tally.axes['u'].arraycsn.append(float(w))
 
-        if   not tally.axes['f'] and re.search('^f', line[0]):        tally.axes['f'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['d'] and re.search('^d', line[0]):        tally.axes['d'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['u'] and re.search ("u[tc]?", line[0:1]): tally.axes['u'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]): tally.axes['s'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]): tally.axes['m'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['c'] and re.search('^c[tc]?', line[0:1]): tally.axes['c'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['e'] and re.search("^e[tc]?",  line[0:1]):tally.axes['e'] = Axis(words[0], int(words[1]))
-        elif not tally.axes['t'] and re.search("^t[tc]?", line[0:1]): tally.axes['t'] = Axis(words[0], int(words[1]))
+        if   not tally.axes['f'] and re.search('^f', line[0]):        tally.axes['f'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['d'] and re.search('^d', line[0]):        tally.axes['d'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['u'] and re.search ("u[tc]?", line[0:1]): tally.axes['u'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]): tally.axes['s'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]): tally.axes['m'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['c'] and re.search('^c[tc]?', line[0:1]): tally.axes['c'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['e'] and re.search("^e[tc]?",  line[0:1]):tally.axes['e'] = Axis(words[0], map(int, words[1:]))
+        elif not tally.axes['t'] and re.search("^t[tc]?", line[0:1]): tally.axes['t'] = Axis(words[0], map(int, words[1:]))
         elif line[0:2] == 'tfc':
             tally.tfc_n = words[1]
             tally.tfc_jtf = words[2:]
@@ -135,15 +155,17 @@ def main():
             else:
                 is_vals = False
 
-    tally.Print()
+#    print "valsss", tally.data
+
+    tally.Print() #  print only last tally
     
 #    if tally.number == 15:
 #        print "histogramming tally", tally.name
 
 # add the latest boundary to the f-axis: (MUST ALWAYS GO BEFORE tally.Histogram())
 #    if tally.axes['f']:  tally.axes['f'].arraycsn.append(f_boundary_number)
-    if tally.number % 10 in good_tallies:
-        histos.Add(tally.Histogram())
+#    if tally.number % 10 in good_tallies:
+#        histos.Add(tally.Histogram())
 
     file_in.close()
 

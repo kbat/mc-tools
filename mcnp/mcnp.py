@@ -13,3 +13,6 @@ def getPar(masterfile, parname, pos=3):
 #            print line.strip(), val
     f.close()
     return val
+
+ 
+
