@@ -7,6 +7,7 @@
 
 import sys, re, string
 from array import array
+from mcnp import GetParticleNames
 
 class Header:
     """mctal header container"""
@@ -87,7 +88,7 @@ class Tally:
         print "tally #%d:\t%s" % (self.number, self.title)
         if option == 'title': return
 #        self.Check()
-        print "\tparticles:", self.particle
+        print "\tparticles:", GetParticleNames(self.particle)
         print "\ttype: %s (%s)" % (self.type, types[self.type])
 
         if self.d == 1:
@@ -128,7 +129,6 @@ class Axis:
         self.nk = None
         if len(self.numbers)>1:
             self.ni, self.nj, self.nk = self.numbers[2:]
-            print self.ni, self.nj, self.nk
 
 
         print "Axis %s added" % self.name
@@ -137,6 +137,9 @@ class Axis:
     def Print(self):
         """Axis printer"""
         print "\t Axis %s" % self.name
+        if len(self.numbers)>1:
+            print "\t\tni,nj,nk: ", self.ni, self.nj, self.nk
+            
         print "\t\tcsn %s" % self.arraycsn
 
 
