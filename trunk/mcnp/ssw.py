@@ -85,10 +85,10 @@ class SSW:
         print "Title:\t\t%s" % self.aids.strip()
         print "knods:", self.knods
 
-	if self.kods.strip() != 'mcnpx' or self.vers != '2.7.0':
-		print >> sys.stderr, """
-WARNING: this version of MCNPx (%s) might not be supported. The code was developed for SSW files produced by the version 2.7.0
-""" % self.vers
+	supported_mcnp_versions = ['2.6.0', '2.7.0']
+	if self.kods.strip() != 'mcnpx' or self.vers not in supported_mcnp_versions:
+		print >> sys.stderr, "WARNING: This version of MCNPx (%s) might not be supported." % self.vers
+		print >> sys.stderr, "\t The code was developed for SSW files produced by these MCNPX versions:", supported_mcnp_versions
 
         data = fortranRead(self.file)
         size = len(data)
@@ -130,7 +130,13 @@ WARNING: this version of MCNPx (%s) might not be supported. The code was develop
 #            print "size", size
             tmpii, tmpkk, tmpnn, tmp = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
 #            print "tmpnn", tmpnn, len(tmp)
-            print struct.unpack("2f", tmp)
+	    if self.vers == '2.7.0':
+		    print struct.unpack("2f", tmp)
+	    elif self.vers == '2.6.0':
+		    print "" # struct.unpack("3f", tmp)
+	    else:
+		    print "This MCNP version is not supported:", self.vers
+		    sys.exit(1)
             self.isurfs.append(tmpii)
             self.kstpps.append(tmpkk)
             self.ntppsp.append(tmpnn)
