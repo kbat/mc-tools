@@ -62,7 +62,8 @@ def main():
     T.SetAlias("JGP","-TMath::Nint(i/200.0)");         # energy group
     T.SetAlias("JC","TMath::Nint(i/100.0) + 2*JGP");   #
     T.SetAlias("IPT","i-100*JC+200*JGP");              # particle type: 1=neutron, 2=photon, 3=electron
-    T.SetAlias("w", "TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id)")
+    T.SetAlias("wz", "TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id)") # z-direction cosine
+    T.SetAlias("surface", "TMath::Abs(id)-1000000)") # surface crossed
     T.Write()
 
 
