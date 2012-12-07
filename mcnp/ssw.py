@@ -85,7 +85,7 @@ class SSW:
         print "Title:\t\t%s" % self.aids.strip()
         print "knods:", self.knods
 
-	supported_mcnp_versions = ['2.6.0', '2.7.0']
+	supported_mcnp_versions = ['2.6.0', '26b', '2.7.0']
 	if self.kods.strip() != 'mcnpx' or self.vers not in supported_mcnp_versions:
 		print >> sys.stderr, "WARNING: This version of MCNPx (%s) might not be supported." % self.vers
 		print >> sys.stderr, "\t The code was developed for SSW files produced by these MCNPX versions:", supported_mcnp_versions
@@ -136,7 +136,7 @@ class SSW:
 		    print "" # struct.unpack("3f", tmp)
 	    else:
 		    print "This MCNP version is not supported:", self.vers
-		    sys.exit(1)
+#		    sys.exit(1)
             self.isurfs.append(tmpii)
             self.kstpps.append(tmpkk)
             self.ntppsp.append(tmpnn)
