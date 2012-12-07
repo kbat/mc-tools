@@ -83,8 +83,8 @@ class USXSUW:
 
             data = fortranRead(self.file)
             self.gdstor = struct.unpack("=%df" % self.getNbinsTotal(), data)
-            print "end of loop at iteration", record
             record += 1
+        print record, "records found"
 
         print ""
         self.file.close()
