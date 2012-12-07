@@ -8,6 +8,7 @@ from array import array
 
 def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
 #    print colxmin, colxmax, coly, coley, opt, fname
+    print opt
     f = open(fname)
     vx = []  # upper border of the energy bin
     vy = []  # flux
@@ -38,7 +39,10 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
         y  = float(words[coly])
         ey = float(words[coley])
         vy.append(y)
-        vey.append(y*ey)
+        if opt=='fluka':
+            vey.append(ey)
+        else:
+            vey.append(y*ey)
 
         line_number = line_number+1
 
@@ -86,7 +90,7 @@ def main():
     coly = int(sys.argv[2])
     coley = coly+1
     opt = sys.argv[3]
-    supported_options = ['no', 'width', 'center', 'mcnp']
+    supported_options = ['no', 'width', 'center', 'mcnp', 'fluka']
     if opt not in (supported_options):
         print "opt", opt, "is not supported."
         print "Option must take one of these values:", supported_options
