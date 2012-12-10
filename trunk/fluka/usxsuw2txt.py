@@ -16,7 +16,7 @@ def main():
     fout_name = fin_name + ".txt"
 
     u = USXSUW(fin_name)
-    u.read()
+    u.Read()
     u.Print()
 
 if __name__ == "__main__":

@@ -5,6 +5,11 @@
 import sys, math, struct
 from ssw import fortranRead
 
+def sr2deg(val):
+    """Converts steradians to degrees"""
+    return math.acos(max([1.0-val/math.pi/2.0, -1.0])) * 180.0/math.pi;
+
+
 class USRBDXCARD:
     """USXSUW record - corresponds to one USRBDX card"""
     def __init__(self):
@@ -23,10 +28,10 @@ class USRBDXCARD:
         self.lfusbx = None # current or fluence
         self.llnusx = None # low energy neutrons
         # energy binning
-        self.ebxlow = 0
-        self.ebxhgh = 0.0
-        self.nebxbn = 0
-        self.debxbn = 0.0
+        self.ebxlow = 0    # min energy
+        self.ebxhgh = 0.0  # max energy
+        self.nebxbn = 0    # number of energy intervals
+        self.debxbn = 0.0  # energy bin width
         # angular binning
         self.abxlow = 0
         self.abxhgh = 0
@@ -60,7 +65,55 @@ class USRBDXCARD:
     def getNEbinsTotal(self):
         return self.nebxbn + self.igmusx
 
+    def getALowEdge(self):
+        """Return solid angle lower edges vector"""
+        vec = []
+        val = 0
+        for ia in range(self.nabxbn+1):
+            if abs(self.itusbx)<=1: # linear in angle
+                val = self.abxlow + ia*self.dabxbn
+                vec.append(val)
+            else: # logarithmic in angle
+                if ia==0: # first bin
+                    vec.append(0.0) # see note 2 for USRBDX on page 237
+                    val = self.abxlow
+                    vec.append(val)
+                else:
+                    if ia!=self.nabxbn:
+                        val = self.abxlow*pow(self.dabxbn, ia)
+                        vec.append(val)
+        return vec
+
+    def getData(self, ie, ia, unit):
+        """
+        Return a list of 
+        data (above low energy neutrons) in energy bin ie and angular bin ia
+        unit == sr:  [Part/sr/GeV/cmq/pr]
+        unit == deg: [Part/deg/GeV/cmq/pr]
+        and its relative error
+        """
+        y = ie + ia*self.nebxbn
+        val = self.gdstor[y]
+        err = self.gbstor[y]
+        if unit == 'sr':
+            return val,err
+        elif unit == 'deg':
+            vec = self.getALowEdge()
+            return val * (vec[ia+1]-vec[ia]) / (sr2deg(vec[ia+1])-sr2deg(vec[ia])), err
+        else: raise IOError("unit %s is not supported" % unit)
+
+
     def Print(self):
+        def PrintV(val, sameline):
+            """Prints value"""
+            print "%e" % val,
+            if not sameline: print "\n\t",
+        
+        def PrintVE(val, err, sameline):
+            """Prints value and error"""
+            print "%e +/- %g %%\t" % (val, err),
+            if not sameline: print "\n\t",
+
         print "\nDetector n: %d (%d) %s" % (self.nx, self.nx, self.titusx)
         print "\t(Area: %g cmq," % self.ausbdx
         print "\t distr. scored: %d," % self.idusbx
@@ -74,25 +127,72 @@ class USRBDXCARD:
         
         print ""
         
-        print "\tTot. resp. (Part/cmq/pr) %g +/- %g %%" % (self.totresp, 100*self.totresperr)
-        print "\t( -->      (Part/pr)     %g +/- %g %% )"  % (self.totresp*self.ausbdx, 100*self.totresperr)
+        print "\tTot. resp. (Part/cmq/pr) %e +/- %e %%" % (self.totresp, 100*self.totresperr)
+        print "\t( -->      (Part/pr)     %e +/- %e %% )"  % (self.totresp*self.ausbdx, 100*self.totresperr)
 
         print ""
 
         print "\t**** Different. Fluxes as a function of energy ****"
         print "\t****      (integrated over solid angle)        ****"
-        print "\t Energy boundaries (GeV):"
-        print "\t"
-        print self.nebxbn, len(self.epgmax)
-#        for i in range(self.nebxbn):
-#            print self.epgmax[i]
+        print "\t Energy boundaries (GeV):\n"
+        print "\t",
+        for i in range(self.nebxbn):
+            PrintV(self.epgmax[i], (i+1) % 5)
+        print "Lowest boundary (GeV):", self.epgmax[self.nebxbn] # if does not work, see UsxSuw::GetLowsetBoundary
+
+        print "\n\tFlux (Part/GeV/cmq/pr):"
+        print "\t",
+        for i in range(self.nebxbn):
+            PrintVE(self.flux[i], 100.0*self.fluxerr[i], (i+1)%2)
+
+        print "\n\t**** Cumulative Fluxes as a function of energy ****"
+        print "\t****      (integrated over solid angle)        ****"
+
+        print "\n\t Energy boundaries (GeV):"
+        print "\t",
+        for i in range(self.nebxbn):
+            PrintV(self.epgmax[i], (i+1) % 5)
+        print "Lowest boundary (GeV):", self.epgmax[self.nebxbn] # if does not work, see
+
+        print "\n\tCumul. Flux (Part/cmq/pr):\n\n\t",
+        for i in range(self.nebxbn):
+            PrintVE(self.cumulflux[i], 100.0*self.cumulfluxerr[i], (i+1)%2)
+        
+        print "\n\t**** Double diff. Fluxes as a function of energy ****"
+        alowedges = self.getALowEdge()
+        print "\tSolid angle minimum value (sr): ", alowedges[0]
+        print "\tSolid angle upper boundaries (sr):\n\t",
+        for i, val in enumerate(alowedges[1:], 1):
+            PrintV(val, i%5)
+
+        alowedgesdeg = map(sr2deg, alowedges)
+        print "\n\tAngular minimum value (deg.): ", alowedgesdeg[0]
+        print "\tAngular upper boundaries (deg.):\n\t",
+        for i,val in enumerate(alowedgesdeg[1:], 1):
+            PrintV(val, i%5)
+
+        # high-energy part
+        for ie in range(self.nebxbn):
+            print "\n\tEnergy interval (GeV): %e %e" % (self.epgmax[ie], self.epgmax[ie+1])
+            print "\tFlux (Part/sr/GeV/cmq/pr):\n\t",
+            for ia in range(self.nabxbn):
+                val = self.getData(self.nebxbn-ie-1, ia, 'sr')
+                PrintVE(val[0], 100*val[1], (ia+1)%2)
+            print "Flux (Part/deg/GeV/cmq/pr):\n\t",
+            for ia in range(self.nabxbn):
+                val = self.getData(self.nebxbn-ie-1, ia, 'deg')
+                PrintVE(val[0], 100*val[1], (ia+1)%2)
+
+
+        # low-energy part
+
 
         print self.itusbx, self.idusbx, self.nr1usx, self.nr2usx, self.ausbdx, self.lwusbx, self.lfusbx, self.llnusx
         print "energy binning: ", self.ebxlow, self.ebxhgh, self.nebxbn, self.debxbn
         print "angular binning: ", self.abxlow, self.abxhgh, self.nabxbn, self.dabxbn
         print "number of low energy neutron groups: ", self.igmusx#, self.engmax
 
-        print "total responce: %g +- %g" % (self.totresp, self.totresperr)
+        print "total responce: %e +- %g" % (self.totresp, self.totresperr)
 
 
 
@@ -131,7 +231,7 @@ class USXSUW:
         else: return False
 
 
-    def read(self):
+    def Read(self):
         self.reset()
         record = 0
         while True:
@@ -155,8 +255,8 @@ class USXSUW:
             data = fortranRead(self.file)
             ubs.gdstor = struct.unpack("=%df" % ubs.getNbinsTotal(), data)
             record += 1
-            ubs.Print()
             self.ubsarray.append(ubs)
+
         self.nrecords = record
         print self.nrecords, "USRBDX cards found"
 
@@ -172,7 +272,7 @@ class USXSUW:
             if vtmp[0] != ubs.nebxbn: raise IOError("nebxbn record is wrong")
             if vtmp[1] != ubs.igmusx: raise IOError("igmusx record is wrong")
             print "emin, emax:", vtmp[2], vtmp[3] # !!! maybe not only these 2 records are written when more than 1 user interval ???
-            self.epgmax = vtmp[4:]
+            ubs.epgmax = vtmp[3:][:]
 
             data = fortranRead(self.file)
             ubs.flux = struct.unpack("=%df" % ubs.getNEbinsTotal(), data)
@@ -205,3 +305,5 @@ class USXSUW:
         print self.title
         print self.time
         print self.wctot, self.nctot, self.mctot, self.mbatch
+        for ubs in self.ubsarray:
+            ubs.Print()
