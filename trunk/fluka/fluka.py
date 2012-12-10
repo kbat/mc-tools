@@ -5,8 +5,8 @@
 import sys, math, struct
 from ssw import fortranRead
 
-class USXSUWBS:
-    """USXSUW record before STATISTICS"""
+class USRBDXCARD:
+    """USXSUW record - corresponds to one USRBDX card"""
     def __init__(self):
         self.reset()
 
@@ -38,6 +38,8 @@ class USXSUWBS:
         self.gbstor = []  # ???
         self.gdstor = []  # array with flux (Part/GeV/cmq/pr)
 
+        self.epgmax = []
+
         self.flux   = []  # why different from gdstor???
         self.fluxerr= []  # 
         self.cumulflux = [] # cumulative flux
@@ -46,6 +48,12 @@ class USXSUWBS:
         self.totresp = 0  # total responce
         self.totresperr = 0  # total responce error
 
+    def isOneWay(self):
+        return not self.lwusbx
+
+    def isFluence(self):
+        return self.lfusbx
+
     def getNbinsTotal(self):
         return (self.nebxbn + self.igmusx) * self.nabxbn
 
@@ -53,7 +61,32 @@ class USXSUWBS:
         return self.nebxbn + self.igmusx
 
     def Print(self):
-        print self.nx, self.titusx
+        print "\nDetector n: %d (%d) %s" % (self.nx, self.nx, self.titusx)
+        print "\t(Area: %g cmq," % self.ausbdx
+        print "\t distr. scored: %d," % self.idusbx
+        print "\t from reg. %d to %d," % (self.nr1usx, self.nr2usx)
+
+        if self.isOneWay(): print "\t one way scoring,"
+        else: print "\t this is a two ways estimator"
+        
+        if self.isFluence(): print "\t fluence scoring scoring)"
+        else: print "\t current scoring)"
+        
+        print ""
+        
+        print "\tTot. resp. (Part/cmq/pr) %g +/- %g %%" % (self.totresp, 100*self.totresperr)
+        print "\t( -->      (Part/pr)     %g +/- %g %% )"  % (self.totresp*self.ausbdx, 100*self.totresperr)
+
+        print ""
+
+        print "\t**** Different. Fluxes as a function of energy ****"
+        print "\t****      (integrated over solid angle)        ****"
+        print "\t Energy boundaries (GeV):"
+        print "\t"
+        print self.nebxbn, len(self.epgmax)
+#        for i in range(self.nebxbn):
+#            print self.epgmax[i]
+
         print self.itusbx, self.idusbx, self.nr1usx, self.nr2usx, self.ausbdx, self.lwusbx, self.lfusbx, self.llnusx
         print "energy binning: ", self.ebxlow, self.ebxhgh, self.nebxbn, self.debxbn
         print "angular binning: ", self.abxlow, self.abxhgh, self.nabxbn, self.dabxbn
@@ -75,7 +108,7 @@ class USXSUW:
         self.mctot  = 0
         self.mbatch = 0
 
-        self.ubsarray = []   # array ob USXSUWBS objects
+        self.ubsarray = []   # array ob USRBDXCARD objects
         self.nrecords = 0    # number of USRBDX cards
 
         self.file = open(self.fname, "rb")
@@ -102,7 +135,7 @@ class USXSUW:
         self.reset()
         record = 0
         while True:
-            ubs = USXSUWBS()
+            ubs = USRBDXCARD()
             data = fortranRead(self.file)
             if self.checkStatFlag(data): break
 
@@ -139,6 +172,7 @@ class USXSUW:
             if vtmp[0] != ubs.nebxbn: raise IOError("nebxbn record is wrong")
             if vtmp[1] != ubs.igmusx: raise IOError("igmusx record is wrong")
             print "emin, emax:", vtmp[2], vtmp[3] # !!! maybe not only these 2 records are written when more than 1 user interval ???
+            self.epgmax = vtmp[4:]
 
             data = fortranRead(self.file)
             ubs.flux = struct.unpack("=%df" % ubs.getNEbinsTotal(), data)
