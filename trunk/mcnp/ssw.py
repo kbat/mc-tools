@@ -131,7 +131,7 @@ class SSW:
             tmpii, tmpkk, tmpnn, tmp = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
 #            print "tmpnn", tmpnn, len(tmp)
 	    if self.vers == '2.7.0':
-		    print struct.unpack("2f", tmp)
+		    print "" # struct.unpack("2f", tmp)
 	    elif self.vers == '2.6.0':
 		    print "" # struct.unpack("3f", tmp)
 	    else:
