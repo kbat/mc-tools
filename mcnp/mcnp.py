@@ -27,8 +27,12 @@ def GetParticleNames(a):
              'pion+', 'pion-', 'pion0', 'kaon+', 'kaon-', 'K0short', 'K0long', 'D+', 'D0', 'Ds+', 'B+', 'B0', 'Bs0',
              'deuteron', 'triton', 'He3', 'He4', 'heavy ions']
     vals = []
-    for i in range(len(a)):
-        if a[i] == 1: vals.append(names[i])
-        elif a[i] != 0:
-            print 'strange values (not 0 or 1) found in the list of particles:', a
+    print "a", a
+    if isinstance(a, int):
+        print a
+    else:
+        for i in range(len(a)):
+            if a[i] == 1: vals.append(names[i])
+            elif a[i] != 0:
+                print 'strange values (not 0 or 1) found in the list of particles:', a
     return vals
