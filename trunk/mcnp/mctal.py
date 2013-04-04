@@ -126,7 +126,7 @@ class Axis:
             self.number = int(self.numbers)
         else:       
             self.number = int(self.numbers[0]) # see page 320
-        print name, numbers, self.number
+       # print name, numbers, self.number
         self.arraycsn = [] # array of cell or surface numbers (written for non-detector tallies only)
         
         # ni, nj and nk make sense for mesh tallies only (see e.g. tally 4 in figs/cold-neutron-map/2/case001/small-stat/mctal)
@@ -181,11 +181,13 @@ class MCTAL:
         self.tallies = []  # list of tallies
 
 
-    def Print(self, tally):
-        """Prints tally with number 'tally'"""
+    def GetTally(self, n):
+        """Return tally number 'n'"""
         for t in self.tallies:
-            if t.number==tally:
-                t.Print()
+            if t.number==n:
+                return t
+        print "Can't find tally number %d" % n
+        return 0
 
 
     def Read(self):

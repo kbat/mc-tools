@@ -12,7 +12,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
     f = open(fname)
     vx = []  # upper border of the energy bin
     vy = []  # flux
-    vey = [] # relative error
+    vey = [] # error
     line_number = 0
     x, dx, y, ey = 0, 0, 0, 0
     xmin = [] # array of xmin - used with 'mcnp' option
@@ -26,20 +26,20 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
             continue
 
         if line_number == 0:
-            if opt!='mcnp':
+            if 'mcnp' not in opt:
                 x = float(words[colxmin])
                 vx.append(x)
-            if opt=='center': 
+            if 'center' in opt: 
                 line_number = line_number + 1
                 continue
-            elif opt=='mcnp':
+            elif 'mcnp' in opt:
                 vx.append(0.0)
         x = float(words[colxmax])
         vx.append(x)
         y  = float(words[coly])
         ey = float(words[coley])
         vy.append(y)
-        if opt=='fluka':
+        if 'abserr' in opt:
             vey.append(ey)
         else:
             vey.append(y*ey)
@@ -55,7 +55,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
     nbins = len(vy)
     h = TH1F("h%d" % (coly), "", nbins, array('f', vx))
     for i in range(nbins):
-        if opt == 'width':
+        if 'width' in opt:
             dx = vx[i+1]-vx[i]
         else:
             dx = 1.0
@@ -71,7 +71,7 @@ def main():
            coly - number of column with data
                   relative data errors are assumed to be in coly+1
                   xbins are assumed to be in the columns 0 and 1
-           opt - set it to 'width' if you need to divide y by the bin width
+           opt - comma separated list of options. set it to 'width' if you need to divide y by the bin width
                 otherwise use 'no'
                  if opt == 'center' then instead of lower/upper bin boundary only bin center is given (=>skip the 1st record and do things wrong... -> check required).
            Lines starting with '#' are ignored.
@@ -89,15 +89,17 @@ def main():
     colxmin = int(sys.argv[1])
     coly = int(sys.argv[2])
     coley = coly+1
-    opt = sys.argv[3]
-    supported_options = ['no', 'width', 'center', 'mcnp', 'fluka']
-    if opt not in (supported_options):
-        print "opt", opt, "is not supported."
-        print "Option must take one of these values:", supported_options
-        sys.exit(1)
+    opts = sys.argv[3].split(',')
+    supported_options = ['no', 'width', 'center', 'mcnp', 'abserr']
+    for opt in opts:
+        if opt not in (supported_options):
+            print "opt", opt, "is not supported."
+            print "Option must take one of these values:", supported_options
+            sys.exit(1)
 
-    if opt=='center' or opt=='mcnp':
+    if 'center' in opts or 'mcnp' in opts:
         colxmax = colxmin
+        print "here"
     else:
         colxmax = colxmin+1
 
@@ -107,7 +109,7 @@ def main():
     print fname_in, '=>',fname_out
 
     fout = TFile(fname_out, "RECREATE")
-    GetHistogram(colxmin, colxmax, coly, coley, opt, fname_in).Write()
+    GetHistogram(colxmin, colxmax, coly, coley, opts, fname_in).Write()
     fout.Close()
     
 
