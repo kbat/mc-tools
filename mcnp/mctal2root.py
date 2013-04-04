@@ -13,8 +13,10 @@ from ROOT import ROOT, TH3F, TH1F, TFile
 
 def main():
     """
-    readmctal - an example how to read the mctal file
-    Usage: readmctal mctal
+    mctal2root - an example how to convert mctal file into the ROOT format
+    Note that this is just an example and it will not work for a generic mctal file.
+    The script uses API provided by the Tally class (see mctal.py for available methods).
+    Usage: mctal2root mctal [out.root]
     ... many features are not yet supported!
 
     Homepage: http://code.google.com/p/mc-tools
@@ -23,9 +25,17 @@ def main():
 #    good_tallies = [4] # list of 'good' tally types
     fname_in = sys.argv[1]
 
+    if len(sys.argv) == 3:
+        fname_out = sys.argv[2]
+    else:
+        fname_out = re.sub("\....$", ".root", fname_in)
+    if fname_in == fname_out:
+        fname_out = fname_in + ".root"
+
+    print fname_in, "->", fname_out
+
 
     mctal = MCTAL(fname_in)
-    mctal.good_tallies = [2, 4]
     mctal.verbose = False
     tallies = mctal.Read()
     print "total number of good tallies:", len(tallies)
@@ -80,7 +90,7 @@ def main():
             # gbin = gbin+1
         print gbin
 
-        fout = TFile("out.root", "recreate")
+        fout = TFile(fname_out, "recreate")
         h55001a.Write()
         h55001b.Write()
         h55006a.Write()
