@@ -16,7 +16,8 @@ def main():
     print "#", h.GetXaxis().GetTitle()
     print "#", h.GetYaxis().GetTitle()
     for bin in range(1, nbins+1):
-        print h.GetBinLowEdge(bin), h.GetBinLowEdge(bin+1), h.GetBinContent(bin), h.GetBinError(bin)/h.GetBinContent(bin)
+#        print h.GetBinLowEdge(bin), h.GetBinLowEdge(bin+1), h.GetBinContent(bin), h.GetBinError(bin)/h.GetBinContent(bin)
+        print h.GetBinLowEdge(bin+1), h.GetBinContent(bin), h.GetBinError(bin) #/h.GetBinContent(bin)
 
 
 if __name__ == "__main__":

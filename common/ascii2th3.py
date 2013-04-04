@@ -61,8 +61,12 @@ def main():
         nline = nline+1
 
     vx = sorted(str2float(list(set(x))))
+#    vx =  [ x*-1 for x in vx[::-1]] + vx[1:]
+#    print "\n!!! vx: added reversed values - used only for polar plots !!!\n"
     vy = sorted(str2float(list(set(y))))
     vz = sorted(str2float(list(set(z))))
+#    vz =  [-600] + [ z*-1 for z in vz[::-1]] + vz[1:] + [600] # !!! add reversed values - used only for polar plots !!!
+#    print "\n!!! vz: added reversed values - used only for polar plots !!!\n"
 
 #        print i, j, k
 #        val[(i,j,k)] = w[6]
@@ -78,7 +82,7 @@ def main():
     
     print nx, ny, nz
 
-    h = TH3F("h", "%s;%s;%s;%s" % (title, xtitle, ytitle, ztitle), nx, array('f', vx), ny, array('f', vy), nz, array('f', vz))
+    h = TH3F("neutron", "%s;%s;%s;%s" % (title, xtitle, ytitle, ztitle), nx, array('f', vx), ny, array('f', vy), nz, array('f', vz))
 
 
     f.seek(0)
