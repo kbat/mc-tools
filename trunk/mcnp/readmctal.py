@@ -2,14 +2,14 @@
 
 import sys, re, string
 from array import array
-from ROOT import ROOT, TFile, TH1F, TObjArray, THnSparseF
 from mctal import MCTAL
 
 def main():
     """
-    mctal2root - MCTAL to ROOT converter
-    Usage: mctal2root.py mctal [output.root]
-    ... many features are not yet supported!
+    readmctal - An example how to read mctal files.
+    Usage: readmctal mctal
+    mctal.Read() reads tallies from the 'mctal' file, and returns array with these tallies (as objects of the 'Tally' class).
+    See the source code of mctal.py for available methods of the 'Tally' class.
 
     Homepage: http://code.google.com/p/mc-tools
     """
@@ -21,12 +21,10 @@ def main():
         fname_out = re.sub("\....$", ".root", fname_in)
     if fname_in == fname_out:
         fname_out = fname_in + ".root"
-    print "mctal2root: %s -> %s" % (fname_in, fname_out)
-
 
     mctal = MCTAL(fname_in)
     mctal.Read()
-    mctal.Print(12)
+#    mctal.Print(12)
 
 if __name__ == '__main__':
     sys.exit(main())
