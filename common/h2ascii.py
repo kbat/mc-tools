@@ -12,13 +12,17 @@ def main():
     h = f.Get(hname)
 
     nbins = h.GetNbinsX()
-    print "#", h.GetTitle()
-    print "#", h.GetXaxis().GetTitle()
-    print "#", h.GetYaxis().GetTitle()
+    error = 0.0
+#    print "#", h.GetName(), h.GetTitle()
+#    print "#", h.GetXaxis().GetTitle()
+#    print "#", h.GetYaxis().GetTitle()
     for bin in range(1, nbins+1):
 #        print h.GetBinLowEdge(bin), h.GetBinLowEdge(bin+1), h.GetBinContent(bin), h.GetBinError(bin)/h.GetBinContent(bin)
-        print h.GetBinLowEdge(bin+1), h.GetBinContent(bin), h.GetBinError(bin) #/h.GetBinContent(bin)
+        error = 0.0
+        if h.GetBinContent(bin) != 0:
+            error = h.GetBinError(bin) / h.GetBinContent(bin)
 
+        print h.GetBinLowEdge(bin+1), h.GetBinContent(bin), error
 
 if __name__ == "__main__":
     exit(main())
