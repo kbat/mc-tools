@@ -172,7 +172,7 @@ Meaningful only for non-detector tallies  if len(self.numbers)>1"""
 
 class MCTAL:
     """mctal container"""
-    good_tallies = [2, 5, 4] # list of 'good' tally types (only implemented types are listed here, but a user can narrow this list even more)
+    good_tallies = [1, 2, 5, 4] # list of 'good' tally types (only implemented types are listed here, but a user can narrow this list even more)
     verbose = True          # verbosity switch
 
     def __init__(self, fname):
