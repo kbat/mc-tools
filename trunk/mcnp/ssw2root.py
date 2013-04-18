@@ -1,5 +1,6 @@
 #! /usr/bin/python
 # $Id$
+# $URL$
 
 import sys
 from ssw import SSW

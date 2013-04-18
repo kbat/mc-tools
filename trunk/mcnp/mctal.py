@@ -117,6 +117,7 @@ class Axis:
     """Axis of a tally"""
     binlabels = []
     boundaries = []
+#    numbers = []
 
     def __init__(self, name, numbers):
         """Axis Constructor"""
@@ -143,7 +144,7 @@ class Axis:
 
     def Print(self):
         """Axis printer"""
-        print "\t Axis %s" % self.name
+        print "\t Axis %s" % self.name, self.numbers
         if not isinstance(self.numbers, int):
             print "\t\tni,nj,nk: ", self.ni, self.nj, self.nk
             
@@ -291,6 +292,8 @@ class MCTAL:
                 continue
             elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]):
                 tally.axes['s'] = Axis(words[0], map(int, words[1:]))
+                print "here"
+                tally.axes['s'].Print()
                 continue
             elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]):
                 tally.axes['m'] = Axis(words[0], map(int, words[1:]))
