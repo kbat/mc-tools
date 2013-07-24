@@ -55,7 +55,7 @@ def main():
 	hits.z = ssb[7] # [cm]
 	hits.wx = ssb[8]
 	hits.wy = ssb[9]
-	hits.k = ssb[10] # what is this ???
+	hits.k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
 	T.Fill()
 
     T.Print()

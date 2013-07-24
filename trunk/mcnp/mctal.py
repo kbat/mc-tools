@@ -58,11 +58,11 @@ class Tally:
     e  = None       # energy bin
     t  = None       # time bin
 
-    axes = {}
 
     tfc_n   = None  # number of sets of tally fluctuation data
     
     def __init__(self, number):
+        self.axes = {}
         self.axes['f'] = None
         self.axes['d'] = None
         self.axes['u'] = None
@@ -78,12 +78,14 @@ class Tally:
         self.tfc_jtf = []    # list of 8 numbers, the bin indexes of tally fluctuation chart bin
         self.tfc_data = []   # list of 4 numbers for each set of tally fluctuation chart data: nps, tally, error, figure of merit
 
-    def Print(self, option=''):
-        """Tally printer"""
+    def Print(self, option=[]):
+        """Tally printer.
+           Options: title, 
+        """
         print "\n\033[1mprinting tally:\033[0m"
         types = ['nondetector', 'point detector', 'ring', 'FIP', 'FIR', 'FIC']
         print "tally #%d:\t%s" % (self.number, self.title)
-        if option == 'title': return
+#        if 'title' in option: return
 #        self.Check()
         if self.particle>0:
             print "\tparticles:", GetParticleNames(self.particle)
@@ -94,16 +96,18 @@ class Tally:
         elif self.d == 2:
             print '\tthis is a detector tally (unless thre is an ND card on the F5 tally)'
 
-        print "\taxes:"
-        for b in self.axes.keys():
-            self.axes[b].Print()
+        if 'axes' in option:
+            print "\taxes:"
+            for b in self.axes.keys():
+                self.axes[b].Print()
 
-        print "\tdata:"
-        print self.data
-        print len(self.data)
-        print "\terrors:"
-        print self.errors
-        print len(self.errors)
+        if 'data' in option:
+            print "\tdata:"
+            print self.data
+            print len(self.data)
+            print "\terrors:"
+            print self.errors
+            print len(self.errors)
 
 
     def getName(self):
@@ -149,7 +153,7 @@ class Axis:
             print "\t\tni,nj,nk: ", self.ni, self.nj, self.nk
             
         print "\t\tcell/surface: %s" % self.arraycsn
-        print len(self.arraycsn)
+        print "Number of bins:", len(self.arraycsn)
 
     def getBins(self, i):
         """Return array of bins in the directon of 'i' (can be i, j, or k)
@@ -292,8 +296,8 @@ class MCTAL:
                 continue
             elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]):
                 tally.axes['s'] = Axis(words[0], map(int, words[1:]))
-                print "here"
-                tally.axes['s'].Print()
+#                print "here"
+#                tally.axes['s'].Print()
                 continue
             elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]):
                 tally.axes['m'] = Axis(words[0], map(int, words[1:]))
