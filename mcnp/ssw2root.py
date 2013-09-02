@@ -38,7 +38,7 @@ def main():
 
     fout = TFile(fout_name, "recreate", ssw.getTitle())
     T = TTree("T", ssw.probs)
-    T.SetMaxTreeSize((Long64_t)1e+18);
+#    T.SetMaxTreeSize((Long64_t)1e+18)
     T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
 
     print "Number of tracks:", ssw.nevt
