@@ -23,7 +23,7 @@ class Material:
         for m,p in self.isotopes.items():
             i = i+1
             if i==1:
-                print "M%04i %s %f" % (self.number, m, p)
+                print "M%05i %s %f" % (self.number, m, p)
             else:
                 print "       %s %f" % (m, p)
 
@@ -47,7 +47,7 @@ class Surface:
             else:
                 print("%04i    %s  %s" % (self.number, self.stype.upper(), self.definition))
 
-    def str(self):
+    def __str__(self):
         return str(self.number)
 
 class Transformation:
@@ -103,7 +103,7 @@ class Cell:
             s.trans = t.number
 
     def PrintSurfaces(self, option):
-        print "C ***", self.title.upper()
+        if self.surfaces: print "C ***", self.title.upper()
         for s in self.surfaces:
             s.Print(option)
 
@@ -119,6 +119,11 @@ class Cell:
 
         print "          IMP:%s" % self.imp
         if self.temperature: print "          TMP=%g" % self.temperature
+
+
+    def __int__(self):
+        return self.number
+
 
 
 class Geometry:
