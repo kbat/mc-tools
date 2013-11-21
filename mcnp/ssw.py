@@ -12,6 +12,7 @@ def fortranRead(f):
         blen = f.read(4)
         if len(blen)==0: return None
         (size,) = struct.unpack("=i", blen)
+#	print "length:", size
         data  = f.read(size)
         blen2 = f.read(4)
         if blen != blen2:
@@ -75,7 +76,19 @@ class SSW:
         # This is according to Esben's subs.f, but the format seems to be wrong
 #        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
         # This has been modified to fix the format:
-        (self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods) = struct.unpack("=8s5s28s19s19s80si", data)
+	if size == 8: # mcnp 6
+		(tmpi0) = struct.unpack("8s", data)
+		print tmpi0
+		data = fortranRead(self.file)
+		(self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
+		self.vers = self.vers.strip()
+		if self.vers != "6":
+			print "'%s'" % self.vers
+			raise IOError("ssw.py: format error %s")
+
+	else: # not mcnp 6
+		(self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods) = struct.unpack("=8s5s28s19s19s80si", data) # length=160
+		self.vers = self.vers.strip()
 
         print "Code:\t\t%s" % self.kods
         print "Version:\t%s" % self.vers
@@ -85,8 +98,8 @@ class SSW:
         print "Title:\t\t%s" % self.aids.strip()
         print "knods:", self.knods
 
-	supported_mcnp_versions = ['2.6.0', '26b', '2.7.0']
-	if self.kods.strip() != 'mcnpx' or self.vers not in supported_mcnp_versions:
+	supported_mcnp_versions = ['2.6.0', '26b', '2.7.0', '6']
+	if self.kods.strip() not in ['mcnpx', 'mcnp'] or self.vers not in supported_mcnp_versions:
 		print >> sys.stderr, "WARNING: This version of MCNPx (%s) might not be supported." % self.vers
 		print >> sys.stderr, "\t The code was developed for SSW files produced by these MCNPX versions:", supported_mcnp_versions
 
@@ -98,12 +111,21 @@ class SSW:
 	# niss - number of histories in RSSA data
 	# niwr - number of cells in RSSA data (np1<0)
 	# mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
-        (np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
+	if self.vers == "6":
+#		(np1,nrss,self.nrcd,njsw,niss,self.probs) = struct.unpack("=5i12s", data)
+		(np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=4i4i", data)
+#		print "probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss
+	else:
+		(np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
+
 	print("number of incident particles:\t%i" % np1)
 	print("number of tracks:\t%i" % nrss)
 	print("length of ssb array:\t%i" % self.nrcd)
 	print("number of surfaces in RSSA data:\t%i" % njsw)
 	print("number of histories in RSSA data:\t%i" % niss)
+
+#	raise IOError("end")
+	
 
         nevt = nrss
         self.nrcdo = self.nrcd
@@ -120,7 +142,7 @@ class SSW:
             tmp = struct.unpack("=%di" % int(len(data)/4) ,data) # ??? why tmp ???
             niwr = tmp[0]
             mipts = tmp[1]
-            print niwr,mipts,tmp
+#            print niwr,mipts,tmp
             
         if self.nrcd != 6 and self.nrcd != 10: self.nrcd = self.nrcd - 1
 
@@ -130,12 +152,12 @@ class SSW:
 #            print "size", size
             tmpii, tmpkk, tmpnn, tmp = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
 #            print "tmpnn", tmpnn, len(tmp)
-	    if self.vers == '2.7.0':
-		    print "" # struct.unpack("2f", tmp)
-	    elif self.vers == '2.6.0':
-		    print "" # struct.unpack("3f", tmp)
-	    else:
-		    print "This MCNP version is not supported:", self.vers
+	    # if self.vers == '2.7.0':
+	    # 	    print "" # struct.unpack("2f", tmp)
+	    # elif self.vers == '2.6.0':
+	    # 	    print "" # struct.unpack("3f", tmp)
+	    # else:
+	    # 	    print "This MCNP version is not supported:", self.vers
 #		    sys.exit(1)
             self.isurfs.append(tmpii)
             self.kstpps.append(tmpkk)
@@ -152,6 +174,11 @@ class SSW:
     def readHit(self):
         """Read neutron data and return the SSB array"""
         data = fortranRead(self.file)
-#        print self.nrcd, len(data)
-        ssb = struct.unpack("=%dd" % int(self.nrcd+1), data) # ??? why +1 Esben does not have it
+	if self.vers == "6":
+		size = len(data)
+#		print "here", self.nrcd, size
+		size = size/8
+		ssb = struct.unpack("=%dd" % int(size), data)
+	else:
+		ssb = struct.unpack("=%dd" % int(self.nrcd+1), data) # ??? why +1 Esben does not have it
         return ssb
