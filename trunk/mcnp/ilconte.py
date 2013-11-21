@@ -23,7 +23,7 @@ class Material:
         for m,p in self.isotopes.items():
             i = i+1
             if i==1:
-                print "M%05i %s %f" % (self.number, m, p)
+                print "M%05i %s %f $ %s" % (self.number, m, p, self.title)
             else:
                 print "       %s %f" % (m, p)
 
@@ -31,21 +31,23 @@ class Material:
 class Surface:
     """geometry surface
     """
-    def __init__(self, number, trans, stype, definition, comment=None):
+    def __init__(self, number, trans, stype, equation, comment=None):
         self.number = number
         self.trans = trans
         self.stype = stype
-        self.definition = definition
+        self.equation = equation
         self.comment = comment
 
     def Print(self, option):
         """Surface printer"""
-        if self.comment: print "C", self.comment
         if option == 'mcnp':
             if self.trans:
-                print("%04i %02i %s  %s" % (int(self.number), self.trans, self.stype.upper(), self.definition))
+                print("%04i %02i %s  %s" % (int(self.number), self.trans, self.stype.upper(), self.equation)),
             else:
-                print("%04i    %s  %s" % (self.number, self.stype.upper(), self.definition))
+                print("%04i    %s  %s " % (self.number, self.stype.upper(), self.equation)),
+            if self.comment:
+                print " "*10, "$ %s" % self.comment
+            else: print
 
     def __str__(self):
         return str(self.number)
@@ -87,10 +89,10 @@ class Cell:
         self.temperature = None
         self.imp = None
 
-    def Surface(self, number, stype, definition, comment=None):
+    def Surface(self, number, stype, equation, comment=None):
         """Transformation is not included since it is supposed to be unique for the region and managed by the appropriate method 'Transformation'
         """
-        s = Surface(number, 0, stype, definition, comment)
+        s = Surface(number, 0, stype, equation, comment)
         self.surfaces.append(s)
         return s
 
@@ -141,8 +143,8 @@ class Geometry:
     #     self.transformations.append(t)
     #     return t
         
-    # def Surface(self, number, trans, stype, definition, comment=None):
-    #     s = Surface(number, trans, stype, definition, comment)
+    # def Surface(self, number, trans, stype, equation, comment=None):
+    #     s = Surface(number, trans, stype, equation, comment)
     #     self.surfaces.append(s)
     #     return s
 

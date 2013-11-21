@@ -41,7 +41,7 @@ def main():
 #    T.SetMaxTreeSize((Long64_t)1e+18)
     T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
 
-    print "Number of tracks:", ssw.nevt
+#    print "Number of tracks:", ssw.nevt
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
 #        print >>fout,  " ".join(map(str, ssb))
