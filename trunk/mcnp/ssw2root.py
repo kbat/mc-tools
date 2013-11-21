@@ -2,12 +2,13 @@
 # $Id$
 # $URL$
 
-import sys
+import sys, argparse
 from ssw import SSW
 # from ROOT import TFile, TTree, gROOT
-from ROOT import *
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-gROOT.ProcessLine(
+ROOT.gROOT.ProcessLine(
 "struct hit_t {\
    Float_t history;\
    Float_t id;\
@@ -24,38 +25,41 @@ gROOT.ProcessLine(
 
 
 def main():
-    """ Converts SSW binary to the ROOT format as a TTree object"""
-    if len(sys.argv) != 2:
-        print "Usage: ssw2root.py rssa"
-        sys.exit(1)
+    """
+    Converts SSW binary to the ROOT format as a TTree object
+    """
 
-    fin_name = sys.argv[1]
+    allowed_splitlevels = (1, 99)
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: http://code.google.com/p/mc-tools')
+    parser.add_argument('-splitlevel', dest='splitlevel', type=int, help='split level (see TTree::Branch documentation)', required=False, default=1, choices=allowed_splitlevels)
+    parser.add_argument('wssa', type=str, help='ssw output file name')
+    arguments = parser.parse_args()
+
+    fin_name = arguments.wssa
     fout_name = fin_name + ".root"
 
-    hits = hit_t()
+    hits = ROOT.hit_t()
 
     ssw = SSW(fin_name)
 
-    fout = TFile(fout_name, "recreate", ssw.getTitle())
-    T = TTree("T", ssw.probs)
+    fout = ROOT.TFile(fout_name, "recreate", ssw.getTitle())
+    T = ROOT.TTree("T", ssw.probs)
 #    T.SetMaxTreeSize((Long64_t)1e+18)
-    splitlevel = 1
-    if splitlevel==99:
+
+    if arguments.splitlevel==99:
         T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
-    elif splitlevel == 1:
-        T.Branch("history", AddressOf(hits, 'history'), "history")
-        T.Branch("id", AddressOf(hits, 'id'), "id")
-        T.Branch("weight", AddressOf(hits, 'weight'), "weight")
-        T.Branch("energy", AddressOf(hits, 'energy'), "energy")
-        T.Branch("time", AddressOf(hits, 'time'), "time")
-        T.Branch("x", AddressOf(hits, 'x'), "x")
-        T.Branch("y", AddressOf(hits, 'y'), "y")
-        T.Branch("z", AddressOf(hits, 'z'), "z")
-        T.Branch("wx", AddressOf(hits, 'wx'), "wx")
-        T.Branch("wy", AddressOf(hits, 'wy'), "wy")
-        T.Branch("k", AddressOf(hits, 'k'), "k")
-
-
+    elif arguments.splitlevel == 1:
+        T.Branch("history", ROOT.AddressOf(hits, 'history'), "history")
+        T.Branch("id",      ROOT.AddressOf(hits, 'id'),      "id")
+        T.Branch("weight",  ROOT.AddressOf(hits, 'weight'),  "weight")
+        T.Branch("energy",  ROOT.AddressOf(hits, 'energy'),  "energy")
+        T.Branch("time",    ROOT.AddressOf(hits, 'time'),    "time")
+        T.Branch("x",       ROOT.AddressOf(hits, 'x'),       "x")
+        T.Branch("y",       ROOT.AddressOf(hits, 'y'),       "y")
+        T.Branch("z",       ROOT.AddressOf(hits, 'z'),       "z")
+        T.Branch("wx",      ROOT.AddressOf(hits, 'wx'),      "wx")
+        T.Branch("wy",      ROOT.AddressOf(hits, 'wy'),      "wy")
+        T.Branch("k",       ROOT.AddressOf(hits, 'k'),       "k")
 
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
