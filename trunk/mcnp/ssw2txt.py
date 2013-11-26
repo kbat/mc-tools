@@ -15,7 +15,7 @@ def main():
     JC  = TMath::Nint(i/100.0) + 2*JGP;     #
     IPT = i-100*JC+200*JGP;                 # particle type: 1=neutron, 2=photon, 3=electron
     wz  = TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id) # z-direction cosine
-    surface = TMath::Abs(id)-1000000        # surface crossed
+    surface = TMath::Abs(id) % 1000000        # surface crossed
     """
 
     allowed_splitlevels = (1, 99)
