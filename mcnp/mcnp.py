@@ -7,11 +7,14 @@ def getPar(masterfile, parname, pos=3):
     pos - optional argument, specifies the position of the value in the THEparname string
     """
     f = open(masterfile)
+    val = ""
     for line in f.readlines():
-        if re.search("\AC THE%s" % parname, line):
+        if re.search("\Ac THE%s" % parname, line, re.IGNORECASE):
             val = float(line.split()[pos])
 #            print line.strip(), val
     f.close()
+    if val is "":
+        raise IOError("Value of %s not found in %s" % (parname, masterfile))
     return val
 
  
