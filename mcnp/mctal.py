@@ -3,7 +3,7 @@
 # $URL$
 # $Id$
 #
-# Page numbers refer to MCNPX 2.7.0 manual
+# Page numbers refer to the MCNPX 2.7.0 manual
 
 import sys, re, string
 from array import array
