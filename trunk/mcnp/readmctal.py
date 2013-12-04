@@ -24,7 +24,7 @@ def main():
 
     mctal = MCTAL(fname_in)
     mctal.Read()
-#    mctal.Print(12)
+#    mctal.GetTally(12).Print()
 
 if __name__ == '__main__':
     sys.exit(main())
