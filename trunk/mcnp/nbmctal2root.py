@@ -24,14 +24,14 @@ class FormatStrings:
 		self.npertLine = " %5s%6d" # (1X,A5,I6)
 		self.tallyNumbersLine = "%5d" # (16I5)
 		self.tallyInfoLine = "%5s" + "%5d"*3 # (A5,3I5)
-		self.tallyParticlesLine = "%2d"*40 # (40I12)
+		self.tallyParticlesLine = "%2d" # (40I12)
 		self.tallyCommentLine = " "*5 + "%75s" # (5X,A75)
 		self.axisCardLine = "%2s%8d" # (A2,I8)
 		self.axisFOptionLine = "%4d" # (I4)
-		self.cellListLine = "%7d"*11 # (11I7)
-		self.binValuesLine = "%13.5E"*6 # (1P6E13.5)
+		self.cellListLine = "%7d" # (11I7)
+		self.binValuesLine = "%13.5E" # (1P6E13.5)
 		self.valsLine = "%4s" # (A4)
-		self.valuesErrorsLine = "%13.5E%7.4F"*4 # (4(1PE13.5,0PF7.4))
+		self.valuesErrorsLine = "%13.5E%7.4F" # (4(1PE13.5,0PF7.4))
 		self.tfcLine = "%3s%5d" + "%8d"*8 # (A3,I5,8I8)
 		self.tfcValsLineSmall = "%11d" + "%13.5E"*3 # (I11,1P3E13.5)
 		self.tfcValsLineBig = "%11.5E" + "%13.5E"*3 # (1E11.5
@@ -116,11 +116,20 @@ class Tally:
 		self.nCells = 0
 		self.nDir = 0
 		self.nUsr = 0
+		self.usrTC = None
 		self.nSeg = 0
+		self.segTC = None
 		self.nMul = 0
+		self.mulTC = None
 		self.nCos = 0
+		self.cosTC = None
+		self.cosFlag = 0
 		self.nErg = 0
+		self.ergTC = None
+		self.ergFlag = 0
 		self.nTim = 0
+		self.timTC = None
+		self.timFlag = 0
 
 		self.cells = []
 
@@ -128,16 +137,18 @@ class Tally:
 		self.erg = []
 		self.tim = []
 
-		self.tfc_jtf = []
-		self.tfc_dat = [[]]
+		self.tfc_jtf = ["tfc",0,1,2,3,4,5,6,7,8]
+		self.tfc_dat = []
 		
+		self.binIndexList = ["f","d","u","s","m","c","e","t"]
 
 		self.valsErrors = [[[[[[[[[]]]]]]]]]
+
 
 	def Print(self, option=[]):
 		"""Tally printer. Options: title."""
 
-		print "To be implemented. Not essential.\n"
+		print "To be implemented. Not essential for now.\n"
 
 	def getTallyNumber(self):
 		"""Return the name (number) of the tally."""
@@ -164,50 +175,19 @@ class Tally:
 
 		return self.tallyComment
 
-	def getCellNumber(self):
-		"""Return the number of cells contained in the tally."""
+	def getNumbers(self,index):
+		"""Return the number of the bins for one axis from (f,d,u,s,m,c,e,t) depending on the requested index."""
 
-		return self.nCells
+		binNumberList = [self.nCells,self.nDir,self.nUsr,self.nSeg,self.nMul,self.nCos,self.nErg,self.nTim]
 
-	def getDirNumber(self):
-		"""Return the number of total vs. direct or flagged vs. unflagged bins."""
+		binList = dict(zip(self.binIndexList,binNumberList))
 
-		return self.nDir
-
-	def getUsrNumber(self):
-		"""Return the number of user bins."""
-
-		return self.nUsr
-
-	def getSegNumber(self):
-		"""Return the number of segment bins."""
-
-		return self.nSeg
-
-	def getMulNumber(self):
-		"""Return the number of multiplier bins."""
-
-		return self.nMul
-
-	def getCosNumber(self):
-		"""Return the number of cosine bins."""
-
-		return self.nBin
-
-	def getErgNumber(self):
-		"""Return the number of energy bins."""
-
-		return self.nErg
-
-	def getTimNumber(self):
-		"""Return the number of time bins."""
-
-		return self.nTim
+		return binList[index]
 
 	def getTotNumber(self):
 		"""Return the total number of bins."""
 
-		tot = self.nCells * self.nDir * self.nUsr * self.nSeg * self.nMul * self.nBin * self.nErg * self.nTim
+		tot = self.nCells * self.nDir * self.nUsr * self.nSeg * self.nMul * self.nCos * self.nErg * self.nTim
 
 		return tot
 
@@ -288,7 +268,103 @@ class Tally:
 	def Test(self,fName):
 		"""This function writes the header of the test MCTAL file to be compared with the original one. This function appends contents at the end of the file created by the Header.Test() function."""
 
+		fs = FormatStrings()
+
 		testFile = open(fName, "a")
+
+		testFile.write(fs.tallyInfoLine % ("\ntally",self.tallyNumber,self.typeNumber,self.detectorType))
+
+		testFile.write("\n")
+
+                for i in range(len(self.tallyParticles)): 
+                        testFile.write(fs.tallyParticlesLine % (self.tallyParticles[i])) 
+                        if i > 0 and i % 40 == 0: 
+                                testFile.write("\n") 
+
+		testFile.write("\n" + fs.tallyCommentLine % (self.tallyComment.ljust(75)))
+
+		binNumberList = [self.nCells,self.nDir,self.nUsr,self.nSeg,self.nMul,self.nCos,self.nErg,self.nTim]
+		binList = dict(zip(self.binIndexList,binNumberList))
+
+		for axis in self.binIndexList:
+
+			axisCard = axis
+
+			if axis == "u" and self.usrTC != None:
+				axisCard += self.usrTC
+			if axis == "s" and self.segTC != None:
+				axisCard += self.segTC
+			if axis == "m" and self.mulTC != None:
+				axisCard += self.mulTC
+			if axis == "c" and self.cosTC != None:
+				axisCard += self.cosTC
+			if axis == "e" and self.ergTC != None:
+				axisCard += self.ergTC
+			if axis == "t" and self.timTC != None:
+				axisCard += self.timTC
+
+			testFile.write("\n" + fs.axisCardLine % (axisCard.ljust(2),binList[axis]))
+
+			if axis == "c" and self.cosFlag != 0:
+				testFile.write(fs.axisFOptionLine % (self.cosFlag))
+			if axis == "e" and self.ergFlag != 0:
+				testFile.write(fs.axisFOptionLine % (self.ergFlag))
+			if axis == "t" and self.timFlag != 0:
+				testFile.write(fs.axisFOptionLine % (self.timFlag))
+
+			if axis == "f" and self.tallyNumber % 5 != 0:
+				testFile.write("\n")
+				for i in range(len(self.cells)):
+					testFile.write(fs.cellListLine % (self.cells[i]))
+					if i > 0 and i % 11 == 0:
+						testFile.write("\n")
+
+			if axis == "c" and len(self.cos) != 0:
+				testFile.write("\n")
+				for i in range(len(self.cos)):
+					testFile.write(fs.binValuesLine % (self.cos[i]))
+					if i > 0 and i % 6 == 0:
+						testFile.write("\n")
+
+			if axis == "e" and len(self.erg) != 0:
+				testFile.write("\n")
+				for i in range(len(self.erg)):
+					testFile.write(fs.binValuesLine % (self.erg[i]))
+					if i > 0 and i % 6 == 0:
+						testFile.write("\n")
+
+			if axis == "t" and len(self.tim) != 0:
+				testFile.write("\n")
+				for i in range(len(self.tim)):
+					testFile.write(fs.binValuesLine % (self.tim[i]))
+					if i > 0 and i % 6 == 0:
+						testFile.write("\n")
+				
+
+		testFile.write("\n" + fs.valsLine %("vals"))
+
+		i = 0
+
+		for f in range(self.nCells):
+			for d in range(self.nDir):
+				for u in range(self.nUsr):
+					for s in range(self.nSeg):
+						for m in range(self.nMul):
+							for c in range(self.nCos):
+								for e in range(self.nErg):
+									for t in range(self.nTim):
+										testFile.write(fs.valuesErrorsLine % (self.vals[f][d][u][s][m][c][e][t][0],self.vals[f][d][u][s][m][c][e][t][1]))
+										i = i + 1 
+										if i % 4 == 0:
+											testFile.write("\n")
+
+		testFile.write("\n" + fs.tfcLine % tuple(self.tfc_jtf))
+
+		for i in range(len(self.tfc_dat)):
+			tfcValsLine = fs.tfcValsLineSmall
+			if self.tfc_dat[i][0] >= 1e11:
+				tfcValsLine = fs.tfcValsLineSmall
+			testFile.write("\n" + tfcValsLine % tuple(self.tfc_dat[i]))
 
 		testFile.close()
 
