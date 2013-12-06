@@ -32,7 +32,7 @@ class FormatStrings:
 		self.binValuesLine = "%13.5E" # (1P6E13.5)
 		self.valsLine = "%4s" # (A4)
 		self.valuesErrorsLine = "%13.5E%7.4F" # (4(1PE13.5,0PF7.4))
-		self.tfcLine = "%3s%5d" + "%8d"*8 # (A3,I5,8I8)
+		self.tfcLine = "tfc%5d" + "%8d"*8 # (A3,I5,8I8)
 		self.tfcValsLineSmall = "%11d" + "%13.5E"*3 # (I11,1P3E13.5)
 		self.tfcValsLineBig = "%11.5E" + "%13.5E"*3 # (1E11.5
 
@@ -112,7 +112,7 @@ class Tally:
 		self.typeNumber = 0
 		self.detectorType = 0
 		self.tallyParticles = []
-		self.tallyComment = None
+		self.tallyComment = [] 
 		self.nCells = 0
 		self.nDir = 0
 		self.nUsr = 0
@@ -133,17 +133,53 @@ class Tally:
 
 		self.cells = []
 
+		self.usr = []
 		self.cos = []
 		self.erg = []
 		self.tim = []
 
-		self.tfc_jtf = ["tfc",0,1,2,3,4,5,6,7,8]
+		self.tfc_jtf = []
 		self.tfc_dat = []
 		
 		self.binIndexList = ["f","d","u","s","m","c","e","t"]
 
-		self.valsErrors = [[[[[[[[[]]]]]]]]]
+		self.isInitialized = 0
+		self.valsErrors = []
 
+
+	def initializeValuesVectors(self):
+		"""This function initializes the 9-D matrix for the storage of values and errors."""
+
+		tmpV = []
+		tmpT = []
+		tmpE = []
+		tmpC = []
+		tmpM = []
+		tmpS = []
+		tmpU = []
+		tmpD = []
+
+                nCells = self.nCells
+                if self.nCells == 0: nCells = 1
+                nDir = self.nDir
+                if self.nDir   == 0: nDir   = 1
+                nUsr = self.nUsr
+                if self.nUsr   == 0: nUsr   = 1
+                nSeg = self.nSeg
+                if self.nSeg   == 0: nSeg   = 1
+                nMul = self.nMul
+                if self.nMul   == 0: nMul   = 1
+                nCos = self.nCos
+                if self.nCos   == 0: nCos   = 1
+                nErg = self.nErg
+                if self.nErg   == 0: nErg   = 1
+                nTim = self.nTim
+                if self.nTim   == 0: nTim   = 1
+
+		self.valsErrors = [[[[[[[[[[] for _ in range(2)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
+
+		self.isInitialized = 1
+		
 
 	def Print(self, option=[]):
 		"""Tally printer. Options: title."""
@@ -197,6 +233,15 @@ class Tally:
 		if len(self.cells) <= self.nCells:
 			self.cells.append(cN)
 			return 1 
+		else:
+			return 0
+
+	def insertUsr(self,uB):
+		"""Insert usr bins."""
+
+		if len(self.usr) <= self.nUsr:
+			self.usr.append(uB)
+			return 1
 		else:
 			return 0
 
@@ -258,12 +303,18 @@ class Tally:
 	def insertValue(self,c,d,u,s,m,a,e,t,f,val):
 		"""Insert tally value."""
 
-		self.valsErrors[c][d][u][s][m][a][e][t][f] = val
+		if self.isInitialized == 0:
+			self.initializeValuesVectors()
 
-	def getValue(self,c,d,u,s,m,a,e,t,f,val):
+		#print "%4d"*9 % (c,d,u,s,m,a,e,t,f) + "%13.5E" % val
+		self.valsErrors[c][d][u][s][m][a][e][t][f] = val
+		#print "    "*9 + "%13.5E" % self.getValue(c,d,u,s,m,a,e,t,f)
+
+	def getValue(self,f,d,u,s,m,c,e,t,v):
 		"""Return a value from tally."""
 
-		return self.valsErrors[c][d][u][s][m][a][e][t][f]
+		#print "FI: " + "%4d"*9 % (f,d,u,s,m,c,e,t,v) + "%13.5E" % self.valsErrors[f][d][u][s][m][c][e][t][v]
+		return self.valsErrors[f][d][u][s][m][c][e][t][v]
 
 	def Test(self,fName):
 		"""This function writes the header of the test MCTAL file to be compared with the original one. This function appends contents at the end of the file created by the Header.Test() function."""
@@ -281,7 +332,8 @@ class Tally:
                         if i > 0 and i % 40 == 0: 
                                 testFile.write("\n") 
 
-		testFile.write("\n" + fs.tallyCommentLine % (self.tallyComment.ljust(75)))
+		for i in range(len(self.tallyComment)):
+			testFile.write("\n" + fs.tallyCommentLine % (self.tallyComment[i].ljust(75)))
 
 		binNumberList = [self.nCells,self.nDir,self.nUsr,self.nSeg,self.nMul,self.nCos,self.nErg,self.nTim]
 		binList = dict(zip(self.binIndexList,binNumberList))
@@ -316,47 +368,71 @@ class Tally:
 				testFile.write("\n")
 				for i in range(len(self.cells)):
 					testFile.write(fs.cellListLine % (self.cells[i]))
-					if i > 0 and i % 11 == 0:
+					if i > 0 and (i+1) % 11 == 0 and (i+1) != len(self.cells):
+						testFile.write("\n")
+
+			if axis == "u" and len(self.usr) != 0:
+				testFile.write("\n")
+				for i in range(len(self.usr)):
+					testFile.write(fs.binValuesLine % (self.usr[i]))
+					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.usr):
 						testFile.write("\n")
 
 			if axis == "c" and len(self.cos) != 0:
 				testFile.write("\n")
 				for i in range(len(self.cos)):
 					testFile.write(fs.binValuesLine % (self.cos[i]))
-					if i > 0 and i % 6 == 0:
+					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.cos):
 						testFile.write("\n")
 
 			if axis == "e" and len(self.erg) != 0:
 				testFile.write("\n")
 				for i in range(len(self.erg)):
 					testFile.write(fs.binValuesLine % (self.erg[i]))
-					if i > 0 and i % 6 == 0:
+					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.erg):
 						testFile.write("\n")
 
 			if axis == "t" and len(self.tim) != 0:
 				testFile.write("\n")
 				for i in range(len(self.tim)):
 					testFile.write(fs.binValuesLine % (self.tim[i]))
-					if i > 0 and i % 6 == 0:
+					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.tim):
 						testFile.write("\n")
 				
 
-		testFile.write("\n" + fs.valsLine %("vals"))
+		testFile.write("\n" + fs.valsLine %("vals\n"))
 
 		i = 0
+		tot = self.getTotNumber()
 
-		for f in range(self.nCells):
-			for d in range(self.nDir):
-				for u in range(self.nUsr):
-					for s in range(self.nSeg):
-						for m in range(self.nMul):
-							for c in range(self.nCos):
-								for e in range(self.nErg):
-									for t in range(self.nTim):
-										testFile.write(fs.valuesErrorsLine % (self.vals[f][d][u][s][m][c][e][t][0],self.vals[f][d][u][s][m][c][e][t][1]))
-										i = i + 1 
-										if i % 4 == 0:
+		nCells = self.nCells
+		if self.nCells == 0: nCells = 1
+		nDir = self.nDir
+		if self.nDir   == 0: nDir   = 1
+		nUsr = self.nUsr
+		if self.nUsr   == 0: nUsr   = 1
+		nSeg = self.nSeg
+		if self.nSeg   == 0: nSeg   = 1
+		nMul = self.nMul
+		if self.nMul   == 0: nMul   = 1
+		nCos = self.nCos
+		if self.nCos   == 0: nCos   = 1
+		nErg = self.nErg
+		if self.nErg   == 0: nErg   = 1
+		nTim = self.nTim
+		if self.nTim   == 0: nTim   = 1
+		for f in range(nCells):
+			for d in range(nDir):
+				for u in range(nUsr):
+					for s in range(nSeg):
+						for m in range(nMul):
+							for c in range(nCos):
+								for e in range(nErg):
+									for t in range(nTim):
+										testFile.write(fs.valuesErrorsLine % (self.getValue(f,d,u,s,m,c,e,t,0),self.getValue(f,d,u,s,m,c,e,t,1)))
+										if (i+1) % 4 == 0 and (i+1) != tot:
 											testFile.write("\n")
+										i = i + 1
 
 		testFile.write("\n" + fs.tfcLine % tuple(self.tfc_jtf))
 
@@ -373,6 +449,299 @@ class Tally:
 
 class MCTAL:
 	"""This class parses the whole MCTAL file."""
+
+	def __init__(self,fname):
+		self.tallies = [] # This list will contain all the instances of the Tally class.
+		self.header = Header()
+		self.mctalFileName = fname
+		self.mctalTestFileName = fname + "_testFile"
+		self.mctalFile = open(self.mctalFileName, "r")
+		self.line = None # This variable will contain the read lines one by one, but it is
+				 # important to keep it global because the last value from getHeaders()
+				 # must be already available as first value for parseTally(). This will
+				 # also apply to successive calls to parseTally().
+
+	def __del__(self):
+		self.mctalFile.close()
+
+	def Test(self):
+		self.header.Test(self.mctalTestFileName)
+		for tally in self.tallies:
+			tally.Test(self.mctalTestFileName)
+		
+
+	def Read(self):
+		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
+
+		self.getHeaders()
+		self.getTallies()
+
+	def getHeaders(self):
+		"""This function reads the first lines from the MCTAL file. We call "header" what is written from the beginning to the first "tally" keyword."""
+
+		self.line = self.mctalFile.readline().split()
+
+		self.header.kod = self.line[0]
+		self.header.ver = self.line[1]
+		pID_date = self.line[2]
+		self.header.probid.append(pID_date)
+		pID_time = self.line[3]
+		self.header.probid.append(pID_time)
+		self.header.knod = int(self.line[4])
+		self.header.nps = int(self.line[5])
+		self.header.rnr = int(self.line[6])
+
+		self.header.title = self.mctalFile.readline().strip()
+
+		self.line = self.mctalFile.readline().split()
+
+		self.header.ntal = int(self.line[1])
+
+		if len(self.line) == 4:
+			self.header.npert = int(self.line[3])
+
+		self.line = self.mctalFile.readline().split()
+
+		while self.line[0].lower() != "tally":
+			for l in self.line: self.header.ntals.append(int(l))
+			self.line = self.mctalFile.readline().split()
+
+	def getTallies(self):
+		"""This function supervises the calls to parseTally() function. It will keep track of the position of cursor in the MCTAL file and stop execution when EOF is reached."""
+
+		EOF = 0
+
+		while EOF != 1:
+			EOF = self.parseTally()
+
+	def parseTally(self):
+		"""This function parses an entire tally."""
+
+		# The first line processed by this function is already in memory, either coming from the
+		# last readline() in Header class or from the previous call to parseTally()
+
+		tally = Tally(int(self.line[1]))
+
+		print "Parsing tally: %5d" % (tally.tallyNumber)
+
+		tally.typeNumber = int(self.line[2])
+		tally.detectorType = int(self.line[3])
+
+		self.line = self.mctalFile.readline().split()
+
+		for p in self.line:
+			tally.tallyParticles.append(int(p))
+
+		self.line = self.mctalFile.readline()
+
+		while self.line[0].lower() != "f":
+			tally.tallyComment.append(self.line[5:].rstrip())
+			self.line = self.mctalFile.readline()
+
+		self.line = self.line.split()
+
+		tally.nCells = int(self.line[1])
+
+		self.line = self.mctalFile.readline()
+
+		while self.line[0].lower() != "d": # CELLS
+			for c in self.line.split():
+				exitCode = tally.insertCell(int(c))
+				if exitCode == 0: # This means that for some reason you are trying to
+						  # insert more cells than the number stated in f
+					print "Too many cells."
+					break 
+			self.line = self.mctalFile.readline()
+
+		# DIR
+		self.line = self.line.split()
+		tally.nDir = int(self.line[1])
+
+		while self.line[0].lower() != "u":
+			self.line = self.mctalFile.readline()
+
+		# USR
+		self.line = self.line.split()
+		if self.line[0].lower() == "ut": tally.usrTC = "t"
+		if self.line[0].lower() == "uc": tally.usrTC = "c"
+		tally.nUsr = int(self.line[1])
+
+		# USR BINS
+		self.line = self.mctalFile.readline()
+		while self.line[0].lower() != "s":
+			for u in self.line.split():
+				exitCode = tally.insertUsr(float(u))
+				if exitCode == 0:
+					print "Too many bins."
+					break
+			self.line = self.mctalFile.readline()
+
+		# SEG
+		self.line = self.line.split()
+		if self.line[0].lower() == "st": tally.segTC = "t"
+		if self.line[0].lower() == "sc": tally.segTC = "c"
+		tally.nSeg = int(self.line[1])
+
+		while self.line[0].lower() != "m":
+			self.line = self.mctalFile.readline()
+
+		# MUL
+		self.line = self.line.split()
+		if self.line[0].lower() == "mt": tally.mulTC = "t"
+		if self.line[0].lower() == "mc": tally.mulTC = "c"
+		tally.nMul = int(self.line[1])
+
+		while self.line[0].lower() != "c":
+			self.line = self.mctalFile.readline()
+
+		# COS
+		self.line = self.line.split()
+		if self.line[0].lower() == "ct": tally.cosTC = "t"
+		if self.line[0].lower() == "cc": tally.cosTC = "c"
+		tally.nCos = int(self.line[1])
+		if len(self.line) == 3: tally.cosFlag = int(self.line[2])
+
+		# COSINE BINS
+		self.line = self.mctalFile.readline()
+		while self.line[0].lower() != "e":
+			for c in self.line.split():
+				exitCode = tally.insertCos(float(c))
+				if exitCode == 0:
+					print "Too many bins."
+					break
+			self.line = self.mctalFile.readline()
+
+		# ERG
+		self.line = self.line.split()
+		if self.line[0].lower() == "et": tally.ergTC = "t"
+		if self.line[0].lower() == "ec": tally.cosTC = "c"
+		tally.nErg = int(self.line[1])
+		if len(self.line) == 3: tally.ergFlag = int(self.line[2])
+
+		# ENERGY BINS
+		self.line = self.mctalFile.readline()
+		while self.line[0].lower() != "t":
+			for e in self.line.split():
+				exitCode = tally.insertErg(float(e))
+				if exitCode == 0:
+					print "Too many bins."
+					break
+			self.line = self.mctalFile.readline()
+
+		# TIM
+		self.line = self.line.split()
+		if self.line[0].lower() == "tt": tally.timTC = "t"
+		if self.line[0].lower() == "tc": tally.timTC = "c"
+		tally.nTim = int(self.line[1])
+		if len(self.line) == 3: tally.timFlag = int(self.line[2])
+
+		# TIME BINS
+		self.line = self.mctalFile.readline()
+		while self.line.strip().lower() != "vals":
+			for t in self.line.split():
+				exitCode = tally.insertTim(float(t))
+				if exitCode == 0:
+					print "Too many bins."
+					break
+			self.line = self.mctalFile.readline()
+
+		# VALS
+		f = 1
+		nFld = 0
+		tally.initializeValuesVectors()
+		nCells = tally.nCells
+		if tally.nCells == 0: nCells = 1
+		nDir = tally.nDir
+		if tally.nDir   == 0: nDir   = 1
+		nUsr = tally.nUsr
+		if tally.nUsr   == 0: nUsr   = 1
+		nSeg = tally.nSeg
+		if tally.nSeg   == 0: nSeg   = 1
+		nMul = tally.nMul
+		if tally.nMul   == 0: nMul   = 1
+		nCos = tally.nCos
+		if tally.nCos   == 0: nCos   = 1
+		nErg = tally.nErg
+		if tally.nErg   == 0: nErg   = 1
+		nTim = tally.nTim
+		if tally.nTim   == 0: nTim   = 1
+		for c in range(nCells):
+			for d in range(nDir):
+				for u in range(nUsr):
+					for s in range(nSeg):
+						for m in range(nMul):
+							for a in range(nCos): # a is for Angle...forgive me
+								for e in range(nErg):
+									for t in range(nTim):
+										if (f > nFld): # f is for Field...again, forgive me
+											self.line = self.mctalFile.readline().strip()
+											Fld = self.line.split()
+											nFld = len(Fld) - 1
+											f = 0
+
+										#print self.line
+
+										if self.line[0:3] != "tfc":
+											#print "%4d"*8 % (c,d,u,s,m,a,e,t) + "%13.5E" % (float(Fld[f]))
+											tally.insertValue(c,d,u,s,m,a,e,t,0,float(Fld[f]))
+											tally.insertValue(c,d,u,s,m,a,e,t,1,float(Fld[f+1]))
+
+											f += 2
+
+		# TFC JTF
+		while self.line[0] != "tfc":
+			self.line = self.mctalFile.readline().strip().split()
+
+		del self.line[0]
+		self.line = [int(i) for i in self.line]
+
+		exitCode = tally.insertTfcJtf(self.line)
+		if exitCode == 0:
+			print "Wrong number of TFC jtf elements."
+
+
+		# TFC DAT
+		self.line = self.mctalFile.readline().strip()
+		while "tally" not in self.line and len(self.line) != 0:
+			self.line = self.line.split()
+			
+			tfcDat = []
+
+			tfcDat.append(int(self.line[0]))
+			tfcDat.append(float(self.line[1]))
+			tfcDat.append(float(self.line[2]))
+			tfcDat.append(float(self.line[3]))
+
+			exitCode = tally.insertTfcDat(tfcDat)
+
+			if exitCode == 0:
+				print "Wrong number of elements in TFC data line."
+				break
+
+			self.line = self.mctalFile.readline().strip()
+
+		self.tallies.append(tally)
+
+		if self.line == "":
+			return 1
+		elif "tally" in self.line:
+			self.line = self.line.split()
+			return 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
