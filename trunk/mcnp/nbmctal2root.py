@@ -23,7 +23,7 @@ class FormatStrings:
 		self.ntalLine = "%4s%6d" # (A4,I6)
 		self.npertLine = " %5s%6d" # (1X,A5,I6)
 		self.tallyNumbersLine = "%5d" # (16I5)
-		self.tallyInfoLine = "%5s" + "%5d"*3 # (A5,3I5)
+		self.tallyInfoLine = "%5s" + "%5d"*2 # (A5,3I5)
 		self.tallyParticlesLine = "%2d" # (40I12)
 		self.tallyCommentLine = " "*5 + "%75s" # (5X,A75)
 		self.axisCardLine = "%2s%8d" # (A2,I8)
@@ -83,7 +83,7 @@ class Header:
 
 		headerLine = fs.headerLine_270
 
-		if self.ver == "2.5.0":
+		if self.ver != "2.7.0":
 			headerLine = fs.headerLine_250
 
 		testFile.write(headerLine % (str(self.kod).ljust(8), self.ver, str(self.probid[0]).rjust(10) + str(self.probid[1]).rjust(9), self.knod, self.nps, self.rnr))
@@ -109,8 +109,8 @@ class Tally:
 
 	def __init__(self,tN):
 		self.tallyNumber = tN
-		self.typeNumber = 0
-		self.detectorType = 0
+		self.typeNumber = 0 
+		self.detectorType = None
 		self.tallyParticles = []
 		self.tallyComment = [] 
 		self.nCells = 0
@@ -223,9 +223,26 @@ class Tally:
 	def getTotNumber(self):
 		"""Return the total number of bins."""
 
-		tot = self.nCells * self.nDir * self.nUsr * self.nSeg * self.nMul * self.nCos * self.nErg * self.nTim
+                nCells = self.nCells
+                if self.nCells == 0: nCells = 1
+                nDir = self.nDir
+                if self.nDir   == 0: nDir   = 1
+                nUsr = self.nUsr
+                if self.nUsr   == 0: nUsr   = 1
+                nSeg = self.nSeg
+                if self.nSeg   == 0: nSeg   = 1
+                nMul = self.nMul
+                if self.nMul   == 0: nMul   = 1
+                nCos = self.nCos
+                if self.nCos   == 0: nCos   = 1
+                nErg = self.nErg
+                if self.nErg   == 0: nErg   = 1
+                nTim = self.nTim
+                if self.nTim   == 0: nTim   = 1
+                
+                tot = nCells * nDir * nUsr * nSeg * nMul * nCos * nErg * nTim
 
-		return tot
+                return tot
 
 	def insertCell(self,cN):
 		"""Insert cell number."""
@@ -323,13 +340,15 @@ class Tally:
 
 		testFile = open(fName, "a")
 
-		testFile.write(fs.tallyInfoLine % ("\ntally",self.tallyNumber,self.typeNumber,self.detectorType))
+		testFile.write(fs.tallyInfoLine % ("\ntally",self.tallyNumber,self.typeNumber))
+		if self.detectorType != None: testFile.write("%5d" % (self.detectorType))
 
-		testFile.write("\n")
+		#testFile.write("\n")
 
-                for i in range(len(self.tallyParticles)): 
+                for i in range(len(self.tallyParticles)):
+			if i == 0: testFile.write("\n")
                         testFile.write(fs.tallyParticlesLine % (self.tallyParticles[i])) 
-                        if i > 0 and i % 40 == 0: 
+                        if i > 0 and (i+1) % 40 == 0: 
                                 testFile.write("\n") 
 
 		for i in range(len(self.tallyComment)):
@@ -473,6 +492,8 @@ class MCTAL:
 	def Read(self):
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
+		print "\n\033[1m[Parsing file: %s%3s]\033[0m" % (str(self.mctalFileName),"...")
+
 		self.getHeaders()
 		self.getTallies()
 
@@ -525,14 +546,23 @@ class MCTAL:
 		print "Parsing tally: %5d" % (tally.tallyNumber)
 
 		tally.typeNumber = int(self.line[2])
-		tally.detectorType = int(self.line[3])
-
-		self.line = self.mctalFile.readline().split()
-
-		for p in self.line:
-			tally.tallyParticles.append(int(p))
+		if len(self.line) == 4: tally.detectorType = int(self.line[3])
 
 		self.line = self.mctalFile.readline()
+		line = self.line.split() # I must use this trick because some MCTAL files seem to omit
+					 # the particle list and the code must be compatible with the 
+					 # following part even if this line is missing, but I don't have
+					 # the possibility to know in advance, so I must duplicate the
+					 # read line.
+
+		for p in line:
+			try:
+				v = int(p)
+				tally.tallyParticles.append(v)
+			except:
+				continue
+
+		if len(tally.tallyParticles) != 0: self.line = self.mctalFile.readline()
 
 		while self.line[0].lower() != "f":
 			tally.tallyComment.append(self.line[5:].rstrip())
