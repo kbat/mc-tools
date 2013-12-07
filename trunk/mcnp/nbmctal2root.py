@@ -556,11 +556,9 @@ class MCTAL:
 					 # read line.
 
 		for p in line:
-			try:
+			if p.isdigit():
 				v = int(p)
 				tally.tallyParticles.append(v)
-			except:
-				continue
 
 		if len(tally.tallyParticles) != 0: self.line = self.mctalFile.readline()
 
