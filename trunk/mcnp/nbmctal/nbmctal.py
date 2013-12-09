@@ -9,40 +9,14 @@
 
 import sys, re, string
 from array import array
-import cPickle as pickle
-#from mcnp import GetParticleNames
-
-#############################################################################################################################
-
-class FormatStrings:
-	"""This class contins the string formats used by MCNPX to format the MCTAL file"""
-
-	def __init__(self):
-		self.headerLine_250 = "%8s"*2 + "%19s%5d%11d%15d" # (2A8,A19,I15,I11,I15)
-		self.headerLine_270 = "%8s"*2 + "%19s%5d%13d%15d" # (2A8,A19,I15,I13,I15)
-		self.titleLine = " %79s" # (1X,A79)
-		self.ntalLine = "%4s%6d" # (A4,I6)
-		self.npertLine = " %5s%6d" # (1X,A5,I6)
-		self.tallyNumbersLine = "%5d" # (16I5)
-		self.tallyInfoLine = "%5s" + "%5d"*2 # (A5,3I5)
-		self.tallyParticlesLine = "%2d" # (40I12)
-		self.tallyCommentLine = " "*5 + "%75s" # (5X,A75)
-		self.axisCardLine = "%2s%8d" # (A2,I8)
-		self.axisFOptionLine = "%4d" # (I4)
-		self.cellListLine = "%7d" # (11I7)
-		self.binValuesLine = "%13.5E" # (1P6E13.5)
-		self.valsLine = "%4s" # (A4)
-		self.valuesErrorsLine = "%13.5E%7.4F" # (4(1PE13.5,0PF7.4))
-		self.tfcLine = "tfc%5d" + "%8d"*8 # (A3,I5,8I8)
-		self.tfcValsLineSmall = "%11d" + "%13.5E"*3 # (I11,1P3E13.5)
-		self.tfcValsLineBig = "%11.5E" + "%13.5E"*3 # (1E11.5
 
 #############################################################################################################################
 
 class Header:
 	"""This class contains header information from MCTAL file"""
 
-	def __init__(self):
+	def __init__(self,verbose=False):
+		self.verbose = verbose
 		self.kod = 0		# Name of the code, MCNPX
 		self.ver = 0		# Code version
 		self.probid = []	# Date and time when the problem was run
@@ -55,60 +29,35 @@ class Header:
 		self.npert = 0		# Number of perturbations
 
 	def Print(self):
-	        """Prints the class members"""
+	        """Prints the class members. Verbose flag on class initialization must be set to True."""
 
-	        print ("\033[1m[HEADER]\033[0m")
-	        print ("code:\t\t%s" % self.kod)
-	        print ("version:\t%s" % self.ver)
-	        print ("date and time:\t%s" % self.probid)
-	        print ("dump number:\t%s" % self.knod)
-	        print ("number of histories:\t%s" % self.nps)
-	        print ("number of pseudorandom numbers used:\t%s" % self.rnr)
-	        print ("title: %s" % self.title)
+		if self.verbose:
 
-	        if self.ntal>1:
-			print self.ntal, 'tallies:', self.ntals
-	        else:
-			print self.ntal, 'tally:', self.ntals
+		        print ("\033[1m[HEADER]\033[0m")
+		        print ("code:\t\t%s" % self.kod)
+	        	print ("version:\t%s" % self.ver)
+		        print ("date and time:\t%s" % self.probid)
+		        print ("dump number:\t%s" % self.knod)
+	        	print ("number of histories:\t%s" % self.nps)
+		        print ("number of pseudorandom numbers used:\t%s" % self.rnr)
+		        print ("title: %s" % self.title)
+
+		        if self.ntal>1:
+				print self.ntal, 'tallies:', self.ntals
+	        	else:
+				print self.ntal, 'tally:', self.ntals
 
 
-	        if self.npert != 0:
-			print("number of perturbations: %s" % self.npert)
-
-	def Test(self,fName):
-		"""This function writes the header of the test MCTAL file to be compared with the original one. This will be the only function to use the "w" option for the file. All the other functions will use "a". """
-
-		testFile = open(fName, "w")
-
-		fs = FormatStrings()
-
-		headerLine = fs.headerLine_270
-
-		if self.ver != "2.7.0":
-			headerLine = fs.headerLine_250
-
-		testFile.write(headerLine % (str(self.kod).ljust(8), self.ver, str(self.probid[0]).rjust(10) + str(self.probid[1]).rjust(9), self.knod, self.nps, self.rnr))
-		testFile.write("\n" + fs.titleLine % (self.title.ljust(79)))
-		testFile.write("\n" + fs.ntalLine % ("ntal",self.ntal))
-
-		if self.npert > 0:
-			testFile.write(fs.npertLine % ("npert",self.npert))
-
-		testFile.write("\n")
-
-		for i in range(len(self.ntals)):
-			testFile.write(fs.tallyNumbersLine % self.ntals[i])
-			if i > 0 and i % 16 == 0:
-				testFile.write("\n")
-
-		testFile.close()
+		        if self.npert != 0:
+				print("number of perturbations: %s" % self.npert)
 
 #############################################################################################################################
 
 class Tally:
 	"""This class is aimed to store all the information contained in a tally."""
 
-	def __init__(self,tN):
+	def __init__(self,tN,verbose=False):
+		self.verbose = verbose
 		self.tallyNumber = tN
 		self.typeNumber = 0 
 		self.detectorType = None
@@ -183,43 +132,10 @@ class Tally:
 		
 
 	def Print(self, option=[]):
-		"""Tally printer. Options: title."""
+		"""Tally printer. Options: title. Verbose flag on class initialization must be set to True."""
 
-		print "To be implemented. Not essential for now.\n"
-
-	def getTallyNumber(self):
-		"""Return the name (number) of the tally."""
-
-		return self.tallyNumber
-
-	def getTypeNumber(self):
-		"""Return the particle type (if > 0) or the number of involved particles (if < 0)."""
-
-		return self.typeNumber
-
-	def getDetectorType(self):
-		"""Return the detector type."""
-
-		return self.detectorType
-
-	def getTallyParticles(self):
-		"""Returns the list of particles in the tally."""
-
-		return self.tallyParticles
-
-	def getTallyComment(self):
-		"""Return tally comment."""
-
-		return self.tallyComment
-
-	def getNumbers(self,index):
-		"""Return the number of the bins for one axis from (f,d,u,s,m,c,e,t) depending on the requested index."""
-
-		binNumberList = [self.nCells,self.nDir,self.nUsr,self.nSeg,self.nMul,self.nCos,self.nErg,self.nTim]
-
-		binList = dict(zip(self.binIndexList,binNumberList))
-
-		return binList[index]
+		if self.verbose:
+			print "To be implemented. Not essential for now.\n"
 
 	def getTotNumber(self):
 		"""Return the total number of bins."""
@@ -299,11 +215,6 @@ class Tally:
 		else:
 			return 0
 
-	def getTfcJtf(self):
-		"""Return jtf information about TFC."""
-
-		return self.tfc_jtf
-
 	def insertTfcDat(self,dat):
 		"""Insert TFC values."""
 
@@ -313,203 +224,46 @@ class Tally:
 		else:
 			return 0
 
-	def getTfcDat(self):
-		"""Return TFC values."""
-
-		return self.tfc_dat
-
 	def insertValue(self,c,d,u,s,m,a,e,t,f,val):
 		"""Insert tally value."""
 
 		if self.isInitialized == 0:
 			self.initializeValuesVectors()
 
-		#print "%4d"*9 % (c,d,u,s,m,a,e,t,f) + "%13.5E" % val
 		self.valsErrors[c][d][u][s][m][a][e][t][f] = val
-		#print "    "*9 + "%13.5E" % self.getValue(c,d,u,s,m,a,e,t,f)
 
 	def getValue(self,f,d,u,s,m,c,e,t,v):
 		"""Return a value from tally."""
 
-		#print "FI: " + "%4d"*9 % (f,d,u,s,m,c,e,t,v) + "%13.5E" % self.valsErrors[f][d][u][s][m][c][e][t][v]
 		return self.valsErrors[f][d][u][s][m][c][e][t][v]
-
-	def Test(self,fName):
-		"""This function writes the header of the test MCTAL file to be compared with the original one. This function appends contents at the end of the file created by the Header.Test() function."""
-
-		fs = FormatStrings()
-
-		testFile = open(fName, "a")
-
-		testFile.write(fs.tallyInfoLine % ("\ntally",self.tallyNumber,self.typeNumber))
-		if self.detectorType != None: testFile.write("%5d" % (self.detectorType))
-
-		#testFile.write("\n")
-
-                for i in range(len(self.tallyParticles)):
-			if i == 0: testFile.write("\n")
-                        testFile.write(fs.tallyParticlesLine % (self.tallyParticles[i])) 
-                        if i > 0 and (i+1) % 40 == 0: 
-                                testFile.write("\n") 
-
-		for i in range(len(self.tallyComment)):
-			testFile.write("\n" + fs.tallyCommentLine % (self.tallyComment[i].ljust(75)))
-
-		binNumberList = [self.nCells,self.nDir,self.nUsr,self.nSeg,self.nMul,self.nCos,self.nErg,self.nTim]
-		binList = dict(zip(self.binIndexList,binNumberList))
-
-		for axis in self.binIndexList:
-
-			axisCard = axis
-
-			if axis == "u" and self.usrTC != None:
-				axisCard += self.usrTC
-			if axis == "s" and self.segTC != None:
-				axisCard += self.segTC
-			if axis == "m" and self.mulTC != None:
-				axisCard += self.mulTC
-			if axis == "c" and self.cosTC != None:
-				axisCard += self.cosTC
-			if axis == "e" and self.ergTC != None:
-				axisCard += self.ergTC
-			if axis == "t" and self.timTC != None:
-				axisCard += self.timTC
-
-			testFile.write("\n" + fs.axisCardLine % (axisCard.ljust(2),binList[axis]))
-
-			if axis == "c" and self.cosFlag != 0:
-				testFile.write(fs.axisFOptionLine % (self.cosFlag))
-			if axis == "e" and self.ergFlag != 0:
-				testFile.write(fs.axisFOptionLine % (self.ergFlag))
-			if axis == "t" and self.timFlag != 0:
-				testFile.write(fs.axisFOptionLine % (self.timFlag))
-
-			if axis == "f" and self.tallyNumber % 5 != 0:
-				testFile.write("\n")
-				for i in range(len(self.cells)):
-					testFile.write(fs.cellListLine % (self.cells[i]))
-					if i > 0 and (i+1) % 11 == 0 and (i+1) != len(self.cells):
-						testFile.write("\n")
-
-			if axis == "u" and len(self.usr) != 0:
-				testFile.write("\n")
-				for i in range(len(self.usr)):
-					testFile.write(fs.binValuesLine % (self.usr[i]))
-					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.usr):
-						testFile.write("\n")
-
-			if axis == "c" and len(self.cos) != 0:
-				testFile.write("\n")
-				for i in range(len(self.cos)):
-					testFile.write(fs.binValuesLine % (self.cos[i]))
-					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.cos):
-						testFile.write("\n")
-
-			if axis == "e" and len(self.erg) != 0:
-				testFile.write("\n")
-				for i in range(len(self.erg)):
-					testFile.write(fs.binValuesLine % (self.erg[i]))
-					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.erg):
-						testFile.write("\n")
-
-			if axis == "t" and len(self.tim) != 0:
-				testFile.write("\n")
-				for i in range(len(self.tim)):
-					testFile.write(fs.binValuesLine % (self.tim[i]))
-					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(self.tim):
-						testFile.write("\n")
-				
-
-		testFile.write("\n" + fs.valsLine %("vals\n"))
-
-		i = 0
-		tot = self.getTotNumber()
-
-		nCells = self.nCells
-		if self.nCells == 0: nCells = 1
-		nDir = self.nDir
-		if self.nDir   == 0: nDir   = 1
-		nUsr = self.nUsr
-		if self.nUsr   == 0: nUsr   = 1
-		nSeg = self.nSeg
-		if self.nSeg   == 0: nSeg   = 1
-		nMul = self.nMul
-		if self.nMul   == 0: nMul   = 1
-		nCos = self.nCos
-		if self.nCos   == 0: nCos   = 1
-		nErg = self.nErg
-		if self.nErg   == 0: nErg   = 1
-		nTim = self.nTim
-		if self.nTim   == 0: nTim   = 1
-		for f in range(nCells):
-			for d in range(nDir):
-				for u in range(nUsr):
-					for s in range(nSeg):
-						for m in range(nMul):
-							for c in range(nCos):
-								for e in range(nErg):
-									for t in range(nTim):
-										testFile.write(fs.valuesErrorsLine % (self.getValue(f,d,u,s,m,c,e,t,0),self.getValue(f,d,u,s,m,c,e,t,1)))
-										if (i+1) % 4 == 0 and (i+1) != tot:
-											testFile.write("\n")
-										i = i + 1
-
-		testFile.write("\n" + fs.tfcLine % tuple(self.tfc_jtf))
-
-		for i in range(len(self.tfc_dat)):
-			tfcValsLine = fs.tfcValsLineSmall
-			if self.tfc_dat[i][0] >= 1e11:
-				tfcValsLine = fs.tfcValsLineSmall
-			testFile.write("\n" + tfcValsLine % tuple(self.tfc_dat[i]))
-
-		testFile.close()
-
 
 #############################################################################################################################
 
 class MCTAL:
 	"""This class parses the whole MCTAL file."""
 
-	def __init__(self,fname = ""):
-		if fname != "":
-			self.setClassVariables(fname)
+	def __init__(self,fname,verbose=False):
+		self.verbose = verbose
+		self.tallies = []
+		self.header = Header(verbose)
+		self.mctalFileName = fname
+		self.mctalFile = open(self.mctalFileName, "r")
+		self.line = None # This variable will contain the read lines one by one, but it is
+						 # important to keep it global because the last value from getHeaders()
+						 # must be already available as first value for parseTally(). This will
+						 # also apply to successive calls to parseTally().
 
 	def __del__(self):
-		if self.mctalFile != None:
-			self.mctalFile.close()
+		self.mctalFile.close()
 
-	def setClassVariables(self,fname = ""):
-		"""This function sets the variables of the class. This is not done in the constructor in order to be able to deal with the reading of the ASCII MCTAL file and the loading of the binary intermediate file."""
-		if fname != "":
-			self.tallies = []
-			self.header = Header()
-			self.mctalFileName = fname
-			self.mctalTestFileName = fname + "_testFile"
-			self.mctalFile = open(self.mctalFileName, "r")
-			self.line = None # This variable will contain the read lines one by one, but it is
-					 # important to keep it global because the last value from getHeaders()
-					 # must be already available as first value for parseTally(). This will
-					 # also apply to successive calls to parseTally().
-		else:
-			self.mctalFile = None
-			self.mctalTestFileName = self.mctalFileName + "_testFile"
-
-	def Test(self):
-		self.header.Test(self.mctalTestFileName)
-		for tally in self.tallies:
-			tally.Test(self.mctalTestFileName)
-		
-
-	def Read(self,writeOrNot):
+	def Read(self):
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
-		print "\n\033[1m[Parsing file: %s%3s]\033[0m" % (str(self.mctalFileName),"...")
+		if self.verbose:
+			print "\n\033[1m[Parsing file: %s%3s]\033[0m" % (str(self.mctalFileName),"...")
 
 		self.getHeaders()
 		self.getTallies()
-
-		if writeOrNot:
-			self.dumpToFile()
 
 		return self.tallies
 
@@ -557,9 +311,10 @@ class MCTAL:
 		# The first line processed by this function is already in memory, either coming from the
 		# last readline() in Header class or from the previous call to parseTally()
 
-		tally = Tally(int(self.line[1]))
+		tally = Tally(int(self.line[1]),self.verbose)
 
-		print "Parsing tally: %5d" % (tally.tallyNumber)
+		if self.verbose:
+			print "Parsing tally: %5d" % (tally.tallyNumber)
 
 		tally.typeNumber = int(self.line[2])
 		if len(self.line) == 4: tally.detectorType = int(self.line[3])
@@ -772,42 +527,6 @@ class MCTAL:
 			self.line = self.line.split()
 			return 0
 
-	def dumpToFile(self):
-		"""This function dumps all the variables of the MCTAL class to a file. The purpose is to have an intermediate binary file, easily accessible, between the ASCII MCTAL file and the desired output format (e.g. ROOT file)."""
-
-		print "\n\033[1m[Dumping MCTAL class to binary file...]\033[0m"
-
-		with open("%s%s" % (self.mctalFileName,"_dump"), 'wb') as output:
-			pickler = pickle.Pickler(output, -1)
-	
-			# Dump header
-			pickler.dump(self.header)
-
-			# Dump talllies info
-			pickler.dump(self.tallies)
-			pickler.dump(self.mctalFileName)
-
-
-		output.close()
-
-	def loadFile(self,fname):
-		"""This function reads the binary file created by the function dumpToFile and stores back the data into the class variables."""
-
-		inFile = open("%s" % (fname),'rb')
-
-		# Load header
-		self.header = pickle.load(inFile)
-
-		# Load tallies
-		self.tallies = pickle.load(inFile)
-
-		# Load original MCTAL file name
-		self.mctalFileName = pickle.load(inFile)
-
-		# Set the variables of the class
-		self.setClassVariables()
-
-		return self.tallies
 
 
 

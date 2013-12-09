@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo "Testing..."
+
+SUM=0
+
+for f in mctal_files/*;
+	do
+		python nbmctaltest.py $f -v
+		OUT=$?
+		SUM=$(($SUM+$OUT))
+	done
+
+if [ $SUM -eq 0 ]; then
+	echo "OK"
+else
+	echo "FAILED"
+fi
+
