@@ -9,6 +9,7 @@
 
 import sys, re, string
 from array import array
+import cPickle as pickle
 #from mcnp import GetParticleNames
 
 #############################################################################################################################
@@ -469,19 +470,29 @@ class Tally:
 class MCTAL:
 	"""This class parses the whole MCTAL file."""
 
-	def __init__(self,fname):
-		self.tallies = [] # This list will contain all the instances of the Tally class.
-		self.header = Header()
-		self.mctalFileName = fname
-		self.mctalTestFileName = fname + "_testFile"
-		self.mctalFile = open(self.mctalFileName, "r")
-		self.line = None # This variable will contain the read lines one by one, but it is
-				 # important to keep it global because the last value from getHeaders()
-				 # must be already available as first value for parseTally(). This will
-				 # also apply to successive calls to parseTally().
+	def __init__(self,fname = ""):
+		if fname != "":
+			self.setClassVariables(fname)
 
 	def __del__(self):
-		self.mctalFile.close()
+		if self.mctalFile != None:
+			self.mctalFile.close()
+
+	def setClassVariables(self,fname = ""):
+		"""This function sets the variables of the class. This is not done in the constructor in order to be able to deal with the reading of the ASCII MCTAL file and the loading of the binary intermediate file."""
+		if fname != "":
+			self.tallies = []
+			self.header = Header()
+			self.mctalFileName = fname
+			self.mctalTestFileName = fname + "_testFile"
+			self.mctalFile = open(self.mctalFileName, "r")
+			self.line = None # This variable will contain the read lines one by one, but it is
+					 # important to keep it global because the last value from getHeaders()
+					 # must be already available as first value for parseTally(). This will
+					 # also apply to successive calls to parseTally().
+		else:
+			self.mctalFile = None
+			self.mctalTestFileName = self.mctalFileName + "_testFile"
 
 	def Test(self):
 		self.header.Test(self.mctalTestFileName)
@@ -489,13 +500,18 @@ class MCTAL:
 			tally.Test(self.mctalTestFileName)
 		
 
-	def Read(self):
+	def Read(self,writeOrNot):
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
 		print "\n\033[1m[Parsing file: %s%3s]\033[0m" % (str(self.mctalFileName),"...")
 
 		self.getHeaders()
 		self.getTallies()
+
+		if writeOrNot:
+			self.dumpToFile()
+
+		return self.tallies
 
 	def getHeaders(self):
 		"""This function reads the first lines from the MCTAL file. We call "header" what is written from the beginning to the first "tally" keyword."""
@@ -756,6 +772,42 @@ class MCTAL:
 			self.line = self.line.split()
 			return 0
 
+	def dumpToFile(self):
+		"""This function dumps all the variables of the MCTAL class to a file. The purpose is to have an intermediate binary file, easily accessible, between the ASCII MCTAL file and the desired output format (e.g. ROOT file)."""
+
+		print "\n\033[1m[Dumping MCTAL class to binary file...]\033[0m"
+
+		with open("%s%s" % (self.mctalFileName,"_dump"), 'wb') as output:
+			pickler = pickle.Pickler(output, -1)
+	
+			# Dump header
+			pickler.dump(self.header)
+
+			# Dump talllies info
+			pickler.dump(self.tallies)
+			pickler.dump(self.mctalFileName)
+
+
+		output.close()
+
+	def loadFile(self,fname):
+		"""This function reads the binary file created by the function dumpToFile and stores back the data into the class variables."""
+
+		inFile = open("%s" % (fname),'rb')
+
+		# Load header
+		self.header = pickle.load(inFile)
+
+		# Load tallies
+		self.tallies = pickle.load(inFile)
+
+		# Load original MCTAL file name
+		self.mctalFileName = pickle.load(inFile)
+
+		# Set the variables of the class
+		self.setClassVariables()
+
+		return self.tallies
 
 
 
