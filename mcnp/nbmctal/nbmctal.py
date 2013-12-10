@@ -314,7 +314,7 @@ class MCTAL:
 		tally = Tally(int(self.line[1]),self.verbose)
 
 		if self.verbose:
-			print "Parsing tally: %5d" % (tally.tallyNumber)
+			print " Parsing tally: %5d" % (tally.tallyNumber)
 
 		tally.typeNumber = int(self.line[2])
 		if len(self.line) == 4: tally.detectorType = int(self.line[3])
