@@ -1,21 +1,29 @@
+#!/usr/bin/python -W all
+
 import sys
-import time
+import argparse
 from nbmctal import MCTAL
 from array import array
-from ROOT import ROOT, THnSparse, THnSparseF, TFile
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-if len(sys.argv) == 3 and sys.argv[2] == "-v":
-        verbose = True
-else:
-        verbose = False
+parser = argparse.ArgumentParser("Mctal to ROOT conversion script", epilog="Homepage: http://code.google.com/p/mc-tools", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('mctal_file', type=str, help='The name (and path) to the mctal file to be converted')
+parser.add_argument('root_file', type=str, nargs='?', help='The name of the converted ROOT file', default="")
+parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='Explain what is being done')
 
-m = MCTAL(sys.argv[1],verbose)
+arguments = parser.parse_args()
+
+m = MCTAL(sys.argv[1],arguments.verbose)
 
 T = m.Read()
 
-rootFileName = "%s_%s-%s%s" % (sys.argv[1],time.strftime("%Y%m%d"),time.strftime("%H%M%S"),".root")
+if arguments.root_file == "":
+	rootFileName = "%s%s" % (arguments.mctal_file,".root")
+else:
+	rootFileName = arguments.root_file
 
-rootFile = TFile(rootFileName,"RECREATE");
+rootFile = ROOT.TFile(rootFileName,"RECREATE");
 
 i = 0
 
@@ -29,7 +37,7 @@ timAxis = []
 timAxisCount = None
 
 
-if verbose:
+if arguments.verbose:
 	print "\n\033[1m[Converting...]\033[0m"
 
 for tally in T:
@@ -84,7 +92,7 @@ for tally in T:
 	binsMin = array('d',[0,        0,      0,      0,      0,      0,      0,      0])
 	binsMax = array('d',[nCells-1, nDir-1, nUsr-1, nSeg-1, nMul-1, nCos-1, nErg-1, nTim-1])
 
-	hs = THnSparseF("Tally_%d" % tally.tallyNumber,"Tally: %5d" % tally.tallyNumber,8,bins,binsMin,binsMax)
+	hs = ROOT.THnSparseF("Tally_%d" % tally.tallyNumber,"Tally: %5d" % tally.tallyNumber,8,bins,binsMin,binsMax)
 
 	# Axes must be set here and not with the binsMin and binsMax variables because in case of logarithmic binnings
 	# the division would be linear, loosing meaning.
@@ -115,7 +123,7 @@ for tally in T:
 
 
 	hs.Write()
-	if verbose:
+	if arguments.verbose:
 		print " Tally %5d saved" % (tally.tallyNumber)
 	i = i + 1
 
