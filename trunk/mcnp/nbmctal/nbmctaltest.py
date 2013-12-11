@@ -1,3 +1,4 @@
+#! /usr/bin/python -W all
 import sys
 from nbmctal import MCTAL
 from nbtestsuite import TestSuite

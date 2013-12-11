@@ -1,3 +1,4 @@
+#! /usr/bin/python -W all
 import subprocess
 import tempfile
 import os, sys
