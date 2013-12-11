@@ -1,6 +1,6 @@
 import subprocess
 import tempfile
-import os
+import os, sys
 
 #############################################################################################################################
 
@@ -226,9 +226,9 @@ class TestSuite:
 			#	print line,
 			#retval = p.wait()
 			if self.verbose:
-				print "\n\033[1m[TEST FAILED]\033[0m"
-				print "\033[1mOriginal MCTAL:\033[0m %s - \033[1mTest MCTAL:\033[0m %s" % (self.mctalObject.mctalFileName,self.outFile.name)
-				print "\033[1mTry:\033[0m diff -b %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
+				print >> sys.stderr, "\n\033[1m[TEST FAILED]\033[0m"
+				print >> sys.stderr,  "\033[1mOriginal MCTAL:\033[0m %s - \033[1mTest MCTAL:\033[0m %s" % (self.mctalObject.mctalFileName,self.outFile.name)
+				print >> sys.stderr,  "\033[1mTry:\033[0m diff -b %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
 			return 1
 
 		
