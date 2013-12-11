@@ -4,16 +4,18 @@ echo "Testing..."
 
 SUM=0
 
-for f in mctal_files/*;
-	do
-		python nbmctaltest.py $f -v
-		OUT=$?
-		SUM=$(($SUM+$OUT))
-	done
+for f in $@;
+do
+    python nbmctaltest.py $f -v
+    OUT=$?
+    SUM=$(($SUM+$OUT))
+done
 
 if [ $SUM -eq 0 ]; then
-	echo "OK"
+    echo "OK"
 else
-	echo "FAILED"
+    echo "FAILED"
 fi
+
+exit $SUM
 
