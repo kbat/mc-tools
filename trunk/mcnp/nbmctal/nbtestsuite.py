@@ -66,9 +66,7 @@ class TestSuite:
                 if self.mctalObject.header.ver != "2.7.0": 
                         headerLine = fs.headerLine_250
 
-		if self.mctalObject.header.ver != "2.7.0" and 
-		   self.mctalObject.header.ver != "2.5.0" and 
-		   self.mctalObject.header.ver != "":
+		if self.mctalObject.header.ver != "2.7.0" and self.mctalObject.header.ver != "2.5.0" and self.mctalObject.header.ver != "":
 			print "\033[1m * [WARNING]: MCNPX not officially supported. Results could be wrong. *\033[0m"
 
 		if len(self.mctalObject.header.probid) == 0:
@@ -233,7 +231,7 @@ class TestSuite:
 	def diffFiles(self):
 		"""This function checks whether the files are equal or not."""
 
-		if subprocess.call(['diff', '-b', self.mctalObject.mctalFileName, self.outFile.name], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		if subprocess.call(['diff', '-b', self.mctalObject.mctalFileName, self.outFile.name], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
 			if self.verbose:
 				print "\n\033[1m[TEST PASSED]\033[0m"
 			os.remove(self.outFile.name)
