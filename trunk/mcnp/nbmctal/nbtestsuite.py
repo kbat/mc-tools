@@ -40,7 +40,7 @@ class TestSuite:
 		self.verbose = verbose
 
 	def Test(self):
-		"This function performs the test."""
+		"This function performs the test. * Supported MCNPX versions: 2.5.0, 2.7.0. *"""
 
 		self.prepareMctalTestFile()
 		self.writeHeader()
@@ -65,6 +65,11 @@ class TestSuite:
                 
                 if self.mctalObject.header.ver != "2.7.0": 
                         headerLine = fs.headerLine_250
+
+		if self.mctalObject.header.ver != "2.7.0" and 
+		   self.mctalObject.header.ver != "2.5.0" and 
+		   self.mctalObject.header.ver != "":
+			print "\033[1m * [WARNING]: MCNPX not officially supported. Results could be wrong. *\033[0m"
 
 		if len(self.mctalObject.header.probid) == 0:
 			probid = str("").rjust(19)
@@ -107,11 +112,11 @@ class TestSuite:
                         if i > 0 and (i+1) % 40 == 0: 
                                 self.outFile.write("\n") 
 
-		for i in range(len(tally.tallyComment)):
-			self.outFile.write("\n" + fs.tallyCommentLine % (tally.tallyComment[i].ljust(75)))
+		for tc in tally.tallyComment:
+			self.outFile.write("\n" + fs.tallyCommentLine % (tc.ljust(75)))
 
-		binIndexList = ["f","d","u","s","m","c","e","t"]
-		binNumberList = [tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim]
+		binIndexList = ("f","d","u","s","m","c","e","t")
+		binNumberList = (tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim)
 		binList = dict(zip(binIndexList,binNumberList))
 
 		for axis in binIndexList:
@@ -216,21 +221,19 @@ class TestSuite:
 
 		self.outFile.write("\n" + fs.tfcLine % tuple(tally.tfc_jtf))
 
-		for i in range(len(tally.tfc_dat)):
+		for tfc_dat in tally.tfc_dat:
 			tfcValsLine = fs.tfcValsLineSmall
-			if tally.tfc_dat[i][0] >= 1e11:
+			if tfc_dat[0] >= 1e11:
 				tfcValsLine = fs.tfcValsLineSmall
-			if len(tally.tfc_dat[i]) == 4:
+			if len(tfc_dat) == 4:
 				tfcValsLine += "%13.5E"
-			self.outFile.write("\n" + tfcValsLine % tuple(tally.tfc_dat[i]))
+			self.outFile.write("\n" + tfcValsLine % tuple(tfc_dat))
 
 
 	def diffFiles(self):
 		"""This function checks whether the files are equal or not."""
 
-		p = subprocess.Popen("diff -b -i %s %s" % (self.mctalObject.mctalFileName,self.outFile.name), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		
-		if len(p.stdout.readlines()) == 0:
+		if subprocess.call(['diff', '-b', self.mctalObject.mctalFileName, self.outFile.name], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			if self.verbose:
 				print "\n\033[1m[TEST PASSED]\033[0m"
 			os.remove(self.outFile.name)
