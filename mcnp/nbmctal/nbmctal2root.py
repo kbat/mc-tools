@@ -25,8 +25,6 @@ else:
 
 rootFile = ROOT.TFile(rootFileName,"RECREATE");
 
-i = 0
-
 usrAxis = []
 usrAxisCount = None
 cosAxis = []
@@ -125,7 +123,6 @@ for tally in T:
 	hs.Write()
 	if arguments.verbose:
 		print " Tally %5d saved" % (tally.tallyNumber)
-	i = i + 1
 
 rootFile.Close()
 print "\n\033[1mROOT file saved to: %s\033[0m\n" % (rootFileName)
