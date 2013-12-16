@@ -20,13 +20,14 @@ class FormatStrings:
 		self.tallyCommentLine = " "*5 + "%75s" # (5X,A75)
 		self.axisCardLine = "%2s%8d" # (A2,I8)
 		self.axisFOptionLine = "%4d" # (I4)
-		self.cellListLine = "%7d" # (11I7)
+		self.cellListLine = "%7d" # (11I7) - For cells without macrobody facets
+		self.cellListLineMB = "%5d.%1d" # (i5,1h.,i1) - For cells with macrobody facets
 		self.binValuesLine = "%13.5E" # (1P6E13.5)
 		self.valsLine = "%4s" # (A4)
 		self.valuesErrorsLine = "%13.5E%7.4F" # (4(1PE13.5,0PF7.4))
 		self.tfcLine = "tfc%5d" + "%8d"*8 # (A3,I5,8I8)
-		self.tfcValsLineSmall = "%11d" + "%13.5E"*3 # (I11,1P3E13.5)
-		self.tfcValsLineBig = "%11.5E" + "%13.5E"*3 # (1E11.5
+		self.tfcValsLineSmall = "%11d" + "%13.5E"*2 # (I11,1P3E13.5)
+		self.tfcValsLineBig = "%11.5E" + "%13.5E"*2 # (1E11.5
 
 #############################################################################################################################
 
@@ -64,10 +65,15 @@ class TestSuite:
                 
                 if self.mctalObject.header.ver != "2.7.0": 
                         headerLine = fs.headerLine_250
+
+		if len(self.mctalObject.header.probid) == 0:
+			probid = str("").rjust(19)
+		else:
+			probid = str(self.mctalObject.header.probid[0]).rjust(10) + str(self.mctalObject.header.probid[1]).rjust(9)
                 
                 self.outFile.write(headerLine % (str(self.mctalObject.header.kod).ljust(8), 
 						self.mctalObject.header.ver, 
-						str(self.mctalObject.header.probid[0]).rjust(10) + str(self.mctalObject.header.probid[1]).rjust(9), 
+						probid, 
 						self.mctalObject.header.knod, 
 						self.mctalObject.header.nps, 
 						self.mctalObject.header.rnr))
@@ -137,7 +143,11 @@ class TestSuite:
 			if axis == "f" and tally.tallyNumber % 5 != 0:
 				self.outFile.write("\n")
 				for i in range(len(tally.cells)):
-					self.outFile.write(fs.cellListLine % (tally.cells[i]))
+					splitCell = str(tally.cells[i]).split(".")
+					if len(splitCell) != 0:
+						self.outFile.write(fs.cellListLineMB % (int(splitCell[0]),int(splitCell[1])))
+					else:
+						self.outFile.write(fs.cellListLine % (tally.cells[i]))
 					if i > 0 and (i+1) % 11 == 0 and (i+1) != len(tally.cells):
 						self.outFile.write("\n")
 
@@ -210,17 +220,20 @@ class TestSuite:
 			tfcValsLine = fs.tfcValsLineSmall
 			if tally.tfc_dat[i][0] >= 1e11:
 				tfcValsLine = fs.tfcValsLineSmall
+			if len(tally.tfc_dat[i]) == 4:
+				tfcValsLine += "%13.5E"
 			self.outFile.write("\n" + tfcValsLine % tuple(tally.tfc_dat[i]))
 
 
 	def diffFiles(self):
 		"""This function checks whether the files are equal or not."""
 
-		p = subprocess.Popen("diff -b %s %s" % (self.mctalObject.mctalFileName,self.outFile.name), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		p = subprocess.Popen("diff -b -i %s %s" % (self.mctalObject.mctalFileName,self.outFile.name), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		
 		if len(p.stdout.readlines()) == 0:
 			if self.verbose:
 				print "\n\033[1m[TEST PASSED]\033[0m"
+			os.remove(self.outFile.name)
 			return 0
 		else:
 			#for line in p.stdout.readlines():
@@ -229,7 +242,10 @@ class TestSuite:
 			if self.verbose:
 				print >> sys.stderr, "\n\033[1m[TEST FAILED]\033[0m"
 				print >> sys.stderr,  "\033[1mOriginal MCTAL:\033[0m %s - \033[1mTest MCTAL:\033[0m %s" % (self.mctalObject.mctalFileName,self.outFile.name)
-				print >> sys.stderr,  "\033[1mTry:\033[0m diff -b %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
+				print >> sys.stderr,  "\033[1mTry:\033[0m diff -b -i %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
+			else:
+				print >> sys.stderr, "\033[1mFAILED FOR FILE: \033[0m%s" % (self.mctalObject.mctalFileName)
+				print >> sys.stderr,  "\033[1mTry:\033[0m diff -b -i %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
 			return 1
 
 		

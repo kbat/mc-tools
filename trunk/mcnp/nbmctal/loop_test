@@ -1,21 +1,63 @@
 #!/bin/bash
 
-echo "Testing..."
+VERBOSE=0
 
-SUM=0
+function help {
 
-for f in $@;
-do
-    python nbmctaltest.py $f -v
-    OUT=$?
-    SUM=$(($SUM+$OUT))
-done
+	echo "Usage: test [-v] file1 file2 ... "
+	exit 0   
 
-if [ $SUM -eq 0 ]; then
-    echo "OK"
-else
-    echo "FAILED"
+}
+
+function performTest () {
+
+	echo "Testing..."
+
+	SUM=0
+	ALL=0
+
+	if [[ "$VERBOSE" == "-v" ]]; then
+		shift 1
+	fi
+
+	for f in $@;
+	do
+		echo $f
+		python nbmctaltest.py $f $VERBOSE
+		OUT=$?
+		if [ $OUT -eq 5 ]; then
+			echo $f >> macrobody_fails
+			SUM=$(($SUM+1))
+		fi
+		if [ $OUT -eq 4 ]; then
+			echo $f >> mesh_fails
+			SUM=$(($SUM+1))
+		fi
+		if [ $OUT -eq 1 ]; then
+			echo $f >> generic_fails
+			SUM=$(($SUM+$OUT))
+		fi
+		if [ $OUT -eq 0 ]; then
+			echo $f >> successful_tests
+		fi
+		ALL=$(($ALL+1))
+	done
+
+	echo "$SUM out of $ALL Failed"
+	exit $SUM
+
+}
+
+if test $# -eq 0; then
+    help
 fi
 
-exit $SUM
+while getopts "hv" option; do
+    case $option in
+        h) help;;
+	v) VERBOSE="-v";;
+    esac
+done
+
+performTest $@
 

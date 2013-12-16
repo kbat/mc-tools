@@ -17,16 +17,16 @@ class Header:
 
 	def __init__(self,verbose=False):
 		self.verbose = verbose
-		self.kod = 0		# Name of the code, MCNPX
-		self.ver = 0		# Code version
+		self.kod = ""  		# Name of the code, MCNPX
+		self.ver = ""  		# Code version
 		self.probid = []	# Date and time when the problem was run
-		self.knod = 0		# The dump number
-		self.nps = 0		# Number of histories that were run
-		self.rnr = 0		# Number of pseudoradom numbers that were used
-		self.title = None	# Problem identification line
-		self.ntal = 0		# Number of tallies
+		self.knod = 0   	# The dump number
+		self.nps = 0   		# Number of histories that were run
+		self.rnr = 0   		# Number of pseudoradom numbers that were used
+		self.title = ""  	# Problem identification line
+		self.ntal = 0   	# Number of tallies
 		self.ntals = []		# Array of tally numbers
-		self.npert = 0		# Number of perturbations
+		self.npert = 0   	# Number of perturbations
 
 	def Print(self):
 	        """Prints the class members. Verbose flag on class initialization must be set to True."""
@@ -82,6 +82,7 @@ class Tally:
 		self.timFlag = 0
 
 		self.cells = []
+		self.macrobodySurface = []
 
 		self.usr = []
 		self.cos = []
@@ -218,7 +219,7 @@ class Tally:
 	def insertTfcDat(self,dat):
 		"""Insert TFC values."""
 
-		if len(dat) == 4:
+		if len(dat) <= 4:
 			self.tfc_dat.append(dat)
 			return 1
 		else:
@@ -263,7 +264,8 @@ class MCTAL:
 			print "\n\033[1m[Parsing file: %s%3s]\033[0m" % (str(self.mctalFileName),"...")
 
 		self.getHeaders()
-		self.getTallies()
+		if self.header.ntal != 0:
+			self.getTallies()
 
 		return self.tallies
 
@@ -272,15 +274,21 @@ class MCTAL:
 
 		self.line = self.mctalFile.readline().split()
 
-		self.header.kod = self.line[0]
-		self.header.ver = self.line[1]
-		pID_date = self.line[2]
-		self.header.probid.append(pID_date)
-		pID_time = self.line[3]
-		self.header.probid.append(pID_time)
-		self.header.knod = int(self.line[4])
-		self.header.nps = int(self.line[5])
-		self.header.rnr = int(self.line[6])
+		if len(self.line) == 7:
+			self.header.kod = self.line[0]
+			self.header.ver = self.line[1]
+			pID_date = self.line[2]
+			self.header.probid.append(pID_date)
+			pID_time = self.line[3]
+			self.header.probid.append(pID_time)
+			self.header.knod = int(self.line[4])
+			self.header.nps = int(self.line[5])
+			self.header.rnr = int(self.line[6])
+		elif len(self.line) == 3:
+			self.header.knod = int(self.line[0])
+			self.header.nps = int(self.line[1])
+			self.header.rnr = int(self.line[2])
+			
 
 		self.header.title = self.mctalFile.readline().strip()
 
@@ -344,12 +352,22 @@ class MCTAL:
 		self.line = self.mctalFile.readline()
 
 		while self.line[0].lower() != "d": # CELLS
-			for c in self.line.split():
-				exitCode = tally.insertCell(int(c))
-				if exitCode == 0: # This means that for some reason you are trying to
-						  # insert more cells than the number stated in f
-					print "Too many cells."
-					break 
+			if "E" in self.line:
+				print >> sys.stderr, " Mesh tally. Skipping (for now) this tally. TEST WILL FAIL." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+				sys.exit(4)
+			elif "." in self.line and "E" not in self.line:
+				for c in self.line.split():
+					exitCode = tally.insertCell(float(c))
+				#print >> sys.stderr, " Macrobodies found." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+				#sys.exit(5)
+			else:
+				for c in self.line.split():
+					exitCode = tally.insertCell(int(c))
+					if exitCode == 0: # This means that for some reason you are trying to
+							  # insert mre cells than the number stated in f
+						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+						sys.exit(1) 
+
 			self.line = self.mctalFile.readline()
 
 		# DIR
@@ -371,8 +389,8 @@ class MCTAL:
 			for u in self.line.split():
 				exitCode = tally.insertUsr(float(u))
 				if exitCode == 0:
-					print "Too many bins."
-					break
+					print >> sys.stderr, "Too many USR bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					sys.exit(1)
 			self.line = self.mctalFile.readline()
 
 		# SEG
@@ -406,8 +424,8 @@ class MCTAL:
 			for c in self.line.split():
 				exitCode = tally.insertCos(float(c))
 				if exitCode == 0:
-					print "Too many bins."
-					break
+					print >> sys.stderr, "Too many COS bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					sys.exit(1)
 			self.line = self.mctalFile.readline()
 
 		# ERG
@@ -423,8 +441,8 @@ class MCTAL:
 			for e in self.line.split():
 				exitCode = tally.insertErg(float(e))
 				if exitCode == 0:
-					print "Too many bins."
-					break
+					print >> sys.stderr, "Too many ERG bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					sys.exit(1)
 			self.line = self.mctalFile.readline()
 
 		# TIM
@@ -440,8 +458,8 @@ class MCTAL:
 			for t in self.line.split():
 				exitCode = tally.insertTim(float(t))
 				if exitCode == 0:
-					print "Too many bins."
-					break
+					print >> sys.stderr, "Too many TIME bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					sys.exit(1)
 			self.line = self.mctalFile.readline()
 
 		# VALS
@@ -509,13 +527,14 @@ class MCTAL:
 			tfcDat.append(int(self.line[0]))
 			tfcDat.append(float(self.line[1]))
 			tfcDat.append(float(self.line[2]))
-			tfcDat.append(float(self.line[3]))
+			if len(self.line) == 4:
+				tfcDat.append(float(self.line[3]))
 
 			exitCode = tally.insertTfcDat(tfcDat)
 
 			if exitCode == 0:
-				print "Wrong number of elements in TFC data line."
-				break
+				print >> sys.stderr, "Wrong number of elements in TFC data line." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+				sys.exit(1)
 
 			self.line = self.mctalFile.readline().strip()
 
