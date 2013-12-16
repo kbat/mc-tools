@@ -1,16 +1,25 @@
 #! /usr/bin/python -W all
-import sys
+import sys, argparse
 from nbmctal import MCTAL
 from nbtestsuite import TestSuite
 
-if len(sys.argv) == 3 and sys.argv[2] == "-v":
-	verbose = True
-else:
-	verbose = False
+def main():
+	"""
+	A script to test how we are able to read and reproduce the mctal file structure. It reads the original mctal file into a binary object, generates another mctal file based on this object and then compares both files using GNU diffutils.
+	Exit status is 0 if both files are the same, 1 if different.
+	"""
+	parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: http://code.google.com/p/mc-tools")
+	parser.add_argument('-v', '--verbose', action='store_true',  default=False, dest='verbosity', help='explain what is being done')
+	parser.add_argument('mctal', type=str, help='mctal file to use for test')
 
-m = MCTAL(sys.argv[1],verbose)
-m.Read()
+	arguments = parser.parse_args()
 
-t = TestSuite(m,verbose)
-sys.exit(t.Test())
+	m = MCTAL(arguments.mctal, arguments.verbosity)
+	m.Read()
 
+	t = TestSuite(m, arguments.verbosity)
+	return t.Test()
+
+
+if __name__ == "__main__":
+	sys.exit(main())
