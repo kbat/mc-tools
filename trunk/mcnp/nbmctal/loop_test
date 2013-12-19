@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERBOSE=0
+VERBOSE=""
 
 function help {
 
@@ -23,23 +23,27 @@ function performTest () {
 	for f in $@;
 	do
 		echo $f
-		python nbmctaltest.py $f $VERBOSE
+		python nbmctaltest.py $VERBOSE $f
 		OUT=$?
-		if [ $OUT -eq 5 ]; then
-			echo $f >> macrobody_fails
-			SUM=$(($SUM+1))
-		fi
-		if [ $OUT -eq 4 ]; then
-			echo $f >> mesh_fails
-			SUM=$(($SUM+1))
-		fi
-		if [ $OUT -eq 1 ]; then
-			echo $f >> generic_fails
+		#if [ $OUT -eq 5 ]; then
+		#	echo $f >> macrobody_fails
+		#	SUM=$(($SUM+1))
+		#fi
+		#if [ $OUT -eq 4 ]; then
+		#	echo $f >> mesh_fails
+		#	SUM=$(($SUM+1))
+		#fi
+		#if [ $OUT -eq 1 ]; then
+		#	echo $f >> generic_fails
+		#	SUM=$(($SUM+$OUT))
+		#fi
+		if [ $OUT -gt 0 ]; then
+		#	echo $f >> mesh_fails_new
 			SUM=$(($SUM+$OUT))
 		fi
-		if [ $OUT -eq 0 ]; then
-			echo $f >> successful_tests
-		fi
+		#if [ $OUT -eq 0 ]; then
+		#	echo $f >> successful_tests
+		#fi
 		ALL=$(($ALL+1))
 	done
 

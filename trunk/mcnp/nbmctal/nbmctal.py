@@ -64,6 +64,8 @@ class Tally:
 		self.tallyParticles = []
 		self.tallyComment = [] 
 		self.nCells = 0
+		self.mesh = False
+		self.meshInfo = []
 		self.nDir = 0
 		self.nUsr = 0
 		self.usrTC = None
@@ -82,7 +84,6 @@ class Tally:
 		self.timFlag = 0
 
 		self.cells = []
-		self.macrobodySurface = []
 
 		self.usr = []
 		self.cos = []
@@ -349,15 +350,28 @@ class MCTAL:
 
 		tally.nCells = int(self.line[1])
 
+		if len(self.line) > 2:
+			tally.mesh = True
+			tally.meshInfo.append(int(self.line[2])) # Unknown number
+			tally.meshInfo.append(int(self.line[3])) # number of cora bins
+			tally.meshInfo.append(int(self.line[4])) # number of corb bins
+			tally.meshInfo.append(int(self.line[5])) # number of corc bins
+
 		self.line = self.mctalFile.readline()
 
 		while self.line[0].lower() != "d": # CELLS
-			if "E" in self.line:
-				print >> sys.stderr, " Mesh tally. Skipping (for now) this tally. TEST WILL FAIL." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-				sys.exit(4)
+			if tally.mesh:
+				for c in self.line.split():
+					exitCode = tally.insertCell(float(c))
+					if exitCode == 0:
+						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+				#print >> sys.stderr, " Mesh tally. Skipping (for now) this tally. TEST WILL FAIL. " + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+				#sys.exit(4)
 			elif "." in self.line and "E" not in self.line:
 				for c in self.line.split():
 					exitCode = tally.insertCell(float(c))
+					if exitCode == 0:
+						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 				#print >> sys.stderr, " Macrobodies found." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 				#sys.exit(5)
 			else:
@@ -499,44 +513,49 @@ class MCTAL:
 										#print self.line
 
 										if self.line[0:3] != "tfc":
-											#print "%4d"*8 % (c,d,u,s,m,a,e,t) + "%13.5E" % (float(Fld[f]))
+											#print "%4d"*8 % (c,d,u,s,m,a,e,t) #+ "%13.5E" % (float(Fld[f]))
 											tally.insertValue(c,d,u,s,m,a,e,t,0,float(Fld[f]))
 											tally.insertValue(c,d,u,s,m,a,e,t,1,float(Fld[f+1]))
 
 											f += 2
 
-		# TFC JTF
-		while self.line[0] != "tfc":
-			self.line = self.mctalFile.readline().strip().split()
+		if tally.mesh == False:
+			# TFC JTF
+			while self.line[0] != "tfc":
+				self.line = self.mctalFile.readline().strip().split()
 
-		del self.line[0]
-		self.line = [int(i) for i in self.line]
+			del self.line[0]
+			self.line = [int(i) for i in self.line]
 
-		exitCode = tally.insertTfcJtf(self.line)
-		if exitCode == 0:
-			print "Wrong number of TFC jtf elements."
-
-
-		# TFC DAT
-		self.line = self.mctalFile.readline().strip()
-		while "tally" not in self.line and len(self.line) != 0:
-			self.line = self.line.split()
-			
-			tfcDat = []
-
-			tfcDat.append(int(self.line[0]))
-			tfcDat.append(float(self.line[1]))
-			tfcDat.append(float(self.line[2]))
-			if len(self.line) == 4:
-				tfcDat.append(float(self.line[3]))
-
-			exitCode = tally.insertTfcDat(tfcDat)
-
+			exitCode = tally.insertTfcJtf(self.line)
 			if exitCode == 0:
-				print >> sys.stderr, "Wrong number of elements in TFC data line." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-				sys.exit(1)
+				print "Wrong number of TFC jtf elements."
 
+
+			# TFC DAT
 			self.line = self.mctalFile.readline().strip()
+			while "tally" not in self.line and len(self.line) != 0:
+				self.line = self.line.split()
+			
+				tfcDat = []
+
+				tfcDat.append(int(self.line[0]))
+				tfcDat.append(float(self.line[1]))
+				tfcDat.append(float(self.line[2]))
+				if len(self.line) == 4:
+					tfcDat.append(float(self.line[3]))
+
+				exitCode = tally.insertTfcDat(tfcDat)
+
+				if exitCode == 0:
+					print >> sys.stderr, "Wrong number of elements in TFC data line." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					sys.exit(1)
+
+				self.line = self.mctalFile.readline().strip()
+
+		else:
+			while "tally" not in self.line and len(self.line) != 0:
+				self.line = self.mctalFile.readline().strip()
 
 		self.tallies.append(tally)
 
