@@ -1,4 +1,4 @@
-#!/bin/bash:w
+#!/bin/bash
 
 VERBOSE=""
 
@@ -11,7 +11,7 @@ function help {
 
 function performTest () {
 
-	echo "Testing..."
+	echo "Converting..."
 
 	SUM=0
 	ALL=0
@@ -22,7 +22,7 @@ function performTest () {
 
 	for f in $@;
 	do
-		echo $f
+		#echo $f
 		python nbmctal2root.py $VERBOSE $f
 		OUT=$?
 		#if [ $OUT -eq 5 ]; then
