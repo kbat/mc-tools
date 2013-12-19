@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/bash:w
 
 VERBOSE=""
 
 function help {
 
-	echo "Usage: loop_test [-v] file1 file2 ... "
+	echo "Usage: loop_convert [-v] file1 file2 ... "
 	exit 0   
 
 }
@@ -23,7 +23,7 @@ function performTest () {
 	for f in $@;
 	do
 		echo $f
-		python nbmctaltest.py $VERBOSE $f
+		python nbmctal2root.py $VERBOSE $f
 		OUT=$?
 		#if [ $OUT -eq 5 ]; then
 		#	echo $f >> macrobody_fails
