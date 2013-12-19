@@ -19,9 +19,10 @@ class FormatStrings:
 		self.tallyParticlesLine = "%2d" # (40I12)
 		self.tallyCommentLine = " "*5 + "%75s" # (5X,A75)
 		self.axisCardLine = "%2s%8d" # (A2,I8)
+		self.cellsLineMeshTally = "%2s%8d" + "%5d"*4 # (A2,I8,4I5)
 		self.axisFOptionLine = "%4d" # (I4)
 		self.cellListLine = "%7d" # (11I7) - For cells without macrobody facets
-		self.cellListLineMB = "%5d.%1d" # (i5,1h.,i1) - For cells with macrobody facets
+		self.cellListLineMB = "%5d.%1d" # (I5,1H.,I1) - For cells with macrobody facets
 		self.binValuesLine = "%13.5E" # (1P6E13.5)
 		self.valsLine = "%4s" # (A4)
 		self.valuesErrorsLine = "%13.5E%7.4F" # (4(1PE13.5,0PF7.4))
@@ -67,7 +68,7 @@ class TestSuite:
                         headerLine = fs.headerLine_250
 
 		if self.mctalObject.header.ver != "2.7.0" and self.mctalObject.header.ver != "2.5.0" and self.mctalObject.header.ver != "":
-			print "\033[1m * [WARNING]: MCNPX not officially supported. Results could be wrong. *\033[0m"
+			print "\033[1m * [WARNING]: this MCNPX version is not officially supported. Results could be wrong. *\033[0m"
 
 		if len(self.mctalObject.header.probid) == 0:
 			probid = str("").rjust(19)
@@ -91,7 +92,7 @@ class TestSuite:
 
                 for i in range(len(self.mctalObject.header.ntals)):
                         self.outFile.write(fs.tallyNumbersLine % self.mctalObject.header.ntals[i])
-                        if i > 0 and i % 16 == 0:
+                        if i > 0 and (i+1) % 16 == 0 and (i+1) != len(self.mctalObject.header.ntals):
                                 self.outFile.write("\n")
 
 	def writeTally(self,tally):
@@ -134,7 +135,11 @@ class TestSuite:
 			if axis == "t" and tally.timTC != None:
 				axisCard += tally.timTC
 
-			self.outFile.write("\n" + fs.axisCardLine % (axisCard.ljust(2),binList[axis]))
+			if axis == "f" and tally.mesh:
+				tup = (axisCard.ljust(2),binList[axis]) + tuple(tally.meshInfo)
+				self.outFile.write("\n" + fs.cellsLineMeshTally % tup)
+			else:
+				self.outFile.write("\n" + fs.axisCardLine % (axisCard.ljust(2),binList[axis]))
 
 			if axis == "c" and tally.cosFlag != 0:
 				self.outFile.write(fs.axisFOptionLine % (tally.cosFlag))
@@ -143,16 +148,36 @@ class TestSuite:
 			if axis == "t" and tally.timFlag != 0:
 				self.outFile.write(fs.axisFOptionLine % (tally.timFlag))
 
-			if axis == "f" and tally.tallyNumber % 5 != 0:
+			if axis == "f" and tally.tallyNumber % 5 != 0 and tally.mesh == False:
 				self.outFile.write("\n")
 				for i in range(len(tally.cells)):
 					splitCell = str(tally.cells[i]).split(".")
-					if len(splitCell) != 0:
+					if len(splitCell) != 1:
 						self.outFile.write(fs.cellListLineMB % (int(splitCell[0]),int(splitCell[1])))
 					else:
 						self.outFile.write(fs.cellListLine % (tally.cells[i]))
 					if i > 0 and (i+1) % 11 == 0 and (i+1) != len(tally.cells):
 						self.outFile.write("\n")
+
+			if axis == "f" and tally.tallyNumber % 5 != 0 and tally.mesh == True:
+				self.outFile.write("\n")
+				for i in range(tally.meshInfo[1]+1):
+					self.outFile.write(fs.binValuesLine % (tally.cells[i]))
+					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[1]:
+						self.outFile.write("\n")
+				self.outFile.write("\n")
+				for i in range(tally.meshInfo[2]+1):
+					j = i + tally.meshInfo[1]+1
+					self.outFile.write(fs.binValuesLine % (tally.cells[j]))
+					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[2]:
+						self.outFile.write("\n")
+				self.outFile.write("\n")
+				for i in range(tally.meshInfo[3]+1):
+					k = i + tally.meshInfo[1] + tally.meshInfo[2] + 2
+					self.outFile.write(fs.binValuesLine % (tally.cells[k]))
+					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[3]:
+						self.outFile.write("\n")
+					
 
 			if axis == "u" and len(tally.usr) != 0:
 				self.outFile.write("\n")
@@ -217,21 +242,22 @@ class TestSuite:
 											self.outFile.write("\n")
 										i = i + 1
 
-		self.outFile.write("\n" + fs.tfcLine % tuple(tally.tfc_jtf))
+		if tally.mesh == False:
+			self.outFile.write("\n" + fs.tfcLine % tuple(tally.tfc_jtf))
 
-		for tfc_dat in tally.tfc_dat:
-			tfcValsLine = fs.tfcValsLineSmall
-			if tfc_dat[0] >= 1e11:
+			for tfc_dat in tally.tfc_dat:
 				tfcValsLine = fs.tfcValsLineSmall
-			if len(tfc_dat) == 4:
-				tfcValsLine += "%13.5E"
-			self.outFile.write("\n" + tfcValsLine % tuple(tfc_dat))
+				if tfc_dat[0] >= 1e11:
+					tfcValsLine = fs.tfcValsLineSmall
+				if len(tfc_dat) == 4:
+					tfcValsLine += "%13.5E"
+				self.outFile.write("\n" + tfcValsLine % tuple(tfc_dat))
 
 
 	def diffFiles(self):
 		"""This function checks whether the files are equal or not."""
 
-		if subprocess.call(['diff', '-b', self.mctalObject.mctalFileName, self.outFile.name], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
+		if not subprocess.call(['diff', '-bi', self.mctalObject.mctalFileName, self.outFile.name], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
 			if self.verbose:
 				print "\n\033[1m[TEST PASSED]\033[0m"
 			os.remove(self.outFile.name)

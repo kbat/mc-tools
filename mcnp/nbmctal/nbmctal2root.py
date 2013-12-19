@@ -14,7 +14,7 @@ parser.add_argument('-v', '--verbose', action='store_true', default=False, dest=
 
 arguments = parser.parse_args()
 
-m = MCTAL(sys.argv[1],arguments.verbose)
+m = MCTAL(arguments.mctal_file,arguments.verbose)
 
 T = m.Read()
 
