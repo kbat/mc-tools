@@ -263,7 +263,7 @@ class MCTAL:
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
 		if self.verbose:
-			print "\n\033[1m[Parsing file: %s%3s]\033[0m" % (str(self.mctalFileName),"...")
+			print "\n\033[1m[Parsing file: %s...]\033[0m" % self.mctalFileName
 
 		self.getHeaders()
 		if self.header.ntal != 0:
@@ -363,25 +363,23 @@ class MCTAL:
 		while self.line[0].lower() != "d": # CELLS
 			if tally.mesh:
 				for c in self.line.split():
-					exitCode = tally.insertCell(float(c))
-					if exitCode == 0:
-						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					if not tally.insertCell(float(c)):
+#						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 				#print >> sys.stderr, " Mesh tally. Skipping (for now) this tally. TEST WILL FAIL. " + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 				#sys.exit(4)
 			elif "." in self.line and "E" not in self.line:
 				for c in self.line.split():
-					exitCode = tally.insertCell(float(c))
-					if exitCode == 0:
-						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					if not tally.insertCell(float(c)):
+#						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 				#print >> sys.stderr, " Macrobodies found." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 				#sys.exit(5)
 			else:
 				for c in self.line.split():
-					exitCode = tally.insertCell(int(c))
-					if exitCode == 0: # This means that for some reason you are trying to
-							  # insert mre cells than the number stated in f
-						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-						sys.exit(1) 
+					if not tally.insertCell(int(c)):  # This means that for some reason you are trying to
+                                					  # insert more cells than the number stated in f
+					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 
 			self.line = self.mctalFile.readline()
 
@@ -402,10 +400,8 @@ class MCTAL:
 		self.line = self.mctalFile.readline()
 		while self.line[0].lower() != "s":
 			for u in self.line.split():
-				exitCode = tally.insertUsr(float(u))
-				if exitCode == 0:
-					print >> sys.stderr, "Too many USR bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-					sys.exit(1)
+				if not tally.insertUsr(float(u)):
+					raise IOError("Too many user bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 			self.line = self.mctalFile.readline()
 
 		# SEG
@@ -437,10 +433,8 @@ class MCTAL:
 		self.line = self.mctalFile.readline()
 		while self.line[0].lower() != "e":
 			for c in self.line.split():
-				exitCode = tally.insertCos(float(c))
-				if exitCode == 0:
-					print >> sys.stderr, "Too many COS bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-					sys.exit(1)
+				if not tally.insertCos(float(c)):
+					raise IOError("Too many cosine bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 			self.line = self.mctalFile.readline()
 
 		# ERG
@@ -454,10 +448,8 @@ class MCTAL:
 		self.line = self.mctalFile.readline()
 		while self.line[0].lower() != "t":
 			for e in self.line.split():
-				exitCode = tally.insertErg(float(e))
-				if exitCode == 0:
-					print >> sys.stderr, "Too many ERG bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-					sys.exit(1)
+				if not tally.insertErg(float(e)):
+					raise IOError("Too many energy bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 			self.line = self.mctalFile.readline()
 
 		# TIM
@@ -471,10 +463,8 @@ class MCTAL:
 		self.line = self.mctalFile.readline()
 		while self.line.strip().lower() != "vals":
 			for t in self.line.split():
-				exitCode = tally.insertTim(float(t))
-				if exitCode == 0:
-					print >> sys.stderr, "Too many TIME bins." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-					sys.exit(1)
+				if not tally.insertTim(float(t)):
+					raise IOError("Too many time bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 			self.line = self.mctalFile.readline()
 
 		# VALS
@@ -528,9 +518,8 @@ class MCTAL:
 			del self.line[0]
 			self.line = [int(i) for i in self.line]
 
-			exitCode = tally.insertTfcJtf(self.line)
-			if exitCode == 0:
-				print "Wrong number of TFC jtf elements."
+			if not tally.insertTfcJtf(self.line):
+				print >> sys.stderr, "Wrong number of TFC jtf elements."
 
 
 			# TFC DAT
@@ -545,12 +534,9 @@ class MCTAL:
 				tfcDat.append(float(self.line[2]))
 				if len(self.line) == 4:
 					tfcDat.append(float(self.line[3]))
-
-				exitCode = tally.insertTfcDat(tfcDat)
-
-				if exitCode == 0:
-					print >> sys.stderr, "Wrong number of elements in TFC data line." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-					sys.exit(1)
+					
+				if not tally.insertTfcDat(tfcDat):
+					raise IOError("Wrong number of elements in TFC data line in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 
 				self.line = self.mctalFile.readline().strip()
 
