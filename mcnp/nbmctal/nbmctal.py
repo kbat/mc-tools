@@ -13,10 +13,10 @@ from array import array
 #############################################################################################################################
 
 class Header:
-	"""This class contains header information from MCTAL file"""
+	"""This class contains header information from MCTAL file. We call 'header' what is written from the beginning to the first 'tally' keyword."""
 
 	def __init__(self,verbose=False):
-		self.verbose = verbose
+		self.verbose = verbose  # Verbosity flag
 		self.kod = ""  		# Name of the code, MCNPX
 		self.ver = ""  		# Code version
 		self.probid = []	# Date and time when the problem was run
@@ -57,46 +57,47 @@ class Tally:
 	"""This class is aimed to store all the information contained in a tally."""
 
 	def __init__(self,tN,verbose=False):
-		self.verbose = verbose
-		self.tallyNumber = tN
-		self.typeNumber = 0 
-		self.detectorType = None
-		self.tallyParticles = []
-		self.tallyComment = [] 
-		self.nCells = 0
-		self.mesh = False
-		self.meshInfo = []
-		self.nDir = 0
-		self.nUsr = 0
-		self.usrTC = None
-		self.nSeg = 0
-		self.segTC = None
-		self.nMul = 0
-		self.mulTC = None
-		self.nCos = 0
-		self.cosTC = None
-		self.cosFlag = 0
-		self.nErg = 0
-		self.ergTC = None
-		self.ergFlag = 0
-		self.nTim = 0
-		self.timTC = None
-		self.timFlag = 0
+		self.verbose = verbose     # Verbosity flag
+		self.tallyNumber = tN      # Tally number
+		self.typeNumber = 0        # Particle type number
+		self.detectorType = None   # The type of detector tally where 0=none, 1=point, 2=ring, 3=pinhole radiograph,
+                                           #     4=transmitted image radiograph (rectangular grid),
+                                           #     5=transmitted image radiograph (cylindrical grid)
+		self.tallyParticles = []   # List of 0/1 entries indicating which particle types are used by the tally
+		self.tallyComment = []     # The FC card lines
+		self.nCells = 0            # Number of cell, surface or detector bins
+		self.mesh = False          # True if the tally is a mesh tally
+		self.meshInfo = []         # Mesh binning information in the case of a mesh tally
+		self.nDir = 0              # Number of total vs. direct or flagged vs. unflagged bins
+		self.nUsr = 0              # Number of user bins
+		self.usrTC = None          # Total / cumulative bin in the user bins
+		self.nSeg = 0              # Number of segment bins
+		self.segTC = None          # Total / cumulative bin in the segment bins
+		self.nMul = 0              # Number of multiplier bins
+		self.mulTC = None          # Total / cumulative bin in the multiplier bins
+		self.nCos = 0              # Number of cosine bins
+		self.cosTC = None          # Total / cumulative bin in the cosine bins
+		self.cosFlag = 0           # The integer flag of cosine bins
+		self.nErg = 0              # Number of energy bins
+		self.ergTC = None          # Total / cumulative bin in the energy bins
+		self.ergFlag = 0           # The integer flag of energy bins
+		self.nTim = 0              # Number of time bins
+		self.timTC = None          # Total / cumulative bin in the time bins
+		self.timFlag = 0           # The integer flag of time bins
 
-		self.cells = []
+		self.cells = []            # Array of cell   bin boundaries
+		self.usr = []              # Array of user   bin boundaries
+		self.cos = []              # Array of cosine bin boundaries
+		self.erg = []              # Array of energy bin boundaries
+		self.tim = []              # Array of time   bin boundaries
 
-		self.usr = []
-		self.cos = []
-		self.erg = []
-		self.tim = []
-
-		self.tfc_jtf = []
-		self.tfc_dat = []
+		self.tfc_jtf = []          # List of numbers in the tfc line
+		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
 		
 		self.binIndexList = ["f","d","u","s","m","c","e","t"]
 
 		self.isInitialized = 0
-		self.valsErrors = []
+		self.valsErrors = []       # Array of values and errors
 
 
 	def initializeValuesVectors(self):
