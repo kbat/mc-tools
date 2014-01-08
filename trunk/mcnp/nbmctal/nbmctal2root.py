@@ -1,7 +1,6 @@
 #!/usr/bin/python -W all
 
-import sys
-import argparse
+import sys, argparse, string
 from nbmctal import MCTAL
 from array import array
 import ROOT
@@ -94,7 +93,7 @@ for tally in T:
 	binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0))
 	binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1))
 
-	hs = ROOT.THnSparseF("Tally_%d" % tally.tallyNumber,"Tally: %5d" % tally.tallyNumber,8,bins,binsMin,binsMax)
+	hs = ROOT.THnSparseF("f%d" % tally.tallyNumber, string.join(tally.tallyComment).strip(), 8, bins, binsMin, binsMax)
 
 	#print "+-------------+------------------------------------------+"
 	#print "| Tally:%5d | " % tally.tallyNumber + "%5d"*8 % tuple(bins) + " |"
