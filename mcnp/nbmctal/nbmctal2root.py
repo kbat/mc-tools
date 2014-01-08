@@ -7,10 +7,11 @@ from array import array
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-parser = argparse.ArgumentParser("Mctal to ROOT conversion script", epilog="Homepage: http://code.google.com/p/mc-tools", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('mctal_file', type=str, help='The name (and path) to the mctal file to be converted')
-parser.add_argument('root_file', type=str, nargs='?', help='The name of the converted ROOT file', default="")
-parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='Explain what is being done')
+parser = argparse.ArgumentParser(description="A mctal to ROOT conversion script.", 
+				 epilog="Homepage: http://code.google.com/p/mc-tools")
+parser.add_argument('mctal_file', type=str, help='the name of the mctal file to be converted')
+parser.add_argument('root_file', type=str, nargs='?', help='the name of the output ROOT file', default="")
+parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
 arguments = parser.parse_args()
 
