@@ -30,7 +30,6 @@ if arguments.verbose:
 	print "\n\033[1m[Converting...]\033[0m"
 
 for tally in T:
-
 	usrAxis = []
 	usrAxisCount = None
 	cosAxis = []
@@ -91,9 +90,9 @@ for tally in T:
 		t = [0] + tally.tim
 		timAxis = array('d',t)
 
-	bins    = array('i',[nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim])
-	binsMin = array('d',[0,        0,      0,      0,      0,      0,      0,      0])
-	binsMax = array('d',[1,        1,      1,      1,      1,      1,      1,      1])
+	bins    = array('i', (nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim))
+	binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0))
+	binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1))
 
 	hs = ROOT.THnSparseF("Tally_%d" % tally.tallyNumber,"Tally: %5d" % tally.tallyNumber,8,bins,binsMin,binsMax)
 
