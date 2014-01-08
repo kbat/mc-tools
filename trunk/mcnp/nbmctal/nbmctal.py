@@ -96,7 +96,7 @@ class Tally:
 		
 		self.binIndexList = ["f","d","u","s","m","c","e","t"]
 
-		self.isInitialized = 0
+		self.isInitialized = False
 		self.valsErrors = []       # Array of values and errors
 
 
@@ -131,7 +131,7 @@ class Tally:
 
 		self.valsErrors = [[[[[[[[[[] for _ in range(2)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
 
-		self.isInitialized = 1
+		self.isInitialized = True
 		
 
 	def Print(self, option=[]):
@@ -169,68 +169,68 @@ class Tally:
 
 		if len(self.cells) <= self.nCells:
 			self.cells.append(cN)
-			return 1 
+			return True 
 		else:
-			return 0
+			return False
 
 	def insertUsr(self,uB):
 		"""Insert usr bins."""
 
 		if len(self.usr) <= self.nUsr:
 			self.usr.append(uB)
-			return 1
+			return True
 		else:
-			return 0
+			return False
 
 	def insertCos(self,cB):
 		"""Insert cosine bin."""
 
 		if len(self.cos) <= self.nCos:
 			self.cos.append(cB)
-			return 1
+			return True
 		else:
-			return 0
+			return False
 
 	def insertErg(self,eB):
 		"""Insert energy bin."""
 
 		if len(self.erg) <= self.nErg:
 			self.erg.append(eB)
-			return 1
+			return True
 		else:
-			return 0
+			return False
 
 	def insertTim(self,tB):
 		"""Insert time bin."""
 
 		if len(self.tim) <= self.nTim:
 			self.tim.append(tB)
-			return 1
+			return True
 		else:
-			return 0
+			return False
 
 	def insertTfcJtf(self,jtf):
 		"""Insert TFC jtf list."""
 
 		if len(jtf) == 9:
 			self.tfc_jtf = jtf
-			return 1
+			return True
 		else:
-			return 0
+			return False
 
 	def insertTfcDat(self,dat):
 		"""Insert TFC values."""
 
 		if len(dat) <= 4:
 			self.tfc_dat.append(dat)
-			return 1
+			return True
 		else:
-			return 0
+			return False
 
 	def insertValue(self,c,d,u,s,m,a,e,t,f,val):
 		"""Insert tally value."""
 
-		if self.isInitialized == 0:
+		if self.isInitialized == False:
 			self.initializeValuesVectors()
 
 		self.valsErrors[c][d][u][s][m][a][e][t][f] = val
@@ -561,10 +561,10 @@ class MCTAL:
 		self.tallies.append(tally)
 
 		if self.line == "":
-			return 1
+			return True
 		elif "tally" in self.line:
 			self.line = self.line.split()
-			return 0
+			return False
 
 
 
