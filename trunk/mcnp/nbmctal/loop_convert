@@ -23,7 +23,7 @@ function performTest () {
 	for f in $@;
 	do
 		#echo $f
-		python nbmctal2root.py $VERBOSE $f
+		python conversiontest $VERBOSE $f
 		OUT=$?
 		#if [ $OUT -eq 5 ]; then
 		#	echo $f >> macrobody_fails
