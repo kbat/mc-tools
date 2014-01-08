@@ -128,6 +128,10 @@ for tally in T:
 									hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]), val)
 									hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]), val*err)
 
+
+	for i, name in enumerate(tally.binIndexList):
+		hs.GetAxis(i).SetNameTitle(name, name)
+
 	hs.Write()
 	#rBins = [0,0,0,0,0,0,0,0]
 	#for kkk in range(8):
