@@ -25,20 +25,20 @@ else:
 
 rootFile = ROOT.TFile(rootFileName,"RECREATE");
 
-usrAxis = []
-usrAxisCount = None
-cosAxis = []
-cosAxisCount = None
-ergAxis = []
-ergAxisCount = None
-timAxis = []
-timAxisCount = None
-
-
 if arguments.verbose:
 	print "\n\033[1m[Converting...]\033[0m"
 
 for tally in T:
+
+	usrAxis = []
+	usrAxisCount = None
+	cosAxis = []
+	cosAxisCount = None
+	ergAxis = []
+	ergAxisCount = None
+	timAxis = []
+	timAxisCount = None
+
 	nCells = tally.nCells
 	if tally.nCells == 0: nCells = 1
 	nDir = tally.nDir
@@ -59,8 +59,9 @@ for tally in T:
 	if len(tally.usr) != 0:
 		if tally.usrTC == "t":
 			nUsr = nUsr - 1
-		usrAxisCount = nUsr - 1
-		usrAxis = array('d',tally.usr)
+		usrAxisCount = nUsr
+		u = [0] + tally.usr
+		usrAxis = array('d',u)
 
 	if tally.segTC == "t":
 		nSeg = nSeg - 1
@@ -71,26 +72,32 @@ for tally in T:
 	if len(tally.cos) != 0:
 		if tally.cosTC == "t":
 			nCos = nCos - 1
-		cosAxisCount = nCos - 1
-		cosAxis = array('d',tally.cos)
+		cosAxisCount = nCos
+		c = [0] + tally.cos
+		cosAxis = array('d',c)
 
 	if len(tally.erg) != 0:
 		if tally.ergTC == "t":
 			nErg = nErg - 1
-		ergAxisCount = nErg - 1
-		ergAxis = array('d',tally.erg) 
+		ergAxisCount = nErg
+		e = [0] + tally.erg
+		ergAxis = array('d',e) 
 
 	if len(tally.tim) != 0:
 		if tally.timTC == "t":
 			nTim = nTim - 1
-		timAxisCount = nTim - 1
-		timAxis = array('d',tally.tim)
+		timAxisCount = nTim
+		t = [0] + tally.tim
+		timAxis = array('d',t)
 
 	bins    = array('i',[nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim])
 	binsMin = array('d',[0,        0,      0,      0,      0,      0,      0,      0])
-	binsMax = array('d',[nCells-1, nDir-1, nUsr-1, nSeg-1, nMul-1, nCos-1, nErg-1, nTim-1])
+	binsMax = array('d',[1,        1,      1,      1,      1,      1,      1,      1])
 
 	hs = ROOT.THnSparseF("Tally_%d" % tally.tallyNumber,"Tally: %5d" % tally.tallyNumber,8,bins,binsMin,binsMax)
+
+	#print "+-------------+------------------------------------------+"
+	#print "| Tally:%5d | " % tally.tallyNumber + "%5d"*8 % tuple(bins) + " |"
 
 	# Axes must be set here and not with the binsMin and binsMax variables because in case of logarithmic binnings
 	# the division would be linear, loosing meaning.
@@ -117,10 +124,17 @@ for tally in T:
 						for c in range(nCos):
 							for e in range(nErg):
 								for t in range(nTim):
-									hs.SetBinContent(array('i',[f,d,u,s,m,c,e,t]), tally.getValue(f,d,u,s,m,c,e,t,0))
-
+									val = tally.getValue(f,d,u,s,m,c,e,t,0)
+									err = tally.getValue(f,d,u,s,m,c,e,t,1)
+									hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]), val)
+									hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]), val*err)
 
 	hs.Write()
+	#rBins = [0,0,0,0,0,0,0,0]
+	#for kkk in range(8):
+	#	rBins[kkk] = hs.GetAxis(kkk).GetNbins()
+	#print "|             | " + "%5d"*8 % tuple(rBins) + " |"
+	
 	if arguments.verbose:
 		print " Tally %5d saved" % (tally.tallyNumber)
 
