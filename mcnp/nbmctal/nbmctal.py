@@ -519,7 +519,7 @@ class MCTAL:
 			self.line = [int(i) for i in self.line]
 
 			if not tally.insertTfcJtf(self.line):
-				print >> sys.stderr, "Wrong number of TFC jtf elements."
+				raise IOError("Wrong number of TFC jtf elements.")
 
 
 			# TFC DAT
