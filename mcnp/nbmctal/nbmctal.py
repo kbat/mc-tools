@@ -94,7 +94,7 @@ class Tally:
 		self.tfc_jtf = []          # List of numbers in the tfc line
 		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
 		
-		self.binIndexList = ["f","d","u","s","m","c","e","t"]
+		self.binIndexList = ("f","d","u","s","m","c","e","t")
 
 		self.isInitialized = False
 		self.valsErrors = []       # Array of values and errors
