@@ -19,13 +19,20 @@ def main():
 	m = MCTAL(arguments.mctal_file, arguments.verbose)
 	m.Read()
 
-	if arguments.root_file == "":
-        	rootFileName = "%s%s" % (arguments.mctal_file,".root")
-	else:
-	        rootFileName = arguments.root_file
+	if not m.thereAreNaNs:
 
-	r = RootTest(m,rootFileName)
-	return r.Test()
+		if arguments.root_file == "":
+        		rootFileName = "%s%s" % (arguments.mctal_file,".root")
+		else:
+		        rootFileName = arguments.root_file
+
+		r = RootTest(m,rootFileName,arguments.verbose)
+		return r.Test()
+
+	else:
+
+		print >> sys.stderr, " Test on MCTAL file %s was skipped due to NaN values\n" % arguments.mctal_file
+		sys.exit(1)
 
 
 if __name__ == "__main__":

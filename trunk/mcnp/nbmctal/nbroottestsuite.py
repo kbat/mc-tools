@@ -165,7 +165,8 @@ class RootTest:
 						if k == 0: self.rootOutFile.write("\n")
 						self.rootOutFile.write(fs.binValuesLine % axisValues[k+1])
 					except:
-						print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
+						if self.verbose:
+							print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
 					if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nBins[a]:
 						self.rootOutFile.write("\n")
 
@@ -202,18 +203,28 @@ class RootTest:
 	def diffFiles(self):
 		"""This function checks whether the files are equal or not."""
 
-		if not subprocess.call(['diff','-bi', self.mctalOutFile.name, self.rootOutFile.name],shell=False,stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
+		precision = '1.5e-1'
+
+		#f = open('./difflog.txt','a')
+
+		#f.write("\n\n############################################################\n")
+		#f.write("ndiff-2.00 --relative-error 1.5e-1 %s %s\n" % (self.mctalOutFile.name,self.rootOutFile.name))
+		#f.flush()
+
+		if not subprocess.call(['ndiff-2.00','--relative-error', precision, '--quiet', self.mctalOutFile.name, self.rootOutFile.name],shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
 			if self.verbose:
 				print "\n\033[1m[TEST PASSED]\033[0m"
 			os.remove(self.mctalOutFile.name)
 			os.remove(self.rootOutFile.name)
+			#f.close()
 			return 0
 		else:
 			if self.verbose:
 				print >> sys.stderr, "\n\033[1m[TEST FAILED]\033[0m"
 				print >> sys.stderr,  "\033[1mOriginal MCTAL:\033[0m %s - \033[1mTest MCTAL:\033[0m %s" % (self.mctalOutFile.name,self.rootOutFile.name)
-				print >> sys.stderr,  "\033[1mTry:\033[0m diff -b -i %s %s\033[0m\n" % (self.mctalOutFile.name,self.rootOutFile.name)
+				print >> sys.stderr,  "\033[1mTry:\033[0m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (precision, self.mctalOutFile.name,self.rootOutFile.name)
 			else:
 				print >> sys.stderr, "\033[1mFAILED FOR FILE: \033[0m%s" % (self.mctalOutFile.name)
-				print >> sys.stderr,  "\033[1mTry:\033[0m diff -b -i %s %s\033[0m\n" % (self.mctalOutFile.name,self.rootOutFile.name)
+				print >> sys.stderr,  "\033[1mTry:\033[0m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (precision,self.mctalOutFile.name,self.rootOutFile.name)
+			#f.close()
 			return 1

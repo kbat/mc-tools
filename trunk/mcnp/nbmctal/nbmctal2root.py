@@ -18,6 +18,9 @@ m = MCTAL(arguments.mctal_file,arguments.verbose)
 
 T = m.Read()
 
+if m.thereAreNaNs:
+	print >> sys.stderr, " One or more tallies contain NaN values. Conversion will succeed anyway."
+
 if arguments.root_file == "":
 	rootFileName = "%s%s" % (arguments.mctal_file,".root")
 else:
@@ -29,6 +32,7 @@ if arguments.verbose:
 	print "\n\033[1m[Converting...]\033[0m"
 
 for tally in T:
+
 	usrAxis = []
 	usrAxisCount = None
 	cosAxis = []

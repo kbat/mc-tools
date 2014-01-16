@@ -7,7 +7,7 @@
 #
 #
 
-import sys, re, string
+import sys, re, string, math
 from array import array
 
 #############################################################################################################################
@@ -98,6 +98,11 @@ class Tally:
 
 		self.isInitialized = False
 		self.valsErrors = []       # Array of values and errors
+
+		#self.thereAreNaNs = False # If some of values, errors or TFC data are NaN, the tally will be saved with
+					   # this flag set to true. The reading tests will not fail and in the conversion
+					   # script nbmctal2root.py this flag will be used to skip the conversion of the
+					   # tally
 
 
 	def initializeValuesVectors(self):
@@ -248,6 +253,7 @@ class MCTAL:
 	def __init__(self,fname,verbose=False):
 		self.verbose = verbose
 		self.tallies = []
+		self.thereAreNaNs = False
 		self.header = Header(verbose)
 		self.mctalFileName = fname
 		self.mctalFile = open(self.mctalFileName, "r")
@@ -269,6 +275,8 @@ class MCTAL:
 		if self.header.ntal != 0:
 			self.getTallies()
 
+		if self.thereAreNaNs:
+			print >> sys.stderr, "\n The MCTAL file contains one or more tallies with NaN values. Flagged.\n"
 		return self.tallies
 
 	def getHeaders(self):
@@ -505,6 +513,9 @@ class MCTAL:
 
 										if self.line[0:3] != "tfc":
 											#print "%4d"*8 % (c,d,u,s,m,a,e,t) #+ "%13.5E" % (float(Fld[f]))
+											if math.isnan(float(Fld[f])) or math.isnan(float(Fld[f+1])):
+												#print >> sys.stderr, " Tally n. %5d contains NaN values. It will be flagged to avoid conversion." % (tally.tallyNumber)
+												self.thereAreNaNs = True
 											tally.insertValue(c,d,u,s,m,a,e,t,0,float(Fld[f]))
 											tally.insertValue(c,d,u,s,m,a,e,t,1,float(Fld[f+1]))
 
@@ -530,9 +541,15 @@ class MCTAL:
 				tfcDat = []
 
 				tfcDat.append(int(self.line[0]))
+				if math.isnan(float(self.line[1])) or math.isnan(float(self.line[2])):
+					#print >> sys.stderr, " TFC data in tally n. %5d contains NaN values. The tally will be flagged to avoid conversion." % (tally.tallyNumber)
+					self.thereAreNaNs = True
 				tfcDat.append(float(self.line[1]))
 				tfcDat.append(float(self.line[2]))
 				if len(self.line) == 4:
+					if math.isnan(float(self.line[1])):
+						#print >> sys.stderr, " TFC data in tally n. %5d contains NaN values. The tally will be flagged to avoid conversion." % (tally.tallyNumber)
+						self.thereAreNaNs = True
 					tfcDat.append(float(self.line[3]))
 					
 				if not tally.insertTfcDat(tfcDat):
@@ -543,6 +560,9 @@ class MCTAL:
 		else:
 			while "tally" not in self.line and len(self.line) != 0:
 				self.line = self.mctalFile.readline().strip()
+
+		#if self.thereAreNaNs:
+		#	print >> sys.stderr, " The MCTAL file contains one or more tallies with NaN values. Flagged out for tests."
 
 		self.tallies.append(tally)
 
