@@ -1,4 +1,4 @@
-#! /usr/bin/pyhton -W all
+#! /usr/bin/python -W all
 import sys, argparse
 from nbmctal import MCTAL
 from nbroottestsuite import RootTest

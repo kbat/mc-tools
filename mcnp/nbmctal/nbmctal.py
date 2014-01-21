@@ -63,6 +63,7 @@ class Tally:
 		self.detectorType = None   # The type of detector tally where 0=none, 1=point, 2=ring, 3=pinhole radiograph,
                                            #     4=transmitted image radiograph (rectangular grid),
                                            #     5=transmitted image radiograph (cylindrical grid)
+					   # When negative, it provides the type of mesh tally
 		self.tallyParticles = []   # List of 0/1 entries indicating which particle types are used by the tally
 		self.tallyComment = []     # The FC card lines
 		self.nCells = 0            # Number of cell, surface or detector bins
@@ -275,7 +276,7 @@ class MCTAL:
 		if self.header.ntal != 0:
 			self.getTallies()
 
-		if self.thereAreNaNs:
+		if self.thereAreNaNs and self.verbose:
 			print >> sys.stderr, "\n The MCTAL file contains one or more tallies with NaN values. Flagged.\n"
 		return self.tallies
 
@@ -360,6 +361,7 @@ class MCTAL:
 		tally.nCells = int(self.line[1])
 
 		if len(self.line) > 2:
+			print >> sys.stderr, " Mesh tally. Correctly read, but incorrectly exported to ROOT."
 			tally.mesh = True
 			tally.meshInfo.append(int(self.line[2])) # Unknown number
 			tally.meshInfo.append(int(self.line[3])) # number of cora bins
@@ -523,8 +525,13 @@ class MCTAL:
 
 		if tally.mesh == False:
 			# TFC JTF
-			while self.line[0] != "tfc":
-				self.line = self.mctalFile.readline().strip().split()
+			#while self.line[0] != "tfc":
+			#	self.line = self.mctalFile.readline().strip().split()
+			#	if self.line[0] != "tfc":
+			#		print "We have a problem."
+			self.line = self.mctalFile.readline().strip().split()
+			if self.line[0] != "tfc":
+				raise IOError("There seem to be more values than expected in tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 
 			del self.line[0]
 			self.line = [int(i) for i in self.line]
