@@ -68,7 +68,7 @@ class Tally:
 		self.tallyComment = []     # The FC card lines
 		self.nCells = 0            # Number of cell, surface or detector bins
 		self.mesh = False          # True if the tally is a mesh tally
-		self.meshInfo = []         # Mesh binning information in the case of a mesh tally
+		self.meshInfo = [0,1,1,1]  # Mesh binning information in the case of a mesh tally
 		self.nDir = 0              # Number of total vs. direct or flagged vs. unflagged bins
 		self.nUsr = 0              # Number of user bins
 		self.usrTC = None          # Total / cumulative bin in the user bins
@@ -91,11 +91,14 @@ class Tally:
 		self.cos = []              # Array of cosine bin boundaries
 		self.erg = []              # Array of energy bin boundaries
 		self.tim = []              # Array of time   bin boundaries
+		self.cora = []		   # Array of cora   bin boundaries for mesh tallies (or lattices)
+		self.corb = []		   # Array of corb   bin boundaries for mesh tallies (or lattices)
+		self.corc = []		   # Array of corc   bin boundaries for mesh tallies (or lattices)
 
 		self.tfc_jtf = []          # List of numbers in the tfc line
 		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
 		
-		self.binIndexList = ("f","d","u","s","m","c","e","t")
+		self.binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
 
 		self.isInitialized = False
 		self.valsErrors = []       # Array of values and errors
@@ -109,17 +112,11 @@ class Tally:
 	def initializeValuesVectors(self):
 		"""This function initializes the 9-D matrix for the storage of values and errors."""
 
-		tmpV = []
-		tmpT = []
-		tmpE = []
-		tmpC = []
-		tmpM = []
-		tmpS = []
-		tmpU = []
-		tmpD = []
-
                 nCells = self.nCells
                 if self.nCells == 0: nCells = 1
+		nCora = self.meshInfo[1]
+		nCorb = self.meshInfo[2]
+		nCorc = self.meshInfo[3]
                 nDir = self.nDir
                 if self.nDir   == 0: nDir   = 1
                 nUsr = self.nUsr
@@ -135,7 +132,7 @@ class Tally:
                 nTim = self.nTim
                 if self.nTim   == 0: nTim   = 1
 
-		self.valsErrors = [[[[[[[[[[] for _ in range(2)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
+		self.valsErrors = [[[[[[[[[[[[[] for _ in range(2)] for _ in range(nCorc)] for _ in range(nCorb)] for _ in range(nCora)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
 
 		self.isInitialized = True
 		
@@ -151,6 +148,9 @@ class Tally:
 
                 nCells = self.nCells
                 if self.nCells == 0: nCells = 1
+		nCora = self.meshInfo[1]
+		nCorb = self.meshInfo[2]
+		nCorc = self.meshInfo[3]
                 nDir = self.nDir
                 if self.nDir   == 0: nDir   = 1
                 nUsr = self.nUsr
@@ -166,7 +166,7 @@ class Tally:
                 nTim = self.nTim
                 if self.nTim   == 0: nTim   = 1
                 
-                tot = nCells * nDir * nUsr * nSeg * nMul * nCos * nErg * nTim
+                tot = nCells * nDir * nUsr * nSeg * nMul * nCos * nErg * nTim * nCora * nCorb * nCorc
 
                 return tot
 
@@ -178,6 +178,29 @@ class Tally:
 			return True 
 		else:
 			return False
+
+	def insertCorBin(self,axis,value):
+		"""Insert cora/b/c values."""
+
+		if axis == 'a':
+			if len(self.cora) <= self.meshInfo[1]+1:
+				self.cora.append(value)
+				return True
+			else:
+				return False
+		if axis == 'b':
+			if len(self.corb) <= self.meshInfo[2]+1:
+				self.corb.append(value)
+				return True
+			else:
+				return False
+
+		if axis == 'c':
+			if len(self.corc) <= self.meshInfo[3]+1:
+				self.corc.append(value)
+				return True
+			else:
+				return False
 
 	def insertUsr(self,uB):
 		"""Insert usr bins."""
@@ -233,18 +256,18 @@ class Tally:
 		else:
 			return False
 
-	def insertValue(self,c,d,u,s,m,a,e,t,f,val):
+	def insertValue(self,c,d,u,s,m,a,e,t,f,i,j,k,val):
 		"""Insert tally value."""
 
 		if self.isInitialized == False:
 			self.initializeValuesVectors()
 
-		self.valsErrors[c][d][u][s][m][a][e][t][f] = val
+		self.valsErrors[c][d][u][s][m][a][e][t][f][i][j][k] = val
 
-	def getValue(self,f,d,u,s,m,c,e,t,v):
+	def getValue(self,f,d,u,s,m,c,e,t,i,j,k,v):
 		"""Return a value from tally."""
 
-		return self.valsErrors[f][d][u][s][m][c][e][t][v]
+		return self.valsErrors[f][d][u][s][m][c][e][t][i][j][k][v]
 
 #############################################################################################################################
 
@@ -361,27 +384,36 @@ class MCTAL:
 		tally.nCells = int(self.line[1])
 
 		if len(self.line) > 2:
-			print >> sys.stderr, " Mesh tally. Correctly read, but incorrectly exported to ROOT."
 			tally.mesh = True
-			tally.meshInfo.append(int(self.line[2])) # Unknown number
-			tally.meshInfo.append(int(self.line[3])) # number of cora bins
-			tally.meshInfo.append(int(self.line[4])) # number of corb bins
-			tally.meshInfo.append(int(self.line[5])) # number of corc bins
+			tally.nCells = 1
+			tally.meshInfo[0] = int(self.line[2]) # Unknown number
+			tally.meshInfo[1] = int(self.line[3]) # number of cora bins
+			tally.meshInfo[2] = int(self.line[4]) # number of corb bins
+			tally.meshInfo[3] = int(self.line[5]) # number of corc bins
 
 		self.line = self.mctalFile.readline()
+
+		i = 0
+		axisNumber = 0
+		axisName = ('a','b','c')
+		corsVals = (tally.meshInfo[1], tally.meshInfo[2], tally.meshInfo[3]) 
 
 		while self.line[0].lower() != "d": # CELLS
 			if tally.mesh:
 				for c in self.line.split():
-					if not tally.insertCell(float(c)):
-#						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+					if not tally.insertCorBin(axisName[axisNumber],float(c)):
+						#print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+						raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+					i = i + 1
+					if i == (corsVals[axisNumber] + 1):
+						axisNumber = axisNumber + 1
+						i = 0
 				#print >> sys.stderr, " Mesh tally. Skipping (for now) this tally. TEST WILL FAIL. " + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 				#sys.exit(4)
 			elif "." in self.line and "E" not in self.line:
 				for c in self.line.split():
 					if not tally.insertCell(float(c)):
-#						print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
+						#print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 				#print >> sys.stderr, " Macrobodies found." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 				#sys.exit(5)
@@ -483,6 +515,9 @@ class MCTAL:
 		tally.initializeValuesVectors()
 		nCells = tally.nCells
 		if tally.nCells == 0: nCells = 1
+		nCora = tally.meshInfo[1]
+		nCorb = tally.meshInfo[2]
+		nCorc = tally.meshInfo[3]
 		nDir = tally.nDir
 		if tally.nDir   == 0: nDir   = 1
 		nUsr = tally.nUsr
@@ -505,23 +540,26 @@ class MCTAL:
 							for a in range(nCos): # a is for Angle...forgive me
 								for e in range(nErg):
 									for t in range(nTim):
-										if (f > nFld): # f is for Field...again, forgive me
-											self.line = self.mctalFile.readline().strip()
-											Fld = self.line.split()
-											nFld = len(Fld) - 1
-											f = 0
+										for k in range(nCorc):
+											for j in range(nCorb):
+												for i in range(nCora):
+													if (f > nFld): # f is for Field...again, forgive me
+														self.line = self.mctalFile.readline().strip()
+														Fld = self.line.split()
+														nFld = len(Fld) - 1
+														f = 0
 
-										#print self.line
+													#print self.line
 
-										if self.line[0:3] != "tfc":
-											#print "%4d"*8 % (c,d,u,s,m,a,e,t) #+ "%13.5E" % (float(Fld[f]))
-											if math.isnan(float(Fld[f])) or math.isnan(float(Fld[f+1])):
-												#print >> sys.stderr, " Tally n. %5d contains NaN values. It will be flagged to avoid conversion." % (tally.tallyNumber)
-												self.thereAreNaNs = True
-											tally.insertValue(c,d,u,s,m,a,e,t,0,float(Fld[f]))
-											tally.insertValue(c,d,u,s,m,a,e,t,1,float(Fld[f+1]))
+													if self.line[0:3] != "tfc":
+														#print "%4d"*8 % (c,d,u,s,m,a,e,t) #+ "%13.5E" % (float(Fld[f]))
+														if math.isnan(float(Fld[f])) or math.isnan(float(Fld[f+1])):
+															#print >> sys.stderr, " Tally n. %5d contains NaN values. It will be flagged to avoid conversion." % (tally.tallyNumber)
+															self.thereAreNaNs = True
+														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,0,float(Fld[f]))
+														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,1,float(Fld[f+1]))
 
-											f += 2
+														f += 2
 
 		if tally.mesh == False:
 			# TFC JTF
@@ -578,31 +616,3 @@ class MCTAL:
 		elif "tally" in self.line:
 			self.line = self.line.split()
 			return False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

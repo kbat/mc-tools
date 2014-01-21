@@ -114,11 +114,14 @@ class TestSuite:
 		for tc in tally.tallyComment:
 			self.outFile.write("\n" + fs.tallyCommentLine % (tc.ljust(75)))
 
-		binIndexList = ("f","d","u","s","m","c","e","t")
-		binNumberList = (tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim)
+		binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
+		binNumberList = (tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim,tally.meshInfo[1],tally.meshInfo[2],tally.meshInfo[3])
 		binList = dict(zip(binIndexList,binNumberList))
 
 		for axis in binIndexList:
+
+			if axis == "i" or axis == "j" or axis == "k":
+				continue
 
 			axisCard = axis
 
@@ -136,7 +139,8 @@ class TestSuite:
 				axisCard += tally.timTC
 
 			if axis == "f" and tally.mesh:
-				tup = (axisCard.ljust(2),binList[axis]) + tuple(tally.meshInfo)
+				nCells = tally.meshInfo[1] * tally.meshInfo[2] * tally.meshInfo[3]
+				tup = (axisCard.ljust(2),nCells) + tuple(tally.meshInfo)
 				self.outFile.write("\n" + fs.cellsLineMeshTally % tup)
 			else:
 				self.outFile.write("\n" + fs.axisCardLine % (axisCard.ljust(2),binList[axis]))
@@ -162,19 +166,17 @@ class TestSuite:
 			if axis == "f" and tally.tallyNumber % 5 != 0 and tally.mesh == True:
 				self.outFile.write("\n")
 				for i in range(tally.meshInfo[1]+1):
-					self.outFile.write(fs.binValuesLine % (tally.cells[i]))
+					self.outFile.write(fs.binValuesLine % (tally.cora[i]))
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[1]:
 						self.outFile.write("\n")
 				self.outFile.write("\n")
 				for i in range(tally.meshInfo[2]+1):
-					j = i + tally.meshInfo[1]+1
-					self.outFile.write(fs.binValuesLine % (tally.cells[j]))
+					self.outFile.write(fs.binValuesLine % (tally.corb[i]))
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[2]:
 						self.outFile.write("\n")
 				self.outFile.write("\n")
 				for i in range(tally.meshInfo[3]+1):
-					k = i + tally.meshInfo[1] + tally.meshInfo[2] + 2
-					self.outFile.write(fs.binValuesLine % (tally.cells[k]))
+					self.outFile.write(fs.binValuesLine % (tally.corc[i]))
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[3]:
 						self.outFile.write("\n")
 					
@@ -210,11 +212,14 @@ class TestSuite:
 
 		self.outFile.write("\n" + fs.valsLine %("vals\n"))
 
-		i = 0
+		ii = 0
 		tot = tally.getTotNumber()
 
 		nCells = tally.nCells
 		if tally.nCells == 0: nCells = 1
+		nCora = tally.meshInfo[1]
+		nCorb = tally.meshInfo[2]
+		nCorc = tally.meshInfo[3]
 		nDir = tally.nDir
 		if tally.nDir   == 0: nDir   = 1
 		nUsr = tally.nUsr
@@ -237,10 +242,13 @@ class TestSuite:
 							for c in range(nCos):
 								for e in range(nErg):
 									for t in range(nTim):
-										self.outFile.write(fs.valuesErrorsLine % (tally.getValue(f,d,u,s,m,c,e,t,0),tally.getValue(f,d,u,s,m,c,e,t,1)))
-										if (i+1) % 4 == 0 and (i+1) != tot:
-											self.outFile.write("\n")
-										i = i + 1
+										for k in range(nCorc):
+											for j in range(nCorb):
+												for i in range(nCora):
+													self.outFile.write(fs.valuesErrorsLine % (tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0),tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)))
+													if (ii+1) % 4 == 0 and (ii+1) != tot:
+														self.outFile.write("\n")
+													ii = ii + 1
 
 		if tally.mesh == False:
 			self.outFile.write("\n" + fs.tfcLine % tuple(tally.tfc_jtf))
