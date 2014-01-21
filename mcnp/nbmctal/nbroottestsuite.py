@@ -1,7 +1,7 @@
 #! /usr/bin/python -W all
 import subprocess
 import tempfile
-import os,sys
+import os,sys,numpy
 from array import array
 from nbtestsuite import FormatStrings
 import ROOT
@@ -43,13 +43,33 @@ class RootTest:
 
 		fs = FormatStrings()
 
-		binIndexList = ("f","d","u","s","m","c","e","t")
-		binNumberList = (tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim)
+		binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
+		binNumberList = (tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim,tally.meshInfo[1],tally.meshInfo[2],tally.meshInfo[3])
 		binList = dict(zip(binIndexList,binNumberList))
 
 		for axis in binIndexList:
 
+			if axis == "i" or axis == "j" or axis == "k":
+				continue
+
 			axisCard = axis
+
+			if axis == "f" and tally.tallyNumber % 5 != 0 and tally.mesh == True:
+				self.mctalOutFile.write("\n")
+				for i in range(tally.meshInfo[1]+1):
+					self.mctalOutFile.write(fs.binValuesLine % (tally.cora[i]))
+					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[1]:
+						self.mctalOutFile.write("\n")
+				self.mctalOutFile.write("\n")
+				for i in range(tally.meshInfo[2]+1):
+					self.mctalOutFile.write(fs.binValuesLine % (tally.corb[i]))
+					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[2]:
+						self.mctalOutFile.write("\n")
+				self.mctalOutFile.write("\n")
+				for i in range(tally.meshInfo[3]+1):
+					self.mctalOutFile.write(fs.binValuesLine % (tally.corc[i]))
+					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[3]:
+						self.mctalOutFile.write("\n")
 
 			if axis == "u" or axis == "c" or axis == "e" or axis == "t":
 				self.mctalOutFile.write("\n")
@@ -80,10 +100,13 @@ class RootTest:
 
 		self.mctalOutFile.write("\n")
 
-		i = 0
+		ii = 0
 
 		nCells = tally.nCells
 		if tally.nCells == 0: nCells = 1
+		nCora = tally.meshInfo[1]
+		nCorb = tally.meshInfo[2]
+		nCorc = tally.meshInfo[3]
 		nDir = tally.nDir
 		if tally.nDir   == 0: nDir   = 1
 		nUsr = tally.nUsr
@@ -121,7 +144,7 @@ class RootTest:
 			if tally.timTC == "t":
 				nTim = nTim - 1
 
-		tot = nCells*nDir*nUsr*nSeg*nMul*nCos*nErg*nTim
+		tot = nCells*nDir*nUsr*nSeg*nMul*nCos*nErg*nTim*nCora*nCorb*nCorc
 
 		for f in range(nCells):
 			for d in range(nDir):
@@ -131,10 +154,13 @@ class RootTest:
 							for c in range(nCos):
 								for e in range(nErg):
 									for t in range(nTim):
-										self.mctalOutFile.write(fs.valuesErrorsLine % (tally.getValue(f,d,u,s,m,c,e,t,0),tally.getValue(f,d,u,s,m,c,e,t,1)))
-										if (i+1) % 4 == 0 and (i+1) != tot:
-											self.mctalOutFile.write("\n")
-										i = i + 1
+										for k in range(nCorc):
+											for j in range(nCorb):
+												for i in range(nCora):
+													self.mctalOutFile.write(fs.valuesErrorsLine % (tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0),tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)))
+													if (ii+1) % 4 == 0 and (ii+1) != tot:
+														self.mctalOutFile.write("\n")
+													ii = ii + 1
 
 	def writeRootVals(self):
 		"""This function writes the bin and tally values extracted from the ROOT file provided."""
@@ -146,32 +172,47 @@ class RootTest:
 
 		next = ROOT.TIter(tallyList)
 		key = next()
-		axes = (2,5,6,7) # These are the only bins that can have lists of values.
+		axes = (0,2,5,6,7) # These are the only bins that can have lists of values.
 		precision = 1e-9
 
 		while key:
 			hs = key.ReadObj()
 			tot = hs.GetNbins()
-			nBins = [0,0,0,0,0,0,0,0]
+			nBins = [0,0,0,0,0,0,0,0,0,0,0]
 			#print "%d" % tot
-			for a in range(8):
+			for a in range(11):
 				nBins[a] = hs.GetAxis(a).GetNbins()
 
 
 			for a in axes:
-				axisValues = hs.GetAxis(a).GetXbins().GetArray()
-				for k in range(nBins[a]):
-					try:
-						if k == 0: self.rootOutFile.write("\n")
-						self.rootOutFile.write(fs.binValuesLine % axisValues[k+1])
-					except:
-						if self.verbose:
-							print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
-					if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nBins[a]:
-						self.rootOutFile.write("\n")
+				if a == 0 and (nBins[8] > 1 or nBins[9] > 1 or nBins[10] > 1):
+					for corABC in range(3):
+						axisValues = hs.GetAxis(8 + corABC).GetXbins().GetArray()
+						l = 0
+						for k in range(nBins[8 + corABC]+1):
+							try:
+								if k == 0: self.rootOutFile.write("\n")
+								self.rootOutFile.write(fs.binValuesLine % axisValues[k])
+							except:
+								if self.verbose:
+									print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
+							if (l+1) > 0 and (l+1) % 6 == 0 and (l+1) != nBins[8 + corABC]+1:
+								self.rootOutFile.write("\n")
+							l = l + 1
+				else:
+					axisValues = hs.GetAxis(a).GetXbins().GetArray()
+					for k in range(nBins[a]):
+						try:
+							if k == 0: self.rootOutFile.write("\n")
+							self.rootOutFile.write(fs.binValuesLine % axisValues[k+1])
+						except:
+							if self.verbose:
+								print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
+						if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nBins[a]:
+							self.rootOutFile.write("\n")
 
 			self.rootOutFile.write("\n")
-			i = 0
+			ii = 0
 
 
 			for f in range(nBins[0]):
@@ -182,15 +223,18 @@ class RootTest:
 								for c in range(nBins[5]):
 									for e in range(nBins[6]):
 										for t in range(nBins[7]):
-											val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
-											absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
-											relErr = 0
-											if val != 0:
-												relErr = absErr/val
-											self.rootOutFile.write(fs.valuesErrorsLine % (val,relErr))
-											if (i+1) % 4 == 0 and (i+1) != tot:
-												self.rootOutFile.write("\n")
-											i = i + 1
+											for k in range(nBins[10]):
+												for j in range(nBins[9]):
+													for i in range(nBins[8]):
+														val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
+														absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
+														relErr = 0
+														if val != 0:
+															relErr = absErr/val
+														self.rootOutFile.write(fs.valuesErrorsLine % (val,relErr))
+														if (ii+1) % 4 == 0 and (ii+1) != tot:
+															self.rootOutFile.write("\n")
+														ii = ii + 1
 
 
 
