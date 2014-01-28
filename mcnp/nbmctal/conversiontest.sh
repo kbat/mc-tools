@@ -31,9 +31,7 @@ function performTest () {
 
 }
 
-if test $# -eq 0; then
-    help
-fi
+test $# -eq 0 && help 
 
 while getopts "hv" option; do
     case $option in

@@ -31,7 +31,7 @@ def main():
 
 	else:
 
-		print >> sys.stderr, " Test on MCTAL file %s was skipped due to NaN values\n" % arguments.mctal_file
+		print >> sys.stderr, " \033[31mTest on MCTAL file %s was skipped due to NaN values\033[0m\n" % arguments.mctal_file
 		sys.exit(1)
 
 

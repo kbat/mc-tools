@@ -269,6 +269,104 @@ class Tally:
 
 		return self.valsErrors[f][d][u][s][m][c][e][t][i][j][k][v]
 
+	def getAxis(self,axis):
+		"""Returns an array containing the values of the axis bins. The desired axis is set by passing the corresponding letter as a function argument. The corrspondence is the usual defined in MCNPX manual (u,c,e,t) for the standard and (i,j,k) for mesh tallies axes (namely cora/b/c)."""
+
+		if axis == "u":
+			if len(self.usr) != 0:
+				u = [0] + self.usr
+				return array('d',u)
+
+		if axis == "c":
+			if len(self.cos) != 0:
+				c = [-1.5] + self.cos
+				return array('d',c)
+
+		if axis == "e":
+			if len(self.erg) != 0:
+				e = [0] + self.erg
+				return array('d',e)
+
+		if axis == "t":
+			if len(self.tim) != 0:
+				t = [0] + self.tim
+				return array('d',t)
+
+		if axis == "i":
+			return array('d',self.cora)
+
+		if axis == "j":
+			return array('d',self.corb)
+
+		if axis == "k":
+			return array('d',self.corc)
+
+		return []
+
+	def getNbins(self,axis):
+		"""Returns the number of bins relative to the desired axis. The correspondence is, as usual, (f,d,u,s,m,c,e,t) for standard 8D data, plus (i,j,k) for mesh tallies."""
+
+		if axis == "f":
+			nCells = self.nCells
+			if self.nCells == 0: nCells = 1
+			return nCells
+
+		if axis == "i":
+			return self.meshInfo[1]
+
+		if axis == "j":
+			return self.meshInfo[2]
+
+		if axis == "k":
+			return self.meshInfo[3]
+
+		if axis == "d":
+			nDir = self.nDir
+			if self.nDir == 0: nDir = 1
+			return nDir
+
+		if axis == "u":
+			nUsr = self.nUsr
+			if self.nUsr == 0: nUsr = 1
+			if self.usrTC == "t":
+				nUsr = nUsr - 1
+			return nUsr
+
+		if axis == "s":
+			nSeg = self.nSeg
+			if self.nSeg == 0: nSeg = 1
+			if self.segTC == "t":
+				nSeg = nSeg - 1
+			return nSeg
+
+		if axis == "m":
+			nMul = self.nMul
+			if self.nMul == 0: nMul = 1
+			if self.mulTC == "t":
+				nMul = nMul - 1
+			return nMul
+
+		if axis == "c":
+			nCos = self.nCos
+			if self.nCos == 0: nCos = 1
+			if self.cosTC == "t":
+				nCos = nCos - 1
+			return nCos
+
+		if axis == "e":
+			nErg = self.nErg
+			if self.nErg == 0: nErg = 1
+			if self.ergTC == "t":
+				nErg = nErg - 1
+			return nErg
+
+		if axis == "t":
+			nTim = self.nTim
+			if self.nTim == 0: nTim = 1
+			if self.timTC == "t":
+				nTim = nTim - 1
+			return nTim
+
 #############################################################################################################################
 
 class MCTAL:
@@ -293,14 +391,14 @@ class MCTAL:
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
 		if self.verbose:
-			print "\n\033[1m[Parsing file: %s...]\033[0m" % self.mctalFileName
+			print "\n\033[1;34m[Parsing file: %s...]\033[0m" % self.mctalFileName
 
 		self.getHeaders()
 		if self.header.ntal != 0:
 			self.getTallies()
 
 		if self.thereAreNaNs and self.verbose:
-			print >> sys.stderr, "\n The MCTAL file contains one or more tallies with NaN values. Flagged.\n"
+			print >> sys.stderr, "\n \033[1;30mThe MCTAL file contains one or more tallies with NaN values. Flagged.\033[0m\n"
 		return self.tallies
 
 	def getHeaders(self):
@@ -356,7 +454,7 @@ class MCTAL:
 		tally = Tally(int(self.line[1]),self.verbose)
 
 		if self.verbose:
-			print " Parsing tally: %5d" % (tally.tallyNumber)
+			print " \033[33mParsing tally: %5d\033[0m" % (tally.tallyNumber)
 
 		tally.typeNumber = int(self.line[2])
 		if len(self.line) == 4: tally.detectorType = int(self.line[3])
@@ -402,21 +500,15 @@ class MCTAL:
 			if tally.mesh:
 				for c in self.line.split():
 					if not tally.insertCorBin(axisName[axisNumber],float(c)):
-						#print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 						raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 					i = i + 1
 					if i == (corsVals[axisNumber] + 1):
 						axisNumber = axisNumber + 1
 						i = 0
-				#print >> sys.stderr, " Mesh tally. Skipping (for now) this tally. TEST WILL FAIL. " + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-				#sys.exit(4)
 			elif "." in self.line and "E" not in self.line:
 				for c in self.line.split():
 					if not tally.insertCell(float(c)):
-						#print " Too many cells." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
 					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
-				#print >> sys.stderr, " Macrobodies found." + self.mctalFileName + " - Tally n.:%5d" % tally.tallyNumber
-				#sys.exit(5)
 			else:
 				for c in self.line.split():
 					if not tally.insertCell(int(c)):  # This means that for some reason you are trying to
@@ -549,12 +641,8 @@ class MCTAL:
 														nFld = len(Fld) - 1
 														f = 0
 
-													#print self.line
-
 													if self.line[0:3] != "tfc":
-														#print "%4d"*8 % (c,d,u,s,m,a,e,t) #+ "%13.5E" % (float(Fld[f]))
 														if math.isnan(float(Fld[f])) or math.isnan(float(Fld[f+1])):
-															#print >> sys.stderr, " Tally n. %5d contains NaN values. It will be flagged to avoid conversion." % (tally.tallyNumber)
 															self.thereAreNaNs = True
 														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,0,float(Fld[f]))
 														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,1,float(Fld[f+1]))
@@ -563,10 +651,6 @@ class MCTAL:
 
 		if tally.mesh == False:
 			# TFC JTF
-			#while self.line[0] != "tfc":
-			#	self.line = self.mctalFile.readline().strip().split()
-			#	if self.line[0] != "tfc":
-			#		print "We have a problem."
 			self.line = self.mctalFile.readline().strip().split()
 			if self.line[0] != "tfc":
 				raise IOError("There seem to be more values than expected in tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
@@ -587,13 +671,11 @@ class MCTAL:
 
 				tfcDat.append(int(self.line[0]))
 				if math.isnan(float(self.line[1])) or math.isnan(float(self.line[2])):
-					#print >> sys.stderr, " TFC data in tally n. %5d contains NaN values. The tally will be flagged to avoid conversion." % (tally.tallyNumber)
 					self.thereAreNaNs = True
 				tfcDat.append(float(self.line[1]))
 				tfcDat.append(float(self.line[2]))
 				if len(self.line) == 4:
 					if math.isnan(float(self.line[1])):
-						#print >> sys.stderr, " TFC data in tally n. %5d contains NaN values. The tally will be flagged to avoid conversion." % (tally.tallyNumber)
 						self.thereAreNaNs = True
 					tfcDat.append(float(self.line[3]))
 					
@@ -605,9 +687,6 @@ class MCTAL:
 		else:
 			while "tally" not in self.line and len(self.line) != 0:
 				self.line = self.mctalFile.readline().strip()
-
-		#if self.thereAreNaNs:
-		#	print >> sys.stderr, " The MCTAL file contains one or more tallies with NaN values. Flagged out for tests."
 
 		self.tallies.append(tally)
 
