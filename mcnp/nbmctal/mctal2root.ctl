@@ -8,7 +8,7 @@ Standards-Version: 3.9.2
 
 Package: mctal2root
 Version: 1.0
-Maintainer: Nicolò Borghi <nicolo.borghi@email.com>
+Maintainer: Nicolò Borghi <borghi.nicolo@gmail.com>
 # Pre-Depends: <comma-separated list of packages>
 # Depends: <comma-separated list of packages>
 # Recommends: <comma-separated list of packages>
