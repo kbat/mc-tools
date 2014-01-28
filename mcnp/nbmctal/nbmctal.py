@@ -303,7 +303,7 @@ class Tally:
 
 		return []
 
-	def getNbins(self,axis):
+	def getNbins(self,axis,includeTotalBin = False):
 		"""Returns the number of bins relative to the desired axis. The correspondence is, as usual, (f,d,u,s,m,c,e,t) for standard 8D data, plus (i,j,k) for mesh tallies."""
 
 		if axis == "f":
@@ -328,42 +328,42 @@ class Tally:
 		if axis == "u":
 			nUsr = self.nUsr
 			if self.nUsr == 0: nUsr = 1
-			if self.usrTC == "t":
+			if self.usrTC == "t" and includeTotalBin == False:
 				nUsr = nUsr - 1
 			return nUsr
 
 		if axis == "s":
 			nSeg = self.nSeg
 			if self.nSeg == 0: nSeg = 1
-			if self.segTC == "t":
+			if self.segTC == "t" and includeTotalBin == False:
 				nSeg = nSeg - 1
 			return nSeg
 
 		if axis == "m":
 			nMul = self.nMul
 			if self.nMul == 0: nMul = 1
-			if self.mulTC == "t":
+			if self.mulTC == "t" and includeTotalBin == False:
 				nMul = nMul - 1
 			return nMul
 
 		if axis == "c":
 			nCos = self.nCos
 			if self.nCos == 0: nCos = 1
-			if self.cosTC == "t":
+			if self.cosTC == "t" and includeTotalBin == False:
 				nCos = nCos - 1
 			return nCos
 
 		if axis == "e":
 			nErg = self.nErg
 			if self.nErg == 0: nErg = 1
-			if self.ergTC == "t":
+			if self.ergTC == "t" and includeTotalBin == False:
 				nErg = nErg - 1
 			return nErg
 
 		if axis == "t":
 			nTim = self.nTim
 			if self.nTim == 0: nTim = 1
-			if self.timTC == "t":
+			if self.timTC == "t" and includeTotalBin == False:
 				nTim = nTim - 1
 			return nTim
 
