@@ -1,4 +1,5 @@
 #! /usr/bin/python -W all
+import time
 import subprocess
 import tempfile
 import os,sys,numpy
@@ -17,6 +18,7 @@ class RootTest:
 		self.mctalOutFile = None
 		self.rootOutFile = None
 		self.verbose = verbose
+		self.precision = ("1.5e-3","1.5e-1","1")
 
 	def Test(self):
 		"""This function performs the test."""
@@ -49,22 +51,23 @@ class RootTest:
 
 		for axis in binIndexList:
 
-			if axis == "i" or axis == "j" or axis == "k":
-				continue
-
 			axisCard = axis
 
-			if axis == "f" and tally.tallyNumber % 5 != 0 and tally.mesh == True:
+			if tally.mesh == True and axis == "i":
 				self.mctalOutFile.write("\n")
 				for i in range(tally.meshInfo[1]+1):
 					self.mctalOutFile.write(fs.binValuesLine % (tally.cora[i]))
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[1]:
 						self.mctalOutFile.write("\n")
+
+			if tally.mesh == True and axis == "j":
 				self.mctalOutFile.write("\n")
 				for i in range(tally.meshInfo[2]+1):
 					self.mctalOutFile.write(fs.binValuesLine % (tally.corb[i]))
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[2]:
 						self.mctalOutFile.write("\n")
+
+			if tally.mesh == True and axis == "k":
 				self.mctalOutFile.write("\n")
 				for i in range(tally.meshInfo[3]+1):
 					self.mctalOutFile.write(fs.binValuesLine % (tally.corc[i]))
@@ -172,44 +175,36 @@ class RootTest:
 
 		next = ROOT.TIter(tallyList)
 		key = next()
-		axes = (0,2,5,6,7) # These are the only bins that can have lists of values.
-		precision = 1e-9
+		axes = (2,5,6,7,8,9,10) # These are the only bins that can have lists of values.
 
 		while key:
 			hs = key.ReadObj()
 			tot = hs.GetNbins()
-			nBins = [0,0,0,0,0,0,0,0,0,0,0]
-			#print "%d" % tot
-			for a in range(11):
+			nBins = [1,1,1,1,1,1,1,1,1,1,1]
+			dims = hs.GetNdimensions()
+			for a in range(dims):
 				nBins[a] = hs.GetAxis(a).GetNbins()
 
-
 			for a in axes:
-				if a == 0 and (nBins[8] > 1 or nBins[9] > 1 or nBins[10] > 1):
-					for corABC in range(3):
-						axisValues = hs.GetAxis(8 + corABC).GetXbins().GetArray()
-						l = 0
-						for k in range(nBins[8 + corABC]+1):
-							try:
-								if k == 0: self.rootOutFile.write("\n")
-								self.rootOutFile.write(fs.binValuesLine % axisValues[k])
-							except:
-								if self.verbose:
-									print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
-							if (l+1) > 0 and (l+1) % 6 == 0 and (l+1) != nBins[8 + corABC]+1:
-								self.rootOutFile.write("\n")
-							l = l + 1
-				else:
-					axisValues = hs.GetAxis(a).GetXbins().GetArray()
-					for k in range(nBins[a]):
-						try:
-							if k == 0: self.rootOutFile.write("\n")
-							self.rootOutFile.write(fs.binValuesLine % axisValues[k+1])
-						except:
-							if self.verbose:
-								print >> sys.stderr, "%s " % hs.GetTitle() + "k = %5d " % k + "Index out of range for axis %3d. (Skipping without errors)" % (a+1)
-						if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nBins[a]:
-							self.rootOutFile.write("\n")
+				if a >= 8 and dims != 11: # We don't have a mesh tally
+					break 
+				axisValues = hs.GetAxis(a).GetXbins().GetArray()
+				nB = nBins[a]
+				if a >= 8:
+					nB = nBins[a] + 1
+				for k in range(nB):
+					if a >= 8:
+						kk = k
+					else:
+						kk = k + 1
+					try:
+						if k == 0: self.rootOutFile.write("\n")
+						self.rootOutFile.write(fs.binValuesLine % axisValues[kk])
+					except:
+						if self.verbose:
+							print >> sys.stderr, "\033[1;30m %s " % hs.GetTitle() + "k = %5d " % kk + "Index out of range for axis %3d. (Skipping without errors)\033[0m" % (a+1)
+					if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nB:
+						self.rootOutFile.write("\n")
 
 			self.rootOutFile.write("\n")
 			ii = 0
@@ -226,8 +221,12 @@ class RootTest:
 											for k in range(nBins[10]):
 												for j in range(nBins[9]):
 													for i in range(nBins[8]):
-														val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
-														absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
+														if dims == 11:
+															val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
+															absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
+														else:
+															val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
+															absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
 														relErr = 0
 														if val != 0:
 															relErr = absErr/val
@@ -247,28 +246,37 @@ class RootTest:
 	def diffFiles(self):
 		"""This function checks whether the files are equal or not."""
 
-		precision = '1.5e-1'
+		f = open('./difflog.txt','a')
+		f.write("Run: " + time.strftime("%d/%m/%Y") + " - " + time.strftime("%H:%M:%S") + "\n")
+		f.flush()
 
-		#f = open('./difflog.txt','a')
-
-		#f.write("\n\n############################################################\n")
-		#f.write("ndiff-2.00 --relative-error 1.5e-1 %s %s\n" % (self.mctalOutFile.name,self.rootOutFile.name))
-		#f.flush()
-
-		if not subprocess.call(['ndiff-2.00','--relative-error', precision, '--quiet', self.mctalOutFile.name, self.rootOutFile.name],shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
-			if self.verbose:
-				print "\n\033[1m[TEST PASSED]\033[0m"
-			os.remove(self.mctalOutFile.name)
-			os.remove(self.rootOutFile.name)
-			#f.close()
-			return 0
+		for i in range(3):
+			if self.verbose or i == 2:
+				if i == 2:
+					pre_text = "\n\033[1;31m[* WARNING *]\033[0m\033[31m"
+					post_text = " - \033[1;31mLOGGED to difflog.txt\033[0m\n\033[1;31m[* WARNING *] \033[0m\033[31mWith this precision the test will succeed anyway.\n"
+				else:
+					pre_text = "\033[33m"
+					post_text = "\033[0m"
+				print "%s Testing with relative error: %s%s" % (pre_text,self.precision[i],post_text)
+				if i == 2:
+					print >> sys.stderr,  "\033[1;31m Try:\033[0m\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name)
+					f.write("\tndiff-2.00 --relative-error %s %s %s\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name))
+					f.flush
+			if not subprocess.call(['ndiff-2.00','--relative-error', self.precision[i], '--quiet', self.mctalOutFile.name, self.rootOutFile.name],shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
+				if self.verbose:
+					print "\n\033[1;32m[TEST PASSED]\033[0m\n"
+				if i < 2:
+					os.remove(self.mctalOutFile.name)
+					os.remove(self.rootOutFile.name)
+				f.close()
+				return 0
+		if self.verbose:
+			print >> sys.stderr, "\n\033[1;31m[TEST FAILED]\033[0m"
+			print >> sys.stderr,  "\033[1;31m Original MCTAL:\033[31m %s - \033[1;31mTest MCTAL:\033[31m %s\033[0m" % (self.mctalOutFile.name,self.rootOutFile.name)
+			print >> sys.stderr,  "\033[1;31m Try:\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1], self.mctalOutFile.name,self.rootOutFile.name)
 		else:
-			if self.verbose:
-				print >> sys.stderr, "\n\033[1m[TEST FAILED]\033[0m"
-				print >> sys.stderr,  "\033[1mOriginal MCTAL:\033[0m %s - \033[1mTest MCTAL:\033[0m %s" % (self.mctalOutFile.name,self.rootOutFile.name)
-				print >> sys.stderr,  "\033[1mTry:\033[0m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (precision, self.mctalOutFile.name,self.rootOutFile.name)
-			else:
-				print >> sys.stderr, "\033[1mFAILED FOR FILE: \033[0m%s" % (self.mctalOutFile.name)
-				print >> sys.stderr,  "\033[1mTry:\033[0m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (precision,self.mctalOutFile.name,self.rootOutFile.name)
-			#f.close()
-			return 1
+			print >> sys.stderr, "\033[1;31mFAILED FOR FILE: \033[0m%s" % (self.mctalOutFile.name)
+			print >> sys.stderr,  "\033[1;31m Try:\033[0m\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name)
+		f.close()
+		return 1

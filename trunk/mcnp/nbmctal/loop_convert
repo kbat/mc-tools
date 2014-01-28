@@ -22,28 +22,13 @@ function performTest () {
 
 	for f in $@;
 	do
-		#echo $f
-		python conversiontest $VERBOSE $f
+		echo $f
+		conversiontest.sh $VERBOSE $f
 		OUT=$?
-		#if [ $OUT -eq 5 ]; then
-		#	echo $f >> macrobody_fails
-		#	SUM=$(($SUM+1))
-		#fi
-		#if [ $OUT -eq 4 ]; then
-		#	echo $f >> mesh_fails
-		#	SUM=$(($SUM+1))
-		#fi
-		#if [ $OUT -eq 1 ]; then
-		#	echo $f >> generic_fails
-		#	SUM=$(($SUM+$OUT))
-		#fi
 		if [ $OUT -gt 0 ]; then
-		#	echo $f >> mesh_fails_new
+			echo $f >> backROOT_fails 
 			SUM=$(($SUM+$OUT))
 		fi
-		#if [ $OUT -eq 0 ]; then
-		#	echo $f >> successful_tests
-		#fi
 		ALL=$(($ALL+1))
 	done
 
