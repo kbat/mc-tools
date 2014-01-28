@@ -105,49 +105,19 @@ class RootTest:
 
 		ii = 0
 
-		nCells = tally.nCells
-		if tally.nCells == 0: nCells = 1
-		nCora = tally.meshInfo[1]
-		nCorb = tally.meshInfo[2]
-		nCorc = tally.meshInfo[3]
-		nDir = tally.nDir
-		if tally.nDir   == 0: nDir   = 1
-		nUsr = tally.nUsr
-		if tally.nUsr   == 0: nUsr   = 1
-		nSeg = tally.nSeg
-		if tally.nSeg   == 0: nSeg   = 1
-		nMul = tally.nMul
-		if tally.nMul   == 0: nMul   = 1
-		nCos = tally.nCos
-		if tally.nCos   == 0: nCos   = 1
-		nErg = tally.nErg
-		if tally.nErg   == 0: nErg   = 1
-		nTim = tally.nTim
-		if tally.nTim   == 0: nTim   = 1
+		nCells = tally.getNbins("f",False)
+		nCora  = tally.getNbins("i",False)
+		nCorb  = tally.getNbins("j",False)
+		nCorc  = tally.getNbins("k",False)
+		nDir   = tally.getNbins("d",False)
+		nUsr   = tally.getNbins("u",False)
+		nSeg   = tally.getNbins("s",False)
+		nMul   = tally.getNbins("m",False)
+		nCos   = tally.getNbins("c",False)
+		nErg   = tally.getNbins("e",False)
+		nTim   = tally.getNbins("t",False)
 
-		if len(tally.usr) != 0:
-			if tally.usrTC == "t":
-				nUsr = nUsr - 1
-
-		if tally.segTC == "t":
-			nSeg = nSeg - 1
-
-		if tally.mulTC == "t":
-			nMul = nMul - 1
-
-		if len(tally.cos) != 0:
-			if tally.cosTC == "t":
-				nCos = nCos - 1
-
-		if len(tally.erg) != 0:
-			if tally.ergTC == "t":
-				nErg = nErg - 1
-
-		if len(tally.tim) != 0:
-			if tally.timTC == "t":
-				nTim = nTim - 1
-
-		tot = nCells*nDir*nUsr*nSeg*nMul*nCos*nErg*nTim*nCora*nCorb*nCorc
+		tot = tally.getTotNumber(False)
 
 		for f in range(nCells):
 			for d in range(nDir):

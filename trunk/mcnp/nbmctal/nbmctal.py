@@ -112,25 +112,17 @@ class Tally:
 	def initializeValuesVectors(self):
 		"""This function initializes the 9-D matrix for the storage of values and errors."""
 
-                nCells = self.nCells
-                if self.nCells == 0: nCells = 1
-		nCora = self.meshInfo[1]
-		nCorb = self.meshInfo[2]
-		nCorc = self.meshInfo[3]
-                nDir = self.nDir
-                if self.nDir   == 0: nDir   = 1
-                nUsr = self.nUsr
-                if self.nUsr   == 0: nUsr   = 1
-                nSeg = self.nSeg
-                if self.nSeg   == 0: nSeg   = 1
-                nMul = self.nMul
-                if self.nMul   == 0: nMul   = 1
-                nCos = self.nCos
-                if self.nCos   == 0: nCos   = 1
-                nErg = self.nErg
-                if self.nErg   == 0: nErg   = 1
-                nTim = self.nTim
-                if self.nTim   == 0: nTim   = 1
+		nCells = self.getNbins("f")
+		nCora  = self.getNbins("i")
+		nCorb  = self.getNbins("j")
+		nCorc  = self.getNbins("k")
+		nDir   = self.getNbins("d")
+		nUsr   = self.getNbins("u")
+		nSeg   = self.getNbins("s")
+		nMul   = self.getNbins("m")
+		nCos   = self.getNbins("c")
+		nErg   = self.getNbins("e")
+		nTim   = self.getNbins("t")
 
 		self.valsErrors = [[[[[[[[[[[[[] for _ in range(2)] for _ in range(nCorc)] for _ in range(nCorb)] for _ in range(nCora)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
 
@@ -143,28 +135,20 @@ class Tally:
 		if self.verbose:
 			print "To be implemented. Not essential for now.\n"
 
-	def getTotNumber(self):
+	def getTotNumber(self,includeTotalBin=True):
 		"""Return the total number of bins."""
 
-                nCells = self.nCells
-                if self.nCells == 0: nCells = 1
-		nCora = self.meshInfo[1]
-		nCorb = self.meshInfo[2]
-		nCorc = self.meshInfo[3]
-                nDir = self.nDir
-                if self.nDir   == 0: nDir   = 1
-                nUsr = self.nUsr
-                if self.nUsr   == 0: nUsr   = 1
-                nSeg = self.nSeg
-                if self.nSeg   == 0: nSeg   = 1
-                nMul = self.nMul
-                if self.nMul   == 0: nMul   = 1
-                nCos = self.nCos
-                if self.nCos   == 0: nCos   = 1
-                nErg = self.nErg
-                if self.nErg   == 0: nErg   = 1
-                nTim = self.nTim
-                if self.nTim   == 0: nTim   = 1
+		nCells = self.getNbins("f",includeTotalBin)
+		nCora  = self.getNbins("i",includeTotalBin)
+		nCorb  = self.getNbins("j",includeTotalBin)
+		nCorc  = self.getNbins("k",includeTotalBin)
+		nDir   = self.getNbins("d",includeTotalBin)
+		nUsr   = self.getNbins("u",includeTotalBin)
+		nSeg   = self.getNbins("s",includeTotalBin)
+		nMul   = self.getNbins("m",includeTotalBin)
+		nCos   = self.getNbins("c",includeTotalBin)
+		nErg   = self.getNbins("e",includeTotalBin)
+		nTim   = self.getNbins("t",includeTotalBin)
                 
                 tot = nCells * nDir * nUsr * nSeg * nMul * nCos * nErg * nTim * nCora * nCorb * nCorc
 
@@ -303,7 +287,7 @@ class Tally:
 
 		return []
 
-	def getNbins(self,axis,includeTotalBin = False):
+	def getNbins(self,axis,includeTotalBin = True):
 		"""Returns the number of bins relative to the desired axis. The correspondence is, as usual, (f,d,u,s,m,c,e,t) for standard 8D data, plus (i,j,k) for mesh tallies."""
 
 		if axis == "f":
@@ -605,25 +589,19 @@ class MCTAL:
 		f = 1
 		nFld = 0
 		tally.initializeValuesVectors()
-		nCells = tally.nCells
-		if tally.nCells == 0: nCells = 1
-		nCora = tally.meshInfo[1]
-		nCorb = tally.meshInfo[2]
-		nCorc = tally.meshInfo[3]
-		nDir = tally.nDir
-		if tally.nDir   == 0: nDir   = 1
-		nUsr = tally.nUsr
-		if tally.nUsr   == 0: nUsr   = 1
-		nSeg = tally.nSeg
-		if tally.nSeg   == 0: nSeg   = 1
-		nMul = tally.nMul
-		if tally.nMul   == 0: nMul   = 1
-		nCos = tally.nCos
-		if tally.nCos   == 0: nCos   = 1
-		nErg = tally.nErg
-		if tally.nErg   == 0: nErg   = 1
-		nTim = tally.nTim
-		if tally.nTim   == 0: nTim   = 1
+
+		nCells = tally.getNbins("f")
+		nCora  = tally.getNbins("i")
+		nCorb  = tally.getNbins("j")
+		nCorc  = tally.getNbins("k")
+		nDir   = tally.getNbins("d")
+		nUsr   = tally.getNbins("u")
+		nSeg   = tally.getNbins("s")
+		nMul   = tally.getNbins("m")
+		nCos   = tally.getNbins("c")
+		nErg   = tally.getNbins("e")
+		nTim   = tally.getNbins("t")
+
 		for c in range(nCells):
 			for d in range(nDir):
 				for u in range(nUsr):

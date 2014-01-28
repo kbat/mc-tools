@@ -215,25 +215,18 @@ class TestSuite:
 		ii = 0
 		tot = tally.getTotNumber()
 
-		nCells = tally.nCells
-		if tally.nCells == 0: nCells = 1
-		nCora = tally.meshInfo[1]
-		nCorb = tally.meshInfo[2]
-		nCorc = tally.meshInfo[3]
-		nDir = tally.nDir
-		if tally.nDir   == 0: nDir   = 1
-		nUsr = tally.nUsr
-		if tally.nUsr   == 0: nUsr   = 1
-		nSeg = tally.nSeg
-		if tally.nSeg   == 0: nSeg   = 1
-		nMul = tally.nMul
-		if tally.nMul   == 0: nMul   = 1
-		nCos = tally.nCos
-		if tally.nCos   == 0: nCos   = 1
-		nErg = tally.nErg
-		if tally.nErg   == 0: nErg   = 1
-		nTim = tally.nTim
-		if tally.nTim   == 0: nTim   = 1
+		nCells = tally.getNbins("f")
+		nCora  = tally.getNbins("i")
+		nCorb  = tally.getNbins("j")
+		nCorc  = tally.getNbins("k")
+		nDir   = tally.getNbins("d")
+		nUsr   = tally.getNbins("u")
+		nSeg   = tally.getNbins("s")
+		nMul   = tally.getNbins("m")
+		nCos   = tally.getNbins("c")
+		nErg   = tally.getNbins("e")
+		nTim   = tally.getNbins("t")
+
 		for f in range(nCells):
 			for d in range(nDir):
 				for u in range(nUsr):

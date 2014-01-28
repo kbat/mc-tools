@@ -33,34 +33,34 @@ if arguments.verbose:
 
 for tally in T:
 
-	nCells = tally.getNbins("f")
+	nCells = tally.getNbins("f",False)
 
 	coraAxis = tally.getAxis("i")
-	nCora = tally.getNbins("i") # Is set to 1 even when mesh tallies are not present
+	nCora = tally.getNbins("i",False) # Is set to 1 even when mesh tallies are not present
 
 	corbAxis = tally.getAxis("j")
-	nCorb = tally.getNbins("j") # Is set to 1 even when mesh tallies are not present
+	nCorb = tally.getNbins("j",False) # Is set to 1 even when mesh tallies are not present
 
 	corcAxis = tally.getAxis("k")
-	nCorc = tally.getNbins("k") # Is set to 1 even when mesh tallies are not present
+	nCorc = tally.getNbins("k",False) # Is set to 1 even when mesh tallies are not present
 
-	nDir = tally.getNbins("d")
+	nDir = tally.getNbins("d",False)
 
 	usrAxis = tally.getAxis("u")
-	nUsr = tally.getNbins("u")
+	nUsr = tally.getNbins("u",False)
 
-	nSeg = tally.getNbins("s")
+	nSeg = tally.getNbins("s",False)
 
-	nMul = tally.getNbins("m")
+	nMul = tally.getNbins("m",False)
 
 	cosAxis = tally.getAxis("c")
-	nCos = tally.getNbins("c")
+	nCos = tally.getNbins("c",False)
 
 	ergAxis = tally.getAxis("e")
-	nErg = tally.getNbins("e")
+	nErg = tally.getNbins("e",False)
 
 	timAxis = tally.getAxis("t")
-	nTim = tally.getNbins("t")
+	nTim = tally.getNbins("t",False)
 
 	if tally.mesh == True:
 
