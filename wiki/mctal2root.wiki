@@ -1,4 +1,4 @@
-#MCTAL files produced by MCNPX are converted to ROOT files.
+# MCTAL files produced by MCNPX are converted to ROOT files.
 
 = Introduction =
 
