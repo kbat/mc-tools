@@ -1,5 +1,10 @@
 #summary One-sentence summary of this page.
 
+= Introduction =
+
+What is the script needed for
+What we (un)support (list of features)
+
 = Installation =
 
 == Software requirements==
