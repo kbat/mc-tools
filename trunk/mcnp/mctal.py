@@ -97,7 +97,27 @@ class Tally:
 
 		self.tfc_jtf = []          # List of numbers in the tfc line
 		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
-		
+
+		self.detectorTypeList = { -3 : "Spherical mesh tally" , -2 : "Cylindrical mesh tally"                         , -1 : "Rectangular mesh tally",
+					   0 : "None"                 ,  1 : "Point"                                          ,  2 : "Ring"                  ,
+					   3 : "Pinhole radiograph"   ,  4 : "Transmitted image rdiograph (rectangular grid)" ,  5 : "Transmitted image radiograph (cylindrical grid)" }
+
+		self.particleListShort = { 1 : "Neutron"                     , 2 : "Photon"             , 3 : "Neutron + Photon"  , 
+					   4 : "Electron"                    , 5 : "Neutron + Electron" , 6 : "Photon + Electron" ,
+					   7 : "Neutron + Photon + Electron"  }
+
+				     #1                2               3               4               5              6                     7
+		self.particleList = ("Neutron"      , "Photon"      , "Electron"    , "Muon"        , "Tau"        , "Electron Neutrino" , "Muon Neutrino" ,
+				     #8                9               10              11              12             13                    14
+				     "Tau Neutrino" , "Proton"      , "Lambda 0"    , "Sigma +"     , "Sigma -"    , "Cascade 0"         , "Cascade -"     ,
+				     #15               16              17              18              19             20                    21
+				     "Omega -"      , "Lambda c +"  , "Cascade c +" , "Cascade c 0" , "Lambda b 0" , "Pion +"            , "Neutral Pion"  ,
+				     #22               23              24              25              26             27                    28
+				     "Kaon +"       , "K0 Short"    , "K0 Long"     , "D +"         , "D 0"        , "D s +"             , "B +"           ,
+				     #29               30              31              32              33             34                    35
+				     "B 0"          , "B s 0"       , "Deuteron"    , "Triton"      , "He3"        , "He4 (Alpha)"       , "Heavy ions")
+
+
 		self.binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
 
 		self.isInitialized = False
@@ -105,7 +125,7 @@ class Tally:
 
 		#self.thereAreNaNs = False # If some of values, errors or TFC data are NaN, the tally will be saved with
 					   # this flag set to true. The reading tests will not fail and in the conversion
-					   # script nbmctal2root.py this flag will be used to skip the conversion of the
+					   # script mctal2root.py this flag will be used to skip the conversion of the
 					   # tally
 
 
@@ -133,7 +153,60 @@ class Tally:
 		"""Tally printer. Options: title. Verbose flag on class initialization must be set to True."""
 
 		if self.verbose:
-			print "To be implemented. Not essential for now.\n"
+			print ("\033[1m[TALLY]\033[0m")
+			print ("Tally Number: %5d" % self.tallyNumber)
+			print ("Tally comment(s):")
+			for comment in self.tallyComment:
+				print ("\t%s" % comment)
+			mt = "No"
+			if self.mesh == True: mt = "Yes"
+			print ("Mesh tally: %s" % mt )
+			print ("Detector type: %s" % self.getDetectorType())
+			print ("List of particles in tally:")
+			for i,name in enumerate(self.getTallyParticles()):
+				print ("\t%2d - %s" % (i+1,name))
+			if not self.mesh:
+				print ("Number of cells/point detectors/surfaces/macrobodies: %5d" % self.getNbins("f"))
+			else:
+				mesh_tot = self.getNbins("i")*self.getNbins("j")*self.getNbins("k")
+
+				print ("Number of mesh tally bins: %5d" % mesh_tot)
+				print ("\tNumber of CORA bins: %5d" % self.getNbins("i"))
+				print ("\tNumber of CORB bins: %5d" % self.getNbins("j"))
+				print ("\tNumber of CORC bins: %5d" % self.getNbins("k"))
+			print ("Number of tot vs. dir or flag vs. unflag bins: %5d" % self.getNbins("d"))
+			print ("Number of user bins: %5d" % self.getNbins("u"))
+			print ("Number of segments: %5d" % self.getNbins("s"))
+			print ("Number of multipliers: %5d" % self.getNbins("m"))
+			print ("Number of cosine bins: %5d" % self.getNbins("c"))
+			print ("Number of energy bins: %5d" % self.getNbins("e"))
+			print ("Number of time bins: %5d" % self.getNbins("t"))
+
+			print ("Total values in the tally: %8d" % self.getTotNumber(False))
+
+	
+
+	def getDetectorType(self):
+		"""Returns the type of the detector type used in the tally."""
+
+		return self.detectorTypeList[self.detectorType]
+
+	def getTallyParticles(self):
+		"""Returns the particles used in the tally. References can be found in Table 4-1 and page B-2 of the MCNPX manual."""
+
+		particleNames = []
+
+		if self.typeNumber > 0:
+			particleNames.append(particleListShort[self.typeNumber]) 
+		else:
+			for i,name in enumerate(self.particleList):
+				try:
+					if self.tallyParticles[i] == 1:
+						particleNames.append(self.particleList[i])
+				except:
+					pass # For some reasons there can be less than 35 particles listed. Skip in case.
+		return particleNames
+				
 
 	def getTotNumber(self,includeTotalBin=True):
 		"""Return the total number of bins."""

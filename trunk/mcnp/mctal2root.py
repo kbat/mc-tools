@@ -1,7 +1,7 @@
 #!/usr/bin/python -W all
 
 import sys, argparse, string
-from nbmctal import MCTAL
+from mctal import MCTAL
 from array import array
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True

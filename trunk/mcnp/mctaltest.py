@@ -1,7 +1,7 @@
 #! /usr/bin/python -W all
 import sys, argparse
-from nbmctal import MCTAL
-from nbtestsuite import TestSuite
+from mctal import MCTAL
+from testsuite import TestSuite
 
 def main():
 	"""
