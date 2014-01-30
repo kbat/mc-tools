@@ -1,0 +1,41 @@
+#summary One-sentence summary of this page.
+
+= Installation =
+
+== Software requirements==
+
+Python, ROOT (links)
+
+Only for tests: ndiff (links)
+
+== Download ==
+
+DEB --> System wide
+SVN --> Local and developers
+
+=== Deb package installation ===
+
+  # download from link
+  # dpkg -i package_name.deb
+
+=== Installation from source code ===
+
+  # svn co
+  # ./configure make install
+  # export PYHTONPATH and PATH
+
+= Converting =
+
+mctal2root -h --> complete usage help
+
+leave the rest
+
+{{{"mctal.root"}}}
+
+= Using THnSparse =
+
+Leave it
+
+= Examples =
+
+Look at the Examples folder
