@@ -20,7 +20,7 @@ Maintainer: Nicolò Borghi <borghi.nicolo@gmail.com>
 # Changelog: <changelog file; defaults to a generic changelog>
 # Readme: README.Debian
 # Extra-Files: quick_guide.pdf README
-Files: nbmctal2root /usr/local/bin/nbmctal2root
-   nbmctal.py /usr/lib/pymodules/python2.7
+Files: mctal2root /usr/local/bin/mctal2root
+   mctal.py /usr/lib/pymodules/python2.7
 Description: mctal to root converter
  A tool to convert mctal files produced by MCNP(X) into the ROOT format.
