@@ -1,11 +1,11 @@
 #! /usr/bin/python -W all
 import sys, argparse
-from nbmctal import MCTAL
-from nbroottestsuite import RootTest
+from mctal import MCTAL
+from roottestsuite import RootTest
 
 def main():
 	"""
-	A script to test how we are able to read and convert the mctal file structure to the ROOT format. It reads the original mctal file into a binary object, then reads back the ROOT file geenrated with nbmctal2root.py, generates a test mctal file based on the contents retrieved from the ROOT file and compares the two files (the original mctal and the reproduced one) using GNU diffutils.
+	A script to test how we are able to read and convert the mctal file structure to the ROOT format. It reads the original mctal file into a binary object, then reads back the ROOT file geenrated with mctal2root.py, generates a test mctal file based on the contents retrieved from the ROOT file and compares the two files (the original mctal and the reproduced one) using GNU diffutils.
 	Exit status is 0 if both files are the same, 1 if different.
 	"""
 	

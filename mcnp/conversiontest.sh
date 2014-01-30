@@ -20,10 +20,10 @@ function performTest () {
                 shift 1
         fi
 
-	nbmctal2root.py $VERBOSE $@
+	mctal2root.py $VERBOSE $@
 	OUT=$?
 	SUM=$(($SUM+$OUT))
-	nbroottest.py $VERBOSE $@
+	roottest.py $VERBOSE $@
 	OUT=$?
 	SUM=$(($SUM+$OUT))
 

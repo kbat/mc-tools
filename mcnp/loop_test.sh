@@ -23,7 +23,7 @@ function performTest () {
 	for f in $@;
 	do
 		echo $f
-		python nbmctaltest.py $VERBOSE $f
+		python mctaltest.py $VERBOSE $f
 		OUT=$?
 		if [ $OUT -gt 0 ]; then
 			echo $f >> reading_fails

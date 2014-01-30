@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import os,sys,numpy
 from array import array
-from nbtestsuite import FormatStrings
+from testsuite import FormatStrings
 import ROOT
 
 #############################################################################################################################
