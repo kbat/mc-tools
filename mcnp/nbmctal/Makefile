@@ -12,7 +12,7 @@ mctal2root_1.0_all.deb:	mctal2root.ctl nbmctal2root.py  nbmctal.py quick_guide.p
 	ln -s $(HOMEDIR)/nbmctal2root.py $(TMPDIR)/nbmctal2root
 	ln -s $(HOMEDIR)/nbmctal.py $(TMPDIR)/nbmctal.py
 	ln -s $(HOMEDIR)/quick_guide.pdf $(TMPDIR)/quick_guide.pdf
-	cd $(TMPDIR) && equivs-build mctal2root.ctl && mv *.deb $(HOMEDIR)
+	cd $(TMPDIR) && equivs-build -f mctal2root.ctl && mv *.deb $(HOMEDIR)
 	@test -z $(TMPDIR) || rm -fr $(TMPDIR)
 
 clean:
