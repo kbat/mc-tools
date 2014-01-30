@@ -1,351 +1,675 @@
-#! /usr/bin/python -W all
+#!/usr/bin/python -W all
 #
-# $URL$
-# $Id$
+# mctal reading script by Nicolo' Borghi
+# Started on 04/12/2013 at ESS Lund
+# based on scripts developed by the author,
+# Dr. Gallmeier and Dr. Batkov
 #
-# Page numbers refer to the MCNPX 2.7.0 manual
+#
 
-import sys, re, string
+import sys, re, string, math
 from array import array
-from mcnp import GetParticleNames
+
+#############################################################################################################################
 
 class Header:
-    """mctal header container"""
-    def __init__(self):
-        """Header initialisation"""
-        self.kod = 0            # name of the code, MCNPX
-        self.ver = 0            # code version
-        self.probid = []        # date and time when the problem was run
-        self.knod = 0           # the dump number
-        self.nps = 0            # number of histories that were run
-        self.rnr = 0            # number of pseudorandom numbers that were used
-        self.title = None       # problem identification line
-        self.ntal = 0           # number of tallies
-        self.ntals = []         # array of tally numbers
-        self.npert = 0          # number of perturbations
+	"""This class contains header information from MCTAL file. We call 'header' what is written from the beginning to the first 'tally' keyword."""
 
-    def Print(self):
-        """Prints the class members"""
-        print ("\033[1m[HEADER]\033[0m")
-        print ("code:\t\t%s" % self.kod)
-        print ("version:\t%s" % self.ver)
-        print ("date and time:\t%s" % self.probid)
-        print ("dump number:\t%s" % self.knod)
-        print ("number of histories:\t%s" % self.nps)
-        print ("number of pseudorandom numbers used:\t%s" % self.rnr)
-        print ("title: %s" % self.title)
+	def __init__(self,verbose=False):
+		self.verbose = verbose  # Verbosity flag
+		self.kod = ""  		# Name of the code, MCNPX
+		self.ver = ""  		# Code version
+		self.probid = []	# Date and time when the problem was run
+		self.knod = 0   	# The dump number
+		self.nps = 0   		# Number of histories that were run
+		self.rnr = 0   		# Number of pseudoradom numbers that were used
+		self.title = ""  	# Problem identification line
+		self.ntal = 0   	# Number of tallies
+		self.ntals = []		# Array of tally numbers
+		self.npert = 0   	# Number of perturbations
 
-        if self.ntal>1: print self.ntal, 'tallies:', self.ntals
-        else: print self.ntal, 'tally:', self.ntals
+	def Print(self):
+	        """Prints the class members. Verbose flag on class initialization must be set to True."""
 
-        if self.npert != 0: print("number of perturbations: %s" % self.npert)
+		if self.verbose:
+
+		        print ("\033[1m[HEADER]\033[0m")
+		        print ("code:\t\t%s" % self.kod)
+	        	print ("version:\t%s" % self.ver)
+		        print ("date and time:\t%s" % self.probid)
+		        print ("dump number:\t%s" % self.knod)
+	        	print ("number of histories:\t%s" % self.nps)
+		        print ("number of pseudorandom numbers used:\t%s" % self.rnr)
+		        print ("title: %s" % self.title)
+
+		        if self.ntal>1:
+				print self.ntal, 'tallies:', self.ntals
+	        	else:
+				print self.ntal, 'tally:', self.ntals
+
+
+		        if self.npert != 0:
+				print("number of perturbations: %s" % self.npert)
+
+#############################################################################################################################
 
 class Tally:
-    number = None
-    title = ""
-    particle = None
-    type = None     # tally type: 0=nondetector, 1=point detector; 2=ring; 3=pinhole radiograph; 4=transmitted image radiograph (rectangular grid); 5=transmitted image radiograph (cylindrical grid) - see page 320 of MCNPX 2.7.0 Manual
-    f  = None       # number of cell, surface or detector bins
-    d  = None       # number of total / direct or flagged bins
-# u is the number of user bins, including the total bin if there is one.
-#   If there is a total bin, then 'ut' is used.
-#   If there is cumulative binning, then 'uc' is used
-# The same rules apply for the s, m, c, e, and t - lines
-    u  = None
-    s  = None       # segment or radiography s-axis bin
-    m  = None       # multiplier bin
-    c  = None       # cosine or radiography t-axis bin
-    e  = None       # energy bin
-    t  = None       # time bin
+	"""This class is aimed to store all the information contained in a tally."""
+
+	def __init__(self,tN,verbose=False):
+		self.verbose = verbose     # Verbosity flag
+		self.tallyNumber = tN      # Tally number
+		self.typeNumber = 0        # Particle type number
+		self.detectorType = None   # The type of detector tally where 0=none, 1=point, 2=ring, 3=pinhole radiograph,
+                                           #     4=transmitted image radiograph (rectangular grid),
+                                           #     5=transmitted image radiograph (cylindrical grid)
+					   # When negative, it provides the type of mesh tally
+		self.tallyParticles = []   # List of 0/1 entries indicating which particle types are used by the tally
+		self.tallyComment = []     # The FC card lines
+		self.nCells = 0            # Number of cell, surface or detector bins
+		self.mesh = False          # True if the tally is a mesh tally
+		self.meshInfo = [0,1,1,1]  # Mesh binning information in the case of a mesh tally
+		self.nDir = 0              # Number of total vs. direct or flagged vs. unflagged bins
+		self.nUsr = 0              # Number of user bins
+		self.usrTC = None          # Total / cumulative bin in the user bins
+		self.nSeg = 0              # Number of segment bins
+		self.segTC = None          # Total / cumulative bin in the segment bins
+		self.nMul = 0              # Number of multiplier bins
+		self.mulTC = None          # Total / cumulative bin in the multiplier bins
+		self.nCos = 0              # Number of cosine bins
+		self.cosTC = None          # Total / cumulative bin in the cosine bins
+		self.cosFlag = 0           # The integer flag of cosine bins
+		self.nErg = 0              # Number of energy bins
+		self.ergTC = None          # Total / cumulative bin in the energy bins
+		self.ergFlag = 0           # The integer flag of energy bins
+		self.nTim = 0              # Number of time bins
+		self.timTC = None          # Total / cumulative bin in the time bins
+		self.timFlag = 0           # The integer flag of time bins
+
+		self.cells = []            # Array of cell   bin boundaries
+		self.usr = []              # Array of user   bin boundaries
+		self.cos = []              # Array of cosine bin boundaries
+		self.erg = []              # Array of energy bin boundaries
+		self.tim = []              # Array of time   bin boundaries
+		self.cora = []		   # Array of cora   bin boundaries for mesh tallies (or lattices)
+		self.corb = []		   # Array of corb   bin boundaries for mesh tallies (or lattices)
+		self.corc = []		   # Array of corc   bin boundaries for mesh tallies (or lattices)
+
+		self.tfc_jtf = []          # List of numbers in the tfc line
+		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
+		
+		self.binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
+
+		self.isInitialized = False
+		self.valsErrors = []       # Array of values and errors
+
+		#self.thereAreNaNs = False # If some of values, errors or TFC data are NaN, the tally will be saved with
+					   # this flag set to true. The reading tests will not fail and in the conversion
+					   # script nbmctal2root.py this flag will be used to skip the conversion of the
+					   # tally
 
 
-    tfc_n   = None  # number of sets of tally fluctuation data
-    
-    def __init__(self, number):
-        self.axes = {}
-        self.axes['f'] = None
-        self.axes['d'] = None
-        self.axes['u'] = None
-        self.axes['s'] = None
-        self.axes['m'] = None
-        self.axes['c'] = None
-        self.axes['e'] = None
-        self.axes['t'] = None
+	def initializeValuesVectors(self):
+		"""This function initializes the 9-D matrix for the storage of values and errors."""
 
-        self.number = number
-        self.data = []
-        self.errors = [] # errors are relative
-        self.tfc_jtf = []    # list of 8 numbers, the bin indexes of tally fluctuation chart bin
-        self.tfc_data = []   # list of 4 numbers for each set of tally fluctuation chart data: nps, tally, error, figure of merit
+		nCells = self.getNbins("f")
+		nCora  = self.getNbins("i")
+		nCorb  = self.getNbins("j")
+		nCorc  = self.getNbins("k")
+		nDir   = self.getNbins("d")
+		nUsr   = self.getNbins("u")
+		nSeg   = self.getNbins("s")
+		nMul   = self.getNbins("m")
+		nCos   = self.getNbins("c")
+		nErg   = self.getNbins("e")
+		nTim   = self.getNbins("t")
 
-    def Print(self, option=[]):
-        """Tally printer.
-           Options: title, 
-        """
-        print "\n\033[1mprinting tally:\033[0m"
-        types = ['nondetector', 'point detector', 'ring', 'FIP', 'FIR', 'FIC']
-        print "tally #%d:\t%s" % (self.number, self.title)
-#        if 'title' in option: return
-#        self.Check()
-        if self.particle>0:
-            print "\tparticles:", GetParticleNames(self.particle)
-        print "\ttype: %s (%s)" % (self.type, types[self.type])
+		self.valsErrors = [[[[[[[[[[[[[] for _ in range(2)] for _ in range(nCorc)] for _ in range(nCorb)] for _ in range(nCora)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
 
-        if self.d == 1:
-            print '\tthis is a cell or surface tally unless there is CF or SF card'
-        elif self.d == 2:
-            print '\tthis is a detector tally (unless thre is an ND card on the F5 tally)'
+		self.isInitialized = True
+		
 
-        if 'axes' in option:
-            print "\taxes:"
-            for b in self.axes.keys():
-                self.axes[b].Print()
+	def Print(self, option=[]):
+		"""Tally printer. Options: title. Verbose flag on class initialization must be set to True."""
 
-        if 'data' in option:
-            print "\tdata:"
-            print self.data
-            print len(self.data)
-            print "\terrors:"
-            print self.errors
-            print len(self.errors)
+		if self.verbose:
+			print "To be implemented. Not essential for now.\n"
 
+	def getTotNumber(self,includeTotalBin=True):
+		"""Return the total number of bins."""
 
-    def getName(self):
-        """
-        Return the name of the tally
-        """
-        return "f%s" % self.number
-    
+		nCells = self.getNbins("f",includeTotalBin)
+		nCora  = self.getNbins("i",includeTotalBin)
+		nCorb  = self.getNbins("j",includeTotalBin)
+		nCorc  = self.getNbins("k",includeTotalBin)
+		nDir   = self.getNbins("d",includeTotalBin)
+		nUsr   = self.getNbins("u",includeTotalBin)
+		nSeg   = self.getNbins("s",includeTotalBin)
+		nMul   = self.getNbins("m",includeTotalBin)
+		nCos   = self.getNbins("c",includeTotalBin)
+		nErg   = self.getNbins("e",includeTotalBin)
+		nTim   = self.getNbins("t",includeTotalBin)
+                
+                tot = nCells * nDir * nUsr * nSeg * nMul * nCos * nErg * nTim * nCora * nCorb * nCorc
 
-class Axis:
-    """Axis of a tally"""
-    binlabels = []
-    boundaries = []
-#    numbers = []
+                return tot
 
-    def __init__(self, name, numbers):
-        """Axis Constructor"""
-        self.name = name
-        self.numbers = numbers # we keep all array numbers, but not the first one only (in the case of mesh tally there are > than 1 number)
-        if isinstance(numbers, int):
-            self.number = int(self.numbers)
-        else:       
-            self.number = int(self.numbers[0]) # see page 320
-       # print name, numbers, self.number
-        self.arraycsn = [] # array of cell or surface numbers (written for non-detector tallies only)
-        
-        # ni, nj and nk make sense for mesh tallies only (see e.g. tally 4 in figs/cold-neutron-map/2/case001/small-stat/mctal)
-        # these are number of bins in i,j,k directions
-        self.ni = None
-        self.nj = None
-        self.nk = None
-        if not isinstance(self.numbers, int) and len(self.numbers)>2: # if it's an array (as in case of mesh tally)
-            self.ni, self.nj, self.nk = self.numbers[2:]
+	def insertCell(self,cN):
+		"""Insert cell number."""
 
+		if len(self.cells) <= self.nCells:
+			self.cells.append(cN)
+			return True 
+		else:
+			return False
 
-#        print "Axis %s added" % self.name
+	def insertCorBin(self,axis,value):
+		"""Insert cora/b/c values."""
 
+		if axis == 'a':
+			if len(self.cora) <= self.meshInfo[1]+1:
+				self.cora.append(value)
+				return True
+			else:
+				return False
+		if axis == 'b':
+			if len(self.corb) <= self.meshInfo[2]+1:
+				self.corb.append(value)
+				return True
+			else:
+				return False
 
-    def Print(self):
-        """Axis printer"""
-        print "\t Axis %s" % self.name, self.numbers
-        if not isinstance(self.numbers, int):
-            print "\t\tni,nj,nk: ", self.ni, self.nj, self.nk
-            
-        print "\t\tcell/surface: %s" % self.arraycsn
-        print "Number of bins:", len(self.arraycsn)
+		if axis == 'c':
+			if len(self.corc) <= self.meshInfo[3]+1:
+				self.corc.append(value)
+				return True
+			else:
+				return False
 
-    def getBins(self, i):
-        """Return array of bins in the directon of 'i' (can be i, j, or k)
-Meaningful only for non-detector tallies  if len(self.numbers)>1"""
-        if len(self.arraycsn) == 0 or len(self.numbers)<=1:
-            print "Axis::getBins has no sense in this context"
-            return []
-        start, end = 0, 0
-        if i=='i':
-            start = 0
-            end = self.ni+1
-        elif i=='j':
-            start = self.ni+1
-            end = start+self.nj+1
-        elif i=='k':
-            start = self.ni+1 + self.nj+1
-            end = start + self.nk+1
+	def insertUsr(self,uB):
+		"""Insert usr bins."""
 
-        return self.arraycsn[start:end]
+		if len(self.usr) <= self.nUsr:
+			self.usr.append(uB)
+			return True
+		else:
+			return False
 
+	def insertCos(self,cB):
+		"""Insert cosine bin."""
+
+		if len(self.cos) <= self.nCos:
+			self.cos.append(cB)
+			return True
+		else:
+			return False
+
+	def insertErg(self,eB):
+		"""Insert energy bin."""
+
+		if len(self.erg) <= self.nErg:
+			self.erg.append(eB)
+			return True
+		else:
+			return False
+
+	def insertTim(self,tB):
+		"""Insert time bin."""
+
+		if len(self.tim) <= self.nTim:
+			self.tim.append(tB)
+			return True
+		else:
+			return False
+
+	def insertTfcJtf(self,jtf):
+		"""Insert TFC jtf list."""
+
+		if len(jtf) == 9:
+			self.tfc_jtf = jtf
+			return True
+		else:
+			return False
+
+	def insertTfcDat(self,dat):
+		"""Insert TFC values."""
+
+		if len(dat) <= 4:
+			self.tfc_dat.append(dat)
+			return True
+		else:
+			return False
+
+	def insertValue(self,c,d,u,s,m,a,e,t,f,i,j,k,val):
+		"""Insert tally value."""
+
+		if self.isInitialized == False:
+			self.initializeValuesVectors()
+
+		self.valsErrors[c][d][u][s][m][a][e][t][f][i][j][k] = val
+
+	def getValue(self,f,d,u,s,m,c,e,t,i,j,k,v):
+		"""Return a value from tally."""
+
+		return self.valsErrors[f][d][u][s][m][c][e][t][i][j][k][v]
+
+	def getAxis(self,axis):
+		"""Returns an array containing the values of the axis bins. The desired axis is set by passing the corresponding letter as a function argument. The corrspondence is the usual defined in MCNPX manual (u,c,e,t) for the standard and (i,j,k) for mesh tallies axes (namely cora/b/c)."""
+
+		if axis == "u":
+			if len(self.usr) != 0:
+				u = [0] + self.usr
+				return array('d',u)
+
+		if axis == "c":
+			if len(self.cos) != 0:
+				c = [-1.5] + self.cos
+				return array('d',c)
+
+		if axis == "e":
+			if len(self.erg) != 0:
+				e = [0] + self.erg
+				return array('d',e)
+
+		if axis == "t":
+			if len(self.tim) != 0:
+				t = [0] + self.tim
+				return array('d',t)
+
+		if axis == "i":
+			return array('d',self.cora)
+
+		if axis == "j":
+			return array('d',self.corb)
+
+		if axis == "k":
+			return array('d',self.corc)
+
+		return []
+
+	def getNbins(self,axis,includeTotalBin = True):
+		"""Returns the number of bins relative to the desired axis. The correspondence is, as usual, (f,d,u,s,m,c,e,t) for standard 8D data, plus (i,j,k) for mesh tallies."""
+
+		if axis == "f":
+			nCells = self.nCells
+			if self.nCells == 0: nCells = 1
+			return nCells
+
+		if axis == "i":
+			return self.meshInfo[1]
+
+		if axis == "j":
+			return self.meshInfo[2]
+
+		if axis == "k":
+			return self.meshInfo[3]
+
+		if axis == "d":
+			nDir = self.nDir
+			if self.nDir == 0: nDir = 1
+			return nDir
+
+		if axis == "u":
+			nUsr = self.nUsr
+			if self.nUsr == 0: nUsr = 1
+			if self.usrTC == "t" and includeTotalBin == False:
+				nUsr = nUsr - 1
+			return nUsr
+
+		if axis == "s":
+			nSeg = self.nSeg
+			if self.nSeg == 0: nSeg = 1
+			if self.segTC == "t" and includeTotalBin == False:
+				nSeg = nSeg - 1
+			return nSeg
+
+		if axis == "m":
+			nMul = self.nMul
+			if self.nMul == 0: nMul = 1
+			if self.mulTC == "t" and includeTotalBin == False:
+				nMul = nMul - 1
+			return nMul
+
+		if axis == "c":
+			nCos = self.nCos
+			if self.nCos == 0: nCos = 1
+			if self.cosTC == "t" and includeTotalBin == False:
+				nCos = nCos - 1
+			return nCos
+
+		if axis == "e":
+			nErg = self.nErg
+			if self.nErg == 0: nErg = 1
+			if self.ergTC == "t" and includeTotalBin == False:
+				nErg = nErg - 1
+			return nErg
+
+		if axis == "t":
+			nTim = self.nTim
+			if self.nTim == 0: nTim = 1
+			if self.timTC == "t" and includeTotalBin == False:
+				nTim = nTim - 1
+			return nTim
+
+#############################################################################################################################
 
 class MCTAL:
-    """mctal container"""
-    good_tallies = [1, 2, 5, 4] # list of 'good' tally types (only implemented types are listed here, but a user can narrow this list even more)
-    verbose = True          # verbosity switch
+	"""This class parses the whole MCTAL file."""
 
-    def __init__(self, fname):
-        """Constructor"""
-        self.fname = fname # mctal file name
-        self.tallies = []  # list of tallies
+	def __init__(self,fname,verbose=False):
+		self.verbose = verbose
+		self.tallies = []
+		self.thereAreNaNs = False
+		self.header = Header(verbose)
+		self.mctalFileName = fname
+		self.mctalFile = open(self.mctalFileName, "r")
+		self.line = None # This variable will contain the read lines one by one, but it is
+						 # important to keep it global because the last value from getHeaders()
+						 # must be already available as first value for parseTally(). This will
+						 # also apply to successive calls to parseTally().
+
+	def __del__(self):
+		self.mctalFile.close()
+
+	def Read(self):
+		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
+
+		if self.verbose:
+			print "\n\033[1;34m[Parsing file: %s...]\033[0m" % self.mctalFileName
+
+		self.getHeaders()
+		if self.header.ntal != 0:
+			self.getTallies()
+
+		if self.thereAreNaNs and self.verbose:
+			print >> sys.stderr, "\n \033[1;30mThe MCTAL file contains one or more tallies with NaN values. Flagged.\033[0m\n"
+		return self.tallies
+
+	def getHeaders(self):
+		"""This function reads the first lines from the MCTAL file. We call "header" what is written from the beginning to the first "tally" keyword."""
+
+		self.line = self.mctalFile.readline().split()
+
+		if len(self.line) == 7:
+			self.header.kod = self.line[0]
+			self.header.ver = self.line[1]
+			pID_date = self.line[2]
+			self.header.probid.append(pID_date)
+			pID_time = self.line[3]
+			self.header.probid.append(pID_time)
+			self.header.knod = int(self.line[4])
+			self.header.nps = int(self.line[5])
+			self.header.rnr = int(self.line[6])
+		elif len(self.line) == 3:
+			self.header.knod = int(self.line[0])
+			self.header.nps = int(self.line[1])
+			self.header.rnr = int(self.line[2])
+			
+
+		self.header.title = self.mctalFile.readline().strip()
+
+		self.line = self.mctalFile.readline().split()
+
+		self.header.ntal = int(self.line[1])
+
+		if len(self.line) == 4:
+			self.header.npert = int(self.line[3])
+
+		self.line = self.mctalFile.readline().split()
+
+		while self.line[0].lower() != "tally":
+			for l in self.line: self.header.ntals.append(int(l))
+			self.line = self.mctalFile.readline().split()
+
+	def getTallies(self):
+		"""This function supervises the calls to parseTally() function. It will keep track of the position of cursor in the MCTAL file and stop execution when EOF is reached."""
+
+		EOF = 0
+
+		while EOF != 1:
+			EOF = self.parseTally()
+
+	def parseTally(self):
+		"""This function parses an entire tally."""
+
+		# The first line processed by this function is already in memory, either coming from the
+		# last readline() in Header class or from the previous call to parseTally()
+
+		tally = Tally(int(self.line[1]),self.verbose)
+
+		if self.verbose:
+			print " \033[33mParsing tally: %5d\033[0m" % (tally.tallyNumber)
+
+		tally.typeNumber = int(self.line[2])
+		if len(self.line) == 4: tally.detectorType = int(self.line[3])
+
+		self.line = self.mctalFile.readline()
+		line = self.line.split() # I must use this trick because some MCTAL files seem to omit
+					 # the particle list and the code must be compatible with the 
+					 # following part even if this line is missing, but I don't have
+					 # the possibility to know in advance, so I must duplicate the
+					 # read line.
+
+		for p in line:
+			if p.isdigit():
+				v = int(p)
+				tally.tallyParticles.append(v)
+
+		if len(tally.tallyParticles) != 0: self.line = self.mctalFile.readline()
+
+		while self.line[0].lower() != "f":
+			tally.tallyComment.append(self.line[5:].rstrip())
+			self.line = self.mctalFile.readline()
+
+		self.line = self.line.split()
+
+		tally.nCells = int(self.line[1])
+
+		if len(self.line) > 2:
+			tally.mesh = True
+			tally.nCells = 1
+			tally.meshInfo[0] = int(self.line[2]) # Unknown number
+			tally.meshInfo[1] = int(self.line[3]) # number of cora bins
+			tally.meshInfo[2] = int(self.line[4]) # number of corb bins
+			tally.meshInfo[3] = int(self.line[5]) # number of corc bins
+
+		self.line = self.mctalFile.readline()
+
+		i = 0
+		axisNumber = 0
+		axisName = ('a','b','c')
+		corsVals = (tally.meshInfo[1], tally.meshInfo[2], tally.meshInfo[3]) 
+
+		while self.line[0].lower() != "d": # CELLS
+			if tally.mesh:
+				for c in self.line.split():
+					if not tally.insertCorBin(axisName[axisNumber],float(c)):
+						raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+					i = i + 1
+					if i == (corsVals[axisNumber] + 1):
+						axisNumber = axisNumber + 1
+						i = 0
+			elif "." in self.line and "E" not in self.line:
+				for c in self.line.split():
+					if not tally.insertCell(float(c)):
+					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+			else:
+				for c in self.line.split():
+					if not tally.insertCell(int(c)):  # This means that for some reason you are trying to
+                                					  # insert more cells than the number stated in f
+					        raise IOError("Too many cells in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+
+			self.line = self.mctalFile.readline()
+
+		# DIR
+		self.line = self.line.split()
+		tally.nDir = int(self.line[1])
+
+		while self.line[0].lower() != "u":
+			self.line = self.mctalFile.readline()
+
+		# USR
+		self.line = self.line.split()
+		if self.line[0].lower() == "ut": tally.usrTC = "t"
+		if self.line[0].lower() == "uc": tally.usrTC = "c"
+		tally.nUsr = int(self.line[1])
+
+		# USR BINS
+		self.line = self.mctalFile.readline()
+		while self.line[0].lower() != "s":
+			for u in self.line.split():
+				if not tally.insertUsr(float(u)):
+					raise IOError("Too many user bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+			self.line = self.mctalFile.readline()
+
+		# SEG
+		self.line = self.line.split()
+		if self.line[0].lower() == "st": tally.segTC = "t"
+		if self.line[0].lower() == "sc": tally.segTC = "c"
+		tally.nSeg = int(self.line[1])
+
+		while self.line[0].lower() != "m":
+			self.line = self.mctalFile.readline()
+
+		# MUL
+		self.line = self.line.split()
+		if self.line[0].lower() == "mt": tally.mulTC = "t"
+		if self.line[0].lower() == "mc": tally.mulTC = "c"
+		tally.nMul = int(self.line[1])
+
+		while self.line[0].lower() != "c":
+			self.line = self.mctalFile.readline()
+
+		# COS
+		self.line = self.line.split()
+		if self.line[0].lower() == "ct": tally.cosTC = "t"
+		if self.line[0].lower() == "cc": tally.cosTC = "c"
+		tally.nCos = int(self.line[1])
+		if len(self.line) == 3: tally.cosFlag = int(self.line[2])
+
+		# COSINE BINS
+		self.line = self.mctalFile.readline()
+		while self.line[0].lower() != "e":
+			for c in self.line.split():
+				if not tally.insertCos(float(c)):
+					raise IOError("Too many cosine bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+			self.line = self.mctalFile.readline()
+
+		# ERG
+		self.line = self.line.split()
+		if self.line[0].lower() == "et": tally.ergTC = "t"
+		if self.line[0].lower() == "ec": tally.cosTC = "c"
+		tally.nErg = int(self.line[1])
+		if len(self.line) == 3: tally.ergFlag = int(self.line[2])
+
+		# ENERGY BINS
+		self.line = self.mctalFile.readline()
+		while self.line[0].lower() != "t":
+			for e in self.line.split():
+				if not tally.insertErg(float(e)):
+					raise IOError("Too many energy bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+			self.line = self.mctalFile.readline()
+
+		# TIM
+		self.line = self.line.split()
+		if self.line[0].lower() == "tt": tally.timTC = "t"
+		if self.line[0].lower() == "tc": tally.timTC = "c"
+		tally.nTim = int(self.line[1])
+		if len(self.line) == 3: tally.timFlag = int(self.line[2])
+
+		# TIME BINS
+		self.line = self.mctalFile.readline()
+		while self.line.strip().lower() != "vals":
+			for t in self.line.split():
+				if not tally.insertTim(float(t)):
+					raise IOError("Too many time bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+			self.line = self.mctalFile.readline()
+
+		# VALS
+		f = 1
+		nFld = 0
+		tally.initializeValuesVectors()
+
+		nCells = tally.getNbins("f")
+		nCora  = tally.getNbins("i")
+		nCorb  = tally.getNbins("j")
+		nCorc  = tally.getNbins("k")
+		nDir   = tally.getNbins("d")
+		nUsr   = tally.getNbins("u")
+		nSeg   = tally.getNbins("s")
+		nMul   = tally.getNbins("m")
+		nCos   = tally.getNbins("c")
+		nErg   = tally.getNbins("e")
+		nTim   = tally.getNbins("t")
+
+		for c in range(nCells):
+			for d in range(nDir):
+				for u in range(nUsr):
+					for s in range(nSeg):
+						for m in range(nMul):
+							for a in range(nCos): # a is for Angle...forgive me
+								for e in range(nErg):
+									for t in range(nTim):
+										for k in range(nCorc):
+											for j in range(nCorb):
+												for i in range(nCora):
+													if (f > nFld): # f is for Field...again, forgive me
+														self.line = self.mctalFile.readline().strip()
+														Fld = self.line.split()
+														nFld = len(Fld) - 1
+														f = 0
+
+													if self.line[0:3] != "tfc":
+														if math.isnan(float(Fld[f])) or math.isnan(float(Fld[f+1])):
+															self.thereAreNaNs = True
+														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,0,float(Fld[f]))
+														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,1,float(Fld[f+1]))
+
+														f += 2
+
+		if tally.mesh == False:
+			# TFC JTF
+			self.line = self.mctalFile.readline().strip().split()
+			if self.line[0] != "tfc":
+				raise IOError("There seem to be more values than expected in tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+
+			del self.line[0]
+			self.line = [int(i) for i in self.line]
+
+			if not tally.insertTfcJtf(self.line):
+				raise IOError("Wrong number of TFC jtf elements.")
 
 
-    def GetTally(self, n):
-        """Return tally number 'n'"""
-        for t in self.tallies:
-            if t.number==n:
-                return t
-        print "Can't find tally number %d" % n
-        return 0
+			# TFC DAT
+			self.line = self.mctalFile.readline().strip()
+			while "tally" not in self.line and len(self.line) != 0:
+				self.line = self.line.split()
+			
+				tfcDat = []
 
+				tfcDat.append(int(self.line[0]))
+				if math.isnan(float(self.line[1])) or math.isnan(float(self.line[2])):
+					self.thereAreNaNs = True
+				tfcDat.append(float(self.line[1]))
+				tfcDat.append(float(self.line[2]))
+				if len(self.line) == 4:
+					if math.isnan(float(self.line[1])):
+						self.thereAreNaNs = True
+					tfcDat.append(float(self.line[3]))
+					
+				if not tally.insertTfcDat(tfcDat):
+					raise IOError("Wrong number of elements in TFC data line in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 
-    def Read(self):
-        """method to parse the mctal file"""
-        probid_date = None       # date from probid
-        probid_time = None       # time from probid
-        tally = None             # current tally
-        is_vals = False          # True in the data/errors section
-        is_bin_labels = False    # True in the line after the "^tally" line
-        
-        h = Header()
+				self.line = self.mctalFile.readline().strip()
 
-        is_list_of_particles = False # True if the line with the list of particles follows the ^tally line           
+		else:
+			while "tally" not in self.line and len(self.line) != 0:
+				self.line = self.mctalFile.readline().strip()
 
-        file_in = open(self.fname)
-    
+		self.tallies.append(tally)
 
-        for line in file_in.readlines():
-            if h.kod == 0:
-                h.kod, h.ver, probid_date, probid_time, h.knod, h.nps, h.rnr = line.split()                                                                   
-                h.probid.append(probid_date)
-                h.probid.append(probid_time)
-                continue
-            else:
-                if h.title is None and line[0] == " ":
-                    h.title = line.strip()
-                    continue
-
-            words = line.split()
-            if not h.ntal and words[0] == 'ntal':
-                h.ntal = int(words[1])
-                if len(words) == 4 and words[2] == 'npert':
-                    h.npert = int(words[3])
-                continue
-
-            if h.ntal and not tally and words[0] != 'tally': # list of tally numbers follows
-                for w in words:  h.ntals.append(int(w))
-                if self.verbose: h.Print()
-
-            if words[0] == 'tally':
-                if self.verbose: print("")
-                if tally:                                                  
-                    if tally.number and tally.number % 10 in self.good_tallies:
-                        self.tallies.append(tally)
-                    del tally
-
-                tally = Tally(number=int(words[1]))
-                tally.particle = int(words[2])
-                if tally.particle < 0: # then tally.particle is number of particle types and the next line lists them                                         
-                    is_list_of_particles = True
-                tally.type = int(words[3])                                                                                                                    
-                if self.verbose:
-                    print "\033[1mtally number %d particle %d of type %d\033[0m" % (tally.number, tally.particle, tally.type)
-                    if tally.number not in h.ntals:
-                        print 'tally %d is not in ntals' % tally.number
-                        print 'ntals:', h.ntals
-                        return 1
-
-    #            is_bin_labels = True
-
-                continue                                                                        
-
-            if is_list_of_particles:
-                tally.particle = map(int, words)
-                is_list_of_particles = False
-                if self.verbose: print "list of particles: ", GetParticleNames(tally.particle)
-                continue
-            
-            if not tally: continue
-
-            if tally.axes['f'] and tally.axes['d'] is None and line[0] == ' ': # reading under the f-tally (non-detector only)
-                for w in words:
-                    tally.axes['f'].arraycsn.append(str(w))
-                continue
-
-    #        if tally.axes['f'] is None and words[0] not in ['1', 'f']:                                                                                       
-    #            tally.title = line.strip()                                                                                                                   
-    #            print "tally.title:", tally.title                                                                                                            
-    #            return 0                                                                                                                                     
-                                                                                                                                                              
-            if tally.axes['t'] and is_vals == False and len(tally.data) == 0 and line[0] == ' ':
-                for w in words: tally.axes['t'].arraycsn.append(float(w))
-                continue
-
-            if tally.axes['e'] and tally.axes['t'] is None and line[0] == ' ':
-                for w in words: tally.axes['e'].arraycsn.append(float(w))
-                continue
-
-            if tally.axes['u'] and tally.axes['s'] is None and line[0] == ' ':
-                for w in words: tally.axes['u'].arraycsn.append(float(w))
-                continue
-
-            if   not tally.axes['f'] and re.search('^f', line[0]):
-                tally.axes['f'] = Axis(words[0], map(int, words[1:]))
-                continue
-            elif not tally.axes['d'] and re.search('^d', line[0]):
-                tally.axes['d'] = Axis(words[0], map(int, words[1:]))
-                continue
-            elif not tally.axes['u'] and re.search ("u[tc]?", line[0:1]):
-                tally.axes['u'] = Axis(words[0], map(int, words[1:]))
-                continue
-            elif not tally.axes['s'] and re.search('^s[tc]?', line[0:1]):
-                tally.axes['s'] = Axis(words[0], map(int, words[1:]))
-#                print "here"
-#                tally.axes['s'].Print()
-                continue
-            elif not tally.axes['m'] and re.search('^m[tc]?', line[0:1]):
-                tally.axes['m'] = Axis(words[0], map(int, words[1:]))
-                continue
-            elif not tally.axes['c'] and re.search('^c[tc]?', line[0:1]): 
-                tally.axes['c'] = Axis(words[0], map(int, words[1:]))                         
-                continue
-            elif not tally.axes['e'] and re.search("^e[tc]?",  line[0:1]):
-                tally.axes['e'] = Axis(words[0], map(int, words[1:]))                        
-                continue
-            elif not tally.axes['t'] and re.search("^t[tc]?", line[0:1]):
-                tally.axes['t'] = Axis(words[0], map(int, words[1:]))
-                continue
-            # elif line[0:2] == 'tfc':
-            #     tally.tfc_n = words[1]
-            #     tally.tfc_jtf = words[2:]
-            #     continue
-
-            if tally.tfc_n and line[0] == ' ':                                      
-                tally.tfc_data.append(map(float, words))
-                continue
-
-            if words[0] == 'vals':
-                is_vals = True
-                continue
-
-            if is_vals:
-                if line[0] == ' ':
-                    for iw, w in enumerate(words):
-                        if not iw % 2:
-                            tally.data.append(float(w))
-                        else:
-                            tally.errors.append(float(w))
-                else:
-                    is_vals = False # at this point we should be at the 'tfc' line
-                    if line[0:3] == 'tfc':
-                        tally.tfc_n = words[1]
-                        tally.tfc_jtf = words[2:]
-                    else:
-                        print "mctal.py: something goes wrong after the 'values' - we assumed it's the 'tfc' record"
-                    continue
-
-
-        if tally:  # save the latest tally
-            if tally.number and tally.number % 10 in self.good_tallies:
-                self.tallies.append(tally)
-            del tally
-                    
-        file_in.close()
-
-        return self.tallies
+		if self.line == "":
+			return True
+		elif "tally" in self.line:
+			self.line = self.line.split()
+			return False

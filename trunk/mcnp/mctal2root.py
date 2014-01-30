@@ -1,139 +1,135 @@
-#! /usr/bin/python -W all
-#
-# $URL$
-# $Id$
-#
+#!/usr/bin/python -W all
 
-import sys, re, string
+import sys, argparse, string
+from nbmctal import MCTAL
 from array import array
-from mctal import Header, Tally, Axis, MCTAL
-from mcnp import GetParticleNames
-from ROOT import ROOT, TH3F, TH1F, TFile
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
+parser = argparse.ArgumentParser(description="A mctal to ROOT conversion script.", 
+				 epilog="Homepage: http://code.google.com/p/mc-tools")
+parser.add_argument('mctal_file', type=str, help='the name of the mctal file to be converted')
+parser.add_argument('root_file', type=str, nargs='?', help='the name of the output ROOT file', default="")
+parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
-def main():
-    """
-    mctal2root - an example how to convert mctal file into the ROOT format
-    Note that this is just an example and it will not work for a generic mctal file.
-    The script uses API provided by the Tally class (see mctal.py for available methods).
-    Usage: mctal2root mctal [out.root]
-    ... many features are not yet supported!
+arguments = parser.parse_args()
 
-    Homepage: http://code.google.com/p/mc-tools
-    """
+m = MCTAL(arguments.mctal_file,arguments.verbose)
 
-#    good_tallies = [4] # list of 'good' tally types
-    fname_in = sys.argv[1]
+T = m.Read()
 
-    if len(sys.argv) == 3:
-        fname_out = sys.argv[2]
-    else:
-        fname_out = re.sub("\....$", ".root", fname_in)
-    if fname_in == fname_out:
-        fname_out = fname_in + ".root"
+if m.thereAreNaNs:
+	print >> sys.stderr, " \033[1;30mOne or more tallies contain NaN values. Conversion will succeed anyway.\033[0m"
 
-    print fname_in, "->", fname_out
+if arguments.root_file == "":
+	rootFileName = "%s%s" % (arguments.mctal_file,".root")
+else:
+	rootFileName = arguments.root_file
 
+rootFile = ROOT.TFile(rootFileName,"RECREATE");
 
-    mctal = MCTAL(fname_in)
-    mctal.verbose = False
-    tallies = mctal.Read()
-    print "total number of good tallies:", len(tallies)
+if arguments.verbose:
+	print "\n\033[1;34m[Converting...]\033[0m"
 
-    tallies = [ mctal.GetTally(12) ]
-    
-    for t in tallies:
-        for a in ['f', 'd', 'u', 's', 'm', 'c', 'e', 't']:   print a, t.axes[a].arraycsn
-        
-        nbins = len(t.axes['e'].arraycsn)
-        bins = [0] + t.axes['e'].arraycsn
-        print bins, len(bins)
+for tally in T:
 
-        h55001a = TH1F("f%dh55001a" % t.number, "", nbins, array('f', bins))
-        h55001b = TH1F("f%dh55001b" % t.number, "", nbins, array('f', bins))
-        h55006a = TH1F("f%dh55006a" % t.number, "", nbins, array('f', bins))
-        h55006b = TH1F("f%dh55006b" % t.number, "", nbins, array('f', bins))
-        
-#        print t.data
-        print len(t.data)
+	nCells = tally.getNbins("f",False)
 
-        gbin = 0
-        for f in range(2):
-            for s in range(2):
-                for e in range(nbins):
-                    if s == 0:
-                        if f==0:
-                            h55001a.SetBinContent(e+1, t.data[gbin])
-                            h55001a.SetBinError(e+1, t.errors[gbin]*t.data[gbin])
-                        elif f==1:
-                            h55006a.SetBinContent(e+1, t.data[gbin])
-                            h55006a.SetBinError(e+1, t.errors[gbin]*t.data[gbin])
-                    elif s == 1:
-                        if f==0:
-                            h55001b.SetBinContent(e+1, t.data[gbin])
-                            h55001b.SetBinError(e+1, t.errors[gbin]*t.data[gbin])
-                        elif f==1:
-                            h55006b.SetBinContent(e+1, t.data[gbin])
-                            h55006b.SetBinError(e+1, t.errors[gbin]*t.data[gbin])
-                    gbin = gbin+1
-                gbin = gbin+1 # total
+	coraAxis = tally.getAxis("i")
+	nCora = tally.getNbins("i",False) # Is set to 1 even when mesh tallies are not present
 
+	corbAxis = tally.getAxis("j")
+	nCorb = tally.getNbins("j",False) # Is set to 1 even when mesh tallies are not present
 
-            # h55001b.SetBinContent(i+1, t.data[gbin])
-            # h55001b.SetBinError(i+1, t.errors[gbin]*t.data[gbin])
-            # gbin = gbin+1
-            # h55006a.SetBinContent(i+1, t.data[gbin])
-            # h55006a.SetBinError(i+1, t.errors[gbin]*t.data[gbin])
-            # gbin = gbin+1
-            # h55006b.SetBinContent(i+1, t.data[gbin])
-            # h55006b.SetBinError(i+1, t.errors[gbin]*t.data[gbin])
-            # gbin = gbin+1
-        print gbin
+	corcAxis = tally.getAxis("k")
+	nCorc = tally.getNbins("k",False) # Is set to 1 even when mesh tallies are not present
 
-        fout = TFile(fname_out, "recreate")
-        h55001a.Write()
-        h55001b.Write()
-        h55006a.Write()
-        h55006b.Write()
-        fout.Close()
+	nDir = tally.getNbins("d",False)
 
-    return 0
+	usrAxis = tally.getAxis("u")
+	nUsr = tally.getNbins("u",False)
 
-    # code below works for mesh tally only
-    t = None
-    for tt in tallies:
-        if tt.number == 4:
-            t = tt
+	nSeg = tally.getNbins("s",False)
 
-#    t.axes['f'].Print()
-    # xyz? xzy- yxz- yzx- zxy? zyx-
-    # yxz?
-    # 3 loops XYZ -> yzx? zyx?
-    # 3 loops ZYX -> yxz? xyz?  back: t.data[len(t.data)-ii-1]: 
+	nMul = tally.getNbins("m",False)
 
-            xbins = map(float, t.axes['f'].getBins('i'))
-            ybins = map(float, t.axes['f'].getBins('j'))
-            zbins = map(float, t.axes['f'].getBins('k'))
+	cosAxis = tally.getAxis("c")
+	nCos = tally.getNbins("c",False)
 
-            h = TH3F("h", "", len(xbins)-1, array('f', xbins),
-                     len(ybins)-1, array('f', ybins),
-                     len(zbins)-1, array('f', zbins))
-            if (len(xbins)-1) * (len(ybins)-1) * (len(zbins)-1) != len(t.data):
-                print "data array length is not equal to ni*nj*nk"
+	ergAxis = tally.getAxis("e")
+	nErg = tally.getNbins("e",False)
 
-            ii = 0
-            for i in range(h.GetNbinsX()):
-                for j in range(h.GetNbinsY()):
-                    for k in range(h.GetNbinsZ()):
-                        h.SetBinContent(i+1, j+1, k+1, t.data[ii])
-                        h.SetBinError(i+1, j+1, k+1, t.data[ii]*t.errors[ii])
-                        ii = ii + 1
+	timAxis = tally.getAxis("t")
+	nTim = tally.getNbins("t",False)
 
-            h.SaveAs("a.root")
-    
-    return 0
+	if tally.mesh == True:
+
+		bins    = array('i', (nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim,   nCora,   nCorb,   nCorc))
+		binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0,      0,       0,       0))
+		binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1,      1,       1,       1))
+
+		hs = ROOT.THnSparseF("f%d" % tally.tallyNumber, string.join(tally.tallyComment).strip(), 11, bins, binsMin, binsMax)
+
+	else:
+
+		bins    = array('i', (nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim))
+		binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0))
+		binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1))
+
+		hs = ROOT.THnSparseF("f%d" % tally.tallyNumber, string.join(tally.tallyComment).strip(), 8, bins, binsMin, binsMax)
 
 
 
-if __name__ == '__main__':
-    sys.exit(main())
+	if len(usrAxis) != 0:
+		hs.GetAxis(2).Set(nUsr,usrAxis)
+
+	if len(cosAxis) != 0:
+		hs.GetAxis(5).Set(nCos,cosAxis)
+
+	if len(ergAxis) != 0:
+		hs.GetAxis(6).Set(nErg,ergAxis)
+
+	if len(timAxis) != 0:
+		hs.GetAxis(7).Set(nTim,timAxis)
+
+	if tally.mesh == True:
+		hs.GetAxis(8).Set(len(coraAxis)-1,coraAxis)
+		hs.GetAxis(9).Set(len(corbAxis)-1,corbAxis)
+		hs.GetAxis(10).Set(len(corcAxis)-1,corcAxis)
+
+	for f in range(nCells):
+		for d in range(nDir):
+			for u in range(nUsr):
+				for s in range(nSeg):
+					for m in range(nMul):
+						for c in range(nCos):
+							for e in range(nErg):
+								for t in range(nTim):
+									for k in range(nCorc):
+										for j in range(nCorb):
+											for i in range(nCora):
+												val = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0)
+												err = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)
+												if tally.mesh == True:
+													hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val)
+													hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val*err)
+												else:
+													hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]), val)
+													hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val*err)
+
+
+
+	for i, name in enumerate(tally.binIndexList):
+		if i >= 8 and tally.mesh == False:
+			break
+		hs.GetAxis(i).SetNameTitle(name, name)
+
+	hs.Write()
+
+	if arguments.verbose:
+		print " \033[33mTally %5d saved\033[0m" % (tally.tallyNumber)
+
+
+rootFile.Close()
+print "\n\033[1;34mROOT file saved to:\033[1;32m %s\033[0m\n" % (rootFileName)
+
