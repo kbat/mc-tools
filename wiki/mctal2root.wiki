@@ -2,7 +2,7 @@
 
 = Introduction =
 
-With the *mctal2root* converter, ASCII MCTAL files produced by MCNPX are converted into binary ROOT files containing a set of *THnSparseF* ([http://root.cern.ch/root/html/THnSparse.html THnSparse Reference Manual]), one for each tally.
+With the *mctal2root* converter, ASCII MCTAL files produced by MCNPX are converted into binary ROOT files containing a set of *[http://root.cern.ch/root/html/THnSparse.html THnSparseF]*, one for each tally.
 
 Many features are supported:
 
@@ -22,11 +22,11 @@ Known unsupported features are:
 
 For the converter to work, two packages are mandatory:
 
-  # 2.7 <= Python < 3 (Python 2.6 can be used, but the *argparse* module must be installed manually) [http://www.python.org/download/releases/2.7.6/ Download Python 2.7.6]
-  # ROOT Data Analysis Framework [http://root.cern.ch/drupal/content/downloading-root Download ROOT]
+  # 2.7 <= [http://www.python.org/download/releases/2.7.6/ Python] < 3 (Python 2.6 can be used, but the *argparse* module must be installed manually)
+  # [http://root.cern.ch/drupal/content/downloading-root ROOT Data Analysis Framework ]
 
-This tool provides also the possibility to test the reading and the conversion of MCTAL files. Test routines use the *ndiff* package.
-Developers wishing to improve the code must have this package installed for their tests. [http://www.math.utah.edu/~beebe/software/ndiff/ Download ndiff]
+This tool provides also the possibility to test the reading and the conversion of MCTAL files. Test routines use the *[http://www.math.utah.edu/~beebe/software/ndiff/ ndiff]* package.
+Developers wishing to improve the code must have this package installed for their tests. 
 == Download ==
 
 DEB --> System wide
