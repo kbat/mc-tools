@@ -1,0 +1,798 @@
+2014-01-30 21:54  borghi.nicolo@gmail.com
+
+	* conversiontest.sh, loop_test.sh, mctal.py, mctal2root.py,
+	  mctaltest.py, roottest.py, roottestsuite.py: - All files:
+	  - fixed references to old nb* files
+	  - mctal.py:
+	  - implemented Tally class method Print() for printing tally
+	  information.
+	  It is just available, not used.
+	  
+	  Nicolò Borghi.
+
+2014-01-30 21:44  borghi.nicolo@gmail.com
+
+	* loop_convert, loop_convert.sh, loop_test, loop_test.sh: -
+	  extension .sh added to loop_test and loop_convert
+
+2014-01-30 14:58  batkov
+
+	* AUTHORS, ChangeLog, NEWS, README: empty files required for
+	  automake added
+
+2014-01-30 14:55  batkov
+
+	* Makefile, Makefile.am, configure.ac: Makefile renamed to
+	  Makefile.am and automake info added there.
+	  Autoconf config file added.
+
+2014-01-30 14:52  batkov
+
+	* mctal2root.ctl: ctl file modified to abandon the nb prefix
+
+2014-01-30 10:00  borghi.nicolo@gmail.com
+
+	* mctal.py, mctal2root.py, mctaltest.py, nbmctal.py,
+	  nbmctal2root.py, nbmctaltest.py, nbroottest.py,
+	  nbroottestsuite.py, nbtestsuite.py, roottest.py,
+	  roottestsuite.py, testsuite.py: - removed leading nb from all
+	  file names
+
+2014-01-30 09:57  borghi.nicolo@gmail.com
+
+	* Doxyfile, Makefile, conversiontest.sh, loop_convert, loop_test,
+	  mctal2root.ctl, nbmctal, nbmctal.py, nbmctal2root.py,
+	  nbmctaltest.py, nbroottest.py, nbroottestsuite.py,
+	  nbtestsuite.py: - nbmctal folder deleted
+
+2014-01-30 09:54  borghi.nicolo@gmail.com
+
+	* nbmctal/Doxyfile, nbmctal/Makefile, nbmctal/conversiontest.sh,
+	  nbmctal/loop_convert, nbmctal/loop_test, nbmctal/mctal2root.ctl,
+	  nbmctal/nbmctal.py, nbmctal/nbmctal2root.py,
+	  nbmctal/nbmctaltest.py, nbmctal/nbroottest.py,
+	  nbmctal/nbroottestsuite.py, nbmctal/nbtestsuite.py: - Everything
+	  moved upwards to the mcnp folder (even the Makefile)
+
+2014-01-30 09:52  borghi.nicolo@gmail.com
+
+	* nbmctal/quick_guide.pdf: - Deleted quick_guide.pdf because Wiki
+	  page has been implemented
+
+2014-01-30 09:50  batkov
+
+	* ilconte.py, mctal2root-noaxes.py, nbmctal/Makefile, readmctal.py:
+	  obsolete files deleted from the mcnp folder
+
+2014-01-28 09:58  borghi.nicolo@gmail.com
+
+	* nbmctal/mctal2root.ctl, nbmctal/nbmctal.py,
+	  nbmctal/nbmctal2root.py, nbmctal/nbroottestsuite.py,
+	  nbmctal/nbtestsuite.py: - mctal2root.ctl:
+	  - updated my email address
+	  
+	  - nbmctal.py:
+	  - implemented the use of getNbins function wherever missing
+	  - getNbins function modified: the default includeTotalBin
+	  is now set to True, because the False option is a specific
+	  requirement of the conversion to ROOT format
+	  - modified function getTotNumber() to accept the argument
+	  includeTotalBin, again set to True by default
+	  
+	  - nbtestsuite.py, nbmctal2root.py and nbroottestsuite.py:
+	  - added calls to getNbins() and getTotNumber() where needed
+	  
+	  Nicolò Borghi.
+
+2014-01-28 08:51  batkov
+
+	* nbmctal/Makefile, nbmctal/mctal2root.ctl: Makefile section for
+	  the deb package added
+
+2014-01-28 08:37  borghi.nicolo@gmail.com
+
+	* nbmctal/nbmctal.py: - nbmctal.py:
+	  - syntax errors fixed in function getNbins()
+	  
+	  Nicolò Borghi.
+
+2014-01-28 08:32  borghi.nicolo@gmail.com
+
+	* nbmctal/conversiontest, nbmctal/conversiontest.sh,
+	  nbmctal/loop_convert, nbmctal/loop_test, nbmctal/nbmctal.py,
+	  nbmctal/nbmctal2root.py, nbmctal/nbroottest.py,
+	  nbmctal/nbroottestsuite.py, nbmctal/nbtestsuite.py: - ALL FILES:
+	  - adjusted colours of output lines
+	  
+	  - loop_convert, loop_test:
+	  - removed unused and already commented sections
+	  
+	  - nbmctal.py:
+	  - added two functions to the class Tally:
+	  - getAxis(axisLetter): it returns an array filled with
+	  the bin values of the axis requested with the argument
+	  axisLetter, which can be chosen among (u,c,e,t) for
+	  standard tallies, plus (i,j,k) for mesh tallies
+	  - getNbins(axisLetter,includeTotalBin=False): it returns
+	  the number of bins of the requested dimension and
+	  (includes)excludes the total bin if the argument
+	  includeTotalBin is set to (True)False
+	  - removed unused debug print lines
+	  
+	  - nbmctal2root.py:
+	  - conditional check: if mesh tally -> 11D, if standard tally ->
+	  8D
+	  sparse histogram
+	  - removed axes contruction (included in nbmctal.py, see above)
+	  
+	  - nbroottestsuite.py:
+	  - diff check repeated with 3 increasing tolerances (only if it
+	  fails
+	  at the first run). Relative errors of 100% are allowed to account
+	  for extremely low powers, like E-46 or E-50. When reached the
+	  last
+	  step (i.e. 100% error) a warning is issued, but the test succeeds
+	  anyway (if files are completely different it will fail even with
+	  100% error tolerance).
+	  - mesh tally axes cora/b/c are included in the tests
+	  - test procedures divided between 8D and 11D sparse histograms
+	  - 100% error tolerance and other ndiff-2.00 messages saved to a
+	  log
+	  file called difflog.txt
+	  
+	  - conversiontest:
+	  - renamed in conversiontest.sh
+
+2014-01-24 11:18  batkov
+
+	* nbmctal/Doxyfile, nbmctal/Makefile: doxygen config added to
+	  nbmctal2root
+
+2014-01-21 23:53  borghi.nicolo@gmail.com
+
+	* nbmctal/nbmctal.py, nbmctal/nbmctal2root.py,
+	  nbmctal/nbroottestsuite.py, nbmctal/nbtestsuite.py:
+	  ***************************************************************
+	  *** ATTENTION!!! From the previous commit, the structure of ***
+	  *** of mesh tallies has deeply changed and now ***
+	  *** it is fully integrated with the previous ***
+	  *** routines. ***
+	  ***************************************************************
+	  
+	  - nbmctal.py:
+	  - changed 8D data structure to 11D structure for every possible
+	  tally (not only mesh).
+	  When mesh tallies are not present, the i,j,k indexes are simply
+	  set to 1, thus
+	  allowing the cross compatibility between 8D and 11D (actually 4D)
+	  data. In principle
+	  also MCNP6 mesh tallies could turn out to be supported (in e,t
+	  bins), but this feature
+	  is only an hypothesis
+	  - nbmctal2root.py:
+	  - mesh tally export capability (dealing with all 11D also for
+	  standard tallies)
+	  - nbtestsuite.py and nbroottestsuite.py:
+	  - support for 11D structures in test procedures
+	  
+	  *****************************************************************
+	  *** ATTENTION!!! Test will fail for cylindrical (and perhaps ***
+	  *** also for spherical) mesh tallies ***
+	  *****************************************************************
+	  
+	  
+	  
+
+2014-01-21 13:39  borghi.nicolo@gmail.com
+
+	* nbmctal/quick_guide.pdf: - quick_guide.pdf:
+	  - changed title
+
+2014-01-21 12:37  borghi.nicolo@gmail.com
+
+	* nbmctal/conversiontest, nbmctal/nbmctal.py,
+	  nbmctal/nbmctal2root.py, nbmctal/nbroottest.py,
+	  nbmctal/quick_guide.pdf: - conversiontest:
+	  - direct call to nbmctal2root.py and nbroottest.py (not via the
+	  Python interpreter)
+	  
+	  - nbmctal.py:
+	  - fixed some verbosity check
+	  - check if more vals than expected are found. If this is the
+	  case, raise an IO Error
+	  
+	  - nbmctal2root.py:
+	  - first implementation of the conversion of mesh tallies. Should
+	  work with all mesh
+	  tally types. It will soon change, after a major rewrite of
+	  nbmctal.py and test
+	  routines for a better and seamless integration with the existing
+	  code.
+	  
+	  - nbroottest.py:
+	  - fixed the line to call the Python interpreter
+	  
+	  - quick_guide.pdf:
+	  - Guess what? This is a quick guide!
+	  
+	  Nicolò Borghi.
+
+2014-01-16 10:01  borghi.nicolo@gmail.com
+
+	* nbmctal/nbmctal.py, nbmctal/nbmctal2root.py,
+	  nbmctal/nbroottest.py, nbmctal/nbroottestsuite.py: - nbmctal.py:
+	  - imported math module to use the isnan(float) function
+	  - added flag for presence of NaN values
+	  - added check for the presence of NaNs, which can be found
+	  in tally values or tfc vals
+	  
+	  - nbmctal2root.py:
+	  - warning issued if NaNs are present (overrides verbosity check).
+	  NaNs are correctly exported to ROOT anyway.
+	  
+	  - nbroottest.py:
+	  - added check for NaNs flag (set in nbmctal.py). If there are
+	  NaNs
+	  then the test on the entire file is skipped.
+	  
+	  - nbroottestsuite.py:
+	  - added missing verbosity checks
+	  - changed the call to diff to a call to ndiff-2.00
+	  *****************************************************************
+	  *** * * * * * * * * *THIS PACKAGE IS REQUIRED * * * * * * * * ***
+	  *** * * * * ndiff-2.00 package can be downloaded here:* * * * ***
+	  *****************************************************************
+	  *** http://www.math.utah.edu/~beebe/software/ndiff/ndiff.html ***
+	  *****************************************************************
+	  
+	  Nicolò Borghi.
+
+2014-01-08 15:04  batkov
+
+	* nbmctal/nbmctal2root.py: nbmctal2root.py: the names and titles of
+	  the THnSparseF axes are set to Tally::binIndexList
+
+2014-01-08 14:58  batkov
+
+	* nbmctal/nbmctal2root.py: nbmctal2root.py: the title of THnSparseF
+	  is set to the tally comment from mctal
+
+2014-01-08 14:47  batkov
+
+	* nbmctal/nbmctal2root.py: nbmctal2root.py: tuples are used instead
+	  of list when it is more efficient
+
+2014-01-08 14:44  batkov
+
+	* nbmctal/nbmctal2root.py: nbmctal2root.py: Argument parser setup
+	  adjusted and default values removed from the help message
+
+2014-01-08 14:38  batkov
+
+	* nbmctal/nbmctal.py: nbmctal.py: IOError raised instead of
+	  printing in sys.stderr
+
+2014-01-08 14:05  batkov
+
+	* nbmctal/nbmctal.py: nbmctal.py: IOError raised instead of
+	  printing in sys.stderr and exiting with 1
+
+2014-01-08 13:40  batkov
+
+	* nbmctal/nbmctal.py: nbmctal.py: binIndexList defined as tuple
+
+2014-01-08 13:38  batkov
+
+	* nbmctal/nbmctal.py: nbmctal.py: for booleans 0 replaced with
+	  False and 1 replaced with True
+
+2014-01-08 13:33  batkov
+
+	* nbmctal/nbmctal.py: Comments for the Tally class members added
+
+2014-01-08 10:28  borghi.nicolo@gmail.com
+
+	* nbmctal/conversiontest, nbmctal/loop_convert,
+	  nbmctal/nbmctal2root.py, nbmctal/nbroottest.py,
+	  nbmctal/nbroottestsuite.py: - nbmctal2root.py:
+	  added the first bin to axes in order to preserve the
+	  correct length for each axis when exporting to ROOT
+	  - loop_convert:
+	  modified to call the ROOT test routines
+	  - nbroottestsuite.py:
+	  contains the methods to perform tests on MCTAL and
+	  converted ROOT files
+	  - nbroottest.py:
+	  an example script to show how to interface to
+	  nbroottestsuite.py
+	  - conversiontest:
+	  bash script to manage the conversion and testing
+	  of the MCTAL file to ROOT
+	  
+	  Nicolò Borghi.
+
+2013-12-19 09:42  borghi.nicolo@gmail.com
+
+	* nbmctal/loop_convert: - loop_convert
+	  - Fixed syntax errors.
+
+2013-12-19 09:36  borghi.nicolo@gmail.com
+
+	* nbmctal/loop_convert, nbmctal/loop_test: - loop_test:
+	  - Minor changes (fixed the help message showing the wrong script
+	  name)
+	  - loop_convert:
+	  - This is identical to loop_test, but calls the nbmctal2root.py
+	  script
+	  
+	  Nicolò Borghi.
+
+2013-12-19 09:30  borghi.nicolo@gmail.com
+
+	* nbmctal/loop_test, nbmctal/nbmctal.py, nbmctal/nbmctal2root.py,
+	  nbmctal/nbtestsuite.py: - nbmctal.py:
+	  - implemented mesh tally reading functions
+	  - tfc made optional (mesh tallies seem not to have tfc charts)
+	  - loop_test:
+	  - minor changes (commented out an unused section)
+	  - nbmctal2root.py:
+	  - arguments passed to MCTAL class instance did not take into
+	  account the parsed arguments from argparse. Fixed
+	  - nbtestsuite.py:
+	  - implemented mesh tally writing functions
+	  - tfc made optional (written or not depending on the
+	  presence/absence of a mesh tally).
+	  
+	  Nicolò Borghi.
+
+2013-12-16 15:54  borghi.nicolo@gmail.com
+
+	* nbmctal/nbtestsuite.py: - nbtestsuite.py:
+	  - minor bugfixes (some syntax error corrected)
+
+2013-12-16 15:47  borghi.nicolo@gmail.com
+
+	* nbmctal/nbtestsuite.py: - nbtestsuite.py:
+	  - Temp file is deleted if the test is passed
+	  - Warnings issued in case of not officially supported MCNPX
+	  version
+	  - changed several for loops to look more Python-ish
+	  - binNumberList and binIndexList are now tuples and not lists
+	  - call to subprocess and relative if statement re-written in a
+	  cleaner way.
+	  
+	  Nicolò Borghi.
+
+2013-12-16 15:09  borghi.nicolo@gmail.com
+
+	* nbmctal/loop_test, nbmctal/nbmctal.py, nbmctal/nbmctal2root.py,
+	  nbmctal/nbtestsuite.py: - nbmctal.py:
+	  - break instructions changed in sys.exit() and corresponding
+	  warning messages redirected to stderr
+	  - added the capability of recognizing mesh tallies and cells from
+	  macrobodies. Now only working
+	  with the latter. Mesh tallies stil raise an exit() for better
+	  control during test procedures.
+	  - loop_test:
+	  - implemented a cycle for separating the list of mctal files to
+	  be tested accordingly to the type
+	  of error (mesh tally, macrobody tally, generic error, succesful
+	  test)
+	  - nbmctal2root.py:
+	  - minor changes: removed an unused cycle index
+	  - nbtestsuite.py:
+	  - break instructions changed in sys.exit() and corresponding
+	  warning messages redirected to stderr
+	  - macrobody facets are written correctly to the test file.
+	  
+	  Nicolò Borghi.
+
+2013-12-16 11:32  batkov
+
+	* nbmctal/nbmctaltest.py: nbmctaltest.py uses argparse to parse
+	  command line arguments
+
+2013-12-11 16:46  borghi.nicolo@gmail.com
+
+	* nbmctal/nbmctal2root.py: - nbmctal2root.py:
+	  - Changes in the managment of input and output file names and of
+	  the verbosity option.
+	  Implemented using Argparse
+	  
+	  Nicolò Borghi.
+
+2013-12-11 16:12  batkov
+
+	* nbmctal/nbmctal.py, nbmctal/nbmctal2root.py,
+	  nbmctal/nbmctaltest.py, nbmctal/nbtestsuite.py: executable
+	  property set on all .py files
+
+2013-12-11 16:02  batkov
+
+	* nbmctal/nbtestsuite.py: nbtestsuite.py prints out error messages
+	  in stderr
+
+2013-12-11 15:40  batkov
+
+	* nbmctal/loop_test: loop_test needs list of mtal files as
+	  arguments. It returns number of non-passed tests.
+
+2013-12-10 15:09  borghi.nicolo@gmail.com
+
+	* nbmctal/nbmctal.py, nbmctal/nbmctal2root.py: - nbmctal.py:
+	  - Minor changes in the format of the information strings printed
+	  when the verbose flag is set to True
+	  
+	  - nbmctal2root.py:
+	  - Conversion to ROOT format implemented in a more general way.
+	  The previous version was only a draft crafted on a specific
+	  5 tally. Now it should be able to work with all the read MCTAL.
+	  
+	  Nicolò Borghi.
+
+2013-12-09 15:38  borghi.nicolo@gmail.com
+
+	* nbmctal, nbmctal/loop_test, nbmctal/nbmctal.py,
+	  nbmctal/nbmctal2root.py, nbmctal/nbmctaltest.py,
+	  nbmctal/nbtestsuite.py, nbmctal2root.py: - Deleted
+	  nbmctal2root.py
+	  - Added folder nbmctal to contain the whole suite of scripts
+	  - nbmctal/ contains:
+	  - nbmctal.py:
+	  - Header and Tally class inherited by the MCTAL class, which is
+	  the one
+	  to be instantiated in order to read the MCTAL file (use the
+	  method Read())
+	  - nbtestsuite.py:
+	  - FormatStrings is a class that contains all the format rules of
+	  the MCTAL
+	  files used by MCNPX. These rules are derived from the reference
+	  manual and
+	  from the source code.
+	  - TestSuite is the class to be used to test the correct
+	  performance of the
+	  Read function in the MCTAL class
+	  - nbmctal2root.py:
+	  - This is an example of how to interact with the MCTAL class to
+	  export MCTAL
+	  data in another format
+	  - nbmctaltest.py:
+	  - This is an example of how to interact both with the MCTAL class
+	  and with
+	  the TestSuite class
+	  - loop_test:
+	  - This is and automated bash script for testing several MCTAL
+	  files. It returns
+	  a simple output whether tests are passed or not.
+	  
+	  Nicolò Borghi.
+
+2013-12-09 09:16  borghi.nicolo@gmail.com
+
+	* nbmctal2root.py: - Function Read() in the MCTAL class:
+	  - added a return self.tallies in order to be able to use the same
+	  syntax of other mctal2root versions
+	  
+	  - Added functions dumpToFile() and loadFile() to the MCTAL class:
+	  - These functions are able to store and retrieve the data of the
+	  MCTAL instance in a binary file.
+	  The purpose of this intermediate file is to have an already
+	  processed MCTAL file, easily accessible
+	  for conversion to whatever format is needed, without having to
+	  read the ASCII file (I think this
+	  could be faster than parsing strings...)
+	  
+	  - MCTAL constructor:
+	  - Modified in order to be compatible both with the ASCII
+	  procedures and the reading of the binary file
+	  
+	  Nicolò Borghi.
+
+2013-12-07 21:47  borghi.nicolo@gmail.com
+
+	* nbmctal2root.py: - in function parseTally at line 588:
+	  - in the loop I removed the try-catch statement and replaced it
+	  with the .isdigit() function
+	  
+	  Nicolò Borghi.
+
+2013-12-06 21:54  borghi.nicolo@gmail.com
+
+	* nbmctal2root.py: - Fine tuning of the Tally.Read() (and of course
+	  Tally.Test()) functions:
+	  - an old mcnpx 4c2 mctal file did not contain the particle list
+	  for the tally, thus I made the reading of that line optional
+	  
+	  Nicolò Borghi.
+
+2013-12-06 16:32  borghi.nicolo@gmail.com
+
+	* nbmctal2root.py: - Minor changes in the Tally class just to
+	  reflect the requirements imposed
+	  by the Read() function in the MCTAL class
+	  - MCTAL class completed:
+	  - Read function reads correctly all mctals file (at least the
+	  ones I tried)
+	  except for mesh tallies and similar stuff. So, only "plain" mctal
+	  files
+	  - Test function implemented. It calls Header.Test() and
+	  Tally.Test() functions
+	  to write back a test MCTAL file to be compared to the original
+	  one for validation.
+
+2013-12-05 14:04  borghi.nicolo@gmail.com
+
+	* nbmctal2root.py: - Main changes at the Tally class:
+	  - all the functions get*Number have been removed and replaced
+	  with a more
+	  straight function getNumbers(index) which takes the letter
+	  corresponding
+	  the desired axis and returns the number of bin for that
+	  particular axis.
+	  The main goal of this change is to make this function iterable in
+	  a loop
+	  cycle or similar.
+	  - added flags for storing information about Total or Cumulative
+	  binnings.
+	  - added the f flag in principle present for cosine, energy and
+	  time bins,
+	  even if its function is not clear to me.
+	  - implemented Test function. It uses the same syntax as in Header
+	  class,
+	  i.e. Test(filename). The function has been tested for everything
+	  apart
+	  from values/error and tfc printing, because data will be
+	  available after
+	  the mctal is read and it is not worth building a dummy set of
+	  values.
+	  
+	  Nicolò Borghi.
+
+2013-12-04 21:10  borghi.nicolo@gmail.com
+
+	* nbmctal2root.py: - First draft of the mctal2root script developed
+	  by Nicolò Borghi.
+	  - FormatStrings class is meant to retain information about the
+	  mcnpx way of formatting the mctal file.
+	  It is built from mcnpx manual and mcnpx source code. It should be
+	  reliable and general enough.
+	  It is used only in Testing procedures
+	  - Header class is essentially the same as in mctal.py by KB.
+	  Just added the function Test to write the mctal header to a test
+	  file for Testing procedures
+	  - Tally class merges variables and methods from KB and NB scripts
+	  and tries to include all the possible
+	  options of each tally. It is based on the mcnpx manual and on the
+	  mcnpx source code.
+	  The purpose of the large amount of function is just to create a
+	  more comfortable (at least for me)
+	  interface between user and variables. In the case of the insert
+	  functions for cells, cosine, energy,
+	  time and tfc, the aim is to be able to avoid exceptions raised by
+	  unexpected overflows or such orrible
+	  things...
+	  The Test function for Tally class is yet to be implemented.
+	  
+	  Nicolò Borghi.
+
+2013-12-04 11:04  batkov
+
+	* readmctal.py:
+
+2013-12-02 10:43  batkov
+
+	* mctal.py: a type in a comment fixed
+
+2013-11-26 15:22  batkov
+
+	* ssw2root.py, ssw2txt.py: surface alias fixed
+
+2013-11-26 15:20  batkov
+
+	* ssw2txt.py: Id and URL properties set to ssw2txt
+
+2013-11-26 15:08  batkov
+
+	* mcnp.py, ssw2txt.py: ssw2txt added
+
+2013-11-21 16:28  batkov
+
+	* ssw2root.py: ssw2root: splitlevel can be set via argv, default
+	  being 1 (separate branch for each leaf)
+
+2013-11-21 16:12  batkov
+
+	* ssw2root.py: ssw2root: by default TTree is created with separate
+	  branch for each leaf. This is controlled by splitlevel
+
+2013-11-21 15:48  batkov
+
+	* ilconte.py, ssw.py, ssw2root.py: ssw2root supports mcnp6
+
+2013-09-02 13:35  batkov
+
+	* ilconte.py: ilconte added
+
+2013-09-02 12:10  batkov
+
+	* ilconte.py, ssw2root.py:
+
+2013-07-24 09:08  batkov
+
+	* mctal.py, ssw2root.py:
+
+2013-04-24 09:59  batkov
+
+	* ssw2root.py: ssw2root: SetMaxTreeSize set for the tree
+
+2013-04-19 12:45  batkov
+
+	* mctal.py, ssw.py: property URL and Id set for ssw.py and mctal.py
+
+2013-04-18 13:04  batkov
+
+	* mctal.py, mctal2root.py, ssw2root.py: ssw2root, mctal2root: id
+	  and url properties set
+
+2013-04-16 09:02  batkov
+
+	* mctal.py:
+
+2013-04-04 13:26  batkov
+
+	* mctal2root.py, readmctal.py: some comments added
+
+2013-04-04 13:17  batkov
+
+	* mctal2root.py, readmctal.py: mctal2root.py <-> readmctal2root.py
+
+2013-04-04 10:29  batkov
+
+	* mctal.py, readmctal.py:
+
+2013-04-04 09:08  batkov
+
+	* mcnp.py, mctal.py, mctal2root-noaxes.py, mctal2root.py:
+	  mctal2root implemented with the Axis class, the old version
+	  renamed to mctal2root-noaxes (to be deleted later)
+
+2013-01-07 10:08  batkov
+
+	* ssw.py: ssw bug fixed for 2.7.0 version of mcnp
+
+2012-12-07 12:44  batkov
+
+	* ssw.py, ssw2root.py: usxsuw2txt reads before STATISTICS record
+
+2012-11-09 13:02  batkov
+
+	* ssw2root.py: surface alias added in ssw2root
+
+2012-11-08 11:06  batkov
+
+	* ssw.py: ssw2root: support for version 2.6.0 implemented
+
+2012-10-23 16:16  batkov
+
+	* mctal.py, readmctal.py:
+
+2012-10-23 12:58  batkov
+
+	* mcnp.py, mctal.py, readmctal.py:
+
+2012-10-23 12:29  batkov
+
+	* mcnp.py, mctal.py, mctal2root.py, readmctal.py:
+
+2012-10-04 14:21  batkov
+
+	* mctal.py, mctal2root.py, readmctal.py, ssw2root.py:
+
+2012-08-06 11:38  batkov
+
+	* mcnp.py, mctal2root.py, ssw.py, ssw2root.py:
+
+2012-07-05 13:31  batkov
+
+	* ssw.py, ssw2root.py:
+
+2012-07-04 11:34  batkov
+
+	* ssw.py:
+
+2012-06-28 13:18  batkov
+
+	* ssw2root.py:
+
+2012-06-27 13:50  batkov
+
+	* ssw.py, ssw2root.py: rotate3dshow: verbosity switch added and
+	  animation with argparse arguments implemented
+
+2012-06-25 13:56  batkov
+
+	* mcnp-source.py, mctal2root.py:
+
+2012-03-01 13:32  batkov
+
+	* mcnp-source.py: uniform source added
+
+2012-02-29 11:44  batkov
+
+	* mcnp-source.py:
+
+2012-02-21 10:58  batkov
+
+	* mctal2root.py: output ROOT file can be used as a command line
+	  argument
+
+2012-02-21 08:55  batkov
+
+	* mctal2root.py: URL and Id properties set
+
+2012-02-21 08:54  batkov
+
+	* mctal2root.py: f6 works with regions in f-bins
+
+2012-02-21 08:17  batkov
+
+	* mctal2root.py: f5 works with total bins ut and tt
+
+2012-02-21 07:39  batkov
+
+	* mcnp-source.py, mctal2root.py: f5 works with no total bins and
+	  with tt
+
+2012-02-17 12:21  batkov
+
+	* mcnp-source.py, mctal2root.py: mcnp-source.py added
+
+2012-02-10 08:31  batkov@gmail.com
+
+	* mctal2root.py: executable property set to mctal2root
+
+2012-02-09 15:11  batkov
+
+	* mctal2root.py: Axis::Fix added in order to fix the case when
+	  several detectors are defined at the same time (detector bins in
+	  f-axis)
+
+2012-02-09 12:27  batkov
+
+	* mctal2root.py:
+
+2012-02-06 12:13  batkov
+
+	* mctal2root.py: mctal: Axis class implemented, works with 1D
+	  histograms
+
+2012-02-03 18:27  batkov
+
+	* mctal2root.py: mctal2root writes THnSparse
+
+2012-01-13 15:38  batkov
+
+	* mctal2root.py: mctal2root reads region/cell/surface binning and
+	  assigns region numbers as labels on the x-axis. only 1D histos
+	  are supported (f-binning)
+
+2012-01-12 13:50  batkov
+
+	* mctal2root.py:
+
+2011-05-06 22:09  batkov
+
+	* mctal2root.py:
+
+2011-05-02 03:11  batkov
+
+	* mctal2root.py: mctal2root: trying to read multi-dimentional f5...
+
+2011-05-02 01:29  batkov
+
+	* mctal2root.py:
+
+2011-04-29 23:30  batkov
+
+	* ., mctal2root.py:
+
