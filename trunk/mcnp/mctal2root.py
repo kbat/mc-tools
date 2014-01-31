@@ -5,6 +5,7 @@ from mctal import MCTAL
 from array import array
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+sys.path.insert(1, '@pythondir@')
 
 parser = argparse.ArgumentParser(description="A mctal to ROOT conversion script.", 
 				 epilog="Homepage: http://code.google.com/p/mc-tools")
