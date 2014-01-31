@@ -28,5 +28,8 @@ mctal2root_1.0_all.deb:	mctal2root.ctl mctal2root.py  mctal.py
 	cd $(TMPDIR) && equivs-build mctal2root.ctl && mv *.deb $(HOMEDIR)
 	@test -z $(TMPDIR) || rm -fr $(TMPDIR)
 
+changelog:
+	svn2cl
+
 clean:
 	rm -frv *~ latex html *.pyc doxygen.log *.deb
