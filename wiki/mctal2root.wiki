@@ -9,6 +9,7 @@ Many features are supported:
   * all possible binnings
   * macrobodies
   * mesh tallies
+  * radiograph tallies
 
 Known unsupported features are:
 
