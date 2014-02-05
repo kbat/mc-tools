@@ -179,7 +179,13 @@ class TestSuite:
 					self.outFile.write(fs.binValuesLine % (tally.corc[i]))
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[3]:
 						self.outFile.write("\n")
-					
+
+			if axis == "s" and len(tally.seg) != 0:
+				self.outFile.write("\n")
+				for i in range(len(tally.seg)):
+					self.outFile.write(fs.binValuesLine % (tally.seg[i]))
+					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(tally.seg):
+						self.outFile.write("\n")
 
 			if axis == "u" and len(tally.usr) != 0:
 				self.outFile.write("\n")

@@ -2,7 +2,7 @@
 import time
 import subprocess
 import tempfile
-import os,sys,numpy
+import os,sys,numpy,math
 from array import array
 from testsuite import FormatStrings
 import ROOT
@@ -51,8 +51,6 @@ class RootTest:
 
 		for axis in binIndexList:
 
-			axisCard = axis
-
 			if tally.mesh == True and axis == "i":
 				self.mctalOutFile.write("\n")
 				for i in range(tally.meshInfo[1]+1):
@@ -74,8 +72,14 @@ class RootTest:
 					if i > 0 and (i+1) % 6 == 0 and i != tally.meshInfo[3]:
 						self.mctalOutFile.write("\n")
 
-			if axis == "u" or axis == "c" or axis == "e" or axis == "t":
+			if axis == "u" or axis == "s" or axis == "c" or axis == "e" or axis == "t":
 				self.mctalOutFile.write("\n")
+
+			if axis == "s" and len(tally.seg) != 0:
+				for i in range(len(tally.seg)):
+					self.mctalOutFile.write(fs.binValuesLine % (tally.seg[i]))
+					if i > 0 and (i+1) % 6 == 0 and (i+1) != len(tally.seg):
+						self.mctalOutFile.write("\n")
 
 			if axis == "u" and len(tally.usr) != 0:
 				for i in range(len(tally.usr)):
@@ -145,10 +149,19 @@ class RootTest:
 
 		next = ROOT.TIter(tallyList)
 		key = next()
-		axes = (2,5,6,7,8,9,10) # These are the only bins that can have lists of values.
+		axes = (2,3,5,6,7,8,9,10) # These are the only bins that can have lists of values.
 
 		while key:
 			hs = key.ReadObj()
+
+			objectName = hs.GetName()
+			radio = False # By default we don't have either radiograph...
+			mesh = False  # ...or mesh tallies
+			if "tir" in objectName or "tic" in objectName or "pi" in objectName: # We have a radiograph tally
+				radio = True
+			elif "mesh" in objectName: # We have a mesh tally
+				mesh = True
+
 			tot = hs.GetNbins()
 			nBins = [1,1,1,1,1,1,1,1,1,1,1]
 			dims = hs.GetNdimensions()
@@ -156,23 +169,23 @@ class RootTest:
 				nBins[a] = hs.GetAxis(a).GetNbins()
 
 			for a in axes:
-				if a >= 8 and dims != 11: # We don't have a mesh tally
+				if a >= 8 and not mesh:
 					break 
 				axisValues = hs.GetAxis(a).GetXbins().GetArray()
 				nB = nBins[a]
-				if a >= 8:
+				if a >= 8 or (radio and (a == 3 or a == 5)):
 					nB = nBins[a] + 1
 				for k in range(nB):
-					if a >= 8:
+					kk = k + 1
+					if a >= 8 or (radio and (a == 3 or a == 5)):
 						kk = k
-					else:
-						kk = k + 1
 					try:
 						if k == 0: self.rootOutFile.write("\n")
 						self.rootOutFile.write(fs.binValuesLine % axisValues[kk])
 					except:
 						if self.verbose:
 							print >> sys.stderr, "\033[1;30m %s " % hs.GetTitle() + "k = %5d " % kk + "Index out of range for axis %3d. (Skipping without errors)\033[0m" % (a+1)
+						break
 					if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nB:
 						self.rootOutFile.write("\n")
 
@@ -199,7 +212,7 @@ class RootTest:
 															absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
 														relErr = 0
 														if val != 0:
-															relErr = absErr/val
+															relErr = math.fabs(absErr/val)
 														self.rootOutFile.write(fs.valuesErrorsLine % (val,relErr))
 														if (ii+1) % 4 == 0 and (ii+1) != tot:
 															self.rootOutFile.write("\n")

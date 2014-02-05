@@ -64,6 +64,7 @@ class Tally:
                                            #     4=transmitted image radiograph (rectangular grid),
                                            #     5=transmitted image radiograph (cylindrical grid)
 					   # When negative, it provides the type of mesh tally
+		self.radiograph = False  # Flag set to True is the tally is a radiograph tally.
 		self.tallyParticles = []   # List of 0/1 entries indicating which particle types are used by the tally
 		self.tallyComment = []     # The FC card lines
 		self.nCells = 0            # Number of cell, surface or detector bins
@@ -86,21 +87,28 @@ class Tally:
 		self.timTC = None          # Total / cumulative bin in the time bins
 		self.timFlag = 0           # The integer flag of time bins
 
-		self.cells = []            # Array of cell   bin boundaries
-		self.usr = []              # Array of user   bin boundaries
-		self.cos = []              # Array of cosine bin boundaries
-		self.erg = []              # Array of energy bin boundaries
-		self.tim = []              # Array of time   bin boundaries
-		self.cora = []		   # Array of cora   bin boundaries for mesh tallies (or lattices)
-		self.corb = []		   # Array of corb   bin boundaries for mesh tallies (or lattices)
-		self.corc = []		   # Array of corc   bin boundaries for mesh tallies (or lattices)
+		self.cells = []            # Array of cell     bin boundaries
+		self.usr = []              # Array of user     bin boundaries
+		self.seg = []		   # Array of segments bin boundaries
+		self.cos = []              # Array of cosine   bin boundaries
+		self.erg = []              # Array of energy   bin boundaries
+		self.tim = []              # Array of time     bin boundaries
+		self.cora = []		   # Array of cora     bin boundaries for mesh tallies (or lattices)
+		self.corb = []		   # Array of corb     bin boundaries for mesh tallies (or lattices)
+		self.corc = []		   # Array of corc     bin boundaries for mesh tallies (or lattices)
 
 		self.tfc_jtf = []          # List of numbers in the tfc line
 		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
 
-		self.detectorTypeList = { -3 : "Spherical mesh tally" , -2 : "Cylindrical mesh tally"                         , -1 : "Rectangular mesh tally",
+		self.detectorTypeList = { -6 : "smesh"                , -5 : "cmesh"                                          , -4 : "rmesh"                 ,
+					   # The line below duplicates the line above with short names for tally naming during conversion.
+					   # See the function getDetectorType to see how this information is used
+					  -3 : "Spherical mesh tally" , -2 : "Cylindrical mesh tally"                         , -1 : "Rectangular mesh tally",
 					   0 : "None"                 ,  1 : "Point"                                          ,  2 : "Ring"                  ,
-					   3 : "Pinhole radiograph"   ,  4 : "Transmitted image rdiograph (rectangular grid)" ,  5 : "Transmitted image radiograph (cylindrical grid)" }
+					   3 : "Pinhole radiograph"   ,  4 : "Transmitted image rdiograph (rectangular grid)" ,  5 : "Transmitted image radiograph (cylindrical grid)",
+					   # The line below duplicates the line above, with short names for tally naming during conversion.
+					   # See the function getDetectorType to see how this information is used
+					   6 : "pi"                   ,  7 : "tir"                                            ,  8 : "tic" }
 
 		self.particleListShort = { 1 : "Neutron"                     , 2 : "Photon"             , 3 : "Neutron + Photon"  , 
 					   4 : "Electron"                    , 5 : "Neutron + Electron" , 6 : "Photon + Electron" ,
@@ -144,7 +152,9 @@ class Tally:
 		nErg   = self.getNbins("e")
 		nTim   = self.getNbins("t")
 
-		self.valsErrors = [[[[[[[[[[[[[] for _ in range(2)] for _ in range(nCorc)] for _ in range(nCorb)] for _ in range(nCora)] for _ in range(nTim)] for _ in range(nErg)] for _ in range(nCos)] for _ in range(nMul)] for _ in range(nSeg)] for _ in range(nUsr)] for _ in range(nDir)] for _ in xrange(nCells)]
+		self.valsErrors = [[[[[[[[[[[[[] for _ in range(2)]    for _ in range(nCorc)] for _ in range(nCorb)] for _ in range(nCora)] for _ in range(nTim)] 
+						 for _ in range(nErg)] for _ in range(nCos)]  for _ in range(nMul)]  for _ in range(nSeg)]  for _ in range(nUsr)] 
+						 for _ in range(nDir)] for _ in xrange(nCells)]
 
 		self.isInitialized = True
 		
@@ -158,9 +168,10 @@ class Tally:
 			print ("Tally comment(s):")
 			for comment in self.tallyComment:
 				print ("\t%s" % comment)
-			mt = "No"
-			if self.mesh == True: mt = "Yes"
+			mt = "Yes" if self.mesh else "No"
 			print ("Mesh tally: %s" % mt )
+			rt = "Yes" if self.radiograph else "No"
+			print ("Radiograph Tally: %s" % rt)
 			print ("Detector type: %s" % self.getDetectorType())
 			print ("List of particles in tally:")
 			for i,name in enumerate(self.getTallyParticles()):
@@ -186,10 +197,15 @@ class Tally:
 
 	
 
-	def getDetectorType(self):
+	def getDetectorType(self,short=False):
 		"""Returns the type of the detector type used in the tally."""
 
-		return self.detectorTypeList[self.detectorType]
+		if not short:
+			return self.detectorTypeList[self.detectorType]
+		elif short and self.radiograph:
+			return self.detectorTypeList[self.detectorType + 3]
+		elif short and self.mesh:
+			return self.detectorTypeList[self.detectorType - 3]
 
 	def getTallyParticles(self):
 		"""Returns the particles used in the tally. References can be found in Table 4-1 and page B-2 of the MCNPX manual."""
@@ -268,6 +284,15 @@ class Tally:
 		else:
 			return False
 
+	def insertSeg(self,sB):
+		"""Insert seg bins."""
+
+		if len(self.seg) <= self.nSeg:
+			self.seg.append(sB)
+			return True
+		else:
+			return False
+
 	def insertCos(self,cB):
 		"""Insert cosine bin."""
 
@@ -276,6 +301,23 @@ class Tally:
 			return True
 		else:
 			return False
+
+	def insertRadiograph(self,axis,rB):
+		"""Insert radiograph coordinates on s and t-axis."""
+
+		if axis == "s":
+			if len(self.seg) <= self.nSeg+1:
+				self.seg.append(rB)
+				return True
+			else:
+				return False
+
+		if axis == "t":
+			if len(self.cos) <= self.nCos+1:
+				self.cos.append(rB)
+				return True
+			else:
+				return False
 
 	def insertErg(self,eB):
 		"""Insert energy bin."""
@@ -327,26 +369,41 @@ class Tally:
 		return self.valsErrors[f][d][u][s][m][c][e][t][i][j][k][v]
 
 	def getAxis(self,axis):
-		"""Returns an array containing the values of the axis bins. The desired axis is set by passing the corresponding letter as a function argument. The corrspondence is the usual defined in MCNPX manual (u,c,e,t) for the standard and (i,j,k) for mesh tallies axes (namely cora/b/c)."""
+		"""Returns an array containing the values of the axis bins. The desired axis is set by passing the corresponding letter as a function argument. The corrspondence is the usual defined in MCNPX manual (u,s,c,e,t) for the standard and (i,j,k) for mesh tallies axes (namely cora/b/c)."""
 
 		if axis == "u":
 			if len(self.usr) != 0:
 				u = [0] + self.usr
 				return array('d',u)
 
+		if axis == "s":
+			if len(self.seg) != 0:
+				if self.radiograph:
+					return array('d', self.seg)
+				else:
+					first = self.seg[0] - 1.
+					s = [first] + self.seg
+					return array('d',s)
+
 		if axis == "c":
 			if len(self.cos) != 0:
-				c = [-1.5] + self.cos
-				return array('d',c)
+				if self.radiograph:
+					return array('d',self.cos)
+				else:
+					first = self.cos[0] - 1.
+					c = [first] + self.cos
+					return array('d',c)
 
 		if axis == "e":
 			if len(self.erg) != 0:
-				e = [0] + self.erg
+				first = self.erg[0] - 1.
+				e = [first] + self.erg
 				return array('d',e)
 
 		if axis == "t":
 			if len(self.tim) != 0:
-				t = [0] + self.tim
+				first = self.tim[0] - 1.
+				t = [first] + self.tim
 				return array('d',t)
 
 		if axis == "i":
@@ -364,8 +421,7 @@ class Tally:
 		"""Returns the number of bins relative to the desired axis. The correspondence is, as usual, (f,d,u,s,m,c,e,t) for standard 8D data, plus (i,j,k) for mesh tallies."""
 
 		if axis == "f":
-			nCells = self.nCells
-			if self.nCells == 0: nCells = 1
+			nCells = 1 if self.nCells == 0 else self.nCells
 			return nCells
 
 		if axis == "i":
@@ -378,50 +434,37 @@ class Tally:
 			return self.meshInfo[3]
 
 		if axis == "d":
-			nDir = self.nDir
-			if self.nDir == 0: nDir = 1
+			nDir = 1 if self.nDir == 0 else self.nDir
 			return nDir
 
 		if axis == "u":
-			nUsr = self.nUsr
-			if self.nUsr == 0: nUsr = 1
-			if self.usrTC == "t" and includeTotalBin == False:
-				nUsr = nUsr - 1
+			nUsr = 1 if self.nUsr == 0 else self.nUsr
+			nUsr = nUsr - 1 if self.usrTC == "t" and not includeTotalBin else nUsr
 			return nUsr
 
 		if axis == "s":
-			nSeg = self.nSeg
-			if self.nSeg == 0: nSeg = 1
-			if self.segTC == "t" and includeTotalBin == False:
-				nSeg = nSeg - 1
+			nSeg = 1 if self.nSeg == 0 else self.nSeg
+			nSeg = nSeg - 1 if self.segTC == "t" and not includeTotalBin else nSeg
 			return nSeg
 
 		if axis == "m":
-			nMul = self.nMul
-			if self.nMul == 0: nMul = 1
-			if self.mulTC == "t" and includeTotalBin == False:
-				nMul = nMul - 1
+			nMul = 1 if self.nMul == 0 else self.nMul
+			nMul = nMul - 1 if self.mulTC == "t" and not includeTotalBin else nMul
 			return nMul
 
 		if axis == "c":
-			nCos = self.nCos
-			if self.nCos == 0: nCos = 1
-			if self.cosTC == "t" and includeTotalBin == False:
-				nCos = nCos - 1
+			nCos = 1 if self.nCos == 0 else self.nCos
+			nCos = nCos - 1 if self.cosTC == "t" and not includeTotalBin else nCos
 			return nCos
 
 		if axis == "e":
-			nErg = self.nErg
-			if self.nErg == 0: nErg = 1
-			if self.ergTC == "t" and includeTotalBin == False:
-				nErg = nErg - 1
+			nErg = 1 if self.nErg == 0 else self.nErg
+			nErg = nErg - 1 if self.ergTC == "t" and not includeTotalBin else nErg
 			return nErg
 
 		if axis == "t":
-			nTim = self.nTim
-			if self.nTim == 0: nTim = 1
-			if self.timTC == "t" and includeTotalBin == False:
-				nTim = nTim - 1
+			nTim = 1 if self.nTim == 0 else self.nTim
+			nTim = nTim - 1 if self.timTC == "t" and not includeTotalBin else nTim
 			return nTim
 
 #############################################################################################################################
@@ -485,8 +528,14 @@ class MCTAL:
 
 		self.header.ntal = int(self.line[1])
 
+		if self.header.ntal == 0:
+			print >> sys.stderr, "\n \033[1;31mNo tallies in this MCTAL file. Exiting.\033[0m\n"
+			sys.exit(1)
+
 		if len(self.line) == 4:
 			self.header.npert = int(self.line[3])
+			print >> sys.stderr, "\n \033[1;31mMCTAL file with perturbation card. Not supported. Exiting.\033[0m\n"
+			sys.exit(1)
 
 		self.line = self.mctalFile.readline().split()
 
@@ -497,9 +546,9 @@ class MCTAL:
 	def getTallies(self):
 		"""This function supervises the calls to parseTally() function. It will keep track of the position of cursor in the MCTAL file and stop execution when EOF is reached."""
 
-		EOF = 0
+		EOF = False
 
-		while EOF != 1:
+		while not EOF:
 			EOF = self.parseTally()
 
 	def parseTally(self):
@@ -515,6 +564,9 @@ class MCTAL:
 
 		tally.typeNumber = int(self.line[2])
 		if len(self.line) == 4: tally.detectorType = int(self.line[3])
+
+		if tally.detectorType >=  3: tally.radiograph = True
+		if tally.detectorType <= -1: tally.mesh       = True
 
 		self.line = self.mctalFile.readline()
 		line = self.line.split() # I must use this trick because some MCTAL files seem to omit
@@ -536,10 +588,9 @@ class MCTAL:
 
 		self.line = self.line.split()
 
-		tally.nCells = int(self.line[1])
-
-		if len(self.line) > 2:
-			tally.mesh = True
+		if not tally.mesh:
+			tally.nCells = int(self.line[1])
+		else:
 			tally.nCells = 1
 			tally.meshInfo[0] = int(self.line[2]) # Unknown number
 			tally.meshInfo[1] = int(self.line[3]) # number of cora bins
@@ -601,7 +652,16 @@ class MCTAL:
 		if self.line[0].lower() == "sc": tally.segTC = "c"
 		tally.nSeg = int(self.line[1])
 
+		# SEGMENT BINS
+		self.line = self.mctalFile.readline()
 		while self.line[0].lower() != "m":
+			for s in self.line.split():
+				if tally.radiograph:
+					if not tally.insertRadiograph("s",float(s)):
+						raise IOError("Too many segment bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+				else:
+					if not tally.insertSeg(float(s)):
+						raise IOError("Too many segment bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 			self.line = self.mctalFile.readline()
 
 		# MUL
@@ -624,8 +684,12 @@ class MCTAL:
 		self.line = self.mctalFile.readline()
 		while self.line[0].lower() != "e":
 			for c in self.line.split():
-				if not tally.insertCos(float(c)):
-					raise IOError("Too many cosine bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+				if tally.radiograph:
+					if not tally.insertRadiograph("t",float(c)):
+						raise IOError("Too many cosine bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
+				else:
+					if not tally.insertCos(float(c)):
+						raise IOError("Too many cosine bins in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 			self.line = self.mctalFile.readline()
 
 		# ERG
@@ -716,6 +780,10 @@ class MCTAL:
 			# TFC DAT
 			self.line = self.mctalFile.readline().strip()
 			while "tally" not in self.line and len(self.line) != 0:
+				if "kcode" in self.line:
+					print >> sys.stderr, "\n \033[1;31m Tally with KCODE card. Not supported. Exiting.\033[0m\n"
+					sys.exit(1)
+
 				self.line = self.line.split()
 			
 				tfcDat = []
@@ -738,6 +806,7 @@ class MCTAL:
 		else:
 			while "tally" not in self.line and len(self.line) != 0:
 				self.line = self.mctalFile.readline().strip()
+
 
 		self.tallies.append(tally)
 

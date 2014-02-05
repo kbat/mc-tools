@@ -15,17 +15,23 @@ function performTest () {
 
         SUM=0
         ALL=0
+	OUT=0
 
         if [[ "$VERBOSE" == "-v" ]]; then
                 shift 1
         fi
 
 	mctal2root.py $VERBOSE $@
-	OUT=$?
-	SUM=$(($SUM+$OUT))
+	OUTC=$?
 	roottest.py $VERBOSE $@
-	OUT=$?
+	OUTT=$?
+
+	if [ $OUTC -ge 1 ] || [ $OUTT -ge 1 ]; then
+		OUT=1
+	fi
+
 	SUM=$(($SUM+$OUT))
+	ALL=$(($ALL+1))
 
 	exit $SUM
 
