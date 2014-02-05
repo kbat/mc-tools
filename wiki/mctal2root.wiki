@@ -46,11 +46,20 @@ SVN --> Local and developers
 
 = Converting =
 
-mctal2root -h --> complete usage help
+For quick help about converter usage, option -h is available:
 
-leave the rest
+{{{ mctal2root -h }}}
 
-{{{"mctal.root"}}}
+Assuming that the MCTAL output is stored in the `mctal` file, the conversion script command-line syntax is the following:
+
+{{{mctal2root mctal}}}
+
+This will create a ROOT file with the same name of the input MCTAL and a `.root` extension (in this case, the file name will be
+`mctal.root`). 
+The converted file will be saved in the same directory of the input MCTAL. A different file name for the converted file can be requested by
+adding the desired file name after the input MCTAL.
+
+Detailed information about the conversion process is available with the option `-v`.
 
 = Using THnSparse =
 
