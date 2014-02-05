@@ -34,6 +34,12 @@ if arguments.verbose:
 
 for tally in T:
 
+	tallyLetter = "f"
+	if tally.radiograph:
+		tallyLetter = tally.getDetectorType(True) # Here the argument set to True enables the short version of the tally type
+	if tally.mesh:
+		tallyLetter = tally.getDetectorType(True)
+
 	nCells = tally.getNbins("f",False)
 
 	coraAxis = tally.getAxis("i")
@@ -50,6 +56,7 @@ for tally in T:
 	usrAxis = tally.getAxis("u")
 	nUsr = tally.getNbins("u",False)
 
+	segAxis = tally.getAxis("s")
 	nSeg = tally.getNbins("s",False)
 
 	nMul = tally.getNbins("m",False)
@@ -69,7 +76,7 @@ for tally in T:
 		binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0,      0,       0,       0))
 		binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1,      1,       1,       1))
 
-		hs = ROOT.THnSparseF("f%d" % tally.tallyNumber, string.join(tally.tallyComment).strip(), 11, bins, binsMin, binsMax)
+		hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment).strip(), 11, bins, binsMin, binsMax)
 
 	else:
 
@@ -77,12 +84,15 @@ for tally in T:
 		binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0))
 		binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1))
 
-		hs = ROOT.THnSparseF("f%d" % tally.tallyNumber, string.join(tally.tallyComment).strip(), 8, bins, binsMin, binsMax)
+		hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment).strip(), 8, bins, binsMin, binsMax)
 
 
 
 	if len(usrAxis) != 0:
 		hs.GetAxis(2).Set(nUsr,usrAxis)
+
+	if len(segAxis) != 0:
+		hs.GetAxis(3).Set(nSeg,segAxis)
 
 	if len(cosAxis) != 0:
 		hs.GetAxis(5).Set(nCos,cosAxis)
@@ -111,6 +121,9 @@ for tally in T:
 											for i in range(nCora):
 												val = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0)
 												err = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)
+
+												#print "%5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %13.5E" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val)
+
 												if tally.mesh == True:
 													hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val)
 													hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val*err)
