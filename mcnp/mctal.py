@@ -64,7 +64,7 @@ class Tally:
                                            #     4=transmitted image radiograph (rectangular grid),
                                            #     5=transmitted image radiograph (cylindrical grid)
 					   # When negative, it provides the type of mesh tally
-		self.radiograph = False  # Flag set to True is the tally is a radiograph tally.
+		self.radiograph = False    # Flag set to True is the tally is a radiograph tally.
 		self.tallyParticles = []   # List of 0/1 entries indicating which particle types are used by the tally
 		self.tallyComment = []     # The FC card lines
 		self.nCells = 0            # Number of cell, surface or detector bins
@@ -494,8 +494,7 @@ class MCTAL:
 			print "\n\033[1;34m[Parsing file: %s...]\033[0m" % self.mctalFileName
 
 		self.getHeaders()
-		if self.header.ntal != 0:
-			self.getTallies()
+		self.getTallies()
 
 		if self.thereAreNaNs and self.verbose:
 			print >> sys.stderr, "\n \033[1;30mThe MCTAL file contains one or more tallies with NaN values. Flagged.\033[0m\n"
