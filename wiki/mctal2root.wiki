@@ -79,7 +79,7 @@ Then select the desired tally (e.g. tally 15):
 
 {{{THnSparseF *hs = f->Get("f15");}}}
 
-Projection of the *THnSparseF* to a *TH1F*, *TH2F* or *TH3F* can be obtained (e.g. projection of axis 6):
+Projection of the *THnSparseF* to a *[http://root.cern.ch/root/html/TH1F.html TH1F]*, *[http://root.cern.ch/root/html/TH2F.html TH2F]* or *[http://root.cern.ch/root/html/TH3F.html TH3F]* can be obtained (e.g. projection of axis 6):
 
 {{{TH1F *h1 = hs->Projection(6)}}}
 
