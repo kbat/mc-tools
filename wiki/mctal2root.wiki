@@ -23,7 +23,7 @@ Known unsupported features are:
 
 This software is required for the converter to work:
 
-  # 2.7 <= [http://www.python.org/download/releases/2.7.6/ Python] < 3 (Python 2.6 can be used, but the *argparse* module must be installed manually)
+  # 2.7 <= [http://www.python.org/download/releases/2.7.6/ Python] < 3 (Python 2.6 can be used, but the *[http://docs.python.org/dev/library/argparse.html argparse]* module must be installed manually)
   # [http://root.cern.ch/drupal/content/downloading-root ROOT Data Analysis Framework ]
 
 This tool provides also the possibility to test the reading and the conversion of MCTAL files. Test routines use the *[http://www.math.utah.edu/~beebe/software/ndiff/ ndiff]* package.
@@ -60,6 +60,14 @@ The converted file will be saved in the same directory of the input MCTAL. A dif
 adding the desired file name after the input MCTAL.
 
 Detailed information about the conversion process is available with the option `-v`.
+
+The ROOT file will contain one or more *[http://root.cern.ch/root/html/THnSparse.html THnSparseF]*, one for each tally. Each object is named accordingly to the tally type and number:
+
+  * `f` followed by tally number for standard tallies (e.g. `f4`)
+  * `r/c/smesh` followed by tally number for mesh tallies (e.g. `rmesh1`)
+  * `pi`, `tir`, `tic` followed by tally number for radiograph tallies (e.g. `tir5`)
+
+For both standard and radiograph tallies, the data structure is based on a *8D* sparse histograms, whereas `i`, `j` and `k` axes used in mesh tallies require the use of a *11D* data structure for this tally type.
 
 = Using THnSparse =
 
