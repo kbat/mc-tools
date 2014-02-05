@@ -69,9 +69,38 @@ The ROOT file will contain one or more *[http://root.cern.ch/root/html/THnSparse
 
 For both standard and radiograph tallies, the data structure is based on a *8D* sparse histograms, whereas `i`, `j` and `k` axes used in mesh tallies require the use of a *11D* data structure for this tally type.
 
-= Using THnSparse =
+= Basic THnSparse usage tips =
 
-Leave it
+First import the converted file into ROOT:
+
+{{{TFile *f = new TFile("mctal.root");}}}
+
+Then select the desired tally (e.g. tally 15):
+
+{{{THnSparseF *hs = f->Get("f15");}}}
+
+Projection of the *THnSparseF* to a *TH1F*, *TH2F* or *TH3F* can be obtained (e.g. projection of axis 6):
+
+{{{TH1F *h1 = hs->Projection(6)}}}
+
+The following table shows the correspondence between axis names and axis numbers:
+
+|| *Axis name* || *Axis number* ||
+|| `f` || 0 ||
+|| `d` || 1 ||
+|| `u` || 2 ||
+|| `s` || 3 ||
+|| `m` || 4 ||
+|| `c` || 5 ||
+|| `e` || 6 ||
+|| `t` || 7 ||
+|| `i` || 8 ||
+|| `j` || 9 ||
+|| `k` || 10 ||
+
+A smaller range of bins on a certain axis can be also selected:
+
+{{{hs->GetAxis(7)->SetRange(1,10)}}}
 
 = Examples =
 
