@@ -14,7 +14,7 @@ mctal2root: mctal2root.py Makefile.am configure
 mctal2root.ctl.local: mctal2root.ctl
 	@$(do_substitution) < mctal2root.ctl > mctal2root.ctl.local
 
-doc:    mctal2root.py  mctal.py mctaltest.py  nbroottest.py  nbroottestsuite.py  nbtestsuite.py
+doc:    mctal2root.py  mctal.py mctaltest.py  roottest.py  roottestsuite.py  testsuite.py
 	(cat Doxyfile ; echo "INPUT = " $(ls "$^")) | doxygen -
 
 deb: mctal2root_1.0_all.deb
