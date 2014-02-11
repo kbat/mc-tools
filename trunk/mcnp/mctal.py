@@ -8,7 +8,7 @@
 #
 
 import sys, re, string, math
-from array import array
+import numpy as np
 
 #############################################################################################################################
 
@@ -16,17 +16,17 @@ class Header:
 	"""This class contains header information from MCTAL file. We call 'header' what is written from the beginning to the first 'tally' keyword."""
 
 	def __init__(self,verbose=False):
-		self.verbose = verbose  # Verbosity flag
-		self.kod = ""  		# Name of the code, MCNPX
-		self.ver = ""  		# Code version
-		self.probid = []	# Date and time when the problem was run
-		self.knod = 0   	# The dump number
-		self.nps = 0   		# Number of histories that were run
-		self.rnr = 0   		# Number of pseudoradom numbers that were used
-		self.title = ""  	# Problem identification line
-		self.ntal = 0   	# Number of tallies
-		self.ntals = []		# Array of tally numbers
-		self.npert = 0   	# Number of perturbations
+		self.verbose = verbose			# Verbosity flag
+		self.kod = ""				# Name of the code, MCNPX
+		self.ver = ""				# Code version
+		self.probid = np.array((), dtype=str)	# Date and time when the problem was run
+		self.knod = 0				# The dump number
+		self.nps = 0   				# Number of histories that were run
+		self.rnr = 0   				# Number of pseudoradom numbers that were used
+		self.title = ""  			# Problem identification line
+		self.ntal = 0   			# Number of tallies
+		self.ntals = np.array((), dtype=int)	# Array of tally numbers
+		self.npert = 0   			# Number of perturbations
 
 	def Print(self):
 	        """Prints the class members. Verbose flag on class initialization must be set to True."""
@@ -52,53 +52,52 @@ class Header:
 				print("number of perturbations: %s" % self.npert)
 
 #############################################################################################################################
-
 class Tally:
 	"""This class is aimed to store all the information contained in a tally."""
 
 	def __init__(self,tN,verbose=False):
-		self.verbose = verbose     # Verbosity flag
-		self.tallyNumber = tN      # Tally number
-		self.typeNumber = 0        # Particle type number
-		self.detectorType = None   # The type of detector tally where 0=none, 1=point, 2=ring, 3=pinhole radiograph,
-                                           #     4=transmitted image radiograph (rectangular grid),
-                                           #     5=transmitted image radiograph (cylindrical grid)
-					   # When negative, it provides the type of mesh tally
-		self.radiograph = False    # Flag set to True is the tally is a radiograph tally.
-		self.tallyParticles = []   # List of 0/1 entries indicating which particle types are used by the tally
-		self.tallyComment = []     # The FC card lines
-		self.nCells = 0            # Number of cell, surface or detector bins
-		self.mesh = False          # True if the tally is a mesh tally
-		self.meshInfo = [0,1,1,1]  # Mesh binning information in the case of a mesh tally
-		self.nDir = 0              # Number of total vs. direct or flagged vs. unflagged bins
-		self.nUsr = 0              # Number of user bins
-		self.usrTC = None          # Total / cumulative bin in the user bins
-		self.nSeg = 0              # Number of segment bins
-		self.segTC = None          # Total / cumulative bin in the segment bins
-		self.nMul = 0              # Number of multiplier bins
-		self.mulTC = None          # Total / cumulative bin in the multiplier bins
-		self.nCos = 0              # Number of cosine bins
-		self.cosTC = None          # Total / cumulative bin in the cosine bins
-		self.cosFlag = 0           # The integer flag of cosine bins
-		self.nErg = 0              # Number of energy bins
-		self.ergTC = None          # Total / cumulative bin in the energy bins
-		self.ergFlag = 0           # The integer flag of energy bins
-		self.nTim = 0              # Number of time bins
-		self.timTC = None          # Total / cumulative bin in the time bins
-		self.timFlag = 0           # The integer flag of time bins
+		self.verbose = verbose				# Verbosity flag
+		self.tallyNumber = tN				# Tally number
+		self.typeNumber = 0				# Particle type number
+		self.detectorType = None			# The type of detector tally where 0=none, 1=point, 2=ring, 3=pinhole radiograph,
+								#     4=transmitted image radiograph (rectangular grid),
+								#     5=transmitted image radiograph (cylindrical grid)
+								# When negative, it provides the type of mesh tally
+		self.radiograph = False				# Flag set to True is the tally is a radiograph tally.
+		self.tallyParticles = np.array((), dtype=int)	# List of 0/1 entries indicating which particle types are used by the tally
+		self.tallyComment   = np.array((), dtype=str)	# The FC card lines
+		self.nCells = 0					# Number of cell, surface or detector bins
+		self.mesh = False				# True if the tally is a mesh tally
+		self.meshInfo = np.array([0,1,1,1], dtype=int)	# Mesh binning information in the case of a mesh tally
+		self.nDir = 0					# Number of total vs. direct or flagged vs. unflagged bins
+		self.nUsr = 0					# Number of user bins
+		self.usrTC = None				# Total / cumulative bin in the user bins
+		self.nSeg = 0					# Number of segment bins
+		self.segTC = None				# Total / cumulative bin in the segment bins
+		self.nMul = 0					# Number of multiplier bins
+		self.mulTC = None				# Total / cumulative bin in the multiplier bins
+		self.nCos = 0					# Number of cosine bins
+		self.cosTC = None				# Total / cumulative bin in the cosine bins
+		self.cosFlag = 0				# The integer flag of cosine bins
+		self.nErg = 0					# Number of energy bins
+		self.ergTC = None				# Total / cumulative bin in the energy bins
+		self.ergFlag = 0				# The integer flag of energy bins
+		self.nTim = 0					# Number of time bins
+		self.timTC = None				# Total / cumulative bin in the time bins
+		self.timFlag = 0				# The integer flag of time bins
 
-		self.cells = []            # Array of cell     bin boundaries
-		self.usr = []              # Array of user     bin boundaries
-		self.seg = []		   # Array of segments bin boundaries
-		self.cos = []              # Array of cosine   bin boundaries
-		self.erg = []              # Array of energy   bin boundaries
-		self.tim = []              # Array of time     bin boundaries
-		self.cora = []		   # Array of cora     bin boundaries for mesh tallies (or lattices)
-		self.corb = []		   # Array of corb     bin boundaries for mesh tallies (or lattices)
-		self.corc = []		   # Array of corc     bin boundaries for mesh tallies (or lattices)
+		self.cells = np.array(())			# Array of cell     bin boundaries
+		self.usr = np.array(())				# Array of user     bin boundaries
+		self.seg = np.array(())				# Array of segments bin boundaries
+		self.cos = np.array(())				# Array of cosine   bin boundaries
+		self.erg = np.array(())				# Array of energy   bin boundaries
+		self.tim = np.array(())				# Array of time     bin boundaries
+		self.cora = np.array(())			# Array of cora     bin boundaries for mesh tallies (or lattices)
+		self.corb = np.array(())			# Array of corb     bin boundaries for mesh tallies (or lattices)
+		self.corc = np.array(())			# Array of corc     bin boundaries for mesh tallies (or lattices)
 
-		self.tfc_jtf = []          # List of numbers in the tfc line
-		self.tfc_dat = []          # Tally fluctuation chart data (NPS, tally, error, figure of merit)
+		self.tfc_jtf = np.array(())			# List of numbers in the tfc line
+		self.tfc_dat = []				# Tally fluctuation chart data (NPS, tally, error, figure of merit)
 
 		self.detectorTypeList = { -6 : "smesh"                , -5 : "cmesh"                                          , -4 : "rmesh"                 ,
 					   # The line below duplicates the line above with short names for tally naming during conversion.
@@ -129,13 +128,7 @@ class Tally:
 		self.binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
 
 		self.isInitialized = False
-		self.valsErrors = []       # Array of values and errors
-
-		#self.thereAreNaNs = False # If some of values, errors or TFC data are NaN, the tally will be saved with
-					   # this flag set to true. The reading tests will not fail and in the conversion
-					   # script mctal2root.py this flag will be used to skip the conversion of the
-					   # tally
-
+		self.valsErrors = None       # Array of values and errors
 
 	def initializeValuesVectors(self):
 		"""This function initializes the 9-D matrix for the storage of values and errors."""
@@ -152,9 +145,11 @@ class Tally:
 		nErg   = self.getNbins("e")
 		nTim   = self.getNbins("t")
 
-		self.valsErrors = [[[[[[[[[[[[[] for _ in range(2)]    for _ in range(nCorc)] for _ in range(nCorb)] for _ in range(nCora)] for _ in range(nTim)] 
-						 for _ in range(nErg)] for _ in range(nCos)]  for _ in range(nMul)]  for _ in range(nSeg)]  for _ in range(nUsr)] 
-						 for _ in range(nDir)] for _ in xrange(nCells)]
+		self.valsErrors = np.empty( ( nCells , nDir , nUsr , nSeg , nMul , nCos , nErg , nTim , nCora , nCorb , nCorc , 2 ) , dtype=float)
+
+		#self.valsErrors = [[[[[[[[[[[[[] for _ in xrange(2)]    for _ in xrange(nCorc)] for _ in xrange(nCorb)] for _ in xrange(nCora)] for _ in xrange(nTim)] 
+		#				 for _ in xrange(nErg)] for _ in xrange(nCos)]  for _ in xrange(nMul)]  for _ in xrange(nSeg)]  for _ in xrange(nUsr)] 
+		#				 for _ in xrange(nDir)] for _ in xrange(nCells)]
 
 		self.isInitialized = True
 		
@@ -247,7 +242,7 @@ class Tally:
 		"""Insert cell number."""
 
 		if len(self.cells) <= self.nCells:
-			self.cells.append(cN)
+			self.cells = np.append(self.cells, cN)
 			return True 
 		else:
 			return False
@@ -257,20 +252,20 @@ class Tally:
 
 		if axis == 'a':
 			if len(self.cora) <= self.meshInfo[1]+1:
-				self.cora.append(value)
+				self.cora = np.append(self.cora, value)
 				return True
 			else:
 				return False
 		if axis == 'b':
 			if len(self.corb) <= self.meshInfo[2]+1:
-				self.corb.append(value)
+				self.corb = np.append(self.corb, value)
 				return True
 			else:
 				return False
 
 		if axis == 'c':
 			if len(self.corc) <= self.meshInfo[3]+1:
-				self.corc.append(value)
+				self.corc = np.append(self.corc, value)
 				return True
 			else:
 				return False
@@ -279,7 +274,7 @@ class Tally:
 		"""Insert usr bins."""
 
 		if len(self.usr) <= self.nUsr:
-			self.usr.append(uB)
+			self.usr = np.append(self.usr, uB)
 			return True
 		else:
 			return False
@@ -288,7 +283,7 @@ class Tally:
 		"""Insert seg bins."""
 
 		if len(self.seg) <= self.nSeg:
-			self.seg.append(sB)
+			self.seg = np.append(self.seg, sB)
 			return True
 		else:
 			return False
@@ -297,7 +292,7 @@ class Tally:
 		"""Insert cosine bin."""
 
 		if len(self.cos) <= self.nCos:
-			self.cos.append(cB)
+			self.cos = np.append(self.cos, cB)
 			return True
 		else:
 			return False
@@ -307,14 +302,14 @@ class Tally:
 
 		if axis == "s":
 			if len(self.seg) <= self.nSeg+1:
-				self.seg.append(rB)
+				self.seg = np.append(self.seg, rB)
 				return True
 			else:
 				return False
 
 		if axis == "t":
 			if len(self.cos) <= self.nCos+1:
-				self.cos.append(rB)
+				self.seg = np.append(self.cos,rB)
 				return True
 			else:
 				return False
@@ -323,7 +318,7 @@ class Tally:
 		"""Insert energy bin."""
 
 		if len(self.erg) <= self.nErg:
-			self.erg.append(eB)
+			self.erg = np.append(self.erg, eB)
 			return True
 		else:
 			return False
@@ -332,7 +327,7 @@ class Tally:
 		"""Insert time bin."""
 
 		if len(self.tim) <= self.nTim:
-			self.tim.append(tB)
+			self.tim = np.append(self.tim, tB)
 			return True
 		else:
 			return False
@@ -373,47 +368,42 @@ class Tally:
 
 		if axis == "u":
 			if len(self.usr) != 0:
-				u = [0] + self.usr
-				return array('d',u)
+				return np.append([0], self.usr)
 
 		if axis == "s":
 			if len(self.seg) != 0:
 				if self.radiograph:
-					return array('d', self.seg)
+					return self.seg
 				else:
 					first = self.seg[0] - 1.
-					s = [first] + self.seg
-					return array('d',s)
+					return np.append([first], self.seg)
 
 		if axis == "c":
 			if len(self.cos) != 0:
 				if self.radiograph:
-					return array('d',self.cos)
+					return self.cos
 				else:
 					first = self.cos[0] - 1.
-					c = [first] + self.cos
-					return array('d',c)
+					return np.append([first], self.cos)
 
 		if axis == "e":
 			if len(self.erg) != 0:
 				first = self.erg[0] - 1.
-				e = [first] + self.erg
-				return array('d',e)
+				return np.append([first], self.erg)
 
 		if axis == "t":
 			if len(self.tim) != 0:
 				first = self.tim[0] - 1.
-				t = [first] + self.tim
-				return array('d',t)
+				return np.append([first], self.tim)
 
 		if axis == "i":
-			return array('d',self.cora)
+			return self.cora
 
 		if axis == "j":
-			return array('d',self.corb)
+			return self.corb
 
 		if axis == "k":
-			return array('d',self.corc)
+			return self.corc
 
 		return []
 
@@ -484,9 +474,6 @@ class MCTAL:
 						 # must be already available as first value for parseTally(). This will
 						 # also apply to successive calls to parseTally().
 
-	def __del__(self):
-		self.mctalFile.close()
-
 	def Read(self):
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
@@ -498,6 +485,8 @@ class MCTAL:
 
 		if self.thereAreNaNs and self.verbose:
 			print >> sys.stderr, "\n \033[1;30mThe MCTAL file contains one or more tallies with NaN values. Flagged.\033[0m\n"
+
+		self.mctalFile.close()
 		return self.tallies
 
 	def getHeaders(self):
@@ -509,9 +498,9 @@ class MCTAL:
 			self.header.kod = self.line[0]
 			self.header.ver = self.line[1]
 			pID_date = self.line[2]
-			self.header.probid.append(pID_date)
+			self.header.probid = np.append(self.header.probid, pID_date)
 			pID_time = self.line[3]
-			self.header.probid.append(pID_time)
+			self.header.probid = np.append(self.header.probid, pID_time)
 			self.header.knod = int(self.line[4])
 			self.header.nps = int(self.line[5])
 			self.header.rnr = int(self.line[6])
@@ -539,7 +528,7 @@ class MCTAL:
 		self.line = self.mctalFile.readline().split()
 
 		while self.line[0].lower() != "tally":
-			for l in self.line: self.header.ntals.append(int(l))
+			for l in self.line: self.header.ntals = np.append(self.header.ntals,int(l))
 			self.line = self.mctalFile.readline().split()
 
 	def getTallies(self):
@@ -577,12 +566,12 @@ class MCTAL:
 		for p in line:
 			if p.isdigit():
 				v = int(p)
-				tally.tallyParticles.append(v)
+				tally.tallyParticles = np.append(tally.tallyParticles, v)
 
 		if len(tally.tallyParticles) != 0: self.line = self.mctalFile.readline()
 
 		while self.line[0].lower() != "f":
-			tally.tallyComment.append(self.line[5:].rstrip())
+			tally.tallyComment = np.append(tally.tallyComment, self.line[5:].rstrip())
 			self.line = self.mctalFile.readline()
 
 		self.line = self.line.split()
@@ -723,6 +712,7 @@ class MCTAL:
 
 		# VALS
 		f = 1
+		Fld = []
 		nFld = 0
 		tally.initializeValuesVectors()
 
@@ -738,18 +728,20 @@ class MCTAL:
 		nErg   = tally.getNbins("e")
 		nTim   = tally.getNbins("t")
 
-		for c in range(nCells):
-			for d in range(nDir):
-				for u in range(nUsr):
-					for s in range(nSeg):
-						for m in range(nMul):
-							for a in range(nCos): # a is for Angle...forgive me
-								for e in range(nErg):
-									for t in range(nTim):
-										for k in range(nCorc):
-											for j in range(nCorb):
-												for i in range(nCora):
+		for c in xrange(nCells):
+			for d in xrange(nDir):
+				for u in xrange(nUsr):
+					for s in xrange(nSeg):
+						for m in xrange(nMul):
+							for a in xrange(nCos): # a is for Angle...forgive me
+								for e in xrange(nErg):
+									for t in xrange(nTim):
+										for k in xrange(nCorc):
+											for j in xrange(nCorb):
+												for i in xrange(nCora):
 													if (f > nFld): # f is for Field...again, forgive me
+														del Fld
+														del self.line
 														self.line = self.mctalFile.readline().strip()
 														Fld = self.line.split()
 														nFld = len(Fld) - 1
@@ -762,6 +754,8 @@ class MCTAL:
 														tally.insertValue(c,d,u,s,m,a,e,t,i,j,k,1,float(Fld[f+1]))
 
 														f += 2
+
+		del Fld
 
 		if tally.mesh == False:
 			# TFC JTF
@@ -810,6 +804,7 @@ class MCTAL:
 		self.tallies.append(tally)
 
 		if self.line == "":
+			self.line = self.line
 			return True
 		elif "tally" in self.line:
 			self.line = self.line.split()

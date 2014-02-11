@@ -2,7 +2,7 @@
 
 import sys, argparse, string
 from mctal import MCTAL
-from array import array
+import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 sys.path.insert(1, '@pythondir@')
@@ -42,13 +42,10 @@ for tally in T:
 
 	nCells = tally.getNbins("f",False)
 
-	coraAxis = tally.getAxis("i")
 	nCora = tally.getNbins("i",False) # Is set to 1 even when mesh tallies are not present
 
-	corbAxis = tally.getAxis("j")
 	nCorb = tally.getNbins("j",False) # Is set to 1 even when mesh tallies are not present
 
-	corcAxis = tally.getAxis("k")
 	nCorc = tally.getNbins("k",False) # Is set to 1 even when mesh tallies are not present
 
 	nDir = tally.getNbins("d",False)
@@ -72,19 +69,19 @@ for tally in T:
 
 	if tally.mesh == True:
 
-		bins    = array('i', (nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim,   nCora,   nCorb,   nCorc))
-		binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0,      0,       0,       0))
-		binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1,      1,       1,       1))
+		bins    = np.array( [nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim,   nCora,   nCorb,   nCorc], dtype=np.dtype('i4') )
+		binsMin = np.array( [0.,        0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,       0.,       0.] )
+		binsMax = np.array( [1.,        1.,      1.,      1.,      1.,      1.,      1.,      1.,      1.,       1.,       1.] )
 
-		hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment).strip(), 11, bins, binsMin, binsMax)
+		hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment.tolist()).strip(), 11, bins, binsMin, binsMax)
 
 	else:
 
-		bins    = array('i', (nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim))
-		binsMin = array('d', (0,        0,      0,      0,      0,      0,      0,      0))
-		binsMax = array('d', (1,        1,      1,      1,      1,      1,      1,      1))
+		bins    = np.array( [nCells,   nDir,   nUsr,   nSeg,   nMul,   nCos,   nErg,   nTim], dtype=np.dtype('i4'))
+		binsMin = np.array( [0,        0,      0,      0,      0,      0,      0,      0], dtype=float)
+		binsMax = np.array( [1,        1,      1,      1,      1,      1,      1,      1], dtype=float)
 
-		hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment).strip(), 8, bins, binsMin, binsMax)
+		hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment.tolist()).strip(), 8, bins, binsMin, binsMax)
 
 
 
@@ -104,8 +101,13 @@ for tally in T:
 		hs.GetAxis(7).Set(nTim,timAxis)
 
 	if tally.mesh == True:
+		coraAxis = tally.getAxis("i")
 		hs.GetAxis(8).Set(len(coraAxis)-1,coraAxis)
+
+		corbAxis = tally.getAxis("j")
 		hs.GetAxis(9).Set(len(corbAxis)-1,corbAxis)
+
+		corcAxis = tally.getAxis("k")
 		hs.GetAxis(10).Set(len(corcAxis)-1,corcAxis)
 
 	for f in range(nCells):
@@ -125,12 +127,11 @@ for tally in T:
 												#print "%5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %13.5E" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val)
 
 												if tally.mesh == True:
-													hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val)
-													hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val*err)
+													hs.SetBinContent(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1],dtype=np.dtype('i4')), val)
+													hs.SetBinError(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1],dtype=np.dtype('i4')), val*err)
 												else:
-													hs.SetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]), val)
-													hs.SetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]), val*err)
-
+													hs.SetBinContent(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1],dtype=np.dtype('i4')), val)
+													hs.SetBinError(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1],dtype=np.dtype('i4')), val*err)
 
 
 	for i, name in enumerate(tally.binIndexList):
