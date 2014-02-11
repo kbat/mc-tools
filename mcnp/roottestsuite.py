@@ -2,8 +2,8 @@
 import time
 import subprocess
 import tempfile
-import os,sys,numpy,math
-from array import array
+import os,sys,math
+import numpy as np
 from testsuite import FormatStrings
 import ROOT
 
@@ -205,11 +205,11 @@ class RootTest:
 												for j in range(nBins[9]):
 													for i in range(nBins[8]):
 														if dims == 11:
-															val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
-															absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1]))
+															val = hs.GetBinContent(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1], dtype=np.dtype('i4')))
+															absErr = hs.GetBinError(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1], dtype=np.dtype('i4')))
 														else:
-															val = hs.GetBinContent(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
-															absErr = hs.GetBinError(array('i',[f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1]))
+															val = hs.GetBinContent(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1], dtype=np.dtype('i4')))
+															absErr = hs.GetBinError(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1], dtype=np.dtype('i4')))
 														relErr = 0
 														if val != 0:
 															relErr = math.fabs(absErr/val)
