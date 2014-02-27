@@ -14,7 +14,7 @@ Many features are supported:
 Known unsupported features are:
 
   * `pert` card
-  * KCODE calculations
+  * KCODE output
   * (for tests only) NaN values in MCTAL files are correctly exported to ROOT, but tests on these files will fail
 
 = Installation =
