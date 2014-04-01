@@ -5,6 +5,7 @@
 import sys,time,os,re
 from ROOT import ROOT, TGraph, TGraphErrors, TGraphAsymmErrors, TFile, TObjArray
 from array import array
+from string import join
 import argparse
 
 def GetAsymmGraphs(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name):
@@ -29,6 +30,9 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
     veylow = [] #
     veyhigh = []
     npoints = 0
+    title = ""
+    xtitle = ""
+    ytitle = ""
 
     if l1 == None: l1 = int(1) # we count lines from one
     if l2 == None:
@@ -52,7 +56,6 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
             else:
 #            print "creating new graph object"
                 break
-
         if words[0][0] == '#':
             continue
         if len(words) < 2:
@@ -131,6 +134,13 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0
                 break
 
         if words[0][0] == '#':
+            # set titles in the case of data files downloaded from nndc.bnl.gov/exfor
+            if words[0] == '#name:':
+                title = join(words[1:])
+            elif words[0] == '#X.axis:':
+                xtitle = join(words[1:])
+            elif words[0] == '#Y.axis:':
+                ytitle = join(words[1:])
             continue
         if len(words) < 2:
             print "Skipping line ", line.strip()
@@ -154,6 +164,8 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0
 
         if not colex and not coley: gr = TGraph(npoints)
         else:                       gr = TGraphErrors(npoints)
+        gr.SetTitle("%s;%s;%s;" % (title, xtitle, ytitle))
+
     
         if  name_index==0:
             gr.SetName(name)
