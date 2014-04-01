@@ -3,19 +3,20 @@
 # ASCII to TGraph  converter
 
 import sys,time,os,re
-from ROOT import ROOT, TGraph, TGraphErrors, TGraphAsymmErrors, TFile, TObjArray
 from array import array
 from string import join
 import argparse
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def GetAsymmGraphs(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name):
-    graphs = TObjArray()
+    graphs = ROOT.TObjArray()
     GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name, graphs, 0)
     return graphs
 
-def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name, relerr):
-    graphs = TObjArray()
-    GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, 0, relerr)
+def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name, title, relerr):
+    graphs = ROOT.TObjArray()
+    GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, 0, relerr)
     return graphs
 
 def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name, graphs, name_index):
@@ -79,7 +80,7 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
 
     if npoints>0:
 
-        gr = TGraphAsymmErrors(npoints)
+        gr = ROOT.TGraphAsymmErrors(npoints)
     
         if  name_index==0:
             gr.SetName(name)
@@ -99,7 +100,7 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
         GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, nline+1, l2, name, graphs, name_index)
 
 
-def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0, relerr=False):
+def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_index=0, relerr=False):
     """
     Read between lines l1 and l2
     """
@@ -109,6 +110,8 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0
     vy = []  #
     vey = [] #
     npoints = 0
+    xtitle = ""
+    ytitle = ""
 
     if l1 == None: l1 = int(1) # we count lines from one
     if l2 == None:
@@ -162,9 +165,12 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, graphs, name_index=0
 
     if npoints>0:
 
-        if not colex and not coley: gr = TGraph(npoints)
-        else:                       gr = TGraphErrors(npoints)
-        gr.SetTitle("%s;%s;%s;" % (title, xtitle, ytitle))
+        if not colex and not coley: gr = ROOT.TGraph(npoints)
+        else:                       gr = ROOT.TGraphErrors(npoints)
+        if len(xtitle) and len(ytitle):
+            gr.SetTitle("%s;%s;%s;" % (title, xtitle, ytitle))
+        else:
+            gr.SetTitle(title)
 
     
         if  name_index==0:
@@ -208,7 +214,7 @@ def main():
     """
     
     parser = argparse.ArgumentParser(description=main.__doc__, epilog='epilog')
-    parser.add_argument('-x',  dest='colx',  type=int, help='x-column number', required=True)
+    parser.add_argument('-x',  dest='colx',  type=int, help='x-column number (columns start from ONE)', required=True)
     parser.add_argument('-ex', dest='colex', type=int, help='ex-column number')
     parser.add_argument('-y',  dest='coly',  type=int, help='y-column number', required=True)
     parser.add_argument('-ey', dest='coley', type=int, help='ey-column number')
@@ -218,7 +224,8 @@ def main():
     parser.add_argument('-o', dest='outname', type=str, help='output file name')
     parser.add_argument('-update', action="store_true", default=False, help='if set, the file will be updated, otherwise - recreated')
     parser.add_argument('-relerr', action="store_true", default=False, help='if set, the errors are assumed to be relative')
-    parser.add_argument('-grname', type=str, help='Graph\'s name', default='gr')
+    parser.add_argument('-name', type=str, help='Graph name', default='gr')
+    parser.add_argument('-title', type=str, help='Graph title', default='')
 
     parser.add_argument('-exlow', dest='exlow', type=int, help='low abs error on X in the case of TGraphAsymmErrors')
     parser.add_argument('-exhigh', dest='exhigh', type=int, help='high abs error on X in the case of TGraphAsymmErrors')
@@ -243,9 +250,9 @@ def main():
     else:
         fout_option = 'recreate'
 
-    fout = TFile(fname_out, fout_option)
+    fout = ROOT.TFile(fname_out, fout_option)
     if results.eylow is None:
-        GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.grname, results.relerr).Write()
+        GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.name, results.title, results.relerr).Write()
     else:
         GetAsymmGraphs(results.colx, results.exlow, results.exhigh,
                        results.coly, results.eylow, results.eyhigh,
