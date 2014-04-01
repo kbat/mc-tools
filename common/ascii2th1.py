@@ -3,10 +3,12 @@
 # ASCII to TH1F converter
 
 import sys,time,os,re
-from ROOT import ROOT, TH1F, TFile
 from array import array
+import ROOT, argparse
 
-def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
 #    print colxmin, colxmax, coly, coley, opt, fname
     print opt
     f = open(fname)
@@ -39,10 +41,10 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
         y  = float(words[coly])
         ey = float(words[coley])
         vy.append(y)
-        if 'abserr' in opt:
-            vey.append(ey)
+        if 'relerr' in opt:
+            vey.append(ey*y)
         else:
-            vey.append(y*ey)
+            vey.append(ey)
 
         line_number = line_number+1
 
@@ -53,7 +55,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, fname):
 #    print "ey", vey
 
     nbins = len(vy)
-    h = TH1F("h%d" % (coly), "", nbins, array('f', vx))
+    h = ROOT.TH1F(hname, htitle, nbins, array('f', vx))
     for i in range(nbins):
         if 'width' in opt:
             dx = vx[i+1]-vx[i]
@@ -82,34 +84,32 @@ def main():
                      x3   x4    y3 ey3
                     so, in order to convert it in ROOT you write: ascii2th1 0 2 width file.txt
     """
+    supported_options = ['no', 'width', 'center', 'mcnp', 'abserr']
+
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog='epilog')
+    parser.add_argument('-xmin',  dest='colxmin',  type=int, help='xmin column', required=True)
+    parser.add_argument('-xmax',  dest='colxmax',  type=int, help='xmax column', required=True)
+    parser.add_argument('-ex',  dest='colex',  type=int, help='x-err column', required=True)
+    parser.add_argument('-y',  dest='coly',  type=int, help='y column', required=True)
+    parser.add_argument('-ey',  dest='coley',  type=int, help='y-err column', required=True)
+    parser.add_argument('-hname',  dest='hname',  type=str, help='histogram name', required=False, default='h')
+    parser.add_argument('-htitle',  dest='htitle',  type=str, help='histogram title', required=False, default="")
+    parser.add_argument('option', type=str, help='option', choices=supported_options) #, metavar='(e-the|e-phi)')
+    parser.add_argument('inname', type=str, help='input file')
+    results = parser.parse_args()
+
     if len(sys.argv) == 1:
         print main.__doc__
         sys.exit(1)
 
-    colxmin = int(sys.argv[1])
-    coly = int(sys.argv[2])
-    coley = coly+1
-    opts = sys.argv[3].split(',')
-    supported_options = ['no', 'width', 'center', 'mcnp', 'abserr']
-    for opt in opts:
-        if opt not in (supported_options):
-            print "opt", opt, "is not supported."
-            print "Option must take one of these values:", supported_options
-            sys.exit(1)
 
-    if 'center' in opts or 'mcnp' in opts:
-        colxmax = colxmin
-        print "here"
-    else:
-        colxmax = colxmin+1
-
-    fname_in = sys.argv[4]
+    fname_in = results.inname
     fname_out = fname_in.replace(".dat", ".root")
     if fname_in == fname_out: fname_out = fname_in + ".root"
     print fname_in, '=>',fname_out
 
-    fout = TFile(fname_out, "RECREATE")
-    GetHistogram(colxmin, colxmax, coly, coley, opts, fname_in).Write()
+    fout = ROOT.TFile(fname_out, "recreate")
+    GetHistogram(results.colxmin, results.colxmax, results.coly, results.coley, results.option, results.hname, results.htitle, fname_in).Write()
     fout.Close()
     
 
