@@ -27,6 +27,11 @@ def unpackArray(data):
         return struct.unpack("=%df"%(len(data)//4),  data)
 
 
+def unsupported():
+	print >> sys.stderr, "Your MCNP(X) version is not supported.\nConsider contacting Konstantin Batkov <kbat.mc-tools@lizardie.com> if you want to change this."
+	sys.exit(1)
+
+
 #	"""Class to read the SSW output file (wssa)"""
 class SSW:
     def __init__(self, filename=None):
@@ -76,6 +81,7 @@ class SSW:
         # This is according to Esben's subs.f, but the format seems to be wrong
 #        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
         # This has been modified to fix the format:
+#	print "size: ", size
 	if size == 8: # mcnp 6
 		(tmpi0) = struct.unpack("8s", data)
 		print tmpi0
@@ -85,10 +91,16 @@ class SSW:
 		if self.vers != "6":
 			print "'%s'" % self.vers
 			raise IOError("ssw.py: format error %s")
-
-	else: # not mcnp 6
+	elif size==163:
 		(self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods) = struct.unpack("=8s5s28s19s19s80si", data) # length=160
 		self.vers = self.vers.strip()
+	elif size==167: # like in the Tibor's file with 2.7.0
+		tmp = float(0)
+		(self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods, tmp) = struct.unpack("=8s5s28s19s19s80sif", data) # length=160
+#		print "tmp: ", tmp
+		self.vers = self.vers.strip()
+	else:
+		unsupported()
 
         print "Code:\t\t%s" % self.kods
         print "Version:\t%s" % self.vers
@@ -96,7 +108,7 @@ class SSW:
         print "Machine designator:", self.idtms
         print "Problem id:\t%s" % self.probs
         print "Title:\t\t%s" % self.aids.strip()
-        print "knods:", self.knods
+#        print "knods:", self.knods
 
 	supported_mcnp_versions = ['2.6.0', '26b', '2.7.0', '6']
 	if self.kods.strip() not in ['mcnpx', 'mcnp'] or self.vers not in supported_mcnp_versions:
@@ -111,14 +123,21 @@ class SSW:
 	# niss - number of histories in RSSA data
 	# niwr - number of cells in RSSA data (np1<0)
 	# mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
+#	print "size", size
 	if self.vers == "6":
 #		(np1,nrss,self.nrcd,njsw,niss,self.probs) = struct.unpack("=5i12s", data)
 		(np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=4i4i", data)
 #		print "probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss
-	else:
+	elif size==20:
 		(np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
+	elif size==40: # Tibor with 2.7.0
+		(np1,tmp4,nrss,tmp2,self.nrcd, tmp1, njsw, tmp3, niss, tmp5) = struct.unpack("=5i5i", data)
+#		print "A", np1,nrss, niss, tmp2, self.nrcd
+#		print "B", tmp1, njsw, tmp3, tmp4, tmp5
+	else:
+		unsupported()
 
-	print("number of incident particles:\t%i" % np1)
+	print("number of incident particles:\t%i" % abs(np1))
 	print("number of tracks:\t%i" % nrss)
 	print("length of ssb array:\t%i" % self.nrcd)
 	print("number of surfaces in RSSA data:\t%i" % njsw)
