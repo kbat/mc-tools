@@ -167,8 +167,17 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
 
         if not colex and not coley: gr = ROOT.TGraph(npoints)
         else:                       gr = ROOT.TGraphErrors(npoints)
-        if len(xtitle) and len(ytitle):
-            gr.SetTitle("%s;%s;%s;" % (title, xtitle, ytitle))
+        if len(xtitle) or len(ytitle):
+#            gr.SetTitle("%s;%s;%s;" % (title, xtitle, ytitle))
+            gr.SetTitle(title)
+            gr.GetXaxis().SetTitle(xtitle)
+            gr.GetYaxis().SetTitle(ytitle)
+        elif ";" in title:
+            gr.SetTitle(title)
+#            gr.GetXaxis().SetTitle(xtitle)
+#            gr.GetYaxis().SetTitle(ytitle) 
+#            title,xtitle,ytitle = title.split(";")
+#            gr.SetTitle(title)
         else:
             gr.SetTitle(title)
 
@@ -198,22 +207,12 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
 def main():
     """
     Converts ASCII file to TGraph or TGraphErrors
-    Usage: ascii2gr colx colex coly coley fname
-           colx, coly - column numbers with x and y values
-           colex, coley - column numbers with x and y errors
-           if colex or coley is 0 then these values are not read
-           Lines starting with '#' are ignored.
+    Lines starting with '#' are ignored.
 
-           EXAMPLE: assume you have a file with the following structure:
-                     x1   y1  ey1
-                     x2   y2  ey2
-                     x3   y3  ey3
-                    so, in order to convert it in ROOT you write: ascii2th1 1 0 2 3 file.txt
-
-           It is assumed that different graphs are separated by an empty line. In this case a sequental prefix is appended to the graph's names.
+    It is assumed that different graphs are separated by an empty line. In this case a sequental prefix is appended to the graph's names.
     """
     
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog='epilog')
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: http://code.google.com/p/mc-tools')
     parser.add_argument('-x',  dest='colx',  type=int, help='x-column number (columns start from ONE)', required=True)
     parser.add_argument('-ex', dest='colex', type=int, help='ex-column number')
     parser.add_argument('-y',  dest='coly',  type=int, help='y-column number', required=True)
