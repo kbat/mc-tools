@@ -1,11 +1,12 @@
 #! /usr/bin/python -W all
 
 from scipy import constants
+import subprocess
 
 def L2E(l, m=constants.physical_constants['neutron mass'][0]):
     """
     Angstrom to MeV converter.
-    m = particle mass in kg. Default is neutron mass.
+    m = particle mass in kg.
     """
     l = l*1.0E-10 # Angstrom -> meter
     e = constants.physical_constants['atomic unit of charge'][0]
@@ -15,20 +16,11 @@ def L2E(l, m=constants.physical_constants['neutron mass'][0]):
     return energy/e/1.0E+6
 
     
-
-def LambdaBins(nbins, lmin, lmax):
+def GetVariable(f, var):
     """
-    Return array of energy boundaries in order to make equal binning in wavelength
+    Return the variable value from the CombLayer-generated xml file
     """
-    l = [] # lambda bins
-    e = [] # energy bins
-    dl = (lmax-lmin)/nbins  # lambda bin width
-    
-    for i in range(nbins+1): l.append(lmin+i*dl)
-#    print l
-
-    for i in range(nbins+1):
-        e.append(L2E(l[nbins-i]))
-    return e
-
-print LambdaBins(100, 0.1, 20)
+    p = subprocess.Popen("getvariable %s %s" % (f, var), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pid = p.pid
+    output, error = p.communicate()
+    return output
