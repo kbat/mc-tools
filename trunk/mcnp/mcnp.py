@@ -10,8 +10,8 @@ def getParCL(masterfile, parname, pos=2):
     val = ""
     for line in f.readlines():
         if re.search("\Ac %s" % parname, line, re.IGNORECASE):
+            print line.strip(), val
             val = float(line.split()[pos])
-#            print line.strip(), val
     f.close()
     if val is "":
         raise IOError("Value of %s not found in %s" % (parname, masterfile))
