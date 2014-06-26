@@ -1,5 +1,6 @@
 #! /usr/bin/python -W all
 # Calculation of atomic fractions for given volume fractions
+# http://mc-tools.googlecode.com
 
 import sys
 
@@ -19,7 +20,7 @@ class Compound:
         """ Return density of compound """
         rho = 0.0
         for j,m in enumerate(self.materials):
-            rho += m.density*self.vf[j]/100.0
+            rho += m.density*self.vf[j]
         return rho
 
     def GetMassFraction(self, material):
@@ -27,13 +28,13 @@ class Compound:
         mf = None
         for im, m in enumerate(self.materials):
             if m == material:
-                mf = m.density*self.vf[im]/self.GetDensity()/100.0
+                mf = m.density*self.vf[im]/self.GetDensity()
         if mf == None:
             raise IOError("Compound %s does not contain material %s" % (self.name, material.name))
         return mf
         
 
-    def GetMassFractions(self):
+    def GetAtomicFractions(self):
         """ Calculates mass fractions """
         vf = [] # volume fractions of isotopes
         mf = [] # mass fractions of isotopes
@@ -41,7 +42,7 @@ class Compound:
         iname = [] # isotope names
         for im,m in enumerate(self.materials):
             for ii, i in enumerate(m.isotopes):
-                curvf = m.GetVolumeFraction(i)*self.vf[im]/100.0 # current volume fraction
+                curvf = m.GetVolumeFraction(i)*self.vf[im] # current volume fraction
                 vf.append(curvf)
                 curmf = self.GetMassFraction(m)*i.A*m.nn[ii]/m.GetA() # current mass fraction
                 mf.append(curmf)
@@ -49,7 +50,13 @@ class Compound:
                 iname.append(i.name)
 #        print "mass fractions:", mf
 #        print "atomic fractions:", af
-        print dict(zip(iname, af))
+
+        # normalisation:
+        s = sum(af)
+        for i,v in enumerate(af):
+            af[i] = v/s
+
+        return dict(zip(iname, af)), sum(af)
 
     def Print(self):
         print "Compound:", self.name
@@ -58,7 +65,7 @@ class Compound:
             print "", self.vf[j], "%"
             m.Print()
         print " Mass fractions:"
-        self.GetMassFractions()
+        self.GetAtomicFractions()
 
 class Material:
     """ Material is made of isotopes """
@@ -84,7 +91,7 @@ class Material:
         vf = None
         for j,i in enumerate(self.isotopes):
             if i == isotope:
-                vf = 100.0*self.nn[j]/sum(self.nn)
+                vf = self.nn[j]/sum(self.nn)
                 pass
         if vf == None:
             raise IOError("Material %s does not have isotope %s" % (self.name, isotope.name))
@@ -122,15 +129,30 @@ def main():
     water.AddIsotope(H, 2)
     water.AddIsotope(O, 1)
 
-    waterfrac = 10
-    BeWater = Compound("Be+10%H2O")
+    waterfrac = 0.5
+    BeWater = Compound("BeH2O")
     BeWater.AddMaterial(water, waterfrac)
-    BeWater.AddMaterial(beryllium, 100-waterfrac)
+    BeWater.AddMaterial(beryllium, 1.0-waterfrac)
 #    BeWater.Print()
-    BeWater.GetMassFractions()
+    print "Atomic fractions in %s with water fraction %g %%:" % (BeWater.name, waterfrac*100), BeWater.GetAtomicFractions()
 
-#    print BeWater.GetMassFraction(beryllium)
+    Fe54 = Isotope("Fe54", 53.9396127)
+    Fe56 = Isotope("Fe56", 55.9349393)
+    Fe57 = Isotope("Fe57", 56.9353958)
+    Fe58 = Isotope("Fe58", 57.9332773)
 
+    Fe = Material("Iron", 7.85)
+    Fe.AddIsotope(Fe54, 0.05845)
+    Fe.AddIsotope(Fe56, 0.91754)
+    Fe.AddIsotope(Fe57, 0.02119)
+    Fe.AddIsotope(Fe58, 0.00282)
+    
+    waterfrac = 0.1
+    FeWater = Compound("FeH2O")
+    FeWater.AddMaterial(water, waterfrac)
+    FeWater.AddMaterial(Fe, 1.0-waterfrac)
+    print "Atomic fractions in %s with water fraction %g %%:" % (FeWater.name, waterfrac*100), FeWater.GetAtomicFractions()
+    
 
 if __name__=="__main__":
     sys.exit(main())
