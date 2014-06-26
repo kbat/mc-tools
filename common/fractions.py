@@ -56,7 +56,11 @@ class Compound:
         for i,v in enumerate(af):
             af[i] = v/s
 
-        return dict(zip(iname, af)), sum(af)
+        return dict(zip(iname, af))
+
+    def PrintAtomicFractions(self):
+        for i,f in sorted(self.GetAtomicFractions().iteritems()):
+            print i,f
 
     def Print(self):
         print "Compound:", self.name
@@ -129,7 +133,7 @@ def main():
     water.AddIsotope(H, 2)
     water.AddIsotope(O, 1)
 
-    waterfrac = 0.5
+    waterfrac = 0.1
     BeWater = Compound("BeH2O")
     BeWater.AddMaterial(water, waterfrac)
     BeWater.AddMaterial(beryllium, 1.0-waterfrac)
@@ -151,7 +155,8 @@ def main():
     FeWater = Compound("FeH2O")
     FeWater.AddMaterial(water, waterfrac)
     FeWater.AddMaterial(Fe, 1.0-waterfrac)
-    print "Atomic fractions in %s with water fraction %g %%:" % (FeWater.name, waterfrac*100), FeWater.GetAtomicFractions()
+    print "Atomic fractions in %s with water fraction %g %%:" % (FeWater.name, waterfrac*100)
+    FeWater.PrintAtomicFractions()
     
 
 if __name__=="__main__":
