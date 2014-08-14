@@ -169,8 +169,8 @@ class Angel:
                 elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                     self.Read1DHist(iline)
                     continue
-            elif re.search("'no. = ", line): # subtitles of 2D histogram
-                self.subtitles.append(string.join(line.split()[3:]).replace("\'", '').strip())
+            elif re.search("'no. =", line): # subtitles of 2D histogram
+                self.subtitles.append(string.join(line[line.find(',')+1:].split()).replace("\'", '').strip())
 
 #        print self.dict_edges_array
         if self.is1D():
