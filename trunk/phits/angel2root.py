@@ -32,6 +32,9 @@ SUBT = re.compile("""
 \)
 """, re.VERBOSE)
 
+#: a regular expression which describes the page-separating line.
+pageSepRE = re.compile("^[\s#]newpage:$")
+
 DEBUG = False
 #DEBUG = True
 
@@ -74,6 +77,14 @@ class Angel:
     fname_out = None
     def __init__(self, fname_in, fname_out):
 #        global DEBUG
+        #: a python list which contains the numbers of lines which separate
+        #: pages
+        pageSepLineLST = []
+        #: a list of tuples; each tuple contains the contents of a page.
+        pageLST = []
+        #: the number of ``newpage:``.
+        numNewpages = 0
+
         self.fname = fname_in
         file = open(self.fname)
         self.lines = tuple(file.readlines())
@@ -83,7 +94,34 @@ class Angel:
 
         ipage = -1
 
-        for iline, line in enumerate(self.lines, 0):
+        ##################################################
+        # scan whole the file and count the "^[\s#]newpage:$", 
+        ##################################################
+        for idx,line in enumerate(self.lines):
+            modLine = line.rstrip() # strip spaces/newlines at the right
+            if pageSepRE.search(modLine):
+                numNewpages += 1
+                pageSepLineLST.append(idx)
+        if DEBUG: print "pageSepLineLST: ", pageSepLineLST
+
+        ##################################################
+        # Separate each page into a tuple and
+        # store them into a list named 'pageLST'
+        ##################################################
+        #   the 1st page
+        pageLST.append( tuple( self.lines[:pageSepLineLST[0]] ) )
+        #   intermediate
+        for pageIdx in range(1,numNewpages):
+            pageLST.append(
+                self.lines[ pageSepLineLST[pageIdx-1]+1 :
+                            pageSepLineLST[pageIdx] ] )
+        #   the last page
+        pageLST.append( tuple( self.lines[pageSepLineLST[-1]+1:] ) )
+
+        ##################################################
+        # scan the first page and extract header information
+        ##################################################
+        for iline, line in enumerate(pageLST[0]):
             line.strip()
             if re.search("title = ", line):
                 words = line.split()
@@ -132,45 +170,61 @@ class Angel:
                 self.unit_title = string.join(words[6:])
                 if self.output_title != None: self.ztitle = self.output_title + " " + self.unit_title
                 continue
-            if re.search("newpage:", line):
-                ipage += 1
-#                if DEBUG: print "page: ", ipage
-                continue
-            elif re.search("^x:", line):
-                words = line.split()
-                self.xtitle = string.join(words[1:])
-                if DEBUG: print "xtitle:", self.xtitle
-                continue
-            elif re.search("^y:", line):
-                words = line.split()
-                self.ytitle = string.join(words[1:])
-                if DEBUG: print "ytitle:", self.ytitle
-                continue
-            elif re.search("^z:", line):
-                if not re.search("xorg", line):
-                    print line
-                    print "new graph - not yet implemented"
-                continue
-            elif re.search("^h", line):
-                if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
-                    if DEBUG: print "one dimentional graph section"
-                    self.Read1DHist(iline)
+         
+        ##################################################
+        # scan the remaining data pages one by one
+        # book and fill histograms
+        ##################################################
+        for npage in range(1, len(pageLST)):
+            # first scan: extract header info in advance to the data extraction
+            for iline, line in enumerate(pageLST[npage]):
+                line.strip()
+                if re.search("^x:", line):
+                    words = line.split()
+                    self.xtitle = string.join(words[1:])
+                    if DEBUG: print "xtitle:", self.xtitle
                     continue
-                elif re.search("h:              x", line):
-                    self.Read1DGraphErrors(iline)
+                elif re.search("^y:", line):
+                    words = line.split()
+                    self.ytitle = string.join(words[1:])
+                    if DEBUG: print "ytitle:", self.ytitle
                     continue
-                elif re.search("^h[2dc]:", line):
-                    if DEBUG:
-                        if re.search("^h2", line): print "h2: two dimentional contour plot section"
-                        if re.search("^hd", line): print "hd: two dimentional cluster plot section"
-                        if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
-                    self.Read2DHist(iline)
+                elif re.search("^z:", line):
+                    if not re.search("xorg", line):
+                        print line
+                        print "new graph - not yet implemented"
                     continue
-                elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
-                    self.Read1DHist(iline)
-                    continue
-            elif re.search("'no. =", line): # subtitles of 2D histogram
-                self.subtitles.append(string.join(line[line.find(',')+1:].split()).replace("\'", '').strip())
+                elif re.search("'no. =", line): # subtitles of 2D histogram
+                    self.subtitles.append(string.join(line[line.find(',')+1:].split()).replace("\'", '').strip())
+                    if DEBUG: print "subtitle:", self.subtitles
+
+            # second scan: extract data.
+            #              scan only within the current page, pass the corresponding
+            #              global line number for data decoding
+            for iline, line in enumerate(pageLST[npage]):
+                line.strip()
+                #: 'global' line number (not in the current page).
+                #: The counting of local line number (iline) start just after
+                #: the location of "^[\s#]newpage:$" and therefore '+1'
+                igline = iline + pageSepLineLST[npage-1] + 1
+                if re.search("^h", line):
+                    if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
+                        if DEBUG: print "one dimentional graph section"
+                        self.Read1DHist(igline)
+                        continue
+                    elif re.search("h:              x", line):
+                        self.Read1DGraphErrors(igline)
+                        continue
+                    elif re.search("^h[2dc]:", line):
+                        if DEBUG:
+                            if re.search("^h2", line): print "h2: two dimentional contour plot section"
+                            if re.search("^hd", line): print "hd: two dimentional cluster plot section"
+                            if re.search("^hc", line): print "hc: two dimentional colour cluster plot section"
+                        self.Read2DHist(igline)
+                        continue
+                    elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
+                        self.Read1DHist(igline)
+                        continue
 
 #        print self.dict_edges_array
         if self.is1D():
