@@ -373,7 +373,8 @@ class Angel:
             if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist]
             else: subtitle = ''
             self.FixTitles()
-            h = TH1F("h%d" % self.ihist, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
+            # self.ihist+1 - start from ONE as in Angel - easy to compare
+            h = TH1F("h%d" % (self.ihist+1), "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
             h.SetBit(TH1F.kIsAverage)
             self.ihist += 1
             for i in range(nbins):
@@ -420,7 +421,8 @@ class Angel:
             else: subtitle = ''
             self.FixTitles()
             g = TGraphErrors(npoints)
-            g.SetNameTitle("g%d" % self.ihist, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle))
+            # self.ihist+1 - start from ONE as in Angel - easy to compare
+            g.SetNameTitle("g%d" % (self.ihist+1), "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle))
             self.ihist += 1
             for i in range(npoints):
                 x = xarray[i]
