@@ -2,6 +2,7 @@
 
 # from scipy import constants
 import subprocess
+from math import sqrt
 
 def L2E(l, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0]):
     """
@@ -14,6 +15,16 @@ def L2E(l, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0])
     p = h/l
     energy = p*p/(2*m)
     return energy/e/1.0E+6
+
+def E2L(energy, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0]):
+    """
+    MeV to Angstrom converter
+    m = particle mass in kg
+    """
+    e = 1.602176565e-19 # constants.physical_constants['atomic unit of charge'][0]
+    h = 6.62606957e-34 # constants.physical_constants['Planck constant'][0]
+    l = h/sqrt(2*m*energy*e)*1.0E+7
+    return l
 
     
 def GetVariable(f, var):

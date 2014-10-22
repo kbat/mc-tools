@@ -5,6 +5,7 @@
 from mctools import Isotope, Material, Compound
 
 H = Isotope("01001.70c", 1.00794)
+D = Isotope("01002.70c", 2.01410178)
 O = Isotope("08016.70c", 15.999)
 Be = Isotope("04009.70c", 9.012)
 
@@ -31,6 +32,12 @@ water = Material("H2O", 1.0)
 water.AddIsotope(H, 2)
 water.AddIsotope(O, 1)
 
+D2O = Material("D2O", 1.107)
+D2O.AddIsotope(D, 2)
+D2O.AddIsotope(O, 1)
+D2O.Print()
+
+print "\n04010"
 waterfrac = 0.1
 BeWater = Compound("BeH2O")
 BeWater.AddMaterial(water, waterfrac)
@@ -38,6 +45,14 @@ BeWater.AddMaterial(beryllium, 1.0-waterfrac)
 #    BeWater.Print()
 print "Atomic fractions in %s with water vol fraction %g %%:" % (BeWater.name, waterfrac*100)
 BeWater.PrintAtomicFractions()
+
+print "\n04020"
+waterfrac = 0.1
+BeD2O10 = Compound("BeD2O10%")
+BeD2O10.AddMaterial(D2O, waterfrac)
+BeD2O10.AddMaterial(beryllium, 1.0-waterfrac)
+print "Atomic fractions in %s with D2O vol fraction %g %%:" % (BeD2O10.name, waterfrac*100)
+BeD2O10.PrintAtomicFractions()
 
 
 Fe = Material("Iron", 7.85)
@@ -68,13 +83,22 @@ print "Atomic fractions in %s with water vol fraction %g %%:" % (ZrWater.name, w
 ZrWater.PrintAtomicFractions()
 
 Lead = Material("Lead", 11.4)
-Lead.AddIsotope(Pb204)
-Lead.AddIsotope(Pb206)
-Lead.AddIsotope(Pb207)
-Lead.AddIsotope(Pb208)
+Lead.AddIsotope(Pb204, 1.4)
+Lead.AddIsotope(Pb206, 24.1)
+Lead.AddIsotope(Pb207, 22.1)
+Lead.AddIsotope(Pb208, 52.4)
 
+print "\n82010"
 PbWater = Compound("PbH2O")
 PbWater.AddMaterial(water, waterfrac)
 PbWater.AddMaterial(Lead, 1.0-waterfrac)
 print "Atomic fractions in %s with water vol fraction %g %%:" % (PbWater.name, waterfrac*100)
 PbWater.PrintAtomicFractions()
+
+print "\n82020"
+waterfrac = 0.1
+PbD2O = Compound("PbD2O20%")
+PbD2O.AddMaterial(D2O, waterfrac)
+PbD2O.AddMaterial(Lead, 1.0-waterfrac)
+print "Atomic fractions in %s with D2O vol fraction %g %%:" % (PbD2O.name, waterfrac*100)
+PbD2O.PrintAtomicFractions()
