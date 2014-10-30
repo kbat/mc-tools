@@ -5,7 +5,7 @@ from ROOT import ROOT, TFile, TH1, TH2, TH3
 
 
 def main():
-    """ See also the Print(TObject *) function in .rootalias"""
+    """ Converts TH[12] and TGraphErrors into ASCII format"""
     fname = argv[1]
     hname = argv[2]
 
@@ -14,8 +14,11 @@ def main():
     print "#", h.GetName(), h.GetTitle()
     print "#", h.GetXaxis().GetTitle()
     print "#", h.GetYaxis().GetTitle()
-    print "#", h.GetZaxis().GetTitle()
-    print "# xmin xmax y y_rel_error"
+    if h.InheritsFrom("TH1") or h.InheritsFrom("TH2"):
+        print "#", h.GetZaxis().GetTitle()
+        print "# xmin xmax y y_rel_error"
+    elif h.InheritsFrom("TGraph"):
+        print "# x x_abs_err y y_abs_err"
 
     if h.InheritsFrom("TH2"):
         nbinsx, nbinsy = h.GetNbinsX(), h.GetNbinsY()
@@ -35,6 +38,10 @@ def main():
             error = 0.0
             if h.GetBinContent(bin) != 0:  error = h.GetBinError(bin) / h.GetBinContent(bin)
             print h.GetBinLowEdge(bin), h.GetBinLowEdge(bin+1), h.GetBinContent(bin), error
+    elif h.InheritsFrom("TGraph"):
+        n = h.GetN()
+        for i in range(n):
+            print i, h.GetX()[i], h.GetEX()[i], h.GetY()[i], h.GetEY()[i]
 
 if __name__ == "__main__":
     exit(main())
