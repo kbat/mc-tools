@@ -7,10 +7,13 @@
 #  Usage: angel2root.py file.dat
 #
 
-import sys, re, string
+import sys, re, string, argparse
 from array import array
 from phits import TallyOutputParser
 import ROOT
+# The line below is needed to prevent command-line arguments from
+# stolen by PyROOT and handed to TApplication
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray, TGraphErrors
 
 """
@@ -75,7 +78,7 @@ class Angel:
     histos = TObjArray()
     ihist = 0 # histogram number - must start from ZERO
     fname_out = None
-    def __init__(self, fname_in, fname_out):
+    def __init__(self, fname_in, fname_out, **kwargs):
 #        global DEBUG
         #: a python list which contains the numbers of lines which separate
         #: pages
@@ -91,6 +94,7 @@ class Angel:
         file.close()
 
         self.fname_out = fname_out
+        self.avBitSet = kwargs["avBitSet"]
 
         ipage = -1
 
@@ -375,7 +379,8 @@ class Angel:
             self.FixTitles()
             # self.ihist+1 - start from ONE as in Angel - easy to compare
             h = TH1F("h%d" % (self.ihist+1), "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
-            h.SetBit(TH1F.kIsAverage)
+            if self.avBitSet:
+                h.SetBit(TH1F.kIsAverage)
             self.ihist += 1
             for i in range(nbins):
                 val = data[ihist][i]
@@ -584,17 +589,23 @@ def main():
     """
     angel2root - ANGEL to ROOT converter
     """
-    verbose = '-v' in sys.argv
-    if verbose:
-        sys.argv.remove("-v")
+    parser = argparse.ArgumentParser(
+        description="angel2root - ANGEL to ROOT converter.")
+    parser.add_argument("-a", "--average", action="store_true",
+                        help="set the TH1.kIsAverage bit for averaging")
+    parser.add_argument("infilename", action="store", nargs=1, type=str,
+                        help="input ANGEL filename")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="verbose output (not yet implemented)")
+    args = parser.parse_args()
 
-    fname_in = sys.argv[1]
+    fname_in = args.infilename[0]
     fname_out = re.sub("\....$", ".root", fname_in)
     if fname_in == fname_out:
         fname_out = fname_in + ".root"
     print fname_in, "->" ,fname_out
 
-    angel =  Angel(fname_in, fname_out)
+    angel =  Angel(fname_in, fname_out,avBitSet=args.average)
     
     return angel.return_value
 
