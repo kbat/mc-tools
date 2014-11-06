@@ -1,22 +1,6 @@
 #! /usr/bin/python
 import re
 
-def getParCL(masterfile, parname, pos=2):
-    """
-    Return parameter 'parname' from MCNP master file 'masterfile' (the syntax of CombLayer is assumed)
-    pos - optional argument, specifies the position of the value in the THEparname string
-    """
-    f = open(masterfile)
-    val = ""
-    for line in f.readlines():
-        if re.search("\Ac %s" % parname, line, re.IGNORECASE):
-            print line.strip(), val
-            val = float(line.split()[pos])
-    f.close()
-    if val is "":
-        raise IOError("Value of %s not found in %s" % (parname, masterfile))
-    return val
-
 def getPar(masterfile, parname, pos=3):
     """
     Return parameter 'parname' from MCNP master file 'masterfile' (the syntax of pstudy is assumed)
