@@ -1,7 +1,7 @@
 #How to install/uninstall mc-tools using PIP or SETUPTOOLS.
 
 = Installation/Uninstallation using PIP =
-`#' stands for the prompt for superuser, `$' that for ordinary user.
+{{{#}}} stands for the prompt for superuser, {{{$}}} that for ordinary user.
 
 == Installation ==
 {{{
