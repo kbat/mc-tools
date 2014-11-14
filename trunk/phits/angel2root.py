@@ -471,7 +471,7 @@ class Angel:
             ymin,ymax = ymin-dy/2.0,ymax+dy/2.0
         else:
             ymin,ymax = ymax-dy/2.0, ymin+dy/2.0
-        ny = int((ymax-ymin)/dy)
+        ny = int(round((ymax-ymin)/dy))
         if DEBUG: print "y:", dy, ymin, ymax, ny
 
         dx = float(words[13])
@@ -481,7 +481,8 @@ class Angel:
             xmin,xmax = xmin-dx/2.0,xmax+dx/2.0
         else:
             xmin,xmax = xmax-dx/2.0, xmin+dx/2.0
-        nx = int((xmax-xmin)/dx)
+        nx = int(round((xmax-xmin)/dx))
+        if DEBUG: print "x:", dx, xmin, xmax, nx
 
         data = []
         for line in self.lines[iline+1:]:
