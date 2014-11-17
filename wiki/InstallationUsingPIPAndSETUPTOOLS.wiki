@@ -5,7 +5,7 @@
 
 == Installation ==
 {{{
-# pip install http://mc-tools.googlecode.com/svn/trunc#egg=mc-tools
+# pip install http://mc-tools.googlecode.com/svn/trunk#egg=mc-tools
 }}}
 == List the installed files ==
 {{{
