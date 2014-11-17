@@ -39,3 +39,11 @@ Console scripts such as angel2root are in e.g. /usr/bin.
 I (K.F) _believe_ you can delete the files by the following procedure;
   # remove the console scripts listed in the 'entry_points.txt' file in the egg directory,
   # remove the egg directory itself.
+
+= Installation/Uninstallation using windows installers created w/ SETUPTOOLS =
+After downloading the files with subversion and moving to the directory where the files reside, do the following to create a windows installer:
+{{{
+# python setup.py bdist_wininst
+}}}
+
+The installer is in {{{dist}}} folder.  Install it.  Follow the usual procedure to uninstall it.
