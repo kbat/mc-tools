@@ -1,6 +1,7 @@
 #!/usr/bin/python -W all
 
 import sys, argparse, string
+from os import path
 from mctal import MCTAL
 import numpy as np
 import ROOT
@@ -14,6 +15,10 @@ parser.add_argument('root_file', type=str, nargs='?', help='the name of the outp
 parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
 arguments = parser.parse_args()
+
+if not path.isfile(arguments.mctal_file):
+	print >> sys.stderr, "mctal2root: File %s does not exist." % arguments.mctal_file
+	sys.exit(1)
 
 m = MCTAL(arguments.mctal_file,arguments.verbose)
 
