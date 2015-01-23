@@ -4,19 +4,6 @@
 import subprocess
 from math import sqrt
 
-def getIntegral(fname, tname, axis, bmin, bmax):
-    """
-    Return integral and error of a projection of THnSparseF
-    """
-    f = TFile(fname)
-    t = f.Get(tname)
-    h = t.Projection(axis)
-    val = 0
-    err = Double(0)
-    val = h.IntegralAndError(bmin, bmax, err)
-    return Double(val), Double(err)
-
-
 def L2E(l, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0]):
     """
     Angstrom to MeV converter.
