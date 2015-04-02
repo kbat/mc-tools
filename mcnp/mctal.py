@@ -1,11 +1,6 @@
 #!/usr/bin/python -W all
 #
-# mctal reading script by Nicolo' Borghi
-# Started on 04/12/2013 at ESS Lund
-# based on scripts developed by the author,
-# Dr. Gallmeier and Dr. Batkov
-#
-#
+# Classes to read MCTAL files
 
 import sys, re, string, math
 import numpy as np
