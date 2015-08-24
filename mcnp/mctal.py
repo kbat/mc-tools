@@ -1,6 +1,11 @@
 #!/usr/bin/python -W all
 #
-# Classes to read MCTAL files
+# mctal reading script by Nicolo' Borghi
+# Started on 04/12/2013 at ESS Lund
+# based on scripts developed by the author,
+# Dr. Gallmeier and Dr. Batkov
+#
+#
 
 import sys, re, string, math
 import numpy as np
@@ -378,7 +383,7 @@ class Tally:
 				if self.radiograph:
 					return self.cos
 				else:
-					first = self.cos[0] - 1.
+					first = -1.
 					return np.append([first], self.cos)
 
 		if axis == "e":
