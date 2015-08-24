@@ -77,7 +77,7 @@ def main():
         T.Fill()
 
     T.Print()
-    T.SetAlias("theta", "TMath::RadToDeg()*(TMath::ATan2(x,z) > 0 ? TMath::ATan2(x,z) : 2*TMath::Pi()+TMath::ATan2(x,z))");
+    T.SetAlias("theta", "TMath::RadToDeg()*(TMath::ATan2(x,y) > 0 ? TMath::ATan2(x,y) : 2*TMath::Pi()+TMath::ATan2(x,y))");
     T.SetAlias("i","TMath::Nint(TMath::Abs(id/1E+6))"); # tmp for particle type
     T.SetAlias("JGP","-TMath::Nint(i/200.0)");         # energy group
     T.SetAlias("JC","TMath::Nint(i/100.0) + 2*JGP");   #
