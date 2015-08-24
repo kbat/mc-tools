@@ -1,6 +1,6 @@
 #! /usr/bin/python
-# $Id$
-# $URL$
+# $Id: ssw2root.py 250 2015-05-04 09:35:55Z batkov $
+# $URL: https://mc-tools.googlecode.com/svn/trunk/mcnp/ssw2root.py $
 
 import sys, argparse
 from ssw import SSW
@@ -85,7 +85,8 @@ def main():
     T.SetAlias("wz", "TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id)") # z-direction cosine
     T.SetAlias("surface", "TMath::Abs(id) % 1000000") # surface crossed
     T.Write()
-
+    fout.Purge()
+    fout.Close()
 
 if __name__ == "__main__":
 	sys.exit(main())
