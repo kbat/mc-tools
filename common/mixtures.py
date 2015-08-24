@@ -4,10 +4,12 @@
 
 from mctools import Isotope, Material, Compound
 
-H = Isotope("01001.70c", 1.00794)
-D = Isotope("01002.70c", 2.01410178)
-O = Isotope("08016.70c", 15.999)
-Be = Isotope("04009.70c", 9.012)
+H   = Isotope("01001.70c", 1.00794)
+D   = Isotope("01002.70c", 2.01410178)
+He3 = Isotope("02003.70c", 3.0160293)
+He4 = Isotope("02004.70c", 4.002602)
+O   = Isotope("08016.70c", 15.999)
+Be  = Isotope("04009.70c", 9.012)
 
 Fe54 = Isotope("26054.70c", 53.9396127)
 Fe56 = Isotope("26056.70c", 55.9349393)
@@ -37,8 +39,8 @@ D2O.AddIsotope(D, 2)
 D2O.AddIsotope(O, 1)
 D2O.Print()
 
-print "\n04010"
-waterfrac = 0.1
+print "\n04005"
+waterfrac = 0.05
 BeWater = Compound("BeH2O")
 BeWater.AddMaterial(water, waterfrac)
 BeWater.AddMaterial(beryllium, 1.0-waterfrac)
@@ -102,3 +104,9 @@ PbD2O.AddMaterial(D2O, waterfrac)
 PbD2O.AddMaterial(Lead, 1.0-waterfrac)
 print "Atomic fractions in %s with D2O vol fraction %g %%:" % (PbD2O.name, waterfrac*100)
 PbD2O.PrintAtomicFractions()
+
+print "\nHelium"
+Helium = Material("Helium", 0.1786E-3)
+Helium.AddIsotope(He3, 0.00000137)
+Helium.AddIsotope(He4, 0.99999863)
+Helium.Print()
