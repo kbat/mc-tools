@@ -60,6 +60,7 @@ class SSW:
 
         self.nrcd = 0 # length of ssb-array (?) = evtl+1 (?)
         self.nrcdo = 0
+	self.N = 0 # number of incident particles
 
 #     Structure of SSB-Arrays -- see Harold Breitkreutz thesis for details
         self.ssb  = [] # 11   Surface-Source info
@@ -137,6 +138,7 @@ class SSW:
 	else:
 		unsupported()
 
+	self.N = abs(np1)
 	print("number of incident particles:\t%i" % abs(np1))
 	print("number of tracks:\t%i" % nrss)
 	print("length of ssb array:\t%i" % self.nrcd)
