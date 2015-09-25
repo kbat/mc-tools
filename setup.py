@@ -34,10 +34,10 @@ setup(
     name = "mc_tools",
     version = rev,
     author = "Konstantin Batkov",
-    author_email = "mc-tools@lizardie.com",
-    url = "https://code.google.com/p/mc-tools/",
-    license = "GNU General Public License, version 2",
-    description = "Some Monte Carlo tools.",
+    author_email = "batkov@gmail.com",
+    url = "https://github.com/kbat/mc-tools/",
+    license = "BSD License",
+    description = "Some Monte Carlo tools",
 
     packages = find_packages(),
     # The 'install_requires' line commented because
