@@ -9,7 +9,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 sys.path.insert(1, '@pythondir@')
 
 parser = argparse.ArgumentParser(description="A mctal to ROOT conversion script.", 
-				 epilog="Homepage: http://code.google.com/p/mc-tools")
+				 epilog="Homepage: https://github.com/kbat/mc-tools")
 parser.add_argument('mctal_file', type=str, help='the name of the mctal file to be converted')
 parser.add_argument('root_file', type=str, nargs='?', help='the name of the output ROOT file', default="")
 parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')

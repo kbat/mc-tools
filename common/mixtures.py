@@ -1,6 +1,6 @@
 #! /usr/bin/python -W all
 # Some examples of calculation of atomic fractions for given volume fractions
-# http://mc-tools.googlecode.com
+# https://github.com/kbat/mc-tools
 
 from mctools import Isotope, Material, Compound
 

@@ -3,7 +3,7 @@
 Source: mctal2root
 Section: misc
 Priority: optional
-Homepage: http://code.google.com/p/mc-tools
+Homepage: https://github.com/kbat/mc-tools
 Standards-Version: 3.9.2
 
 Package: mctal2root

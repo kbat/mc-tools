@@ -9,7 +9,7 @@ def main():
 	Exit status is 0 if both files are the same, 1 if different.
 	"""
 	
-	parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: http://code.google.com/p/mc-tools")
+	parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: https://github.com/kbat/mc-tools")
 	parser.add_argument('mctal_file', type=str, help='The name (and path) to the mctal file to be converted')
 	parser.add_argument('root_file', type=str, nargs='?', help='The name of the converted ROOT file', default="")
 	parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='Explain what is being done')

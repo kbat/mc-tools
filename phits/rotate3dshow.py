@@ -17,7 +17,7 @@
 #      for creating an animation of e-phi rotation with 10 frames based on 
 #      the PHITS input file 'phits.in' and save it in a GIF file '3dshow.gif'
 #
-# http://code.google.com/p/mc-tools
+# https://github.com/kbat/mc-tools
 
 
 import re, sys, string, argparse, os
@@ -39,7 +39,7 @@ def main():
         phits_default = 'c:/phits/bin/phits_c.exe' # !!! should use just phits.exe here and set correct PATH
         convert_default = 'convert.exe'
 
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: http://code.google.com/p/mc-tools", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: https://github.com/kbat/mc-tools", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('parameter', type=str, help='Parameter to rotate', choices=allowed_parameters) #, metavar='(e-the|e-phi)')
     parser.add_argument('nimages', type=int, default='10', help='Number of images per full revolution (360 deg) of selected parameter')
     parser.add_argument('input_file', type=argparse.FileType('rt'), help='PHITS input file')
