@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os, subprocess, sqlite3
+import sys, os, subprocess
 
 # prepare setuptools environment
 try:
@@ -18,21 +18,9 @@ except ImportError:
         print "place it in the same directory as setup.py, and try again... "
         sys.exit(1)
 
-# get the revision number of the WC using sqlite3
-# prep = '_' if sys.platform == "win32" and os.getenv("SVN_ASP_DOT_NET_HACK") \
-#        else '.'
-# SVNWCDBPATH = prep + "svn/wc.db"
-SVNWCDBPATH = ('_' if sys.platform == "win32" and
-               os.getenv("SVN_ASP_DOT_NET_HACK") else '.') + "svn/wc.db"
-curs = sqlite3.connect(SVNWCDBPATH).cursor()
-rev = "r%d" % curs.execute("select MAX(revision) from NODES "
-                           "where"
-                           " presence IN ('normal', 'incomplete')"
-                           " AND file_external is NULL"
-                           " AND op_depth=0").fetchone()
 setup(
-    name = "mc_tools",
-    version = rev,
+    name = "mc-tools",
+    version = os.popen("git describe --tags --long").read().strip(),
     author = "Konstantin Batkov",
     author_email = "batkov@gmail.com",
     url = "https://github.com/kbat/mc-tools/",
