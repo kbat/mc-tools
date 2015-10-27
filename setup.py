@@ -52,21 +52,21 @@ setup(
     entry_points = {
         "console_scripts" : [
             # COMMON
-            "ascii2gr     = common.ascii2gr:main",
-            "ascii2th1    = common.ascii2th1:main",
-            "ascii2th3    = common.ascii2th3:main",
-            "ascii2tree   = common.ascii2tree:main",
-            "h2ascii      = common.h2ascii:main",
-            "hadd_av      = common.hadd_av:main",
-            "scale_hist   = common.scale_hist:main",
+            "ascii2gr     = mc_tools.common.ascii2gr:main",
+            "ascii2th1    = mc_tools.common.ascii2th1:main",
+            "ascii2th3    = mc_tools.common.ascii2th3:main",
+            "ascii2tree   = mc_tools.common.ascii2tree:main",
+            "h2ascii      = mc_tools.common.h2ascii:main",
+            "hadd_av      = mc_tools.common.hadd_av:main",
+            "scale_hist   = mc_tools.common.scale_hist:main",
             # FLUKA
-            "usxsuw2txt   = fluka.usxsuw2txt:main",
+            "usxsuw2txt   = mc_tools.fluka.usxsuw2txt:main",
             # MCNP
-            "mcnp_source  = mcnp.mcnp_source:main",
-            "mctaltest    = mcnp.mctaltest:main",
-            "roottest     = mcnp.roottest:main",
-            "ssw2root     = mcnp.ssw2root:main",
-            "ssw2txt      = mcnp.ssw2txt:main",
+            "mcnp_source  = mc_tools.mcnp.mcnp_source:main",
+            "mctaltest    = mc_tools.mcnp.mctaltest:main",
+            "roottest     = mc_tools.mcnp.roottest:main",
+            "ssw2root     = mc_tools.mcnp.ssw2root:main",
+            "ssw2txt      = mc_tools.mcnp.ssw2txt:main",
             # PHITS
             "angel2root   = mc_tools.phits.angel2root:main",
             "rotate3dshow = mc_tools.phits.rotate3dshow:main",
