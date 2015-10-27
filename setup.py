@@ -19,7 +19,7 @@ except ImportError:
         sys.exit(1)
 
 setup(
-    name = "mc-tools",
+    name = "mc_tools",
     version = os.popen("git describe --tags --long").read().strip(),
     author = "Konstantin Batkov",
     author_email = "batkov@gmail.com",
@@ -36,15 +36,18 @@ setup(
     # install_requires = [ "numpy" ],
     data_files = [
         # MCNP
-        ("mcnp", [ "mcnp/AUTHORS",      "mcnp/ChangeLog",
-                   "mcnp/configure.ac", "mcnp/Doxyfile",
-                   "mcnp/Makefile.am",  "mcnp/mctal2root.ctl",
-                   "mcnp/NEWS",         "mcnp/README",
-                   "mcnp/reference_guide.pdf" ]),
-        ("mcnp/examples",  [ "mcnp/examples/ssw2root/example.C" ]),
+        ("mcnp", [ "mc_tools/mcnp/AUTHORS",      "mc_tools/mcnp/ChangeLog",
+                   "mc_tools/mcnp/configure.ac", "mc_tools/mcnp/Doxyfile",
+                   "mc_tools/mcnp/Makefile.am",  "mc_tools/mcnp/mctal2root.ctl",
+                   "mc_tools/mcnp/NEWS",         "mc_tools/mcnp/README",
+                   "mc_tools/mcnp/reference_guide.pdf" ]),
+        ("mc_tools/mcnp/examples",
+         [ "mc_tools/mcnp/examples/ssw2root/example.C" ]),
         # PHITS
-        ("phits/examples", [ "phits/examples/loadlevel-single.job" ]),
-        ("phits/elisp",    [ "phits/phits-mode.el" ])
+        ("mc_tools/phits/examples",
+         [ "mc_tools/phits/examples/loadlevel-single.job" ]),
+        ("mc_tools/phits/elisp",
+         [ "mc_tools/phits/phits-mode.el" ])
     ],
     entry_points = {
         "console_scripts" : [
@@ -65,20 +68,20 @@ setup(
             "ssw2root     = mcnp.ssw2root:main",
             "ssw2txt      = mcnp.ssw2txt:main",
             # PHITS
-            "angel2root   = phits.angel2root:main",
-            "rotate3dshow = phits.rotate3dshow:main",
-            "wwinp2phits  = phits.wwinp2phits:main"
+            "angel2root   = mc_tools.phits.angel2root:main",
+            "rotate3dshow = mc_tools.phits.rotate3dshow:main",
+            "wwinp2phits  = mc_tools.phits.wwinp2phits:main"
         ]
     },
     # other executable scripts
     scripts = [
         # COMMON
-        "common/ll-self-submit.sh",
+        "mc_tools/common/ll-self-submit.sh",
         # MCNP
-        "mcnp/conversiontest.sh", "mcnp/loop_convert.sh",
-        "mcnp/loop_test.sh",
+        "mc_tools/mcnp/conversiontest.sh", "mc_tools/mcnp/loop_convert.sh",
+        "mc_tools/mcnp/loop_test.sh",
         # PHITS
-        "phits/epsout.sh", "phits/phits-set-n.sh",
-        "phits/submit.py"
+        "mc_tools/phits/epsout.sh", "mc_tools/phits/phits-set-n.sh",
+        "mc_tools/phits/submit.py"
     ],
 )
