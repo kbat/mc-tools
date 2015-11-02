@@ -63,6 +63,7 @@ setup(
             "usxsuw2txt   = mc_tools.fluka.usxsuw2txt:main",
             # MCNP
             "mcnp_source  = mc_tools.mcnp.mcnp_source:main",
+            "mctal2root   = mc_tools.mcnp.mctal2root:main",
             "ssw2root     = mc_tools.mcnp.ssw2root:main",
             "ssw2txt      = mc_tools.mcnp.ssw2txt:main",
             # PHITS
