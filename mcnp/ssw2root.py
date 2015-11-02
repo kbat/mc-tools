@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # $Id: ssw2root.py 250 2015-05-04 09:35:55Z batkov $
-# $URL: https://mc-tools.googlecode.com/svn/trunk/mcnp/ssw2root.py $
+# $URL: https://github.com/kbat/mc-tools/blob/master/mcnp/ssw2root.py $
 
 import sys, argparse
 from ssw import SSW
@@ -30,7 +30,7 @@ def main():
     """
 
     allowed_splitlevels = (1, 99)
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: http://code.google.com/p/mc-tools')
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools')
     parser.add_argument('-splitlevel', dest='splitlevel', type=int, help='split level (see TTree::Branch documentation)', required=False, default=1, choices=allowed_splitlevels)
     parser.add_argument('wssa', type=str, help='ssw output file name')
     arguments = parser.parse_args()

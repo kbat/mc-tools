@@ -212,7 +212,7 @@ def main():
     It is assumed that different graphs are separated by an empty line. In this case a sequental prefix is appended to the graph's names.
     """
     
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: http://code.google.com/p/mc-tools')
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools')
     parser.add_argument('-x',  dest='colx',  type=int, help='x-column number (columns start from ONE)', required=True)
     parser.add_argument('-ex', dest='colex', type=int, help='ex-column number')
     parser.add_argument('-y',  dest='coly',  type=int, help='y-column number', required=True)

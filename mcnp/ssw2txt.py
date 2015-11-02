@@ -19,7 +19,7 @@ def main():
     """
 
     allowed_splitlevels = (1, 99)
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: http://code.google.com/p/mc-tools', formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools', formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('wssa', type=str, help='ssw output file name')
     arguments = parser.parse_args()
 
