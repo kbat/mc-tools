@@ -62,6 +62,7 @@ Some Monte Carlo tools.
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
 
 ## Installation ##
+Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
 
 1. Get the mc-tools source code:  
 ```git clone https://github.com/kbat/mc-tools.git```
