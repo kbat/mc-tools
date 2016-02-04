@@ -63,6 +63,17 @@ Project homepage: https://github.com/kbat/mc-tools
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
 
+## Requirements ##
+1. Python. Versions >= 3 are not supported.
+2. If you are going to use the ROOT-related scripts (such as mctal2root,
+   ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
+   to be compiled with Python support. Follow
+   [this manual](http://root.cern.ch/drupal/content/pyroot) for more
+   details. To check whether the Python
+   support is set up correctly, say   
+   ```import ROOT```  
+   in the Python shell. You should not see any error messages.
+
 ## Installation ##
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
 
@@ -85,15 +96,7 @@ Uninstall: ```pip uninstall mc-tools```.
 3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
 ```export PYTHONPATH=$MCTOOLS/phits:$MCTOOLS/mcnp:$PYTHONPATH```
-4. If you are going to use the ROOT-related scripts (such as mctal2root,
-   ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
-   to be compiled with Python support. Follow
-   [this manual](http://root.cern.ch/drupal/content/pyroot) for more
-   details. Otherwise you can skip this step. To check whether the Python
-   support is set up correctly, say   
-   ```import ROOT```  
-   in the Python shell. You should not see any error messages.
-5. Add the folders with necessary scripts in your $PATH or create symblinks to these scrips:
+4. Add the folders with necessary scripts in your $PATH or create symblinks to these scrips:
 ```export PATH=$MCTOOLS/mcnp:$PATH``` or
 ```ln -s $MCTOOLS/mcnp/mctal2root.py ~/bin/mctal2root```
 
