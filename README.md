@@ -1,5 +1,5 @@
 # mc-tools
-Some Monte Carlo tools.
+Some Monte Carlo tools for MCNP(X), PHITS and FLUKA
 
 Project homepage: https://github.com/kbat/mc-tools
 
