@@ -64,8 +64,8 @@ Project homepage: https://github.com/kbat/mc-tools
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
 
 ## Requirements ##
-1. Python. Versions >= 3 are not supported.
-2. If you are going to use the ROOT-related scripts (such as mctal2root,
+* Python. Versions >= 3 are not supported.
+* If you are going to use the ROOT-related scripts (such as mctal2root,
    ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
    to be compiled with Python support. Follow
    [this manual](http://root.cern.ch/drupal/content/pyroot) for more
