@@ -61,7 +61,7 @@ Project homepage: https://github.com/kbat/mc-tools
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
-    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
+    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
 
 ## Requirements ##
 * Python. Versions >= 3 are not supported.
