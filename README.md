@@ -66,6 +66,8 @@ Linux and MacOS are supported. However, we never tried yet to use these tools on
 
 ### System-wide installation ###
 ```pip install git+https://github.com/kbat/mc-tools.git```
+You have to be root either use ```--target``` argument to specify the folder. Read ```man pip``` for details.
+Uninstall: ```pip uninstall mc-tools```.
 
 ### Developer and per-user installation ###
 
