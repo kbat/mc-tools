@@ -64,11 +64,16 @@ Some Monte Carlo tools.
 ## Installation ##
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
 
+### System-wide installation ###
+```pip install git+https://github.com/kbat/mc-tools.git```
+
+### Developer and per-user installation ###
+
 1. Get the mc-tools source code:  
 ```git clone https://github.com/kbat/mc-tools.git```
 2. Set the variable MCTOOLS to the folder where you have installed the
    code. For instance:   
-```export MCTOOLS=/path/to/mc-tools```
+```export MCTOOLS=/path/to/mc-tools/mctools```
 3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
 ```export PYTHONPATH=$MCTOOLS/phits:$MCTOOLS/mcnp:$PYTHONPATH```
@@ -80,10 +85,13 @@ Linux and MacOS are supported. However, we never tried yet to use these tools on
    support is set up correctly, say   
    ```import ROOT```  
    in the Python shell. You should not see any error messages.
+5. Add the folders with necessary scripts in your $PATH or create symblinks to these scrips:
+   ```export PATH=$MCTOOLS/mcnp:$PATH``` or ```ln -s $MCTOOLS/mcnp/mctal2root.py ~/bin/mctal2root```
 
 
 ### Contacts ###
 e-mail: `batkov [аt] gmail.com`
 
 ### See also ###
-[http://pyne.io](http://pyne.io)
+[http://pyne.io](PyNE)
+[https://github.com/SAnsell/CombLayer](CombLayer)
