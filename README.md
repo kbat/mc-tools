@@ -104,6 +104,6 @@ e-mail: `batkov [аt] gmail.com`
 List of authors: Nicolò Borghi, Kazuyoshi Furutaka, Konstantin Batkov
 
 ### See also ###
-[http://pyne.io](PyNE)
+http://pyne.io
 
-[https://github.com/SAnsell/CombLayer](CombLayer)
+https://github.com/SAnsell/CombLayer
