@@ -1,6 +1,8 @@
 # mc-tools
 Some Monte Carlo tools.
 
+Project homepage: https://github.com/kbat/mc-tools
+
 * MСNР(Х)
   * An implementation of application programming interface (API) to
     read tallies from **mctal** files into a
@@ -83,7 +85,7 @@ Uninstall: ```pip uninstall mc-tools```.
 3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
 ```export PYTHONPATH=$MCTOOLS/phits:$MCTOOLS/mcnp:$PYTHONPATH```
-4. If you are going to use ROOT-related scripts (such as mctal2root,
+4. If you are going to use the ROOT-related scripts (such as mctal2root,
    ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
    to be compiled with Python support. Follow
    [this manual](http://root.cern.ch/drupal/content/pyroot) for more
@@ -99,6 +101,9 @@ Uninstall: ```pip uninstall mc-tools```.
 ### Contacts ###
 e-mail: `batkov [аt] gmail.com`
 
+List of authors: Nicolò Borghi, Kazuyoshi Furutaka, Konstantin Batkov
+
 ### See also ###
 [http://pyne.io](PyNE)
+
 [https://github.com/SAnsell/CombLayer](CombLayer)
