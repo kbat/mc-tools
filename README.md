@@ -73,8 +73,10 @@ Uninstall: ```pip uninstall mc-tools```.
 
 ### Developer and per-user installation ###
 
-1. Get the mc-tools source code:  
+1. Get the source code:  
 ```git clone https://github.com/kbat/mc-tools.git```
+
+   Now you need to adjust the $PYTHONPATH and $PATH variables for your system. You can do it as you like. The following steps describe an example how to do it.
 2. Set the variable MCTOOLS to the folder where you have installed the
    code. For instance:   
 ```export MCTOOLS=/path/to/mc-tools/mctools```
