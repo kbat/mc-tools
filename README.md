@@ -77,7 +77,8 @@ Project homepage: https://github.com/kbat/mc-tools
 ## Installation ##
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
 
-### System-wide installation ###
+### System-wide installation with pip ###
+In order to use pip, you need to have the python-setuptools and python-pip modules installed on your system.
 ```pip install git+https://github.com/kbat/mc-tools.git```
 
 You have to be either root or use ```--target``` argument to specify the folder. Read ```man pip``` for details.
