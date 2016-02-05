@@ -1,4 +1,7 @@
 #!/usr/bin/python -W all
+#
+# https://github.com/kbat/mc-tools
+#
 
 import sys, argparse, string
 from os import path

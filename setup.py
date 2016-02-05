@@ -19,7 +19,7 @@ except ImportError:
         sys.exit(1)
 
 setup(
-    name = "mc_tools",
+    name = "mctools",
     version = os.popen("git describe --tags --long").read().strip(),
     author = "Konstantin Batkov",
     author_email = "batkov@gmail.com",
@@ -36,51 +36,51 @@ setup(
     # install_requires = [ "numpy" ],
     data_files = [
         # MCNP
-        ("mcnp", [ "mc_tools/mcnp/AUTHORS",      "mc_tools/mcnp/ChangeLog",
-                   "mc_tools/mcnp/configure.ac", "mc_tools/mcnp/Doxyfile",
-                   "mc_tools/mcnp/Makefile.am",  "mc_tools/mcnp/mctal2root.ctl",
-                   "mc_tools/mcnp/NEWS",         "mc_tools/mcnp/README",
-                   "mc_tools/mcnp/reference_guide.pdf" ]),
-        ("mc_tools/mcnp/examples",
-         [ "mc_tools/mcnp/examples/ssw2root/example.C" ]),
+        ("mcnp", [ "mctools/mcnp/AUTHORS",      "mctools/mcnp/ChangeLog",
+                   "mctools/mcnp/configure.ac", "mctools/mcnp/Doxyfile",
+                   "mctools/mcnp/Makefile.am",  "mctools/mcnp/mctal2root.ctl",
+                   "mctools/mcnp/NEWS",         "mctools/mcnp/README",
+                   "mctools/mcnp/reference_guide.pdf" ]),
+        ("mctools/mcnp/examples",
+         [ "mctools/mcnp/examples/ssw2root/example.C" ]),
         # PHITS
-        ("mc_tools/phits/examples",
-         [ "mc_tools/phits/examples/loadlevel-single.job" ]),
-        ("mc_tools/phits/elisp",
-         [ "mc_tools/phits/phits-mode.el" ])
+        ("mctools/phits/examples",
+         [ "mctools/phits/examples/loadlevel-single.job" ]),
+        ("mctools/phits/elisp",
+         [ "mctools/phits/phits-mode.el" ])
     ],
     entry_points = {
         "console_scripts" : [
             # COMMON
-            "ascii2gr     = mc_tools.common.ascii2gr:main",
-            "ascii2th1    = mc_tools.common.ascii2th1:main",
-            "ascii2th3    = mc_tools.common.ascii2th3:main",
-            "ascii2tree   = mc_tools.common.ascii2tree:main",
-            "h2ascii      = mc_tools.common.h2ascii:main",
-            "hadd_av      = mc_tools.common.hadd_av:main",
-            "scale_hist   = mc_tools.common.scale_hist:main",
+            "ascii2gr     = mctools.common.ascii2gr:main",
+            "ascii2th1    = mctools.common.ascii2th1:main",
+            "ascii2th3    = mctools.common.ascii2th3:main",
+            "ascii2tree   = mctools.common.ascii2tree:main",
+            "h2ascii      = mctools.common.h2ascii:main",
+            "hadd_av      = mctools.common.hadd_av:main",
+            "scale_hist   = mctools.common.scale_hist:main",
             # FLUKA
-            "usxsuw2txt   = mc_tools.fluka.usxsuw2txt:main",
+            "usxsuw2txt   = mctools.fluka.usxsuw2txt:main",
             # MCNP
-            "mcnp_source  = mc_tools.mcnp.mcnp_source:main",
-            "mctal2root   = mc_tools.mcnp.mctal2root:main",
-            "ssw2root     = mc_tools.mcnp.ssw2root:main",
-            "ssw2txt      = mc_tools.mcnp.ssw2txt:main",
+            "mcnp_source  = mctools.mcnp.mcnp_source:main",
+            "mctal2root   = mctools.mcnp.mctal2root:main",
+            "ssw2root     = mctools.mcnp.ssw2root:main",
+            "ssw2txt      = mctools.mcnp.ssw2txt:main",
             # PHITS
-            "angel2root   = mc_tools.phits.angel2root:main",
-            "rotate3dshow = mc_tools.phits.rotate3dshow:main",
-            "wwinp2phits  = mc_tools.phits.wwinp2phits:main"
+            "angel2root   = mctools.phits.angel2root:main",
+            "rotate3dshow = mctools.phits.rotate3dshow:main",
+            "wwinp2phits  = mctools.phits.wwinp2phits:main"
         ]
     },
     # other executable scripts
     scripts = [
         # COMMON
-        "mc_tools/common/ll-self-submit.sh",
+        "mctools/common/ll-self-submit.sh",
         # MCNP
-        "mc_tools/mcnp/conversiontest.sh", "mc_tools/mcnp/loop_convert.sh",
-        "mc_tools/mcnp/loop_test.sh",
+        "mctools/mcnp/conversiontest.sh", "mctools/mcnp/loop_convert.sh",
+        "mctools/mcnp/loop_test.sh",
         # PHITS
-        "mc_tools/phits/epsout.sh", "mc_tools/phits/phits-set-n.sh",
-        "mc_tools/phits/submit.py"
+        "mctools/phits/epsout.sh", "mctools/phits/phits-set-n.sh",
+        "mctools/phits/submit.py"
     ],
 )

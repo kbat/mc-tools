@@ -1,10 +1,6 @@
 #!/usr/bin/python -W all
 #
-# mctal reading script by Nicolo' Borghi
-# Started on 04/12/2013 at ESS Lund
-# based on scripts developed by the author,
-# Dr. Gallmeier and Dr. Batkov
-#
+# https://github.com/kbat/mc-tools
 #
 
 import sys, re, string, math
@@ -470,9 +466,9 @@ class MCTAL:
 		self.mctalFileName = fname
 		self.mctalFile = open(self.mctalFileName, "r")
 		self.line = None # This variable will contain the read lines one by one, but it is
-						 # important to keep it global because the last value from getHeaders()
-						 # must be already available as first value for parseTally(). This will
-						 # also apply to successive calls to parseTally().
+		                 # important to keep it global because the last value from getHeaders()
+				 # must be already available as first value for parseTally(). This will
+				 # also apply to successive calls to parseTally().
 
 	def Read(self):
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
@@ -554,7 +550,9 @@ class MCTAL:
 		if len(self.line) == 4: tally.detectorType = int(self.line[3])
 
 		if tally.detectorType >=  3: tally.radiograph = True
-		if tally.detectorType <= -1: tally.mesh       = True
+                # check for None is needed for MCNP6 and F1 tally
+		if tally.detectorType is not None and tally.detectorType <= -1:
+                        tally.mesh = True
 
 		self.line = self.mctalFile.readline()
 		line = self.line.split() # I must use this trick because some MCTAL files seem to omit

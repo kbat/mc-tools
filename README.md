@@ -1,5 +1,7 @@
 # mc-tools
-Some Monte Carlo tools.
+Some Monte Carlo tools for MCNP(X), PHITS and FLUKA
+
+Project homepage: https://github.com/kbat/mc-tools
 
 * MСNР(Х)
   * An implementation of application programming interface (API) to
@@ -59,31 +61,52 @@ Some Monte Carlo tools.
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
-    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
+    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
+
+## Requirements ##
+* Python. Versions >= 3 are not supported.
+* If you are going to use the ROOT-related scripts (such as mctal2root,
+   ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
+   to be compiled with Python support. Follow
+   [this manual](http://root.cern.ch/drupal/content/pyroot) for more
+   details. To check whether the Python
+   support is set up correctly, say   
+   ```import ROOT```  
+   in the Python shell. You should not see any error messages.
 
 ## Installation ##
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
 
-1. Get the mc-tools source code:  
+### System-wide installation ###
+```pip install git+https://github.com/kbat/mc-tools.git```
+
+You have to be either root or use ```--target``` argument to specify the folder. Read ```man pip``` for details.
+
+Uninstall: ```pip uninstall mc-tools```.
+
+### Developer and per-user installation ###
+
+1. Get the source code:  
 ```git clone https://github.com/kbat/mc-tools.git```
+
+   Now you need to adjust the $PYTHONPATH and $PATH variables for your system. You can do it as you like. The following steps describe an example how to do it.
 2. Set the variable MCTOOLS to the folder where you have installed the
    code. For instance:   
-```export MCTOOLS=/path/to/mc-tools```
+```export MCTOOLS=/path/to/mc-tools/mctools```
 3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
 ```export PYTHONPATH=$MCTOOLS/phits:$MCTOOLS/mcnp:$PYTHONPATH```
-4. If you are going to use ROOT-related scripts (such as mctal2root,
-   ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
-   to be compiled with Python support. Follow
-   [this manual](http://root.cern.ch/drupal/content/pyroot) for more
-   details. Otherwise you can skip this step. To check whether the Python
-   support is set up correctly, say   
-   ```import ROOT```  
-   in the Python shell. You should not see any error messages.
+4. Add the folders with necessary scripts in your $PATH or create symblinks to these scrips:
+```export PATH=$MCTOOLS/mcnp:$PATH``` or
+```ln -s $MCTOOLS/mcnp/mctal2root.py ~/bin/mctal2root```
 
 
 ### Contacts ###
 e-mail: `batkov [аt] gmail.com`
 
+List of authors: Nicolò Borghi, Kazuyoshi Furutaka, Konstantin Batkov
+
 ### See also ###
-[http://pyne.io](http://pyne.io)
+http://pyne.io
+
+https://github.com/SAnsell/CombLayer
