@@ -5,7 +5,7 @@
 
 ## Installation ##
 ```
-# pip install http://mc-tools.googlecode.com/svn/trunk#egg=mc-tools
+# pip install git+https://github.com/kbat/mc-tools.git
 ```
 ## List the installed files ##
 ```
