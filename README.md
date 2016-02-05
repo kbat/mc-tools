@@ -78,7 +78,6 @@ Project homepage: https://github.com/kbat/mc-tools
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
 
 ### System-wide installation ###
-Detailed instructions are on the [wiki page](https://github.com/kbat/mc-tools/blob/wiki/InstallationUsingPIPAndSETUPTOOLS.md)
 In order to use [pip](https://pip.pypa.io/en/stable/), you need to have the python-setuptools and python-pip modules installed on your system.
 
 ```pip install git+https://github.com/kbat/mc-tools.git```
