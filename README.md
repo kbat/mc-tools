@@ -62,9 +62,10 @@ Project homepage: https://github.com/kbat/mc-tools
     mixture for the given volume fractions of materials. Some examples
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
+   * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE to ROOT formats. Loops through all available cross-sections in an ACE file and saves them as TGraph objects. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
-* Python. Versions >= 3 are not supported.
+* Python. Versions >= 3 are not supported (with exception of the ```rotate3dshow.py``` script).
 * If you are going to use the ROOT-related scripts (such as mctal2root,
    ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
    to be compiled with Python support. Follow
@@ -73,6 +74,7 @@ Project homepage: https://github.com/kbat/mc-tools
    support is set up correctly, say   
    ```import ROOT```  
    in the Python shell. You should not see any error messages.
+* If you are going to use the ```ace2root``` converter, you need to have [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Installation ##
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
