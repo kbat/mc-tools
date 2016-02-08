@@ -6,11 +6,11 @@ Project homepage: https://github.com/kbat/mc-tools
 * MСNР(Х)
   * An implementation of application programming interface (API) to
     read tallies from **mctal** files into a
-    [Tally](https://github.com/kbat/mc-tools/blob/master/mcnp/mctal.py)
+    [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
     object. This API allows to convert **mctal** files into any
     format.  It should work with any tallies except of the kcode data
     and tallies with perturbation records. 
-  * The [mctal2root](https://github.com/kbat/mc-tools/blob/master/mcnp/mctal2root.py)
+  * The [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
     script shows an example how to save a mctal file in the
     [ROOT](http://root.cern.ch)  format.
     [This poster](https://drive.google.com/file/d/0B35Xg1IpFgVycXRiWWh0VTJnczQ/edit?usp=sharing)
@@ -18,18 +18,18 @@ Project homepage: https://github.com/kbat/mc-tools
     [ICANS XXI](http://j-parc.jp/researcher/MatLife/en/meetings/ICANS_XXI/)
     conference shows some usage examples. 
   * WSSA file converters
-    * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mcnp/ssw2txt.py)
+    * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
       converter: it converts WSSA files produced by MCNP(X) into plain
       text. The comments in the script explain how to derive additional
       information (like particle type and surface crossed) from the
       WSSA records.
-    * [ssw2root](https://github.com/kbat/mc-tools/blob/master/mcnp/ssw2root.py)
+    * [ssw2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2root.py)
       converter: it converts WSSA files produced by MСNР(X) into a ROOT
       ntuple.  Use TTree::GetAlias() to get particle type and surface
       crossed.  The list of aliases defined in the tree can be printed
       by the TTree::GetListOfAliases()::Print()
       method.
-      [This macro](https://github.com/kbat/mc-tools/blob/master/mcnp/examples/ssw2root/example.C)
+      [This macro](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/examples/ssw2root/example.C)
       shows several very simple examples how to analyse SSW files with
       ROOT.  
     The WSSA file format depends on the MCNPX version, and currently
@@ -39,14 +39,14 @@ Project homepage: https://github.com/kbat/mc-tools
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
-    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
+    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
 * PHITS
-  * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
+  * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
   * ANGEL to [ROOT](http://root.cern.ch) converter (converts the PHITS
     output to ROOT) - most of the tallies are supported, but there are
     known bugs and limitations, should be used with care. 
   * A script
-    [rotate3dshow.py](https://github.com/kbat/mc-tools/blob/master/phits/rotate3dshow.py)
+    [rotate3dshow.py](https://github.com/kbat/mc-tools/blob/master/mctools/phits/rotate3dshow.py)
     which allows to animate the output of the **t-3dshow** tally. It
     runs PHITS to generate many images, so one can get a rotating
     video of geometry setup. Example:
