@@ -41,7 +41,7 @@ Project homepage: https://github.com/kbat/mc-tools
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/common/mixtures.py). 
 * PHITS
-  * Emacs syntax highlighting script for [PHITS](http://phits.jaea.go.jp/).
+  * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
   * ANGEL to [ROOT](http://root.cern.ch) converter (converts the PHITS
     output to ROOT) - most of the tallies are supported, but there are
     known bugs and limitations, should be used with care. 
