@@ -62,7 +62,7 @@ Project homepage: https://github.com/kbat/mc-tools
     mixture for the given volume fractions of materials. Some examples
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
-   * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE to ROOT formats. We use this tool to visualise ENDF cross sections. Loops through all available cross-sections in an ACE file and saves them as TGraph objects. Requires the [PyNE](http://pyne.io) toolkit to be installed.
+   * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE to ROOT formats. Loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise ENDF cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
 * Python. Versions >= 3 are not supported (with exception of the ```rotate3dshow.py``` script).
