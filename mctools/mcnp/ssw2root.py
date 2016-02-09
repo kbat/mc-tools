@@ -79,9 +79,9 @@ def main():
     sinfo = ROOT.TObjString("%d" % ssw.N); # number of incident particles for correct normalisation
     T.GetUserInfo().Add(sinfo);
 
-    T.Print()
+#    T.Print()
     T.SetAlias("theta", "TMath::RadToDeg()*(TMath::ATan2(x,y) > 0 ? TMath::ATan2(x,y) : 2*TMath::Pi()+TMath::ATan2(x,y))");
-    T.SetAlias("i","TMath::Nint(TMath::Abs(id/1E+6))"); # tmp for particle type
+    T.SetAlias("i","TMath::Nint(TMath::Abs(id/1E+6))");# tmp variable
     T.SetAlias("JGP","-TMath::Nint(i/200.0)");         # energy group
     T.SetAlias("JC","TMath::Nint(i/100.0) + 2*JGP");   #
     T.SetAlias("IPT","i-100*JC+200*JGP");              # particle type: 1=neutron, 2=photon, 3=electron

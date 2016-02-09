@@ -1,6 +1,6 @@
 #! /usr/bin/python
-# $Id$
-# $URL$
+# https://github.com/kbat/mc-tools
+# 
 
 import sys, math, struct
 
@@ -80,16 +80,16 @@ class SSW:
         if data is None: raise IOError("Invalid SSW file")
         size = len(data)
         # This is according to Esben's subs.f, but the format seems to be wrong
-#        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
+        #        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
         # This has been modified to fix the format:
-#	print "size: ", size
-	if size == 8: # mcnp 6
-		(tmpi0) = struct.unpack("8s", data)
-		print tmpi0
+#        print "size: ", size
+ 	if size == 8: # mcnp 6
+		(tmpi0) = struct.unpack("8s", data) # wssa file type
+#		print "type_of_rssa:", tmpi0
 		data = fortranRead(self.file)
 		(self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
 		self.vers = self.vers.strip()
-		if self.vers != "6":
+		if self.vers not in  ("6", "6.mpi"):
 			print "'%s'" % self.vers
 			raise IOError("ssw.py: format error %s")
 	elif size==163:
@@ -111,7 +111,8 @@ class SSW:
         print "Title:\t\t%s" % self.aids.strip()
 #        print "knods:", self.knods
 
-	supported_mcnp_versions = ['2.6.0', '26b', '2.7.0', '6']
+	supported_mcnp_versions = ['2.6.0', '26b', '2.7.0', '6', '6.mpi']
+#        print self.kods.strip(), self.vers
 	if self.kods.strip() not in ['mcnpx', 'mcnp'] or self.vers not in supported_mcnp_versions:
 		print >> sys.stderr, "WARNING: This version of MCNPx (%s) might not be supported." % self.vers
 		print >> sys.stderr, "\t The code was developed for SSW files produced by these MCNPX versions:", supported_mcnp_versions
@@ -125,10 +126,10 @@ class SSW:
 	# niwr - number of cells in RSSA data (np1<0)
 	# mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
 #	print "size", size
-	if self.vers == "6":
+	if self.vers in ("6", "6.mpi"):
 #		(np1,nrss,self.nrcd,njsw,niss,self.probs) = struct.unpack("=5i12s", data)
 		(np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=4i4i", data)
-#		print "probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss
+		print "probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss
 	elif size==20:
 		(np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
 	elif size==40: # Tibor with 2.7.0
@@ -136,6 +137,7 @@ class SSW:
 #		print "A", np1,nrss, niss, tmp2, self.nrcd
 #		print "B", tmp1, njsw, tmp3, tmp4, tmp5
 	else:
+                print self.vers, size
 		unsupported()
 
 	self.N = abs(np1)
@@ -195,7 +197,7 @@ class SSW:
     def readHit(self):
         """Read neutron data and return the SSB array"""
         data = fortranRead(self.file)
-	if self.vers == "6":
+	if self.vers in ("6", "6.mpi"):
 		size = len(data)
 #		print "here", self.nrcd, size
 		size = size/8
