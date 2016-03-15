@@ -26,6 +26,9 @@
 (make-face 'font-lock-material-face)
 (set-face-foreground 'font-lock-material-face "red")
 
+(make-face 'font-lock-transformation-face)
+(set-face-foreground 'font-lock-transformation-face "yellow")
+
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -47,6 +50,7 @@
      ("\\>\\(:[hHnNpPzZ]\\)\\>" . 'font-lock-particle-face) ;; particles
      ("\\<\\(^[ef][0-9]+\\|^fs[0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
      ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
+     ("\\<\\(^TR[0-9]+\\)\\>" . 'font-lock-transformation-face) ;; transformations
    )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
