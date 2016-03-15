@@ -20,6 +20,10 @@
 (make-face 'font-lock-particle-face)
 (set-face-foreground 'font-lock-particle-face "yellow")
 
+(make-face 'font-lock-tally-face)
+(set-face-foreground 'font-lock-tally-face "blue")
+
+
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
   nil
@@ -37,7 +41,8 @@
      ("\\<\\([eE][rR][gG]\\|[pP][oO][sS]\\|[cC][eE][lL]\\|cor[abc][0-9]+\\|[dD][iI][rR]\\|endmd\\|mshmf[0-9]+\\|[vV][eE][cC]\\|[aA][xX][sS]\\|[rR][aA][dD]\\|rmesh[0-9]+\\|tmesh\\|[eE][xX][tT]\\|[pP][aA][rR]\\|[tT][mM][eE]\\)\\>" . 'font-lock-variable-name-face) ;; sdef variables
      ("\\<\\([fF][iI][lL][lL]\\|hello\\|[uU]\\|[lL][aA][tT]\\|[lL][iI][kK][eE]\\|[bB][uU][tT]\\|[tT][rR][cC][lL]\\)\\>" . 'font-lock-variable-name-face) ;; fill,universe,lat,trcl variables
      ("\\<\\([bB][uU][fF][fF][eE][rR]\\ergsh\\||[fF][iI][lL][eE]\\|freq\\|[mM][aA][xX]\\|[mM][eE][pP][hH]\\|plot\\|[wW][rR][iI][tT][eE]\\|[eE][vV][eE][nN][tT]\\|[fF][iI][lL][tT][eE][rR]\\|[tT][yY][pP][eE]\\|[cC][eE][lL][lL]\\|[sS][uU][rR][fF][aA][cC][eE]\\|[tT][aA][lL][lL][yY]\\|traks\\)\\>" . 'font-lock-variable-name-face) ;; ptrac variables
-     ("\\>\\(:[hH]\\|:[nN]\\|:[pP]\\|:[zZ]\\)\\>" . 'font-lock-particle-face)
+     ("\\>\\(:[hHnNpPzZ]\\)\\>" . 'font-lock-particle-face) ;; particles
+     ("\\<\\(^[ef][0-9]+\\|^fs[0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
    )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
