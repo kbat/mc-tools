@@ -20,7 +20,6 @@
 (make-face 'font-lock-particle-face)
 (set-face-foreground 'font-lock-particle-face "yellow")
 
-
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
   nil
@@ -35,10 +34,10 @@
      ("^    [Cc] .*" . 'font-lock-comment-face)
      ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
      ("\\<\\([mM][oO][dD][eE]\\|[iI][mM][pP]\\|[nN][pP][sS]\\|[pP][hH][yY][sS]\\|[cC][uU][tT]\\|[sS][dD][eE][fF]\\|[dD][xX][tT]\\|[lL][oO][sS][tT]\\|[pP][rR][iI][nN][tT]\\|[pP][rR][dD][mM][pP]\\|[dD][bB][cC][nN]\\|[kK][cC][oO][dD][eE]\\|[pP][tT][rR][aA][cC]\\|[sS][tT][oO][pP]\\|[vV][oO][iI][dD]\\)\\>" . 'font-lock-keyword-face) ;; mcnp keywords
-     ("\\<\\([eE][rR][gG]\\|[pP][oO][sS]\\|[cC][eE][lL]\\|[dD][iI][rR]\\|[vV][eE][cC]\\|[aA][xX][sS]\\|[rR][aA][dD]\\|tmesh\\|[eE][xX][tT]\\|[pP][aA][rR]\\|[tT][mM][eE]\\)\\>" . 'font-lock-variable-name-face) ;; sdef variables
+     ("\\<\\([eE][rR][gG]\\|[pP][oO][sS]\\|[cC][eE][lL]\\|cor[abc][0-9]+\\|[dD][iI][rR]\\|endmd\\|mshmf[0-9]+\\|[vV][eE][cC]\\|[aA][xX][sS]\\|[rR][aA][dD]\\|rmesh[0-9]+\\|tmesh\\|[eE][xX][tT]\\|[pP][aA][rR]\\|[tT][mM][eE]\\)\\>" . 'font-lock-variable-name-face) ;; sdef variables
      ("\\<\\([fF][iI][lL][lL]\\|hello\\|[uU]\\|[lL][aA][tT]\\|[lL][iI][kK][eE]\\|[bB][uU][tT]\\|[tT][rR][cC][lL]\\)\\>" . 'font-lock-variable-name-face) ;; fill,universe,lat,trcl variables
      ("\\<\\([bB][uU][fF][fF][eE][rR]\\ergsh\\||[fF][iI][lL][eE]\\|freq\\|[mM][aA][xX]\\|[mM][eE][pP][hH]\\|plot\\|[wW][rR][iI][tT][eE]\\|[eE][vV][eE][nN][tT]\\|[fF][iI][lL][tT][eE][rR]\\|[tT][yY][pP][eE]\\|[cC][eE][lL][lL]\\|[sS][uU][rR][fF][aA][cC][eE]\\|[tT][aA][lL][lL][yY]\\|traks\\)\\>" . 'font-lock-variable-name-face) ;; ptrac variables
-     ("\\>\\(:H\\|:N\\|:P\\|:Z\\)\\>" . 'font-lock-particle-face)
+     ("\\>\\(:[hH]\\|:[nN]\\|:[pP]\\|:[zZ]\\)\\>" . 'font-lock-particle-face)
    )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
