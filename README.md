@@ -17,7 +17,7 @@ Project homepage: https://github.com/kbat/mc-tools
     presented on the
     [ICANS XXI](http://j-parc.jp/researcher/MatLife/en/meetings/ICANS_XXI/)
     conference shows some usage examples. 
-  * WSSA file converters
+  * WSSA file converters **(MCNP6 is not fully supported)**
     * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
       converter: it converts WSSA files produced by MCNP(X) into plain
       text. The comments in the script explain how to derive additional
