@@ -23,6 +23,9 @@
 (make-face 'font-lock-tally-face)
 (set-face-foreground 'font-lock-tally-face "blue")
 
+(make-face 'font-lock-material-face)
+(set-face-foreground 'font-lock-material-face "red")
+
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -43,6 +46,7 @@
      ("\\<\\([bB][uU][fF][fF][eE][rR]\\ergsh\\||[fF][iI][lL][eE]\\|freq\\|[mM][aA][xX]\\|[mM][eE][pP][hH]\\|plot\\|[wW][rR][iI][tT][eE]\\|[eE][vV][eE][nN][tT]\\|[fF][iI][lL][tT][eE][rR]\\|[tT][yY][pP][eE]\\|[cC][eE][lL][lL]\\|[sS][uU][rR][fF][aA][cC][eE]\\|[tT][aA][lL][lL][yY]\\|traks\\)\\>" . 'font-lock-variable-name-face) ;; ptrac variables
      ("\\>\\(:[hHnNpPzZ]\\)\\>" . 'font-lock-particle-face) ;; particles
      ("\\<\\(^[ef][0-9]+\\|^fs[0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
+     ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
    )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
