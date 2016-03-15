@@ -21,13 +21,22 @@
 (set-face-foreground 'font-lock-particle-face "yellow")
 
 (make-face 'font-lock-tally-face)
-(set-face-foreground 'font-lock-tally-face "blue")
+(set-face-foreground 'font-lock-tally-face "olive")
 
 (make-face 'font-lock-material-face)
 (set-face-foreground 'font-lock-material-face "red")
 
 (make-face 'font-lock-transformation-face)
 (set-face-foreground 'font-lock-transformation-face "yellow")
+
+(make-face 'font-lock-skip-face)
+(set-face-foreground 'font-lock-skip-face "green")
+
+(make-face 'font-lock-surface-face)
+(set-face-foreground 'font-lock-surface-face "red")
+
+(make-face 'font-lock-temperature-face)
+(set-face-foreground 'font-lock-temperature-face "yellow")
 
 
 (define-generic-mode 'mcnpgen-mode
@@ -37,24 +46,39 @@
   nil
   ;; font-lock-list (additional expressions to highlight) 
   '(
-     ("^[Cc] .*" . 'font-lock-comment-face)    ;; a "c" followed by a blank in
-     ("^ [Cc] .*" . 'font-lock-comment-face)   ;; columns 1-5 is a comment line
-     ("^  [Cc] .*" . 'font-lock-comment-face)  ;; (the reg exp \{n,m\} does not
-     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
-     ("^    [Cc] .*" . 'font-lock-comment-face)
-     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-     ("\\<\\([mM][oO][dD][eE]\\|[iI][mM][pP]\\|[nN][pP][sS]\\|[pP][hH][yY][sS]\\|[cC][uU][tT]\\|[sS][dD][eE][fF]\\|[dD][xX][tT]\\|[lL][oO][sS][tT]\\|[pP][rR][iI][nN][tT]\\|[pP][rR][dD][mM][pP]\\|[dD][bB][cC][nN]\\|[kK][cC][oO][dD][eE]\\|[pP][tT][rR][aA][cC]\\|[sS][tT][oO][pP]\\|[vV][oO][iI][dD]\\)\\>" . 'font-lock-keyword-face) ;; mcnp keywords
-     ("\\<\\([eE][rR][gG]\\|[pP][oO][sS]\\|[cC][eE][lL]\\|cor[abc][0-9]+\\|[dD][iI][rR]\\|endmd\\|mshmf[0-9]+\\|[vV][eE][cC]\\|[aA][xX][sS]\\|[rR][aA][dD]\\|rmesh[0-9]+\\|tmesh\\|[eE][xX][tT]\\|[pP][aA][rR]\\|[tT][mM][eE]\\)\\>" . 'font-lock-variable-name-face) ;; sdef variables
-     ("\\<\\([fF][iI][lL][lL]\\|hello\\|[uU]\\|[lL][aA][tT]\\|[lL][iI][kK][eE]\\|[bB][uU][tT]\\|[tT][rR][cC][lL]\\)\\>" . 'font-lock-variable-name-face) ;; fill,universe,lat,trcl variables
-     ("\\<\\([bB][uU][fF][fF][eE][rR]\\ergsh\\||[fF][iI][lL][eE]\\|freq\\|[mM][aA][xX]\\|[mM][eE][pP][hH]\\|plot\\|[wW][rR][iI][tT][eE]\\|[eE][vV][eE][nN][tT]\\|[fF][iI][lL][tT][eE][rR]\\|[tT][yY][pP][eE]\\|[cC][eE][lL][lL]\\|[sS][uU][rR][fF][aA][cC][eE]\\|[tT][aA][lL][lL][yY]\\|traks\\)\\>" . 'font-lock-variable-name-face) ;; ptrac variables
-     ("\\>\\(:[hHnNpPzZ]\\)\\>" . 'font-lock-particle-face) ;; particles
-     ("\\<\\(^[ef][0-9]+\\|^fs[0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
-     ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
-     ("\\<\\(^TR[0-9]+\\)\\>" . 'font-lock-transformation-face) ;; transformations
-   )
+    ("^[Cc] .*" . 'font-lock-comment-face)    ;; a "c" followed by a blank in
+    ("^ [Cc] .*" . 'font-lock-comment-face)   ;; columns 1-5 is a comment line
+    ("^  [Cc] .*" . 'font-lock-comment-face)  ;; (the reg exp \{n,m\} does not
+    ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
+    ("^    [Cc] .*" . 'font-lock-comment-face)
+    ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
+    ("\\<\\(axs\\|cel\\|cor[abc][0-9]+\\|cut\\|dbcn\\|dir\\|dxt\\|eff\\|endmd\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|mshmf[0-9]+\\|nps\\|par\\|phys\\|pos\\|prdmp\\|print\\|ptrac\\|rad\\|rmesh[0-9]+\\|sdef\\|stop\\|tme\\|tmesh\\|tr\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|COR[ABC][0-9]+\\|CUT\\|DBCN\\|DIR\\|DXT\\|EFF\\|ENDMD\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|MSHMF[0-9]+\\|NPS\\|PAR\\|PHYS\\|POS\\|PRDMP\\|PRINT\\|PTRAC\\|RAD\\|RMESH[0-9]+\\|SDEF\\|STOP\\|TME\\|TMESH\\|TR\\|VEC\\|VOID\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+
+    ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
+    ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
+
+    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|ergsh\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
+
+    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|ERGSH\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
+    
+    ("\\>\\([:][hHnNpPzZ]\\)\\>" . 'font-lock-particle-face) ;; particles
+
+    ("\\<\\(^[eEfF][0-9]+\\|^[fF][sS][0-9]+\\|[sS][dD][0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
+
+    ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
+    ("\\<\\(^TR[0-9]+\\)\\>" . 'font-lock-transformation-face) ;; transformations
+    ("\\<\\([0-9]*[jJrRiI]\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
+    ;; surfaces:
+    ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|P\\)\\>" . 'font-lock-surface-face)
+    ;; temperatures
+    ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
+    ;; importances
+)
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
   ;; function-list
   nil
   ;; description
-  "generic mode for editing MCNP input files.")
+  "generic mode for editing MCNP input files."
+  )
