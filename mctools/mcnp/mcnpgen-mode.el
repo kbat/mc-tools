@@ -38,6 +38,9 @@
 (make-face 'font-lock-temperature-face)
 (set-face-foreground 'font-lock-temperature-face "yellow")
 
+(make-face 'font-lock-distribution-type-face)
+(set-face-foreground 'font-lock-distribution-type-face "yellow")
+
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -58,22 +61,23 @@
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
 
-    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|ergsh\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose\\|ergsh\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
-    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|ERGSH\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE\\|ERGSH\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
     
-    ("\\>\\([:][hHnNpPzZ]\\)\\>" . 'font-lock-particle-face) ;; particles
+    ("[:=][|/hHnNpPzZ]" . 'font-lock-particle-face) ;; particles
 
     ("\\<\\(^[eEfF][0-9]+\\|^[fF][sS][0-9]+\\|[sS][dD][0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
 
     ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
     ("\\<\\(^TR[0-9]+\\)\\>" . 'font-lock-transformation-face) ;; transformations
-    ("\\<\\([0-9]*[jJrRiI]\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
+    ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
     ;; surfaces:
     ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|P\\)\\>" . 'font-lock-surface-face)
     ;; temperatures
     ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
-    ;; importances
+    ;; distribution types
+    (" [lLdDsS] " . 'font-lock-distribution-type-face)
 )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
@@ -82,3 +86,6 @@
   ;; description
   "generic mode for editing MCNP input files."
   )
+
+;; test a tool tip
+(insert (propertize "foo\n" 'help-echo "Tooltip!"))
