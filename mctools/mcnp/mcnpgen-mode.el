@@ -42,6 +42,9 @@
 (make-face 'font-lock-distribution-type-face)
 (set-face-foreground 'font-lock-distribution-type-face "yellow")
 
+(make-face 'font-lock-pstudy-face)
+(set-face-foreground 'font-lock-pstudy-face "yellow")
+
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -50,7 +53,10 @@
   nil
   ;; font-lock-list (additional expressions to highlight) 
   '(
-    ("^[Cc] ?.*" . 'font-lock-comment-face)    ;; a "c" followed by a blank in
+    ;; PSTUDY variable definition
+    ("@@@ .*" . 'font-lock-pstudy-face)
+    ("^[Cc] " . 'font-lock-comment-face)   ;; to be able to colour PSTUDY after the space
+    ("^[Cc] .*" . 'font-lock-comment-face)    ;; a "c" followed by a blank in
     ("^ [Cc] .*" . 'font-lock-comment-face)   ;; columns 1-5 is a comment line
     ("^  [Cc] .*" . 'font-lock-comment-face)  ;; (the reg exp \{n,m\} does not
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
