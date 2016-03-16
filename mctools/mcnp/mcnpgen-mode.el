@@ -31,6 +31,7 @@
 
 (make-face 'font-lock-skip-face)
 (set-face-foreground 'font-lock-skip-face "green")
+(set-face-attribute  'font-lock-skip-face nil :slant 'italic)
 
 (make-face 'font-lock-surface-face)
 (set-face-foreground 'font-lock-surface-face "red")
@@ -49,7 +50,7 @@
   nil
   ;; font-lock-list (additional expressions to highlight) 
   '(
-    ("^[Cc] .*" . 'font-lock-comment-face)    ;; a "c" followed by a blank in
+    ("^[Cc] ?.*" . 'font-lock-comment-face)    ;; a "c" followed by a blank in
     ("^ [Cc] .*" . 'font-lock-comment-face)   ;; columns 1-5 is a comment line
     ("^  [Cc] .*" . 'font-lock-comment-face)  ;; (the reg exp \{n,m\} does not
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
@@ -70,7 +71,7 @@
     ("\\<\\(^[eEfF][0-9]+\\|^[fF][sS][0-9]+\\|[sS][dD][0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
 
     ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
-    ("\\<\\(^TR[0-9]+\\)\\>" . 'font-lock-transformation-face) ;; transformations
+    ("^\*?TR[0-9]+" . 'font-lock-transformation-face) ;; transformations
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
     ;; surfaces:
     ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|P\\)\\>" . 'font-lock-surface-face)
@@ -78,13 +79,13 @@
     ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
     ;; distribution types
     (" [lLdDsS] " . 'font-lock-distribution-type-face)
-)
+    )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
   ;; function-list
   nil
   ;; description
-  "generic mode for editing MCNP input files."
+  "Generic mode for MCNP input files."
   )
 
 ;; test a tool tip
