@@ -1,10 +1,7 @@
 ;;Generic mode for highlighting syntax for LANL's 
 ;;MCNP Monte Carlo transport code input file.
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;Inspired by the Tim Bohm's work
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
-;;         How to use:
+;;How to use:
 ;;Put -*-mcnpgen-*- on the first line of your 
 ;;input file to autoload this mode (often this is the title card).
 ;;
@@ -62,8 +59,8 @@
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
     ("^    [Cc] .*" . 'font-lock-comment-face)
     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-    ("\\<\\(axs\\|cel\\|cor[abc][0-9]+\\|cut\\|dbcn\\|dir\\|dxt\\|eff\\|endmd\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|mshmf[0-9]+\\|nps\\|par\\|phys\\|pos\\|prdmp\\|print\\|ptrac\\|rad\\|rmesh[0-9]+\\|sdef\\|stop\\|tme\\|tmesh\\|tr\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(AXS\\|CEL\\|COR[ABC][0-9]+\\|CUT\\|DBCN\\|DIR\\|DXT\\|EFF\\|ENDMD\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|MSHMF[0-9]+\\|NPS\\|PAR\\|PHYS\\|POS\\|PRDMP\\|PRINT\\|PTRAC\\|RAD\\|RMESH[0-9]+\\|SDEF\\|STOP\\|TME\\|TMESH\\|TR\\|VEC\\|VOID\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cor[abc][0-9]+\\|cut\\|dbcn\\|dir\\|eff\\|endmd\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|mshmf[0-9]+\\|nps\\|par\\|phys\\|pos\\|prdmp\\|print\\|ptrac\\|rad\\|rmesh[0-9]+\\|sdef\\|stop\\|tme\\|tmesh\\|tr\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|COR[ABC][0-9]+\\|CUT\\|DBCN\\|DIR\\|EFF\\|ENDMD\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|MSHMF[0-9]+\\|NPS\\|PAR\\|PHYS\\|POS\\|PRDMP\\|PRINT\\|PTRAC\\|RAD\\|RMESH[0-9]+\\|SDEF\\|STOP\\|TME\\|TMESH\\|TR\\|VEC\\|VOID\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
@@ -74,13 +71,20 @@
     
     ("[:=][|/hHnNpPzZ]" . 'font-lock-particle-face) ;; particles
 
-    ("\\<\\(^[eEfF][0-9]+\\|^[fF][sS][0-9]+\\|[sS][dD][0-9]+\\)\\>" . 'font-lock-tally-face) ;; tallies
+    ("\\<\\(\\^DXT|^[EF][0-9]+\\|^FS[0-9]+\\|^HISTP\\|^SD[0-9]+\\|^SSW\\)\\>" . 'font-lock-tally-face) ;; TALLIES
+    ("\\<\\(\\^dxt|^[ef][0-9]+\\|^fs[0-9]+\\|^histp\\|^sd[0-9]+\\|^ssw\\)\\>" . 'font-lock-tally-face) ;; tallies
+    ("^+?[fF][0-9]+" . 'font-lock-tally-face) ;; +tallies
+
+    ("^FC[0-9]+ .*" . 'font-lock-comment-face) ;; +TALLY COMMENT
+    ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
+
 
     ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
     ("^\*?TR[0-9]+" . 'font-lock-transformation-face) ;; transformations
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
     ;; surfaces:
-    ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|P\\)\\>" . 'font-lock-surface-face)
+    ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|SO\\|P\\)\\>" . 'font-lock-surface-face)
+    ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|so\\|p\\)\\>" . 'font-lock-surface-face)
     ;; temperatures
     ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
     ;; distribution types
