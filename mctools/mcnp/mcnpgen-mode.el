@@ -1,14 +1,17 @@
-;;Generic mode for highlighting syntax for LANL's 
-;;MCNP Monte Carlo transport code input file.
+;; Generic mode for highlighting syntax for LANL's 
+;; MCNP Monte Carlo transport code input file.
 ;;
-;;How to use:
-;;Put -*-mcnpgen-*- on the first line of your 
-;;input file to autoload this mode (often this is the title card).
+;; Latest version is available here:
+;; https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el
 ;;
-;;Your .emacs file should contain something like:
-;;(setq load-path (cons (expand-file-name "/path/to/your/lispdirectory") load-path))
-;;(global-font-lock-mode t)
-;;(load "mcnpgen-mode")
+;; How to use:
+;; Put -*-mcnpgen-*- on the first line of your 
+;; input file to autoload this mode (often this is the title card).
+;;
+;; Your .emacs file should contain something like:
+;; (setq load-path (cons (expand-file-name "/path/to/your/lispdirectory") load-path))
+;; (global-font-lock-mode t)
+;; (load "mcnpgen-mode")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 (require 'font-lock)
@@ -79,14 +82,20 @@
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
 
 
-    ("\\<\\(^[mM][tTxX]?[0-9]+\\)\\>" . 'font-lock-material-face) ;; materials
-    ("^\*?TR[0-9]+" . 'font-lock-transformation-face) ;; transformations
+    ("\\<\\(^M[TX]?[0-9]+\\|^AWTAB\\)\\>" . 'font-lock-material-face) ;; MATERIALS
+    ("\\<\\(^m[tx]?[0-9]+\\|^awtab\\)\\>" . 'font-lock-material-face) ;; materials
+    
+    ("^\*?[Tt][Rr][0-9]+" . 'font-lock-transformation-face) ;; transformations
+    
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
+    
     ;; surfaces:
     ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|SO\\|P\\)\\>" . 'font-lock-surface-face)
     ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|so\\|p\\)\\>" . 'font-lock-surface-face)
+
     ;; temperatures
     ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
+
     ;; distribution types
     (" [lLdDsS] " . 'font-lock-distribution-type-face)
     )
