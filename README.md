@@ -4,6 +4,7 @@ Some Monte Carlo tools for MCNP(X), PHITS and FLUKA
 Project homepage: https://github.com/kbat/mc-tools
 
 * MСNР(Х)
+  * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for MCNP
   * An implementation of application programming interface (API) to
     read tallies from **mctal** files into a
     [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
