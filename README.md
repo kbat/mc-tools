@@ -57,7 +57,7 @@ Project homepage: https://github.com/kbat/mc-tools
     manual can be downloaded from the PHITS website:
     <http://phits.jaea.go.jp/examples.html> 
 * FLUKA
-  * See the [readfluka](http://code.google.com/p/readfluka) project.
+  * See the [readfluka](https://github.com/kbat/readfluka) project.
 * Generic tools
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
