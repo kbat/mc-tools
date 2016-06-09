@@ -305,7 +305,7 @@ class Tally:
 
 		if axis == "t":
 			if len(self.cos) <= self.nCos+1:
-				self.seg = np.append(self.cos,rB)
+				self.cos = np.append(self.cos,rB)
 				return True
 			else:
 				return False
