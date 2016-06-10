@@ -62,20 +62,20 @@
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
     ("^    [Cc] .*" . 'font-lock-comment-face)
     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-    ("\\<\\(axs\\|cel\\|cor[abc][0-9]+\\|cut\\|dbcn\\|dir\\|eff\\|endmd\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|mshmf[0-9]+\\|nps\\|par\\|phys\\|pos\\|prdmp\\|print\\|ptrac\\|rad\\|rmesh[0-9]+\\|sdef\\|stop\\|tme\\|tmesh\\|tr\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(AXS\\|CEL\\|COR[ABC][0-9]+\\|CUT\\|DBCN\\|DIR\\|EFF\\|ENDMD\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|MSHMF[0-9]+\\|NPS\\|PAR\\|PHYS\\|POS\\|PRDMP\\|PRINT\\|PTRAC\\|RAD\\|RMESH[0-9]+\\|SDEF\\|STOP\\|TME\\|TMESH\\|TR\\|VEC\\|VOID\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|par\\|phys\\|pos\\|prdmp\\|print\\|ptrac\\|rad\\|sdef\\|stop\\|tme\\|tr\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|PAR\\|PHYS\\|POS\\|PRDMP\\|PRINT\\|PTRAC\\|RAD\\|SDEF\\|STOP\\|TME\\|TR\\|VEC\\|VOID\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
 
-    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose\\|ergsh\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|ergsh\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
-    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE\\|ERGSH\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE [0-9]\\|ERGSH\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
     
     ("[:=][|/hHnNpPzZ]" . 'font-lock-particle-face) ;; particles
 
-    ("\\<\\(\\^DXT|^[EF][0-9]+\\|^FS[0-9]+\\|^HISTP\\|^SD[0-9]+\\|^SSW\\)\\>" . 'font-lock-tally-face) ;; TALLIES
-    ("\\<\\(\\^dxt|^[ef][0-9]+\\|^fs[0-9]+\\|^histp\\|^sd[0-9]+\\|^ssw\\)\\>" . 'font-lock-tally-face) ;; tallies
+    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|^[EF][0-9]+\\|^FS[0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|TMESH\\)\\>" . 'font-lock-tally-face) ;; TALLIES
+    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|^[ef][0-9]+\\|^fs[0-9]+\\|^histp\\|mshmf[0-9]+\\|^RMESH[0-9]+\\|^sd[0-9]+\\|^ssw\\|tmesh\\)\\>" . 'font-lock-tally-face) ;; tallies
     ("^+?[fF][0-9]+" . 'font-lock-tally-face) ;; +tallies
 
     ("^FC[0-9]+ .*" . 'font-lock-comment-face) ;; +TALLY COMMENT
@@ -86,6 +86,8 @@
     ("\\<\\(^m[tx]?[0-9]+\\|^awtab\\)\\>" . 'font-lock-material-face) ;; materials
     
     ("^\*?[Tt][Rr][0-9]+" . 'font-lock-transformation-face) ;; transformations
+    (" trans [0-9]+" . 'font-lock-transformation-face) ;; transformations
+    (" TRANS [0-9]+" . 'font-lock-transformation-face) ;; transformations
     
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
     
