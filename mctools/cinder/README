@@ -1,0 +1,3 @@
+To compile, just copy and paste:
+
+g++ -o alltabsReader alltabsReader.cc
