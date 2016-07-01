@@ -1,28 +1,37 @@
 #include "Table.hh"
 
-// DECLARATIONS
+////////// DECLARATIONS //////////////////////////
 
-ifstream alltabs;
+      ifstream   alltabs;
 	
-bool inTable = false, timeStepsDone = false, bS;
-int tNumber,existingNuclide;
-double hL;
+	  bool   inTable = false;
+	  bool   timeStepsDone = false;
+	  bool   bS;
+	   int   tNumber;
+	   int   existingNuclide;
+	double   hL;
 
-string pline,line,dummy,element,isotope;
-stringstream ssline;
+	string   pline;
+	string   line;
+	string   dummy;
+	string   element;
+	string   isotope;
 
-vector<string> beamStates(10);
-vector<string> timeStepsUnit(10);
-vector<double> timeSteps(10);
-vector<double> activities(10);
+  stringstream   ssline;
 
+vector<string>   beamStates(10);
+vector<string>   timeStepsUnit(10);
+vector<double>   timeSteps(10);
+vector<double>   activities(10);
 
-Table *table;
-Nuclide *nuclide;
+	 Table  *table;
+       Nuclide  *nuclide;
 
 //////////////////////////////////////////////////
 
-void readTimeAndBeamHeadings();
+	  void   readTimeAndBeamHeadings();
+
+//////////////////////////////////////////////////
 
 int main() {
 
@@ -40,6 +49,7 @@ int main() {
 			table = new Table(line,tNumber);
 
 			inTable = true;
+
 			ssline.str(string());
 			ssline.clear();
 
@@ -48,6 +58,7 @@ int main() {
 		if ( (inTable) && (!timeStepsDone) && ((line.find("UP") != std::string::npos) || (line.find("DOWN") != std::string::npos)) ) {
 
 			readTimeAndBeamHeadings();
+
 			timeStepsDone = true;
 
 		}
@@ -66,6 +77,7 @@ int main() {
 
 			inTable = false;
 			timeStepsDone = false;
+
 			break;
 
 		}
@@ -91,11 +103,7 @@ int main() {
 
 			}
 	
-			//cout << line << endl;
-
 			ssline << line.substr(0,9);
-
-			//cout << "ssLine: #" << ssline.str() << "#" << endl;
 			ssline >> element >> isotope;
 
 			if ((element+isotope) != "" ) {
@@ -104,8 +112,15 @@ int main() {
 				ssline.clear();
 
 				ssline << line.substr(10,string::npos);
-
-				ssline >> hL >> activities.at(0) >> activities.at(1) >> activities.at(2) >> activities.at(3) >> activities.at(4) >> activities.at(5) >> activities.at(6) >> activities.at(7) >> activities.at(8) >> activities.at(9);
+				ssline >> hL >> activities.at(0) >> activities.at(1)
+					     >> activities.at(2)
+					     >> activities.at(3)
+					     >> activities.at(4)
+					     >> activities.at(5)
+					     >> activities.at(6)
+					     >> activities.at(7)
+					     >> activities.at(8)
+					     >> activities.at(9);
 
 				existingNuclide = table->findNuclide(element+isotope);
 
@@ -118,21 +133,15 @@ int main() {
 
 				nuclide = table->editNuclide(existingNuclide);
 
-				//cout << line.substr(0,9);
-
 				for (int i = 0; i < 10; i++) {
-
-					// cout << "Line: #" << line << "#" << endl;
-					// cout << "From line: #" << element+isotope << "# from Nuclide: #" << nuclide->getName() << "#" << endl;
 
 					nuclide->addActivity(activities.at(i));
 
 				}
 
-				// cout << endl;
-
 				ssline.str(string());
 				ssline.clear();
+
 				element = isotope = "";
 
 			}
@@ -160,15 +169,24 @@ int main() {
 void readTimeAndBeamHeadings() {
 
 	ssline << line;
-
-	ssline >> beamStates.at(0) >> beamStates.at(1) >> beamStates.at(2) >> beamStates.at(3) >> beamStates.at(4) >> beamStates.at(5) >> beamStates.at(6) >> beamStates.at(7) >> beamStates.at(8) >> beamStates.at(9);
+	ssline >> beamStates.at(0)
+	       >> beamStates.at(1)
+	       >> beamStates.at(2)
+	       >> beamStates.at(3)
+	       >> beamStates.at(4)
+	       >> beamStates.at(5)
+	       >> beamStates.at(6)
+	       >> beamStates.at(7)
+	       >> beamStates.at(8)
+	       >> beamStates.at(9);
+	      
 
 	getline(alltabs,line);
 
 	ssline.str(string());
 	ssline.clear();
-	ssline << line;
 
+	ssline << line;
 	ssline >> dummy >> dummy >> timeSteps.at(0) >> timeStepsUnit.at(0)
 				 >> timeSteps.at(1) >> timeStepsUnit.at(1)
 				 >> timeSteps.at(2) >> timeStepsUnit.at(2)

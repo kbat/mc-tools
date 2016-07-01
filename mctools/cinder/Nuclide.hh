@@ -7,30 +7,30 @@ class Nuclide {
 
 	public:
 
-		Nuclide(string,double);
-		~Nuclide() {};
+				 Nuclide(string,double);
+				~Nuclide() {};
 
-		void addActivity(double);
+			  void   addActivity(double);
 
-		string getName() { return nuclideName; }
-		double getHalflife() {return halfLife; }
-		double getActivity(int i) { return activity.at(i); }
+			string   getName() { return nuclideName; }
+			double   getHalflife() {return halfLife; }
+			double   getActivity(int i) { return activity.at(i); }
 
-		void printInfo();
+			  void   printInfo();
 
-		int getActivityNumber() { return activity.size(); }
+			   int   getActivityNumber() { return activity.size(); }
 
-		void trimActivities(int);
-		void applySign(vector<bool>);
+			  void   trimActivities(int);
+			  void   applySign(vector<bool>);
 
 	private:
 
-		string nuclideName;
-		double halfLife;
+			string   nuclideName;
+			double   halfLife;
 
-		bool isExcited;
+			  bool   isExcited;
 
-		vector<double> activity;
+		vector<double>   activity;
 
 };
 
@@ -53,7 +53,6 @@ Nuclide::Nuclide(string name, double hL) {
 
 void Nuclide::addActivity(double act) {
 
-	//cout << "Adding activity: #" << act << "# for Nuclide: #" << nuclideName << "# vector item no.: #" << activity.size() + 1 << endl;
 	activity.push_back(act);
 
 }

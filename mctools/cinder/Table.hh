@@ -8,39 +8,39 @@ class Table {
 
 	public:
 
-		Table(string,int);
-		~Table() {};
+				  Table(string,int);
+				 ~Table() {};
 
-		void addBeamState(bool);
-		void addTimeStep(double);
+			   void   addBeamState(bool);
+			   void   addTimeStep(double);
 
-		void printTimeSteps();
+			   void   printTimeSteps();
 
-		bool getBeamState(int i) { return beamStates.at(i); };
-		vector<double> getTimeSteps() {};
-		vector<double> getCumulativeTimeSteps() {};
+			   bool   getBeamState(int i) { return beamStates.at(i); };
+		 vector<double>   getTimeSteps() {}; // TODO
+		 vector<double>   getCumulativeTimeSteps() {}; // TODO
 
-		string getTableName() { return tableName; };
-		int getTableNumber() { return tableNumber; };
+			 string   getTableName() { return tableName; };
+			    int   getTableNumber() { return tableNumber; };
 
-		int addNuclide(Nuclide);
-		Nuclide* editNuclide(int);
-		int findNuclide(string n);
+			    int   addNuclide(Nuclide);
+			Nuclide  *editNuclide(int);
+			    int   findNuclide(string n);
 
-		int getTotalNuclides() { return Nuclides.size(); };
-		int getTotalBeamStates() { return beamStates.size(); };
+			    int   getTotalNuclides() { return Nuclides.size(); };
+			    int   getTotalBeamStates() { return beamStates.size(); };
 
-		void finalizeTable();
+			   void   finalizeTable();
 
 	private:
 
-		string tableName;
-		int tableNumber;
+			 string   tableName;
+			    int   tableNumber;
 
-		vector<bool> beamStates;
-		vector<double> timeSteps;
+		   vector<bool>   beamStates;
+		 vector<double>   timeSteps;
 
-		vector<Nuclide> Nuclides;
+		vector<Nuclide>   Nuclides;
 
 };
 
@@ -67,9 +67,6 @@ int Table::addNuclide(Nuclide n) {
 
 	Nuclides.push_back(n);
 
-	//cout.precision(5);
-	//cout << "Adding nuclide: " << n.getName() << " with halflife: " << n.getHalflife() << std::scientific << endl;
-
 	return (Nuclides.size()-1);
 
 }
@@ -78,8 +75,7 @@ void Table::printTimeSteps() {
 
 	for (int i=0; i < beamStates.size(); i++) {
 
-		//cout << "Bs: " << beamStates.at(i) << " - Ts: " << timeSteps.at(i) << endl;
-		cout << beamStates.at(i) << " ";
+		cout << "Bs: " << beamStates.at(i) << " - Ts: " << timeSteps.at(i) << endl;
 
 	}
 
