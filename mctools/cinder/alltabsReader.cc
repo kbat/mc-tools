@@ -152,8 +152,6 @@ int main() {
 
 	table->finalizeTable();
 
-	table->printTimeSteps();
-
 	for (int i = 0; i < table->getTotalNuclides(); i++) {
 
 		(table->editNuclide(i))->printInfo();
