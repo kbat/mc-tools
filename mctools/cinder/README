@@ -1,3 +1,11 @@
+The alltabsReader is a test code to read and reprint the alltabs file (ONLY TABLE 4 FOR NOW)
 To compile, just copy and paste:
 
 g++ -o alltabsReader alltabsReader.cc
+
+###################################################################################################
+
+The alltabs2ttree is the step forward, with which the file can be read and saved to a ROOT TTree
+To compile, just copy and paste:
+
+g++ -std=c++11 alltabs2ttree.cc -Wall -g `root-config --cflags` `root-config --glibs` -o alltabs2ttree
