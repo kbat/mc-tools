@@ -23,6 +23,8 @@ class Nuclide {
 			  void   trimActivities(int);
 			  void   applySign(vector<bool>);
 
+			  void   calculatePercentActivity(vector<double>);
+
 	private:
 
 			string   nuclideName;
@@ -31,6 +33,7 @@ class Nuclide {
 			  bool   isExcited;
 
 		vector<double>   activity;
+		vector<double>   percentActivity;
 
 };
 
@@ -62,9 +65,9 @@ void Nuclide::printInfo() {
 	cout.precision(5);
 	cout << nuclideName << " " << halfLife << scientific << " ";
 
-	for (int i = 0; i < activity.size(); i++) {
+	for (int i = 0; i < percentActivity.size(); i++) {
 
-		cout << activity.at(i) << scientific << " ";
+		cout << percentActivity.at(i) << scientific << " ";
 
 	}
 
@@ -91,6 +94,20 @@ void Nuclide::applySign(vector <bool> bState) {
 			activity.at(i) *= -1.0;
 
 		}
+
+	}
+
+}
+
+void Nuclide::calculatePercentActivity(vector<double> totals) {
+
+	double tmpPAct;
+
+	for (int i = 0; i < activity.size(); i++) {
+
+		tmpPAct = activity.at(i) / totals.at(i);
+
+		percentActivity.push_back(tmpPAct);
 
 	}
 

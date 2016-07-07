@@ -30,6 +30,8 @@ class Table {
 			    int   getTotalNuclides() { return Nuclides.size(); };
 			    int   getTotalBeamStates() { return beamStates.size(); };
 
+			   void   calculateTotals();
+
 			   void   finalizeTable();
 
 	private:
@@ -39,6 +41,7 @@ class Table {
 
 		   vector<bool>   beamStates;
 		 vector<double>   timeSteps;
+		 vector<double>   totalActivities;
 
 		vector<Nuclide>   Nuclides;
 
@@ -73,9 +76,12 @@ int Table::addNuclide(Nuclide n) {
 
 void Table::printTimeSteps() {
 
+	cout << "- - ";
+
 	for (int i=0; i < beamStates.size(); i++) {
 
-		cout << "Bs: " << beamStates.at(i) << " - Ts: " << timeSteps.at(i) << endl;
+		//cout << "Bs: " << beamStates.at(i) << " - Ts: " << timeSteps.at(i) << endl;
+		cout << timeSteps.at(i) << " ";
 
 	}
 
@@ -115,7 +121,33 @@ void Table::finalizeTable() {
 	for (int i=0; i < getTotalNuclides(); i++) {
 
 		editNuclide(i)->trimActivities(max);
-		editNuclide(i)->applySign(beamStates);
+		//editNuclide(i)->applySign(beamStates);
+
+	}
+
+}
+
+void Table::calculateTotals() {
+
+	double tmpAct;
+
+	for (int i = 0; i < getTotalBeamStates(); i++) {
+
+		tmpAct = 0.;
+
+		for (int j = 0; j < getTotalNuclides(); j++) {
+
+			tmpAct += (Nuclides.at(j)).getActivity(i);
+
+		}
+
+		totalActivities.push_back(tmpAct);
+
+	}
+
+	for (int i = 0; i < getTotalNuclides(); i++) {
+
+		(Nuclides.at(i)).calculatePercentActivity(totalActivities);
 
 	}
 
