@@ -1,36 +1,39 @@
 #ifndef TABLE_HH
 #define TABLE_HH
 
-#include "Globals.hh"
+#include <string.h>
+#include <cstdlib>
+#include <vector>
+
+#include <TObject.h>
+
 #include "Nuclide.hh"
 
-class Table {
+using namespace std;
+
+class Table : public TObject {
 
 	public:
 
 				  Table(string,int);
+				  Table() {};
 				 ~Table() {};
+
+			   void   setName(string);
+			   void   setNumber(int);
 
 			   void   addBeamState(bool);
 			   void   addTimeStep(double);
 
-			   void   printTimeSteps();
-
-			   bool   getBeamState(int i) { return beamStates.at(i); };
-		 vector<double>   getTimeSteps() {}; // TODO
-		 vector<double>   getCumulativeTimeSteps() {}; // TODO
-
-			 string   getTableName() { return tableName; };
-			    int   getTableNumber() { return tableNumber; };
-
 			    int   addNuclide(Nuclide);
-			Nuclide  *editNuclide(int);
 			    int   findNuclide(string n);
+			Nuclide  *getNuclide(int);
 
-			    int   getTotalNuclides() { return Nuclides.size(); };
-			    int   getTotalBeamStates() { return beamStates.size(); };
+			    int   getNNuclides();
+			    int   getNBeamStates();
 
-			   void   calculateTotals();
+		 vector<double>   getTimeSteps();
+		   vector<bool>   getBeamStates();
 
 			   void   finalizeTable();
 
@@ -41,117 +44,13 @@ class Table {
 
 		   vector<bool>   beamStates;
 		 vector<double>   timeSteps;
-		 vector<double>   totalActivities;
 
 		vector<Nuclide>   Nuclides;
 
+
+	ClassDef(Table,1);
+
 };
-
-Table::Table(string name, int number) {
-
-	tableName = name;
-	tableNumber = number;
-
-}
-
-void Table::addBeamState(bool s) {
-
-	beamStates.push_back(s);
-
-}
-
-void Table::addTimeStep(double tS) {
-
-	timeSteps.push_back(tS);
-
-}
-
-int Table::addNuclide(Nuclide n) {
-
-	Nuclides.push_back(n);
-
-	return (Nuclides.size()-1);
-
-}
-
-void Table::printTimeSteps() {
-
-	cout << "- - ";
-
-	for (int i=0; i < beamStates.size(); i++) {
-
-		//cout << "Bs: " << beamStates.at(i) << " - Ts: " << timeSteps.at(i) << endl;
-		cout << timeSteps.at(i) << " ";
-
-	}
-
-	cout << endl;
-
-}
-
-Nuclide* Table::editNuclide(int i) {
-
-	return &Nuclides.at(i);
-
-}
-
-int Table::findNuclide(string n) {
-
-	int pos = -1;
-
-	for (int i = 0; i < Nuclides.size(); i++) {
-
-		if (Nuclides.at(i).getName() == n) {
-
-			pos = i;
-			break;
-
-		}
-
-	}
-
-	return pos;
-
-}
-
-void Table::finalizeTable() {
-
-	int max = getTotalBeamStates();
-
-	for (int i=0; i < getTotalNuclides(); i++) {
-
-		editNuclide(i)->trimActivities(max);
-		//editNuclide(i)->applySign(beamStates);
-
-	}
-
-}
-
-void Table::calculateTotals() {
-
-	double tmpAct;
-
-	for (int i = 0; i < getTotalBeamStates(); i++) {
-
-		tmpAct = 0.;
-
-		for (int j = 0; j < getTotalNuclides(); j++) {
-
-			tmpAct += (Nuclides.at(j)).getActivity(i);
-
-		}
-
-		totalActivities.push_back(tmpAct);
-
-	}
-
-	for (int i = 0; i < getTotalNuclides(); i++) {
-
-		(Nuclides.at(i)).calculatePercentActivity(totalActivities);
-
-	}
-
-}
 
 #endif
 
