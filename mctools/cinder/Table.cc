@@ -23,6 +23,18 @@ void Table::setNumber(int number) {
 
 }
 
+string Table::getName() {
+
+	return tableName;
+
+}
+
+int Table::getNumber() {
+
+	return tableNumber;
+
+}
+
 int Table::getNNuclides() {
 
 	return Nuclides.size();
@@ -131,7 +143,15 @@ void Table::listNuclides(string n) {
 
 }
 
+void Table::calculateTotals() {
 
+	
+
+}
+
+void Table::getMostActive() {}
+void Table::getMostActive(int) {}
+void Table::getMostActive(double) {}
 
 
 
