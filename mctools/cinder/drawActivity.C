@@ -1,8 +1,8 @@
 drawActivity() {
 
-        string nuclideName = "W183*";
+        string nuclideName = "W183*"; // Change to the exact name of the desired isotope
 
-        TFile *f = new TFile("alltabs-024.root");
+        TFile *f = new TFile("alltabs.root"); // Change to the correct file name in case different from the default one
         TTree *alltabs = (TTree *) f->Get("alltabs");
 
         Table *T = new Table();
