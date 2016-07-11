@@ -15,7 +15,17 @@ g++ -Wall -shared -fPIC Table.cc Nuclide.cc alltabsDict.cc -o libAlltabs.so `roo
 ---------------------------------------------------------------------------------------------------
 Create a symbolic link to the ROOT default lib folder to make the libAlltabs.so available system-wide:
 
-ln -s /PATH/TO/mc-tools/mctools/cinder/libAlltabs.so $ROOTSYS/lib/
+ln -s $PWD/libAlltabs.so $ROOTSYS/lib/
+
+---------------------------------------------------------------------------------------------------
+Map the library to libTree.so so that it gets loaded by default
+
+rlibmap -o libAlltabs.rootmap -l libAlltabs.so -d libTree.so -c LinkDef.h
+
+---------------------------------------------------------------------------------------------------
+Move the map file to the ROOT library folder:
+
+mv libAlltabs.rootmap $ROOTSYS/lib/
 
 ###################################################################################################
 
