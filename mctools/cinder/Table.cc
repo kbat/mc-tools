@@ -104,6 +104,36 @@ vector<bool> Table::getBeamStates() {
 
 }
 
+void Table::listNuclides() {
+
+	for (int i=0; i < Nuclides.size(); i++) {
+
+		cout << i << ": " << (Nuclides.at(i)).getName() << endl;
+	}
+
+}
+
+void Table::listNuclides(string n) {
+
+	string nuclideName;
+
+	for (int i=0; i < Nuclides.size(); i++) {
+
+		nuclideName = (Nuclides.at(i)).getName();
+
+		if (nuclideName.find(n) != std::string::npos) {
+
+			cout << i << ": " << nuclideName << endl;
+
+		}
+
+	}
+
+}
+
+
+
+
 
 
 

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <cstdlib>
 #include <vector>
+#include <iostream>
 
 #include <TObject.h>
 
@@ -27,6 +28,8 @@ class Table : public TObject {
 
 			    int   addNuclide(Nuclide);
 			    int   findNuclide(string n);
+			   void   listNuclides();
+			   void   listNuclides(string n);
 			Nuclide  *getNuclide(int);
 
 			    int   getNNuclides();
