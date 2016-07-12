@@ -1,10 +1,14 @@
+// This function must be called from within ROOT with the following syntax:
+// .x drawActivity.C("alltabs.root")
+// Change the filename according to your needs
+
 Table *T = new Table();
 
-void drawActivity() {
+void drawActivity(string name) {
 
 	string nuclideName = "W183*"; // Change to the exact name of the desired isotope
 
-	TFile *f = new TFile("alltabs.root"); // Change to the correct file name in case different from the default one
+	TFile *f = new TFile(name.c_str()); // Change to the correct file name in case different from the default one
 	TTree *alltabs = (TTree *) f->Get("alltabs");
 
 	TBranch *bT = alltabs->GetBranch("Table");

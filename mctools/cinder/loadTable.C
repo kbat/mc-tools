@@ -1,8 +1,12 @@
+// This function must be called from within ROOT with the following syntax:
+// .x loadTable.C("alltabs.root")
+// Change the filename according to your needs
+
 Table *T = new Table();
 
-void loadTable() {
+void loadTable(string name) {
 
-	TFile *f = new TFile("alltabs.root"); // Change to the correct file name in case different from the default one
+	TFile *f = new TFile(name.c_str());
 	TTree *alltabs = (TTree *) f->Get("alltabs");
 
 	TBranch *bT = alltabs->GetBranch("Table");
