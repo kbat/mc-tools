@@ -1,6 +1,6 @@
 Table *T = new Table();
 
-loadTable() {
+void loadTable() {
 
 	TFile *f = new TFile("alltabs.root"); // Change to the correct file name in case different from the default one
 	TTree *alltabs = (TTree *) f->Get("alltabs");
@@ -11,8 +11,6 @@ loadTable() {
 
 	cout << "Number of nuclides in table: " << T->getNNuclides() << endl;
 	cout << "Number of time steps in table: " << T->getNBeamStates() << endl;
-
-	return 0;
 
 }
 
