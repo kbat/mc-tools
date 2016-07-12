@@ -25,6 +25,7 @@ class Nuclide : public TObject {
 
 			string   getName();
 			  bool   getExcited();
+			double   getHalflife();
 
 			   int   getNActivity();
 			double   getActivity(int);

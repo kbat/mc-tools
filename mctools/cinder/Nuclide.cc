@@ -26,6 +26,12 @@ void Nuclide::setHalflife(double hL) {
 
 }
 
+double Nuclide::getHalflife() {
+
+	return halfLife;
+
+}
+
 void Nuclide::setExcited() {
 
 	if (nuclideName.find("*") != std::string::npos) {
