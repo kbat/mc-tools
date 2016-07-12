@@ -186,6 +186,7 @@ void Table::getMostActive(double threshold, int timeStep) {
 
 	Nuclide *N;
 
+	double Activity;
 	double pActivity;
 
 	if ( (timeStep != -1) && (0 <= timeStep) && (timeStep <= (getNBeamStates()-1)) ) {
@@ -209,10 +210,11 @@ void Table::getMostActive(double threshold, int timeStep) {
 		for (int j = min; j < max; j++) {
 
 			pActivity = N->getPActivity(j);
+			Activity = N->getActivity(j);
 
 			if (pActivity >= threshold) {
 
-				cout << j << ": " << N->getName() << " (" << pActivity << ")" << endl;
+				cout << j << ": " << N->getName() << " (" << pActivity << ") " << Activity*3.7E10 << " Bq" << endl;
 
 			}
 
