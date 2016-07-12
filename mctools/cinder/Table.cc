@@ -145,13 +145,82 @@ void Table::listNuclides(string n) {
 
 void Table::calculateTotals() {
 
-	
+	double tmp;
+
+	for (int i=0; i < getNNuclides(); i++) {
+
+		for (int j=0; j < getNBeamStates(); j++) {
+
+			tmp = (Nuclides.at(i)).getActivity(j);
+
+			if (i == 0) {
+
+				totalActivity.push_back(tmp);
+
+			} else {
+
+				totalActivity.at(j) += tmp;
+
+			}
+
+		}
+
+	}
 
 }
 
-void Table::getMostActive() {}
-void Table::getMostActive(int) {}
-void Table::getMostActive(double) {}
+void Table::toPercent() {
+
+	for (int i=0; i < getNNuclides(); i++) {
+
+		getNuclide(i)->calculatePercent(totalActivity);
+
+	}
+
+}
+
+void Table::getMostActive(double threshold, int timeStep) {
+
+	int min = 0;
+	int max = getNBeamStates();
+
+	Nuclide *N;
+
+	double pActivity;
+
+	if ( (timeStep != -1) && (0 <= timeStep) && (timeStep <= (getNBeamStates()-1)) ) {
+
+		min = timeStep;
+		max = timeStep+1;
+
+	}
+
+	if (totalActivity.size() != getNBeamStates()) {
+
+		calculateTotals();
+		toPercent();
+
+	}
+
+	for (int i = 0; i < getNNuclides(); i++) {
+
+		N = getNuclide(i);
+
+		for (int j = min; j < max; j++) {
+
+			pActivity = N->getPActivity(j);
+
+			if (pActivity >= threshold) {
+
+				cout << j << ": " << N->getName() << " (" << pActivity << ")" << endl;
+
+			}
+
+		}
+
+	}
+
+}
 
 
 

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <cstdlib>
 #include <vector>
+#include <iostream>
 
 #include <TObject.h>
 
@@ -26,9 +27,12 @@ class Nuclide : public TObject {
 			  bool   getExcited();
 
 			   int   getNActivity();
-		vector<double>   getActivity();
+			double   getActivity(int);
+			double   getPActivity(int);
+		vector<double>   getActivities();
 
 			  void   trimActivity(int);
+			  void   calculatePercent(vector<double>);
 
 	private:
 
@@ -42,6 +46,7 @@ class Nuclide : public TObject {
 			  bool   isExcited;
 
 		vector<double>   activity;
+		vector<double>   pActivity;
 
 
 	ClassDef(Nuclide,1);

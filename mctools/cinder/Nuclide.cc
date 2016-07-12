@@ -74,11 +74,44 @@ bool Nuclide::getExcited() {
 
 }
 
-vector<double> Nuclide::getActivity() {
+vector<double> Nuclide::getActivities() {
 
 	return activity;
 
 }
+
+double Nuclide::getActivity(int i) {
+
+	return activity.at(i);
+
+}
+
+double Nuclide::getPActivity(int i) {
+
+	return pActivity.at(i);
+
+}
+
+void Nuclide::calculatePercent(vector<double> totals) {
+
+	if (totals.size() == activity.size()) {
+
+		for (int i=0; i < activity.size(); i++) {
+
+			pActivity.push_back(activity.at(i)/totals.at(i)*100.);
+
+		}
+
+	} else {
+
+		cout << "This method cannot be accessed directly" << endl;
+
+	}
+
+}
+
+
+
 
 
 

@@ -28,9 +28,9 @@ class Table : public TObject {
 
 			    int   addNuclide(Nuclide);
 
-			    int   findNuclide(string n);
+			    int   findNuclide(string);
 			   void   listNuclides();
-			   void   listNuclides(string n);
+			   void   listNuclides(string);
 
 			 string   getName();
 			    int   getNumber();
@@ -43,18 +43,18 @@ class Table : public TObject {
 		 vector<double>   getTimeSteps();
 		   vector<bool>   getBeamStates();
 
-			   void   getMostActive(); // Activities sorted in descending order
-						   // for all nuclides at all the time steps
-			   void   getMostActive(int); // Set the maximum number of displayed nuclides
-			   void   getMostActive(double); // Set the activity rejection threshold (%).
-							 // Only nuclides with activity >= than threshold
-							 // will be displayed
+			   void   getMostActive(double, int timeStep = -1); // Set the threshold (%) over which the
+									    // the activity is considered significative.
+									    // Optionally, the desired time step can be
+									    // selected, otherwise the complete list will
+									    // be produced.
 
 			   void   finalizeTable();
 
 	private:
 
 			   void   calculateTotals();
+			   void   toPercent();
 
 	private:
 
