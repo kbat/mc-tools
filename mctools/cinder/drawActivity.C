@@ -25,7 +25,7 @@ void drawActivity() {
 
 	}
 
-	double *A = &((T->getNuclide(T->findNuclide(nuclideName)))->getActivity())[0];
+	double *A = &((T->getNuclide(T->findNuclide(nuclideName)))->getActivities())[0];
 
 	TGraph *g = new TGraph(nS,X,A);
 
