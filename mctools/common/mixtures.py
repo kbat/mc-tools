@@ -11,6 +11,7 @@ He4 = Isotope("02004.70c", 4.002602)
 C   = Isotope("06000.71c", 12.011)
 O   = Isotope("08016.70c", 15.999)
 Be  = Isotope("04009.70c", 9.012)
+Al  = Isotope("13027.70c", 26.981539)
 Si28 = Isotope("14028.71c", 28.085)
 Si29 = Isotope("14029.71c", 28.085)
 Fe54 = Isotope("26054.70c", 53.9396127)
@@ -40,6 +41,13 @@ D2O = Material("D2O", 1.107)
 D2O.AddIsotope(D, 2)
 D2O.AddIsotope(O, 1)
 D2O.Print()
+
+Hydrogen = Material("Hydrogen", 0.07)
+Hydrogen.AddIsotope(H, 1)
+
+Aluminium = Material("Aluminium", 2.73)
+Aluminium.AddIsotope(Al, 1)
+
 
 print "\n04005"
 waterfrac = 0.05
@@ -112,3 +120,10 @@ Helium = Material("Helium", 0.1786E-3)
 Helium.AddIsotope(He3, 0.00000137)
 Helium.AddIsotope(He4, 0.99999863)
 Helium.Print()
+
+print "\ParaH and Al"
+
+ParaHAl = Compound("ParaHAl")
+ParaHAl.AddMaterial(Hydrogen, 0.95)
+ParaHAl.AddMaterial(Aluminium, 0.05)
+ParaHAl.PrintAtomicFractions()
