@@ -48,7 +48,13 @@ sed -i "s/^RAND/c RAND/" $inp
 rm -f /tmp/geocheck.*
 mcnpx i=$inp name=/tmp/geocheck. > /dev/null
 out=/tmp/geocheck.o
-grep "run terminated when [[:space:]]* $N particle histories were done" $out || exit 1
-echo "geometry check passed"
-echo "input file: " $inp
-echo "output file:" $out
+
+if grep "run terminated when [[:space:]]* $N particle histories were done" $out; then
+    echo "geometry check passed"
+    exit 0
+else
+    echo "geometry check failed"
+    echo "input file: " $inp
+    echo "output file:" $out
+    exit 1
+fi
