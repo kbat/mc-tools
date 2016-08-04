@@ -26,7 +26,7 @@ if [ $# == 2 ]; then
 fi
 
 /bin/cp -f $inp /tmp
-inp=/tmp/$inp
+inp=/tmp/$(basename $inp)
 
 N=$(printf "%.0f" $N)
 echo "nps: " $N
@@ -40,10 +40,10 @@ sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' $inp
 grep -i "^void *$" $inp || echo void >> $inp
 
 sed -i -n '/^sdef/{p;:a;N;/prdmp/!ba;s/.*\n//};p' $inp
-sed -i "s/^sdef.*/sdef/" $inp
+sed -i "s/^sdef.*/sdef/i" $inp
 
-sed -i "s/^mt/c mt/" $inp
-sed -i "s/^RAND/c RAND/" $inp
+sed -i "s/^mt/c mt/i" $inp
+sed -i "s/^rand/c rand/i" $inp
 
 rm -f /tmp/geocheck.*
 mcnpx i=$inp name=/tmp/geocheck. > /dev/null
