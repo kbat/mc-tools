@@ -29,7 +29,7 @@ fi
 inp=/tmp/$(basename $inp)
 
 N=$(printf "%.0f" $N)
-echo "nps: " $N
+#echo "nps: " $N
 
 sed -i "s/^nps.*/nps $N/" $inp
 
@@ -49,10 +49,11 @@ rm -f /tmp/geocheck.*
 mcnpx i=$inp name=/tmp/geocheck. > /dev/null
 out=/tmp/geocheck.o
 
-if grep "run terminated when [[:space:]]* $N particle histories were done" $out; then
+if grep "run terminated when [[:space:]]* $N particle histories were done" > /dev/null $out; then
     echo "geometry check passed"
     exit 0
 else
+    tail $out
     echo "geometry check failed"
     echo "input file: " $inp
     echo "output file:" $out
