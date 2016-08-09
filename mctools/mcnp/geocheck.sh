@@ -10,7 +10,7 @@
 if [ $# != 1 -a $# != 2 ]; then
     echo "Usage: geocheck inp N"
     echo "       inp - MCNP(X) geometry to check"
-    echo "       N   - number of incident particles (default is 100000)."
+    echo "       N   - number of incident particles (default is 1E+6)."
     exit 2
 fi
 
@@ -20,7 +20,7 @@ if [ ! -r $inp ]; then
     exit 3
 fi
 
-N=1E+5
+N=1E+6
 if [ $# == 2 ]; then
     N=$2
 fi
@@ -39,7 +39,7 @@ sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' $inp
 # insert void if not there
 grep -i "^void *$" $inp || echo void >> $inp
 
-sed -i -n '/^sdef/{p;:a;N;/prdmp/!ba;s/.*\n//};p' $inp
+sed -i -n '/^[sS][dD][eE][fF]/{p;:a;N;/prdmp/!ba;s/.*\n//};p' $inp
 sed -i "s/^sdef.*/sdef/i" $inp
 
 sed -i "s/^mt/c mt/i" $inp
@@ -50,7 +50,7 @@ mcnpx i=$inp name=/tmp/geocheck. > /dev/null
 out=/tmp/geocheck.o
 
 if grep "run terminated when [[:space:]]* $N particle histories were done" > /dev/null $out; then
-    echo "geometry check passed"
+    echo "geometry check passed with nps=$N"
     exit 0
 else
     tail $out
