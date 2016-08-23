@@ -62,8 +62,8 @@
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
     ("^    [Cc] .*" . 'font-lock-comment-face)
     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|par\\|phys\\|pos\\|prdmp\\|rdum\\|print\\|ptrac\\|rad\\|rand\\|seed\\|sdef\\|stop\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|PAR\\|PHYS\\|POS\\|PRDMP\\|RDUM\\|PRINT\\|PTRAC\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pos\\|prdmp\\|rdum\\|print\\|ptrac\\|rad\\|rand\\|seed\\|sdef\\|stop\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|PAR\\|PHYS\\|POS\\|PRDMP\\|RDUM\\|PRINT\\|PTRAC\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
@@ -92,8 +92,8 @@
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
     
     ;; surfaces:
-    ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|SO\\|P\\)\\>" . 'font-lock-surface-face)
-    ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|so\\|p\\)\\>" . 'font-lock-surface-face)
+    ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|SUR\\|SO\\|P\\)\\>" . 'font-lock-surface-face)
+    ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|sur\\|so\\|p\\)\\>" . 'font-lock-surface-face)
 
     ;; temperatures
     ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
