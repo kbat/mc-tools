@@ -62,8 +62,8 @@
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
     ("^    [Cc] .*" . 'font-lock-comment-face)
     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pos\\|prdmp\\|rdum\\|print\\|ptrac\\|rad\\|rand\\|seed\\|sdef\\|stop\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|PAR\\|PHYS\\|POS\\|PRDMP\\|RDUM\\|PRINT\\|PTRAC\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|hlib\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|res\\|rdum\\|print\\|ptrac\\|rad\\|rand\\|seed\\|sdef\\|stop\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|HLIB\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|PAR\\|PHYS\\|PNLIB\\|POS\\|PRDMP\\|RES\\|RDUM\\|PRINT\\|PTRAC\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
@@ -72,10 +72,10 @@
 
     ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE [0-9]\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
     
-    ("[:=][|/hHnNpPzZ]" . 'font-lock-particle-face) ;; particles
+    ("[:=][|/hHnNpPzZ#]" . 'font-lock-particle-face) ;; particles
 
-    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EF][0-9]+\\|^FS[0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|TMESH\\)\\>" . 'font-lock-tally-face)
-    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[ef][0-9]+\\|^fs[0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|tmesh\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EF][0-9]+\\|^F[QST][0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|TMESH\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[ef][0-9]+\\|^f[qst][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|tmesh\\)\\>" . 'font-lock-tally-face)
     ("^+?[fF][0-9]+" . 'font-lock-tally-face) ;; +tallies
 
     ("^FC[0-9]+ .*" . 'font-lock-comment-face) ;; +TALLY COMMENT
@@ -96,7 +96,7 @@
     ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|sur\\|so\\|p\\)\\>" . 'font-lock-surface-face)
 
     ;; temperatures
-    ("\\<\\(TMP=[0-9.E]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
+    ("\\<\\([tT][mM][pP]=[0-9.eE]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
 
     ;; distribution types
     (" [lLdDsS] " . 'font-lock-distribution-type-face)
@@ -109,5 +109,18 @@
   "Generic mode for MCNP input files."
   )
 
-;; test a tool tip
-(insert (propertize "foo\n" 'help-echo "Tooltip!"))
+;; test a tool tip - does not work
+;;(insert (propertize "foo\n" 'help-echo "Tooltip!"))
+
+;; add a tooltip to every instance of foobar
+;; http://kitchingroup.cheme.cmu.edu/blog/2013/04/12/Tool-tips-on-text-in-Emacs/
+;; kbat: it works, but how to call it automatically?
+(save-excursion  ;return cursor to current-point
+  (goto-char 1)
+  (while (search-forward "foobar" (point-max) t)
+    (set-text-properties  (match-beginning 0) (match-end 0)
+			  `(help-echo "You know... a bar for foos!"
+				      font-lock-face (:foreground "dark slate gray"))
+			  )
+    )
+  )
