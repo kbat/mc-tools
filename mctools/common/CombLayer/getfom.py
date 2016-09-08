@@ -9,6 +9,14 @@ import glob, os, argparse
 from array import array
 from datetime import datetime
 
+def printGraph(gr):
+    """ Prints TGraphErrors """
+    print "# ", gr.GetTitle()
+    print "# format: x ex y ey"
+    N = gr.GetN()
+    for i in range(N):
+        print i, gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i]
+
 def getGraph(args, tname, color):
     x = []
     ex = []
@@ -87,7 +95,7 @@ def getAverage(args, mg):
 
 def main():
     """
-    If getfom-analysis.py file exists, evaluates it line-by-line right before exiting from this function
+    If getfom-analysis.py file exists in the current folder, evaluates it line-by-line in the end of the script
     """
     ROOT.gStyle.SetOptFit(0)
 
@@ -104,6 +112,7 @@ def main():
     parser.add_argument('-pdf', dest='pdf', type=str, default="do not save", help='PDF file name to save canvas to')
     parser.add_argument('-only-average', dest='average', action='store_true', help='Draws only average of all points')
     parser.add_argument('-no-footer', dest='footer', action='store_false', help='Do not draw footer')
+    parser.add_argument('-dump', dest='dump', action='store_true', help='Dump the values in stdout')
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
     parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos)')
     args = parser.parse_args()
@@ -129,6 +138,8 @@ def main():
         gr = getGraph(args, tally, colors[i])
         hs.Add(gr)
         leg.AddEntry(gr, gr.GetTitle(), "p")
+        if args.dump:
+            printGraph(gr)
 
     # draw fit if only one graph is requested
     if hs.GetListOfGraphs().GetSize()==1:
