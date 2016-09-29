@@ -35,7 +35,7 @@ fi
 
 /bin/cp -f $i $tmpdir
 i=$tmpdir/$(basename $i)
-sed -i -e "s/mt/c mt/g" $i
+sed -i -e "s/[mM][tT]/c mt/g" $i
 
 if [ ! -z $com -a -f $com ]; then
     cp -f $com $tmpdir
