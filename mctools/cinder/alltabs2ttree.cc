@@ -69,7 +69,7 @@ vector<double>   activities(10);
 
 int main(int argc, char* argv[]) {
 
-	TApplication *rootApp = new TApplication("alltabs2ttree",&argc,argv);
+  //	TApplication *rootApp = new TApplication("alltabs2ttree",&argc,argv);
 
 	gSystem->Load("libTree");
 	gSystem->Load("libAlltabs");
