@@ -28,6 +28,14 @@
 
 using namespace std;
 
+////////// ERROR CODES ///////////////////////////
+
+// Exit status 0 --> Success
+// Exit status 1 --> Alltabs file not found
+// Exit status 2 --> Too few arguments
+
+//////////////////////////////////////////////////
+
 ////////// DECLARATIONS //////////////////////////
 
       ifstream   alltabs;
@@ -62,6 +70,7 @@ vector<double>   activities(10);
 
 //////////////////////////////////////////////////
 
+	  void   HelpLine(TApplication *);
 	  void   Read();
 	  void   readTimeAndBeamHeadings();
 
@@ -71,38 +80,64 @@ int main(int argc, char* argv[]) {
 
 	TApplication *rootApp = new TApplication("alltabs2ttree",&argc,argv);
 
-	gSystem->Load("libTree");
-	gSystem->Load("libAlltabs");
+	stringstream rootFile;
 
-	table = new Table();
-	nuclide = new Nuclide();
+	if (rootApp->Argc() == 1) {
 
-	T = new TTree("alltabs","TABLE 4",0);
-	bTable = T->Branch("Table", &table, 0);
-	//bNuclides = T->Branch("Nuclide", &nuclide,0);
-
-	alltabs.open("alltabs");
-
-	if (alltabs.is_open()) {
-
-		Read();
-
-		T->SaveAs("alltabs.root");
-
-		return 0;
+		HelpLine(rootApp);
+		return 2;
 
 	} else {
 
-		cerr << "The requested alltabs file either does not exist or is corrupted." << endl;
-		return 1;
+		gSystem->Load("libTree");
+		gSystem->Load("libAlltabs");
 
-	 }
+		table = new Table();
+		nuclide = new Nuclide();
+
+		T = new TTree("alltabs","TABLE 4",0);
+		bTable = T->Branch("Table", &table, 0);
+		//bNuclides = T->Branch("Nuclide", &nuclide,0);
+
+		alltabs.open(rootApp->Argv(1));
+
+		if (alltabs.is_open()) {
+
+			Read();
+
+			if (rootApp->Argc() == 2) {
+
+				rootFile << rootApp->Argv(1) << ".root";
+
+			} else {
+
+				rootFile << rootApp->Argv(2);
+
+			}
+
+			T->SaveAs((rootFile.str()).c_str());
+
+			return 0;
+
+		} else {
+
+			cerr << "The requested alltabs file either does not exist or is corrupted." << endl;
+			return 1;
+
+		 }
+
+	}
+
+}
+
+void HelpLine(TApplication *rA) {
+
+	cout << "Error: too few arguments." << endl;
+	cout << "Usage: " << rA->Argv(0) << " alltabs [output filename]" << endl;
 
 }
 
 void Read() {
-
-	//alltabs.open("alltabs");
 
 	pline = "";
 
