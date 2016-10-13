@@ -81,17 +81,28 @@ int main(int argc, char* argv[]) {
 	bTable = T->Branch("Table", &table, 0);
 	//bNuclides = T->Branch("Nuclide", &nuclide,0);
 
-	Read();
+	alltabs.open("alltabs");
 
-	T->SaveAs("alltabs.root");
+	if (alltabs.is_open()) {
 
-	return 0;
+		Read();
+
+		T->SaveAs("alltabs.root");
+
+		return 0;
+
+	} else {
+
+		cerr << "The requested alltabs file either does not exist or is corrupted." << endl;
+		return 1;
+
+	 }
 
 }
 
 void Read() {
 
-	alltabs.open("alltabs");
+	//alltabs.open("alltabs");
 
 	pline = "";
 
