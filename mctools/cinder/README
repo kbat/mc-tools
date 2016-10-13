@@ -1,0 +1,35 @@
+###################################################################################################
+
+This to compile the libAlltabs.so into ROOT.
+
+---------------------------------------------------------------------------------------------------
+Create the dictionary:
+
+rootcint -f alltabsDict.cc -c Nuclide.hh Table.hh LinkDef.h
+
+---------------------------------------------------------------------------------------------------
+Compile the shared library:
+
+g++ -Wall -shared -fPIC Table.cc Nuclide.cc alltabsDict.cc -o libAlltabs.so `root-config --cflags --glibs`
+
+---------------------------------------------------------------------------------------------------
+Create a symbolic link to the ROOT default lib folder to make the libAlltabs.so available system-wide:
+
+ln -s $PWD/libAlltabs.so $ROOTSYS/lib/
+
+---------------------------------------------------------------------------------------------------
+Map the library to libTree.so so that it gets loaded by default
+
+rlibmap -o libAlltabs.rootmap -l libAlltabs.so -d libTree.so -c LinkDef.h
+
+---------------------------------------------------------------------------------------------------
+Move the map file to the ROOT library folder:
+
+mv libAlltabs.rootmap $ROOTSYS/lib/
+
+###################################################################################################
+
+The alltabs2ttree is a code to read and save to a ROOT TTree the alltabs file (ONLY TABLE 4 FOR NOW)
+To compile, just copy and paste:
+
+g++ -std=c++11 alltabs2ttree.cc -Wall -g `root-config --cflags --glibs` -L./ -lAlltabs -o alltabs2ttree
