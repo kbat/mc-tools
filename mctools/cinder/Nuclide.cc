@@ -102,7 +102,7 @@ void Nuclide::calculatePercent(vector<double> totals) {
 
 	if (totals.size() == activity.size()) {
 
-		for (int i=0; i < activity.size(); i++) {
+		for (UInt_t i=0; i < activity.size(); i++) {
 
 			pActivity.push_back(activity.at(i)/totals.at(i)*100.);
 

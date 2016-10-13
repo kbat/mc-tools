@@ -35,13 +35,13 @@ int Table::getNumber() {
 
 }
 
-int Table::getNNuclides() {
+ULong_t Table::getNNuclides() {
 
 	return Nuclides.size();
 
 }
 
-int Table::getNBeamStates() {
+ULong_t Table::getNBeamStates() {
 
 	return beamStates.size();
 
@@ -77,7 +77,7 @@ int Table::findNuclide(string n) {
 
 	int pos = -1;
 
-	for (int i = 0; i < Nuclides.size(); i++) {
+	for (UInt_t i = 0; i < Nuclides.size(); i++) {
 
 		if (Nuclides.at(i).getName() == n) {
 
@@ -96,7 +96,7 @@ void Table::finalizeTable() {
 
 	int max = getNBeamStates();
 
-	for (int i=0; i < getNNuclides(); i++) {
+	for (ULong_t i=0; i < getNNuclides(); i++) {
 
 		getNuclide(i)->trimActivity(max);
 
@@ -118,7 +118,7 @@ vector<bool> Table::getBeamStates() {
 
 void Table::listNuclides() {
 
-	for (int i=0; i < Nuclides.size(); i++) {
+	for (UInt_t i=0; i < Nuclides.size(); i++) {
 
 		cout << i << ": " << (Nuclides.at(i)).getName() << endl;
 	}
@@ -129,7 +129,7 @@ void Table::listNuclides(string n) {
 
 	string nuclideName;
 
-	for (int i=0; i < Nuclides.size(); i++) {
+	for (UInt_t i=0; i < Nuclides.size(); i++) {
 
 		nuclideName = (Nuclides.at(i)).getName();
 
@@ -147,9 +147,9 @@ void Table::calculateTotals() {
 
 	double tmp;
 
-	for (int i=0; i < getNNuclides(); i++) {
+	for (ULong_t i=0; i < getNNuclides(); i++) {
 
-		for (int j=0; j < getNBeamStates(); j++) {
+		for (ULong_t j=0; j < getNBeamStates(); j++) {
 
 			tmp = (Nuclides.at(i)).getActivity(j);
 
@@ -171,7 +171,7 @@ void Table::calculateTotals() {
 
 void Table::toPercent() {
 
-	for (int i=0; i < getNNuclides(); i++) {
+	for (ULong_t i=0; i < getNNuclides(); i++) {
 
 		getNuclide(i)->calculatePercent(totalActivity);
 
@@ -189,7 +189,7 @@ void Table::getMostActive(double threshold, int timeStep) {
 	double Activity;
 	double pActivity;
 
-	if ( (timeStep != -1) && (0 <= timeStep) && (timeStep <= (getNBeamStates()-1)) ) {
+	if ( (timeStep != -1) && (0 <= timeStep) && (timeStep <= static_cast<int>(getNBeamStates()-1)) ) {
 
 		min = timeStep;
 		max = timeStep+1;
@@ -203,7 +203,7 @@ void Table::getMostActive(double threshold, int timeStep) {
 
 	}
 
-	for (int i = 0; i < getNNuclides(); i++) {
+	for (ULong_t i = 0; i < getNNuclides(); i++) {
 
 		N = getNuclide(i);
 

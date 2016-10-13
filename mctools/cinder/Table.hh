@@ -37,8 +37,8 @@ class Table : public TObject {
 
 			Nuclide  *getNuclide(int);
 
-			    int   getNNuclides();
-			    int   getNBeamStates();
+			ULong_t   getNNuclides();
+			ULong_t   getNBeamStates();
 
 		 vector<double>   getTimeSteps();
 		   vector<bool>   getBeamStates();
