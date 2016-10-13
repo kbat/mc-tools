@@ -19,4 +19,4 @@ alltabs2ttree: libAlltabs.so alltabs2ttree.cc
 clean:
 	@rm -fv libAlltabs.so
 	@rm -fv alltabsDict.*
-	@rm -fv alltabs2tree
+	@rm -fv alltabs2ttree
