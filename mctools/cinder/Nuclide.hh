@@ -14,26 +14,26 @@ class Nuclide : public TObject {
 
 	public:
 
-				 Nuclide(string,double);
+				 Nuclide(string,Double_t);
 				 Nuclide() {};
 				~Nuclide() {};
 
 			  void   setName(string);
-			  void   setHalflife(double);
+			  void   setHalflife(Double_t);
 
-			  void   addActivity(double);
+			  void   addActivity(Double_t);
 
 			string   getName();
-			  bool   getExcited();
-			double   getHalflife();
+			Bool_t   getExcited();
+		      Double_t   getHalflife();
 
-			   int   getNActivity();
-			double   getActivity(int);
-			double   getPActivity(int);
-		vector<double>   getActivities();
+			 Int_t   getNActivity();
+		      Double_t   getActivity(Int_t);
+		      Double_t   getPActivity(Int_t);
+	      vector<Double_t>   getActivities();
 
-			  void   trimActivity(int);
-			  void   calculatePercent(vector<double>);
+			  void   trimActivity(Int_t);
+			  void   calculatePercent(vector<Double_t>);
 
 	private:
 
@@ -42,12 +42,12 @@ class Nuclide : public TObject {
 	private:
 
 			string   nuclideName;
-			double   halfLife;
+		      Double_t   halfLife;
 
-			  bool   isExcited;
+			Bool_t   isExcited;
 
-		vector<double>   activity;
-		vector<double>   pActivity;
+	      vector<Double_t>   activity;
+	      vector<Double_t>   pActivity;
 
 
 	ClassDef(Nuclide,1);

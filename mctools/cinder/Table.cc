@@ -4,7 +4,7 @@
 	ClassImp(Table)
 #endif
 
-Table::Table(string name, int number) {
+Table::Table(string name, Int_t number) {
 
 	tableName = name;
 	tableNumber = number;
@@ -17,7 +17,7 @@ void Table::setName(string name) {
 
 }
 
-void Table::setNumber(int number) {
+void Table::setNumber(Int_t number) {
 
 	tableNumber = number;
 
@@ -29,7 +29,7 @@ string Table::getName() {
 
 }
 
-int Table::getNumber() {
+Int_t Table::getNumber() {
 
 	return tableNumber;
 
@@ -47,19 +47,19 @@ ULong_t Table::getNBeamStates() {
 
 }
 
-void Table::addBeamState(bool s) {
+void Table::addBeamState(Bool_t s) {
 
 	beamStates.push_back(s);
 
 }
 
-void Table::addTimeStep(double tS) {
+void Table::addTimeStep(Double_t tS) {
 
 	timeSteps.push_back(tS);
 
 }
 
-int Table::addNuclide(Nuclide n) {
+ULong_t Table::addNuclide(Nuclide n) {
 
 	Nuclides.push_back(n);
 
@@ -67,15 +67,15 @@ int Table::addNuclide(Nuclide n) {
 
 }
 
-Nuclide* Table::getNuclide(int i) {
+Nuclide* Table::getNuclide(Int_t i) {
 
 	return &Nuclides.at(i);
 
 }
 
-int Table::findNuclide(string n) {
+Int_t Table::findNuclide(string n) {
 
-	int pos = -1;
+	Int_t pos = -1;
 
 	for (UInt_t i = 0; i < Nuclides.size(); i++) {
 
@@ -94,7 +94,7 @@ int Table::findNuclide(string n) {
 
 void Table::finalizeTable() {
 
-	int max = getNBeamStates();
+	Int_t max = getNBeamStates();
 
 	for (ULong_t i=0; i < getNNuclides(); i++) {
 
@@ -104,13 +104,13 @@ void Table::finalizeTable() {
 
 }
 
-vector<double> Table::getTimeSteps() {
+vector<Double_t> Table::getTimeSteps() {
 
 	return timeSteps;
 
 }
 
-vector<bool> Table::getBeamStates() {
+vector<Bool_t> Table::getBeamStates() {
 
 	return beamStates;
 
@@ -145,7 +145,7 @@ void Table::listNuclides(string n) {
 
 void Table::calculateTotals() {
 
-	double tmp;
+	Double_t tmp;
 
 	for (ULong_t i=0; i < getNNuclides(); i++) {
 
@@ -179,17 +179,17 @@ void Table::toPercent() {
 
 }
 
-void Table::getMostActive(double threshold, int timeStep) {
+void Table::getMostActive(Double_t threshold, Int_t timeStep) {
 
-	int min = 0;
-	int max = getNBeamStates();
+	Int_t min = 0;
+	Int_t max = getNBeamStates();
 
 	Nuclide *N;
 
-	double Activity;
-	double pActivity;
+	Double_t Activity;
+	Double_t pActivity;
 
-	if ( (timeStep != -1) && (0 <= timeStep) && (timeStep <= static_cast<int>(getNBeamStates()-1)) ) {
+	if ( (timeStep != -1) && (0 <= timeStep) && (timeStep <= static_cast<Int_t>(getNBeamStates()-1)) ) {
 
 		min = timeStep;
 		max = timeStep+1;
@@ -207,7 +207,7 @@ void Table::getMostActive(double threshold, int timeStep) {
 
 		N = getNuclide(i);
 
-		for (int j = min; j < max; j++) {
+		for (Int_t j = min; j < max; j++) {
 
 			pActivity = N->getPActivity(j);
 			Activity = N->getActivity(j);
@@ -223,9 +223,4 @@ void Table::getMostActive(double threshold, int timeStep) {
 	}
 
 }
-
-
-
-
-
 

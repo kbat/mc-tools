@@ -16,38 +16,38 @@ class Table : public TObject {
 
 	public:
 
-				  Table(string,int);
+				  Table(string,Int_t);
 				  Table() {};
 				 ~Table() {};
 
 			   void   setName(string);
-			   void   setNumber(int);
+			   void   setNumber(Int_t);
 
-			   void   addBeamState(bool);
-			   void   addTimeStep(double);
+			   void   addBeamState(Bool_t);
+			   void   addTimeStep(Double_t);
 
-			    int   addNuclide(Nuclide);
+			ULong_t   addNuclide(Nuclide);
 
-			    int   findNuclide(string);
+			  Int_t   findNuclide(string);
 			   void   listNuclides();
 			   void   listNuclides(string);
 
 			 string   getName();
-			    int   getNumber();
+			  Int_t   getNumber();
 
-			Nuclide  *getNuclide(int);
+			Nuclide  *getNuclide(Int_t);
 
 			ULong_t   getNNuclides();
 			ULong_t   getNBeamStates();
 
-		 vector<double>   getTimeSteps();
-		   vector<bool>   getBeamStates();
+	       vector<Double_t>   getTimeSteps();
+		 vector<Bool_t>   getBeamStates();
 
-			   void   getMostActive(double, int timeStep = -1); // Set the threshold (%) over which the
-									    // the activity is considered significative.
-									    // Optionally, the desired time step can be
-									    // selected, otherwise the complete list will
-									    // be produced.
+			   void   getMostActive(Double_t, Int_t timeStep = -1); // Set the threshold (%) over which the
+									        // the activity is considered significative.
+									        // Optionally, the desired time step can be
+									        // selected, otherwise the complete list will
+									        // be produced.
 
 			   void   finalizeTable();
 
@@ -59,14 +59,14 @@ class Table : public TObject {
 	private:
 
 			 string   tableName;
-			    int   tableNumber;
+			  Int_t   tableNumber;
 
-		   vector<bool>   beamStates;
-		 vector<double>   timeSteps;
+		 vector<Bool_t>   beamStates;
+	       vector<Double_t>   timeSteps;
 
 		vector<Nuclide>   Nuclides;
 
-		 vector<double>   totalActivity;
+	       vector<Double_t>   totalActivity;
 
 
 	ClassDef(Table,1);

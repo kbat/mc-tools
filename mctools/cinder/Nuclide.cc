@@ -4,7 +4,7 @@
 	ClassImp(Nuclide)
 #endif
 
-Nuclide::Nuclide(string name, double hL) {
+Nuclide::Nuclide(string name, Double_t hL) {
 
 	nuclideName = name;
 	setExcited();
@@ -20,13 +20,13 @@ void Nuclide::setName(string name) {
 
 }
 
-void Nuclide::setHalflife(double hL) {
+void Nuclide::setHalflife(Double_t hL) {
 
 	halfLife = hL;
 
 }
 
-double Nuclide::getHalflife() {
+Double_t Nuclide::getHalflife() {
 
 	return halfLife;
 
@@ -52,21 +52,21 @@ string Nuclide::getName() {
 
 }
 
-int Nuclide::getNActivity() {
+Int_t Nuclide::getNActivity() {
 
 	return activity.size();
 
 }
 
-void Nuclide::addActivity(double act) {
+void Nuclide::addActivity(Double_t act) {
 
 	activity.push_back(act);
 
 }
 
-void Nuclide::trimActivity(int max) {
+void Nuclide::trimActivity(Int_t max) {
 
-	for (int i = (activity.size() - 1); i >= max; i--) {
+	for (Int_t i = (activity.size() - 1); i >= max; i--) {
 
 		activity.erase(activity.begin() + i);
 
@@ -74,31 +74,31 @@ void Nuclide::trimActivity(int max) {
 
 }
 
-bool Nuclide::getExcited() {
+Bool_t Nuclide::getExcited() {
 
 	return isExcited;
 
 }
 
-vector<double> Nuclide::getActivities() {
+vector<Double_t> Nuclide::getActivities() {
 
 	return activity;
 
 }
 
-double Nuclide::getActivity(int i) {
+Double_t Nuclide::getActivity(Int_t i) {
 
 	return activity.at(i);
 
 }
 
-double Nuclide::getPActivity(int i) {
+Double_t Nuclide::getPActivity(Int_t i) {
 
 	return pActivity.at(i);
 
 }
 
-void Nuclide::calculatePercent(vector<double> totals) {
+void Nuclide::calculatePercent(vector<Double_t> totals) {
 
 	if (totals.size() == activity.size()) {
 

@@ -38,27 +38,27 @@ using namespace std;
 
 ////////// DECLARATIONS //////////////////////////
 
-      ifstream   alltabs;
+        ifstream   alltabs;
 	
-	  bool   inTable = false;
-	  bool   timeStepsDone = false;
-	  bool   bS;
-	   int   tNumber;
-	   int   existingNuclide;
-	double   hL;
+	  Bool_t   inTable = false;
+	  Bool_t   timeStepsDone = false;
+	  Bool_t   bS;
+	   Int_t   tNumber;
+	   Int_t   existingNuclide;
+	Double_t   hL;
 
-	string   pline;
-	string   line;
-	string   dummy;
-	string   element;
-	string   isotope;
+	  string   pline;
+	  string   line;
+	  string   dummy;
+	  string   element;
+	  string   isotope;
 
-  stringstream   ssline;
+    stringstream   ssline;
 
-vector<string>   beamStates(10);
-vector<string>   timeStepsUnit(10);
-vector<double>   timeSteps(10);
-vector<double>   activities(10);
+  vector<string>   beamStates(10);
+  vector<string>   timeStepsUnit(10);
+vector<Double_t>   timeSteps(10);
+vector<Double_t>   activities(10);
 
 	 Table  *table;
        Nuclide  *nuclide;
@@ -76,7 +76,7 @@ vector<double>   activities(10);
 
 //////////////////////////////////////////////////
 
-int main(int argc, char* argv[]) {
+Int_t main(Int_t argc, char* argv[]) {
 
         TApplication *rootApp = new TApplication("alltabs2ttree",&argc,argv);
 
@@ -236,7 +236,7 @@ void Read() {
 
 				nuclide = table->getNuclide(existingNuclide);
 
-				for (int i = 0; i < 10; i++) {
+				for (Int_t i = 0; i < 10; i++) {
 
 					nuclide->addActivity(activities.at(i));
 
@@ -255,7 +255,7 @@ void Read() {
 
 	table->finalizeTable();
 
-	/*for (int i = 0; i < table->getNNuclides(); i++) {
+	/*for (Int_t i = 0; i < table->getNNuclides(); i++) {
 
 		nuclide = table->getNuclide(i);
 		bNuclides->Fill();
@@ -300,11 +300,23 @@ void readTimeAndBeamHeadings() {
 				 >> timeSteps.at(8) >> timeStepsUnit.at(8)
 				 >> timeSteps.at(9) >> timeStepsUnit.at(9);
 
-	for (int i = 0; i < 10 ; i++) {
+	for (Int_t i = 0; i < 10 ; i++) {
+
+		if (timeStepsUnit.at(i) == "H") {
+
+			timeSteps.at(i) *= 3600.;
+
+		}
 
 		if (timeStepsUnit.at(i) == "D") {
 
 			timeSteps.at(i) *= 86400.;
+
+		}
+
+		if (timeStepsUnit.at(i) == "Y") {
+
+			timeSteps.at(i) *= 31536000.;
 
 		}
 
