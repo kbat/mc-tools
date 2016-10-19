@@ -224,3 +224,18 @@ void Table::getMostActive(Double_t threshold, Int_t timeStep) {
 
 }
 
+vector<Double_t> Table::getTotalActivity() {
+
+	if (totalActivity.size() != getNBeamStates()) {
+
+		calculateTotals();
+
+	} 
+
+	return totalActivity;
+
+}
+
+
+
+

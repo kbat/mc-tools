@@ -40,6 +40,8 @@ class Table : public TObject {
 			ULong_t   getNNuclides();
 			ULong_t   getNBeamStates();
 
+	       vector<Double_t>   getTotalActivity();
+
 	       vector<Double_t>   getTimeSteps();
 		 vector<Bool_t>   getBeamStates();
 
