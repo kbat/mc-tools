@@ -36,11 +36,11 @@ using namespace std;
 
 //////////////////////////////////////////////////
 
-////////// DECLARATIONS //////////////////////////
+////////// FUNCTION DECLARATIONS /////////////////
 
-	  void   HelpLine(TApplication *);
-	  void   Read(ifstream &, TBranch *, TTable *, TNuclide *);
-	  void   readTimeAndBeamHeadings(ifstream &, string, TTable *);
+void   HelpLine(TApplication *);
+void   Read(ifstream &, TBranch *, TTable *, TNuclide *);
+void   readTimeAndBeamHeadings(ifstream &, string, TTable *);
 
 //////////////////////////////////////////////////
 
