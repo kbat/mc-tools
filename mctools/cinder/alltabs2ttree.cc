@@ -38,41 +38,9 @@ using namespace std;
 
 ////////// DECLARATIONS //////////////////////////
 
-        ifstream   alltabs;
-	
-	  Bool_t   inTable = false;
-	  Bool_t   timeStepsDone = false;
-	  Bool_t   bS;
-	   Int_t   tNumber;
-	   Int_t   existingNuclide;
-	Double_t   hL;
-
-	  string   pline;
-	  string   line;
-	  string   dummy;
-	  string   element;
-	  string   isotope;
-
-    stringstream   ssline;
-
-  vector<string>   beamStates(10);
-  vector<string>   timeStepsUnit(10);
-vector<Double_t>   timeSteps(10);
-vector<Double_t>   activities(10);
-
-	 Table  *table;
-       Nuclide  *nuclide;
-
-	 TTree  *T;
-
-       TBranch  *bTable;
-       //TBranch  *bNuclides;
-
-//////////////////////////////////////////////////
-
 	  void   HelpLine(TApplication *);
-	  void   Read();
-	  void   readTimeAndBeamHeadings();
+	  void   Read(ifstream &, TBranch *, Table *, Nuclide *);
+	  void   readTimeAndBeamHeadings(ifstream &, string, Table *);
 
 //////////////////////////////////////////////////
 
@@ -80,7 +48,16 @@ Int_t main(Int_t argc, char* argv[]) {
 
         TApplication *rootApp = new TApplication("alltabs2ttree",&argc,argv);
 
-	stringstream rootFile;
+		ifstream   alltabs;
+
+	    stringstream   rootFile;
+
+		   Table  *table;
+	         Nuclide  *nuclide;
+
+		   TTree  *T;
+
+		 TBranch  *bTable;
 
 	if (rootApp->Argc() == 1) {
 
@@ -97,13 +74,12 @@ Int_t main(Int_t argc, char* argv[]) {
 
 		T = new TTree("alltabs","TABLE 4",0);
 		bTable = T->Branch("Table", &table, 0);
-		//bNuclides = T->Branch("Nuclide", &nuclide,0);
-
+		
 		alltabs.open(rootApp->Argv(1));
 
 		if (alltabs.is_open()) {
 
-			Read();
+			Read(alltabs, bTable, table, nuclide);
 
 			if (rootApp->Argc() == 2) {
 
@@ -137,7 +113,27 @@ void HelpLine(TApplication *rA) {
 
 }
 
-void Read() {
+void Read(ifstream &alltabs, TBranch *bTable, Table *table, Nuclide *nuclide) {
+
+	////////// DECLARATIONS //////////////////////////
+
+		  Bool_t   inTable = false;
+		  Bool_t   timeStepsDone = false;
+
+		   Int_t   tNumber;
+		   Int_t   existingNuclide;
+		Double_t   hL;
+
+		  string   pline;
+		  string   line;
+		  string   dummy;
+		  string   element;
+		  string   isotope;
+
+	    stringstream   ssline;
+	vector<Double_t>   activities(10);
+
+	//////////////////////////////////////////////////
 
 	pline = "";
 
@@ -160,7 +156,7 @@ void Read() {
 
 		if ( (inTable) && (!timeStepsDone) && ((line.find("UP") != std::string::npos) || (line.find("DOWN") != std::string::npos)) ) {
 
-			readTimeAndBeamHeadings();
+			readTimeAndBeamHeadings(alltabs,line,table);
 
 			timeStepsDone = true;
 
@@ -255,20 +251,26 @@ void Read() {
 
 	table->finalizeTable();
 
-	/*for (Int_t i = 0; i < table->getNNuclides(); i++) {
-
-		nuclide = table->getNuclide(i);
-		bNuclides->Fill();
-
-	}*/
-
 	bTable->Fill();
 
 	alltabs.close();
 
 }
 
-void readTimeAndBeamHeadings() {
+void readTimeAndBeamHeadings(ifstream &alltabs, string line, Table *table) {
+
+	////////// DECLARATIONS //////////////////////////
+
+		  Bool_t   bS;
+
+	  vector<string>   beamStates(10);
+	  vector<string>   timeStepsUnit(10);
+	vector<Double_t>   timeSteps(10);
+
+	    stringstream   ssline;
+		  string   dummy;
+
+	//////////////////////////////////////////////////
 
 	ssline << line;
 	ssline >> beamStates.at(0)
