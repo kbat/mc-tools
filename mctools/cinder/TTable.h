@@ -1,5 +1,5 @@
-#ifndef TABLE_HH
-#define TABLE_HH
+#ifndef TTABLE_HH
+#define TTABLE_HH
 
 #include <string.h>
 #include <cstdlib>
@@ -8,17 +8,17 @@
 
 #include <TObject.h>
 
-#include "Nuclide.hh"
+#include "TNuclide.h"
 
 using namespace std;
 
-class Table : public TObject {
+class TTable : public TObject {
 
 	public:
 
-				  Table(string,Int_t);
-				  Table() {};
-				 ~Table() {};
+				  TTable(string,Int_t);
+				  TTable() {};
+				 ~TTable() {};
 
 			   void   setName(string);
 			   void   setNumber(Int_t);
@@ -26,7 +26,7 @@ class Table : public TObject {
 			   void   addBeamState(Bool_t);
 			   void   addTimeStep(Double_t);
 
-			ULong_t   addNuclide(Nuclide);
+			ULong_t   addNuclide(TNuclide);
 
 			  Int_t   findNuclide(string);
 			   void   listNuclides();
@@ -35,7 +35,7 @@ class Table : public TObject {
 			 string   getName();
 			  Int_t   getNumber();
 
-			Nuclide  *getNuclide(Int_t);
+		       TNuclide  *getNuclide(Int_t);
 
 			ULong_t   getNNuclides();
 			ULong_t   getNBeamStates();
@@ -66,12 +66,12 @@ class Table : public TObject {
 		 vector<Bool_t>   beamStates;
 	       vector<Double_t>   timeSteps;
 
-		vector<Nuclide>   Nuclides;
+	       vector<TNuclide>   Nuclides;
 
 	       vector<Double_t>   totalActivity;
 
 
-	ClassDef(Table,1);
+	ClassDef(TTable,1);
 
 };
 

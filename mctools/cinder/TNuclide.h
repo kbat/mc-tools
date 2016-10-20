@@ -1,5 +1,5 @@
-#ifndef NUCLIDE_HH
-#define NUCLIDE_HH
+#ifndef TNUCLIDE_HH
+#define TNUCLIDE_HH
 
 #include <string.h>
 #include <cstdlib>
@@ -10,13 +10,13 @@
 
 using namespace std;
 
-class Nuclide : public TObject {
+class TNuclide : public TObject {
 
 	public:
 
-				 Nuclide(string,Double_t);
-				 Nuclide() {};
-				~Nuclide() {};
+				 TNuclide(string,Double_t);
+				 TNuclide() {};
+				~TNuclide() {};
 
 			  void   setName(string);
 			  void   setHalflife(Double_t);
@@ -50,7 +50,7 @@ class Nuclide : public TObject {
 	      vector<Double_t>   pActivity;
 
 
-	ClassDef(Nuclide,1);
+	ClassDef(TNuclide,1);
 
 };
 

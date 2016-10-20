@@ -1,65 +1,65 @@
-#include "Table.hh"
+#include "TTable.h"
 
 #ifndef __CINT__
-	ClassImp(Table)
+	ClassImp(TTable)
 #endif
 
-Table::Table(string name, Int_t number) {
+TTable::TTable(string name, Int_t number) {
 
 	tableName = name;
 	tableNumber = number;
 
 }
 
-void Table::setName(string name) {
+void TTable::setName(string name) {
 
 	tableName = name;
 
 }
 
-void Table::setNumber(Int_t number) {
+void TTable::setNumber(Int_t number) {
 
 	tableNumber = number;
 
 }
 
-string Table::getName() {
+string TTable::getName() {
 
 	return tableName;
 
 }
 
-Int_t Table::getNumber() {
+Int_t TTable::getNumber() {
 
 	return tableNumber;
 
 }
 
-ULong_t Table::getNNuclides() {
+ULong_t TTable::getNNuclides() {
 
 	return Nuclides.size();
 
 }
 
-ULong_t Table::getNBeamStates() {
+ULong_t TTable::getNBeamStates() {
 
 	return beamStates.size();
 
 }
 
-void Table::addBeamState(Bool_t s) {
+void TTable::addBeamState(Bool_t s) {
 
 	beamStates.push_back(s);
 
 }
 
-void Table::addTimeStep(Double_t tS) {
+void TTable::addTimeStep(Double_t tS) {
 
 	timeSteps.push_back(tS);
 
 }
 
-ULong_t Table::addNuclide(Nuclide n) {
+ULong_t TTable::addNuclide(TNuclide n) {
 
 	Nuclides.push_back(n);
 
@@ -67,13 +67,13 @@ ULong_t Table::addNuclide(Nuclide n) {
 
 }
 
-Nuclide* Table::getNuclide(Int_t i) {
+TNuclide* TTable::getNuclide(Int_t i) {
 
 	return &Nuclides.at(i);
 
 }
 
-Int_t Table::findNuclide(string n) {
+Int_t TTable::findNuclide(string n) {
 
 	Int_t pos = -1;
 
@@ -92,7 +92,7 @@ Int_t Table::findNuclide(string n) {
 
 }
 
-void Table::finalizeTable() {
+void TTable::finalizeTable() {
 
 	Int_t max = getNBeamStates();
 
@@ -104,19 +104,19 @@ void Table::finalizeTable() {
 
 }
 
-vector<Double_t> Table::getTimeSteps() {
+vector<Double_t> TTable::getTimeSteps() {
 
 	return timeSteps;
 
 }
 
-vector<Bool_t> Table::getBeamStates() {
+vector<Bool_t> TTable::getBeamStates() {
 
 	return beamStates;
 
 }
 
-void Table::listNuclides() {
+void TTable::listNuclides() {
 
 	for (UInt_t i=0; i < Nuclides.size(); i++) {
 
@@ -125,7 +125,7 @@ void Table::listNuclides() {
 
 }
 
-void Table::listNuclides(string n) {
+void TTable::listNuclides(string n) {
 
 	string nuclideName;
 
@@ -143,7 +143,7 @@ void Table::listNuclides(string n) {
 
 }
 
-void Table::calculateTotals() {
+void TTable::calculateTotals() {
 
 	Double_t tmp;
 
@@ -169,7 +169,7 @@ void Table::calculateTotals() {
 
 }
 
-void Table::toPercent() {
+void TTable::toPercent() {
 
 	for (ULong_t i=0; i < getNNuclides(); i++) {
 
@@ -179,12 +179,12 @@ void Table::toPercent() {
 
 }
 
-void Table::getMostActive(Double_t threshold, Int_t timeStep) {
+void TTable::getMostActive(Double_t threshold, Int_t timeStep) {
 
 	Int_t min = 0;
 	Int_t max = getNBeamStates();
 
-	Nuclide *N;
+	TNuclide *N;
 
 	Double_t Activity;
 	Double_t pActivity;
@@ -224,7 +224,7 @@ void Table::getMostActive(Double_t threshold, Int_t timeStep) {
 
 }
 
-vector<Double_t> Table::getTotalActivity() {
+vector<Double_t> TTable::getTotalActivity() {
 
 	if (totalActivity.size() != getNBeamStates()) {
 

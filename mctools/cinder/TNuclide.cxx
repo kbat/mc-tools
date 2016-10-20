@@ -1,10 +1,10 @@
-#include "Nuclide.hh"
+#include "TNuclide.h"
 
 #ifndef __CINT__
-	ClassImp(Nuclide)
+	ClassImp(TNuclide)
 #endif
 
-Nuclide::Nuclide(string name, Double_t hL) {
+TNuclide::TNuclide(string name, Double_t hL) {
 
 	nuclideName = name;
 	setExcited();
@@ -13,26 +13,26 @@ Nuclide::Nuclide(string name, Double_t hL) {
 
 }
 
-void Nuclide::setName(string name) {
+void TNuclide::setName(string name) {
 
 	nuclideName = name;
 	setExcited();
 
 }
 
-void Nuclide::setHalflife(Double_t hL) {
+void TNuclide::setHalflife(Double_t hL) {
 
 	halfLife = hL;
 
 }
 
-Double_t Nuclide::getHalflife() {
+Double_t TNuclide::getHalflife() {
 
 	return halfLife;
 
 }
 
-void Nuclide::setExcited() {
+void TNuclide::setExcited() {
 
 	if (nuclideName.find("*") != std::string::npos) {
 
@@ -46,25 +46,25 @@ void Nuclide::setExcited() {
 
 }
 
-string Nuclide::getName() {
+string TNuclide::getName() {
 
 	return nuclideName;
 
 }
 
-Int_t Nuclide::getNActivity() {
+Int_t TNuclide::getNActivity() {
 
 	return activity.size();
 
 }
 
-void Nuclide::addActivity(Double_t act) {
+void TNuclide::addActivity(Double_t act) {
 
 	activity.push_back(act);
 
 }
 
-void Nuclide::trimActivity(Int_t max) {
+void TNuclide::trimActivity(Int_t max) {
 
 	for (Int_t i = (activity.size() - 1); i >= max; i--) {
 
@@ -74,31 +74,31 @@ void Nuclide::trimActivity(Int_t max) {
 
 }
 
-Bool_t Nuclide::getExcited() {
+Bool_t TNuclide::getExcited() {
 
 	return isExcited;
 
 }
 
-vector<Double_t> Nuclide::getActivities() {
+vector<Double_t> TNuclide::getActivities() {
 
 	return activity;
 
 }
 
-Double_t Nuclide::getActivity(Int_t i) {
+Double_t TNuclide::getActivity(Int_t i) {
 
 	return activity.at(i);
 
 }
 
-Double_t Nuclide::getPActivity(Int_t i) {
+Double_t TNuclide::getPActivity(Int_t i) {
 
 	return pActivity.at(i);
 
 }
 
-void Nuclide::calculatePercent(vector<Double_t> totals) {
+void TNuclide::calculatePercent(vector<Double_t> totals) {
 
 	if (totals.size() == activity.size()) {
 
