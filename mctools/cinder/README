@@ -1,5 +1,10 @@
 ###################################################################################################
 
+IMPORTANT: in order to ensure the correct operation of the converter, the option 'russ 0' in the
+           inpact file must be specified (see Sec. 2.5 pag. 12 of the Activation Script manual).
+
+###################################################################################################
+
 This to compile the libAlltabs.so into ROOT.
 
 make libAlltabs.so
