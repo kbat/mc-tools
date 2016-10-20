@@ -1,5 +1,5 @@
-#include "Table.hh"
-#include "Nuclide.hh"
+#include "TTable.h"
+#include "TNuclide.h"
 #include "alltabsDict.h"
 
 #include <TROOT.h>
@@ -39,8 +39,8 @@ using namespace std;
 ////////// DECLARATIONS //////////////////////////
 
 	  void   HelpLine(TApplication *);
-	  void   Read(ifstream &, TBranch *, Table *, Nuclide *);
-	  void   readTimeAndBeamHeadings(ifstream &, string, Table *);
+	  void   Read(ifstream &, TBranch *, TTable *, TNuclide *);
+	  void   readTimeAndBeamHeadings(ifstream &, string, TTable *);
 
 //////////////////////////////////////////////////
 
@@ -52,8 +52,8 @@ Int_t main(Int_t argc, char* argv[]) {
 
 	    stringstream   rootFile;
 
-		   Table  *table;
-	         Nuclide  *nuclide;
+		  TTable  *table;
+	        TNuclide  *nuclide;
 
 		   TTree  *T;
 
@@ -69,8 +69,8 @@ Int_t main(Int_t argc, char* argv[]) {
 		gSystem->Load("libTree");
 		gSystem->Load("libAlltabs");
 
-		table = new Table();
-		nuclide = new Nuclide();
+		table = new TTable();
+		nuclide = new TNuclide();
 
 		T = new TTree("alltabs","TABLE 4",0);
 		bTable = T->Branch("Table", &table, 0);
@@ -113,7 +113,7 @@ void HelpLine(TApplication *rA) {
 
 }
 
-void Read(ifstream &alltabs, TBranch *bTable, Table *table, Nuclide *nuclide) {
+void Read(ifstream &alltabs, TBranch *bTable, TTable *table, TNuclide *nuclide) {
 
 	////////// DECLARATIONS //////////////////////////
 
@@ -225,7 +225,7 @@ void Read(ifstream &alltabs, TBranch *bTable, Table *table, Nuclide *nuclide) {
 
 				if (existingNuclide == -1) {
 
-					nuclide = new Nuclide(element+isotope,hL);
+					nuclide = new TNuclide(element+isotope,hL);
 					existingNuclide = table->addNuclide(*nuclide);
 
 				}
@@ -257,7 +257,7 @@ void Read(ifstream &alltabs, TBranch *bTable, Table *table, Nuclide *nuclide) {
 
 }
 
-void readTimeAndBeamHeadings(ifstream &alltabs, string line, Table *table) {
+void readTimeAndBeamHeadings(ifstream &alltabs, string line, TTable *table) {
 
 	////////// DECLARATIONS //////////////////////////
 
