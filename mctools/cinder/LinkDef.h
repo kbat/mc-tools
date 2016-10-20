@@ -4,7 +4,7 @@
 #pragma link off all functions;
 #pragma link C++ nestedclasses;
 
-#pragma link C++ class Table+;
-#pragma link C++ class Nuclide+;
+#pragma link C++ class TTable+;
+#pragma link C++ class TNuclide+;
 
 #endif /* __CINT__ */
