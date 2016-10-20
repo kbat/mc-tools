@@ -48,303 +48,303 @@ Int_t main(Int_t argc, char* argv[]) {
 
         TApplication *rootApp = new TApplication("alltabs2ttree",&argc,argv);
 
-		ifstream   alltabs;
+                ifstream   alltabs;
 
-	    stringstream   rootFile;
+            stringstream   rootFile;
 
-		  TTable  *table;
-	        TNuclide  *nuclide;
+                  TTable  *table;
+                TNuclide  *nuclide;
 
-		   TTree  *T;
+                   TTree  *T;
 
-		 TBranch  *bTable;
+                 TBranch  *bTable;
 
-	if (rootApp->Argc() == 1) {
+        if (rootApp->Argc() == 1) {
 
-		HelpLine(rootApp);
-		return 2;
+                HelpLine(rootApp);
+                return 2;
 
-	} else {
+        } else {
 
-		gSystem->Load("libTree");
-		gSystem->Load("libAlltabs");
+                gSystem->Load("libTree");
+                gSystem->Load("libAlltabs");
 
-		table = new TTable();
-		nuclide = new TNuclide();
+                table = new TTable();
+                nuclide = new TNuclide();
 
-		T = new TTree("alltabs","TABLE 4",0);
-		bTable = T->Branch("Table", &table, 0);
-		
-		alltabs.open(rootApp->Argv(1));
+                T = new TTree("alltabs","TABLE 4",0);
+                bTable = T->Branch("Table", &table, 0);
+                
+                alltabs.open(rootApp->Argv(1));
 
-		if (alltabs.is_open()) {
+                if (alltabs.is_open()) {
 
-			Read(alltabs, bTable, table, nuclide);
+                        Read(alltabs, bTable, table, nuclide);
 
-			if (rootApp->Argc() == 2) {
+                        if (rootApp->Argc() == 2) {
 
-				rootFile << rootApp->Argv(1) << ".root";
+                                rootFile << rootApp->Argv(1) << ".root";
 
-			} else {
+                        } else {
 
-				rootFile << rootApp->Argv(2);
+                                rootFile << rootApp->Argv(2);
 
-			}
+                        }
 
-			T->SaveAs((rootFile.str()).c_str());
+                        T->SaveAs((rootFile.str()).c_str());
 
-			return 0;
+                        return 0;
 
-		} else {
+                } else {
 
-			cerr << "The requested alltabs file either does not exist or is corrupted." << endl;
-			return 1;
+                        cerr << "The requested alltabs file either does not exist or is corrupted." << endl;
+                        return 1;
 
-		 }
+                 }
 
-	}
+        }
 
 }
 
 void HelpLine(TApplication *rA) {
 
-	cout << "Error: too few arguments." << endl;
-	cout << "Usage: " << rA->Argv(0) << " alltabs [output filename]" << endl;
+        cout << "Error: too few arguments." << endl;
+        cout << "Usage: " << rA->Argv(0) << " alltabs [output filename]" << endl;
 
 }
 
 void Read(ifstream &alltabs, TBranch *bTable, TTable *table, TNuclide *nuclide) {
 
-	////////// DECLARATIONS //////////////////////////
+        ////////// DECLARATIONS //////////////////////////
 
-		  Bool_t   inTable = false;
-		  Bool_t   timeStepsDone = false;
+                  Bool_t   inTable = false;
+                  Bool_t   timeStepsDone = false;
 
-		   Int_t   tNumber;
-		   Int_t   existingNuclide;
-		Double_t   hL;
+                   Int_t   tNumber;
+                   Int_t   existingNuclide;
+                Double_t   hL;
 
-		  string   pline;
-		  string   line;
-		  string   dummy;
-		  string   element;
-		  string   isotope;
+                  string   pline;
+                  string   line;
+                  string   dummy;
+                  string   element;
+                  string   isotope;
 
-	    stringstream   ssline;
-	vector<Double_t>   activities(10);
+            stringstream   ssline;
+        vector<Double_t>   activities(10);
 
-	//////////////////////////////////////////////////
+        //////////////////////////////////////////////////
 
-	pline = "";
+        pline = "";
 
-	while (getline(alltabs,line)) {
+        while (getline(alltabs,line)) {
 
-		if (line.find("TOTAL ACTIVITY (CURIES) BY NUCLIDE IN") != std::string::npos ) {
+                if (line.find("TOTAL ACTIVITY (CURIES) BY NUCLIDE IN") != std::string::npos ) {
 
-			ssline << pline;
-			ssline >> tNumber >> dummy >> tNumber;
+                        ssline << pline;
+                        ssline >> tNumber >> dummy >> tNumber;
 
-			table->setName(line);
-			table->setNumber(tNumber);
+                        table->setName(line);
+                        table->setNumber(tNumber);
 
-			inTable = true;
+                        inTable = true;
 
-			ssline.str(string());
-			ssline.clear();
+                        ssline.str(string());
+                        ssline.clear();
 
-		}
+                }
 
-		if ( (inTable) && (!timeStepsDone) && ((line.find("UP") != std::string::npos) || (line.find("DOWN") != std::string::npos)) ) {
+                if ( (inTable) && (!timeStepsDone) && ((line.find("UP") != std::string::npos) || (line.find("DOWN") != std::string::npos)) ) {
 
-			readTimeAndBeamHeadings(alltabs,line,table);
+                        readTimeAndBeamHeadings(alltabs,line,table);
 
-			timeStepsDone = true;
+                        timeStepsDone = true;
 
-		}
+                }
 
-		if ( (inTable) && (line.find("(CONTINUED AT SUBSEQUENT TIMES)") != std::string::npos) ) {
+                if ( (inTable) && (line.find("(CONTINUED AT SUBSEQUENT TIMES)") != std::string::npos) ) {
 
-			timeStepsDone = false;
+                        timeStepsDone = false;
 
-		} else if ( (inTable) && (line.find("TABLE") != std::string::npos) && (line.find("(CONTINUED AT SUBSEQUENT TIMES)") == std::string::npos) ) {
+                } else if ( (inTable) && (line.find("TABLE") != std::string::npos) && (line.find("(CONTINUED AT SUBSEQUENT TIMES)") == std::string::npos) ) {
 
-			continue;
+                        continue;
 
-		}
+                }
 
-		if ( (inTable) && (line.find("DECAY POWER DENSITY (WATTS/CC) BY NUCLIDE IN") != std::string::npos) ) {
+                if ( (inTable) && (line.find("DECAY POWER DENSITY (WATTS/CC) BY NUCLIDE IN") != std::string::npos) ) {
 
-			inTable = false;
-			timeStepsDone = false;
+                        inTable = false;
+                        timeStepsDone = false;
 
-			break;
+                        break;
 
-		}
+                }
 
-		if (line.find("TABLE") != std::string::npos) {
+                if (line.find("TABLE") != std::string::npos) {
 
-			pline = line;
+                        pline = line;
 
-		}
+                }
 
-		if ( (inTable) && (timeStepsDone) ) {
+                if ( (inTable) && (timeStepsDone) ) {
 
-			if ( (line.find("UP") != std::string::npos) ||
-			     (line.find("DOWN") != std::string::npos) ||
-			     (line.find("NUCLIDE") != std::string::npos) ||
-			     (line.find("+_______") != std::string::npos) ||
-			     (line.find("  A<66") != std::string::npos) ||
-			     (line.find(" 65<A<173") != std::string::npos) ||
-			     (line.find(" 172<A") != std::string::npos) ||
-			     (line.find(" TOTAL") != std::string::npos) ) {
+                        if ( (line.find("UP") != std::string::npos) ||
+                             (line.find("DOWN") != std::string::npos) ||
+                             (line.find("NUCLIDE") != std::string::npos) ||
+                             (line.find("+_______") != std::string::npos) ||
+                             (line.find("  A<66") != std::string::npos) ||
+                             (line.find(" 65<A<173") != std::string::npos) ||
+                             (line.find(" 172<A") != std::string::npos) ||
+                             (line.find(" TOTAL") != std::string::npos) ) {
 
-				continue;
+                                continue;
 
-			}
-	
-			ssline << line.substr(0,9);
-			ssline >> element >> isotope;
+                        }
+        
+                        ssline << line.substr(0,9);
+                        ssline >> element >> isotope;
 
-			if ((element+isotope) != "" ) {
+                        if ((element+isotope) != "" ) {
 
-				ssline.str(string());
-				ssline.clear();
+                                ssline.str(string());
+                                ssline.clear();
 
-				ssline << line.substr(10,string::npos);
-				ssline >> hL >> activities.at(0) >> activities.at(1)
-					     >> activities.at(2)
-					     >> activities.at(3)
-					     >> activities.at(4)
-					     >> activities.at(5)
-					     >> activities.at(6)
-					     >> activities.at(7)
-					     >> activities.at(8)
-					     >> activities.at(9);
+                                ssline << line.substr(10,string::npos);
+                                ssline >> hL >> activities.at(0) >> activities.at(1)
+                                             >> activities.at(2)
+                                             >> activities.at(3)
+                                             >> activities.at(4)
+                                             >> activities.at(5)
+                                             >> activities.at(6)
+                                             >> activities.at(7)
+                                             >> activities.at(8)
+                                             >> activities.at(9);
 
-				existingNuclide = table->findNuclide(element+isotope);
+                                existingNuclide = table->findNuclide(element+isotope);
 
-				if (existingNuclide == -1) {
+                                if (existingNuclide == -1) {
 
-					nuclide = new TNuclide(element+isotope,hL);
-					existingNuclide = table->addNuclide(*nuclide);
+                                        nuclide = new TNuclide(element+isotope,hL);
+                                        existingNuclide = table->addNuclide(*nuclide);
 
-				}
+                                }
 
-				nuclide = table->getNuclide(existingNuclide);
+                                nuclide = table->getNuclide(existingNuclide);
 
-				for (Int_t i = 0; i < 10; i++) {
+                                for (Int_t i = 0; i < 10; i++) {
 
-					nuclide->addActivity(activities.at(i));
+                                        nuclide->addActivity(activities.at(i));
 
-				}
+                                }
 
-				ssline.str(string());
-				ssline.clear();
+                                ssline.str(string());
+                                ssline.clear();
 
-				element = isotope = "";
+                                element = isotope = "";
 
-			}
+                        }
 
-		}
+                }
 
-	}
+        }
 
-	table->finalizeTable();
+        table->finalizeTable();
 
-	bTable->Fill();
+        bTable->Fill();
 
-	alltabs.close();
+        alltabs.close();
 
 }
 
 void readTimeAndBeamHeadings(ifstream &alltabs, string line, TTable *table) {
 
-	////////// DECLARATIONS //////////////////////////
+        ////////// DECLARATIONS //////////////////////////
 
-		  Bool_t   bS;
+                  Bool_t   bS;
 
-	  vector<string>   beamStates(10);
-	  vector<string>   timeStepsUnit(10);
-	vector<Double_t>   timeSteps(10);
+          vector<string>   beamStates(10);
+          vector<string>   timeStepsUnit(10);
+        vector<Double_t>   timeSteps(10);
 
-	    stringstream   ssline;
-		  string   dummy;
+            stringstream   ssline;
+                  string   dummy;
 
-	//////////////////////////////////////////////////
+        //////////////////////////////////////////////////
 
-	ssline << line;
-	ssline >> beamStates.at(0)
-	       >> beamStates.at(1)
-	       >> beamStates.at(2)
-	       >> beamStates.at(3)
-	       >> beamStates.at(4)
-	       >> beamStates.at(5)
-	       >> beamStates.at(6)
-	       >> beamStates.at(7)
-	       >> beamStates.at(8)
-	       >> beamStates.at(9);
-	      
+        ssline << line;
+        ssline >> beamStates.at(0)
+               >> beamStates.at(1)
+               >> beamStates.at(2)
+               >> beamStates.at(3)
+               >> beamStates.at(4)
+               >> beamStates.at(5)
+               >> beamStates.at(6)
+               >> beamStates.at(7)
+               >> beamStates.at(8)
+               >> beamStates.at(9);
+              
 
-	getline(alltabs,line);
+        getline(alltabs,line);
 
-	ssline.str(string());
-	ssline.clear();
+        ssline.str(string());
+        ssline.clear();
 
-	ssline << line;
-	ssline >> dummy >> dummy >> timeSteps.at(0) >> timeStepsUnit.at(0)
-				 >> timeSteps.at(1) >> timeStepsUnit.at(1)
-				 >> timeSteps.at(2) >> timeStepsUnit.at(2)
-				 >> timeSteps.at(3) >> timeStepsUnit.at(3)
-				 >> timeSteps.at(4) >> timeStepsUnit.at(4)
-				 >> timeSteps.at(5) >> timeStepsUnit.at(5)
-				 >> timeSteps.at(6) >> timeStepsUnit.at(6)
-				 >> timeSteps.at(7) >> timeStepsUnit.at(7)
-				 >> timeSteps.at(8) >> timeStepsUnit.at(8)
-				 >> timeSteps.at(9) >> timeStepsUnit.at(9);
+        ssline << line;
+        ssline >> dummy >> dummy >> timeSteps.at(0) >> timeStepsUnit.at(0)
+                                 >> timeSteps.at(1) >> timeStepsUnit.at(1)
+                                 >> timeSteps.at(2) >> timeStepsUnit.at(2)
+                                 >> timeSteps.at(3) >> timeStepsUnit.at(3)
+                                 >> timeSteps.at(4) >> timeStepsUnit.at(4)
+                                 >> timeSteps.at(5) >> timeStepsUnit.at(5)
+                                 >> timeSteps.at(6) >> timeStepsUnit.at(6)
+                                 >> timeSteps.at(7) >> timeStepsUnit.at(7)
+                                 >> timeSteps.at(8) >> timeStepsUnit.at(8)
+                                 >> timeSteps.at(9) >> timeStepsUnit.at(9);
 
-	for (Int_t i = 0; i < 10 ; i++) {
+        for (Int_t i = 0; i < 10 ; i++) {
 
-		if (timeStepsUnit.at(i) == "H") {
+                if (timeStepsUnit.at(i) == "H") {
 
-			timeSteps.at(i) *= 3600.;
+                        timeSteps.at(i) *= 3600.;
 
-		}
+                }
 
-		if (timeStepsUnit.at(i) == "D") {
+                if (timeStepsUnit.at(i) == "D") {
 
-			timeSteps.at(i) *= 86400.;
+                        timeSteps.at(i) *= 86400.;
 
-		}
+                }
 
-		if (timeStepsUnit.at(i) == "Y") {
+                if (timeStepsUnit.at(i) == "Y") {
 
-			timeSteps.at(i) *= 31536000.;
+                        timeSteps.at(i) *= 31536000.;
 
-		}
+                }
 
-		if (beamStates.at(i) == "UP") {
+                if (beamStates.at(i) == "UP") {
 
-			bS = true;
+                        bS = true;
 
-		} else {
+                } else {
 
-			bS = false;
+                        bS = false;
 
-		}
+                }
 
-		if ( (beamStates.at(i) != "") && (timeSteps.at(i) != 0) ) {
+                if ( (beamStates.at(i) != "") && (timeSteps.at(i) != 0) ) {
 
-			table->addBeamState(bS);
-			table->addTimeStep(timeSteps.at(i));
+                        table->addBeamState(bS);
+                        table->addTimeStep(timeSteps.at(i));
 
-		}
+                }
 
-		beamStates.at(i) = string();
-		timeSteps.at(i)  = 0;
+                beamStates.at(i) = string();
+                timeSteps.at(i)  = 0;
 
-	}
+        }
 
-	ssline.str(string());
-	ssline.clear();
+        ssline.str(string());
+        ssline.clear();
 
 }

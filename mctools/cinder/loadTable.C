@@ -6,15 +6,15 @@ TTable *T = new TTable();
 
 void loadTable(string name) {
 
-	TFile *f = new TFile(name.c_str());
-	TTree *alltabs = (TTree *) f->Get("alltabs");
+        TFile *f = new TFile(name.c_str());
+        TTree *alltabs = (TTree *) f->Get("alltabs");
 
-	TBranch *bT = alltabs->GetBranch("Table");
-	bT->SetAddress(&T);
-	bT->GetEntry(0);
+        TBranch *bT = alltabs->GetBranch("Table");
+        bT->SetAddress(&T);
+        bT->GetEntry(0);
 
-	cout << "Number of nuclides in table: " << T->getNNuclides() << endl;
-	cout << "Number of time steps in table: " << T->getNBeamStates() << endl;
+        cout << "Number of nuclides in table: " << T->getNNuclides() << endl;
+        cout << "Number of time steps in table: " << T->getNBeamStates() << endl;
 
 }
 
