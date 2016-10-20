@@ -1,4 +1,4 @@
-Table *T = new Table();
+TTable *T = new TTable();
 TH2D *act;
 
 drawActivity3D(string name, char *mode = "p", int binLow = -1, int binUp = -1) {

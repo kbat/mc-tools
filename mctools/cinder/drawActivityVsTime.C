@@ -1,4 +1,4 @@
-Table *T = new Table();
+TTable *T = new TTable();
 
 Int_t drawActivityVsTime(string name) {
 

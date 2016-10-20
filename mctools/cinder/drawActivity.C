@@ -2,7 +2,7 @@
 // .x drawActivity.C("alltabs.root")
 // Change the filename according to your needs
 
-Table *T = new Table();
+TTable *T = new TTable();
 
 void drawActivity(string name) {
 
