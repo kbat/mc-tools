@@ -23,25 +23,25 @@ void TTable::setNumber(Int_t number) {
 
 }
 
-string TTable::getName() {
+string TTable::getName() const {
 
 	return tableName;
 
 }
 
-Int_t TTable::getNumber() {
+Int_t TTable::getNumber() const {
 
 	return tableNumber;
 
 }
 
-ULong_t TTable::getNNuclides() {
+ULong_t TTable::getNNuclides() const {
 
 	return Nuclides.size();
 
 }
 
-ULong_t TTable::getNBeamStates() {
+ULong_t TTable::getNBeamStates() const {
 
 	return beamStates.size();
 
@@ -104,13 +104,13 @@ void TTable::finalizeTable() {
 
 }
 
-vector<Double_t> TTable::getTimeSteps() {
+vector<Double_t> TTable::getTimeSteps() const {
 
 	return timeSteps;
 
 }
 
-vector<Bool_t> TTable::getBeamStates() {
+vector<Bool_t> TTable::getBeamStates() const {
 
 	return beamStates;
 

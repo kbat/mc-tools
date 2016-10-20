@@ -23,14 +23,14 @@ class TNuclide : public TObject {
 
 			  void   addActivity(Double_t);
 
-			string   getName();
-			Bool_t   getExcited();
-		      Double_t   getHalflife();
+			string   getName() const;
+			Bool_t   getExcited() const;
+		      Double_t   getHalflife() const;
 
-			 Int_t   getNActivity();
-		      Double_t   getActivity(Int_t);
-		      Double_t   getPActivity(Int_t);
-	      vector<Double_t>   getActivities();
+		       ULong_t   getNActivity() const;
+		      Double_t   getActivity(Int_t) const;
+		      Double_t   getPActivity(Int_t) const;
+	      vector<Double_t>   getActivities() const;
 
 			  void   trimActivity(Int_t);
 			  void   calculatePercent(vector<Double_t>);

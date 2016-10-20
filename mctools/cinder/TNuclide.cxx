@@ -26,7 +26,7 @@ void TNuclide::setHalflife(Double_t hL) {
 
 }
 
-Double_t TNuclide::getHalflife() {
+Double_t TNuclide::getHalflife() const {
 
 	return halfLife;
 
@@ -46,13 +46,13 @@ void TNuclide::setExcited() {
 
 }
 
-string TNuclide::getName() {
+string TNuclide::getName() const {
 
 	return nuclideName;
 
 }
 
-Int_t TNuclide::getNActivity() {
+ULong_t TNuclide::getNActivity() const {
 
 	return activity.size();
 
@@ -74,25 +74,25 @@ void TNuclide::trimActivity(Int_t max) {
 
 }
 
-Bool_t TNuclide::getExcited() {
+Bool_t TNuclide::getExcited() const {
 
 	return isExcited;
 
 }
 
-vector<Double_t> TNuclide::getActivities() {
+vector<Double_t> TNuclide::getActivities() const {
 
 	return activity;
 
 }
 
-Double_t TNuclide::getActivity(Int_t i) {
+Double_t TNuclide::getActivity(Int_t i) const {
 
 	return activity.at(i);
 
 }
 
-Double_t TNuclide::getPActivity(Int_t i) {
+Double_t TNuclide::getPActivity(Int_t i) const {
 
 	return pActivity.at(i);
 

@@ -32,18 +32,18 @@ class TTable : public TObject {
 			   void   listNuclides();
 			   void   listNuclides(string);
 
-			 string   getName();
-			  Int_t   getNumber();
+			 string   getName() const;
+			  Int_t   getNumber() const;
 
 		       TNuclide  *getNuclide(Int_t);
 
-			ULong_t   getNNuclides();
-			ULong_t   getNBeamStates();
+			ULong_t   getNNuclides() const;
+			ULong_t   getNBeamStates() const;
 
 	       vector<Double_t>   getTotalActivity();
 
-	       vector<Double_t>   getTimeSteps();
-		 vector<Bool_t>   getBeamStates();
+	       vector<Double_t>   getTimeSteps() const;
+		 vector<Bool_t>   getBeamStates() const;
 
 			   void   getMostActive(Double_t, Int_t timeStep = -1); // Set the threshold (%) over which the
 									        // the activity is considered significative.
