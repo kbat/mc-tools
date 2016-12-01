@@ -12,18 +12,51 @@ C   = Isotope("06000.71c", 12.011)
 O   = Isotope("08016.70c", 15.999)
 Be  = Isotope("04009.70c", 9.012)
 Al  = Isotope("13027.70c", 26.981539)
-Si28 = Isotope("14028.71c", 28.085)
-Si29 = Isotope("14029.71c", 28.085)
+
+Si28 = Isotope("14028.71c", 27.9769265325) # wiki
+Si29 = Isotope("14029.71c", 28.976494700) # wiki
+Si30 = Isotope("14030.71c", 29.97377017) # wiki
+
+P31  = Isotope("15031.71c", 30.97376163) # wiki
+
+S32  = Isotope("16032.71c", 31.97207100) # wiki
+S33  = Isotope("16033.71c", 32.97145876) # wiki
+S34  = Isotope("16034.71c", 33.96786690) # wiki
+S36  = Isotope("16036.71c", 35.96708076) # wiki
+
+Cr50 = Isotope("24050.71c", 49.9460442) # wiki
+Cr52 = Isotope("24052.71c", 51.9405075) # wiki
+Cr53 = Isotope("24053.71c", 52.9406494) # wiki
+Cr54 = Isotope("24054.71c", 53.9388804) # wiki
+
+Mn55 = Isotope("25055.71c", 54.9380451) # wiki
+
 Fe54 = Isotope("26054.70c", 53.9396127)
 Fe56 = Isotope("26056.70c", 55.9349393)
 Fe57 = Isotope("26057.70c", 56.9353958)
 Fe58 = Isotope("26058.70c", 57.9332773)
+
+Co59 = Isotope("27059.71c", 58.9331950) # wiki
+
+Ni58 = Isotope("28058.71c", 57.9353429) # wiki
+Ni60 = Isotope("28060.71c", 59.9307864) # wiki
+Ni61 = Isotope("28061.71c", 60.9310560) # wiki
+Ni62 = Isotope("28062.71c", 61.9283451) # wiki
+Ni64 = Isotope("28064.71c", 63.9279660) # wiki
 
 Zr90 = Isotope("40090.70c", 89.9047026)
 Zr91 = Isotope("40091.70c", 90.9056439)
 Zr92 = Isotope("40092.70c", 91.9050386)
 Zr94 = Isotope("40094.70c", 93.9063148)
 Zr96 = Isotope("40096.70c", 95.908275)
+
+Mo92  = Isotope("42092.71c", 91.906811) # wiki
+Mo94  = Isotope("42094.71c", 93.9050883) # wiki
+Mo95  = Isotope("42095.71c", 94.9058421) # wiki
+Mo96  = Isotope("42096.71c", 95.9046795) # wiki
+Mo97  = Isotope("42097.71c", 96.9060215) # wiki
+Mo98  = Isotope("42098.71c", 97.9054082) # wiki
+Mo100 = Isotope("42100.71c", 99.907477) # wiki
 
 Pb204 = Isotope("82204.70c", 203.973020)
 Pb206 = Isotope("82206.70c", 205.974440)
