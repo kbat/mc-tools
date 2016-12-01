@@ -63,6 +63,9 @@ Pb206 = Isotope("82206.70c", 205.974440)
 Pb207 = Isotope("82207.70c", 206.975872)
 Pb208 = Isotope("82208.70c", 207.976627)
 
+##### Materials ####
+
+
 beryllium = Material("Beryllium", 1.85)
 beryllium.AddIsotope(Be)
 
@@ -81,6 +84,42 @@ Hydrogen.AddIsotope(H, 1)
 Aluminium = Material("Aluminium", 2.73)
 Aluminium.AddIsotope(Al, 1)
 
+SS316L = Material("SS316L", 7.76)
+SS316L.AddIsotope(C,  0.001392603)
+SS316L.AddIsotope(Si28,  0.007323064)
+SS316L.AddIsotope(Si29,  0.000372017)
+SS316L.AddIsotope(Si30,  0.000245523)
+SS316L.AddIsotope(P31,  0.000360008)
+SS316L.AddIsotope(S32,  0.000165168)
+SS316L.AddIsotope(S33,  0.000001304)
+SS316L.AddIsotope(S34,  0.000007390)
+SS316L.AddIsotope(S36,  0.000000017)
+SS316L.AddIsotope(Cr50,  0.007920331)
+SS316L.AddIsotope(Cr52,  0.152735704)
+SS316L.AddIsotope(Cr53,  0.017319003)
+SS316L.AddIsotope(Cr54,  0.004311066)
+SS316L.AddIsotope(Mn55,  0.018267327)
+SS316L.AddIsotope(Fe54,  0.038344779)
+SS316L.AddIsotope(Fe56,  0.601931034)
+SS316L.AddIsotope(Fe57,  0.013901213)
+SS316L.AddIsotope(Fe58,  0.001849996)
+SS316L.AddIsotope(Co59,  0.000283816)
+SS316L.AddIsotope(Ni58,  0.080834464)
+SS316L.AddIsotope(Ni60,  0.031137291)
+SS316L.AddIsotope(Ni61,  0.001353516)
+SS316L.AddIsotope(Ni62,  0.004315603)
+SS316L.AddIsotope(Ni64,  0.001099057)
+SS316L.AddIsotope(Mo92,  0.002145890)
+SS316L.AddIsotope(Mo94,  0.001341000)
+SS316L.AddIsotope(Mo95,  0.002310064)
+SS316L.AddIsotope(Mo96,  0.002423388)
+SS316L.AddIsotope(Mo97,  0.001388944)
+SS316L.AddIsotope(Mo98,  0.003514494)
+SS316L.AddIsotope(Mo100,  0.001404926)
+SS316L.Print()
+
+
+##### Compounds ####
 
 print "\n04005"
 waterfrac = 0.05
@@ -160,3 +199,6 @@ ParaHAl = Compound("ParaHAl")
 ParaHAl.AddMaterial(Hydrogen, 0.95)
 ParaHAl.AddMaterial(Aluminium, 0.05)
 ParaHAl.PrintAtomicFractions()
+
+#print "SS316L and water"
+#SS316L = Compound("SS316L_20H2O")
