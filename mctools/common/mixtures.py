@@ -200,5 +200,9 @@ ParaHAl.AddMaterial(Hydrogen, 0.95)
 ParaHAl.AddMaterial(Aluminium, 0.05)
 ParaHAl.PrintAtomicFractions()
 
-#print "SS316L and water"
-#SS316L = Compound("SS316L_20H2O")
+waterfrac = float(0.2)
+print "\nSS316L and %.0f%% of water" % (waterfrac*100)
+SS316LH2O = Compound("SS316L20H2O")
+SS316LH2O.AddMaterial(water, waterfrac)
+SS316LH2O.AddMaterial(SS316L, 1-waterfrac)
+SS316LH2O.PrintAtomicFractions()
