@@ -55,7 +55,7 @@ def main():
     """
     ROOT.gStyle.SetOptFit(0)
 
-    parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter, epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-draw', dest='draw', action='store_true', help='Draws the graph')
     parser.add_argument('-save', dest='save', type=str, default="", help='ROOT file name to save the graph')
     parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin of the axis to use as the figure of merit. Comma-separated list of bins is allowed, then the result will be the sum over all bins')

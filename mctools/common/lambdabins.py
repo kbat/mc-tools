@@ -36,7 +36,7 @@ def main():
     Print array of energy boundaries in order to make equal binning in wavelength
     """
 
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: http://code.google.com/p/mc-tools", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: https://github.com/kbat/mc-tools/mc-tools", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('nbins', type=int, help='Number of lambda bins')
     parser.add_argument('lmin', type=float, help='lambda min')
     parser.add_argument('lmax', type=float, help='lambda max')
