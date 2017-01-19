@@ -5,24 +5,18 @@
 import sys, textwrap, argparse
 
 def main():
-# total number of cells:
-    N = 3019
+    """
+    Generates the volume cards for MCNP input
+    """
 
-    vols = {}
-    vols[985] = 2.43687E+5
-    vols[1780] = 7.27140E+04
-    vols[1776] = 3.69161E+05
-    vols[6] = 1.96631E+04
-    vols[8] = 1.97065E+04
-    vols[10] = 1.95215E+04
-    vols[12] = 1.64029E+04
-    vols[14] = 1.64034E+04
-    vols[16] = 1.65427E+04
-    vols[476] = 4.36069E+01
-    vols[512] = 3.72525E+04
-    vols[513] = 3.74750E+04
-    #print vols
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser.add_argument('-n', dest='N', type=int, help='Total number of cells in geometry', required=True)
+    parser.add_argument('-vol', dest='vol', type=str, help='Dictionary of volumes. Format: "cell1 vol1 cell2 vol2". Example: "985 2.43687E+5 12 1.235"', required=True)
 
+    args = parser.parse_args()
+
+    a = args.vol.split()
+    vols = dict(zip(map(int, a[0::2]), map(float, a[1::2])))
 
     s = "vol"
     c0 = 0 # number of previous cell in the 'vols' dict
@@ -41,7 +35,7 @@ def main():
             s += " 1 %dr %g " % (dist-2, v)
         c0 = c
 
-    s += " 1 %dr" % (N-c-3)
+    s += " 1 %dr" % (args.N-c-3)
 
     print textwrap.fill(s, width=80, subsequent_indent=" "*7)
 
