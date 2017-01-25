@@ -27,8 +27,11 @@ def getGraph(args, tname, color):
 #        print dirname
         inp = os.path.join(dirname, 'inp')
         f = ROOT.TFile(mctal)
-        f.Get(tname).GetAxis(2).SetRange(1,1)
-        tally = f.Get(tname).Projection(args.axis);
+        if args.axis>=0: # axis and bin are specified
+            f.Get(tname).GetAxis(2).SetRange(1,1)
+            tally = f.Get(tname).Projection(args.axis);
+        else: # args.bin is absolute bin number
+            tally = f.Get(tname)
         x.append(eval("%g%s" % (getParCL(inp, args.var, int(args.varpos)), args.xscale)))
         ex.append(0.0)
 
@@ -101,7 +104,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-tally', dest='tally', type=str, default="f5", help='Tally name')
-    parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on')
+    parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on. If <0, the absolute value of BIN must be specified (see next argument).')
     parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin of the axis to use as the figure of merit. Comma-separated list of bins is allowed, then the result will be the sum over all bins')
     parser.add_argument('-title', dest='title', type=str, default="", help='graph title')
     parser.add_argument('-xtitle', dest='xtitle', type=str, default="par [cm]", help='x-axis title')
@@ -114,7 +117,7 @@ def main():
     parser.add_argument('-no-footer', dest='footer', action='store_false', help='Do not draw footer')
     parser.add_argument('-dump', dest='dump', action='store_true', help='Dump the values in stdout')
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
-    parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos)')
+    parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos). It must be written as a commented string in the MCNP input deck.')
     args = parser.parse_args()
 
 
@@ -125,8 +128,7 @@ def main():
     if args.xtitle=="par [cm]": args.xtitle = args.var + " [cm]"
     if args.title == "": args.title = args.tally
 
-
-    hs = ROOT.TMultiGraph("hs", ";%s;%s" % (args.xtitle, args.ytitle))
+    hs = ROOT.TMultiGraph("hs", "%s;%s;%s" % (args.title, args.xtitle, args.ytitle))
     legymin = 1-0.1*len(tallies)
     if legymin<0.1:
         legymin=0.1
