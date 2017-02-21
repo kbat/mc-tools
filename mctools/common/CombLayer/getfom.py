@@ -22,7 +22,7 @@ def getGraph(args, tname, color):
     ex = []
     y = []
     ey = []
-    for mctal in glob.glob("case*/mctal.root"):
+    for mctal in glob.glob(args.mctal):
         dirname = os.path.split(mctal)[0]
 #        print dirname
         inp = os.path.join(dirname, 'inp')
@@ -117,6 +117,7 @@ def main():
     parser.add_argument('-no-footer', dest='footer', action='store_false', help='Do not draw footer')
     parser.add_argument('-dump', dest='dump', action='store_true', help='Dump the values in stdout')
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
+    parser.add_argument('-mctal', dest='mctal', default="case*/mctal.root", help='list of mctal files to use')
     parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos). It must be written as a commented string in the MCNP input deck.')
     args = parser.parse_args()
 
