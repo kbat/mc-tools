@@ -9,6 +9,14 @@ import glob, os, argparse
 from array import array
 from datetime import datetime
 
+def saveGraph(gr, fout):
+    """
+    Saves gr into fout
+    """
+    f = ROOT.TFile(fout, "update")
+    gr.Write(gr.GetName(), ROOT.TObject.kOverwrite)
+    f.Close()
+
 def printGraph(gr):
     """ Prints TGraphErrors """
     print "# ", gr.GetTitle()
@@ -116,6 +124,7 @@ def main():
     parser.add_argument('-only-average', dest='average', action='store_true', help='Draws only average of all points')
     parser.add_argument('-no-footer', dest='footer', action='store_false', help='Do not draw footer')
     parser.add_argument('-dump', dest='dump', action='store_true', help='Dump the values in stdout')
+    parser.add_argument('-save', dest='save', type=str, help='Saves resulting graph into a ROOT file', default="")
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
     parser.add_argument('-mctal', dest='mctal', default="case*/mctal.root", help='list of mctal files to use')
     parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos). It must be written as a commented string in the MCNP input deck.')
@@ -143,6 +152,8 @@ def main():
         leg.AddEntry(gr, gr.GetTitle(), "p")
         if args.dump:
             printGraph(gr)
+        if args.save != "":
+            saveGraph(gr, args.save)
 
     # draw fit if only one graph is requested
     if hs.GetListOfGraphs().GetSize()==1:
