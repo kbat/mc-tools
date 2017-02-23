@@ -21,12 +21,16 @@ class Table:
 
     def setXYtitle(self, h):
         """ Set x-title based of head """
-#        h.GetXaxis().SetBinLabel(1, "T_{1/2} [sec]")
-        head = re.sub(" Y", "Y", self.head)
+        head = re.sub(" Y", "H", self.head)
         head = re.sub(" H", "H", head)
         head = head.split()
         for i,label in enumerate(head[1:],1):
+            print i, label
             h.GetXaxis().SetBinLabel(i, label)
+
+        if re.search("HALFLIFE,S", h.GetXaxis().GetBinLabel(1)): # HALFLIFE -> T_{1/2}
+            h.GetXaxis().SetBinLabel(1, "T_{1/2} [sec]")
+
         h.GetYaxis().SetTitle(head[0])
         
                 
