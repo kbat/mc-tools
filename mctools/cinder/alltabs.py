@@ -31,7 +31,7 @@ class Table:
         if re.search("HALFLIFE,S", h.GetXaxis().GetBinLabel(1)): # HALFLIFE -> T_{1/2}
             h.GetXaxis().SetBinLabel(1, "T_{1/2} [sec]")
 
-        h.GetYaxis().SetTitle(head[0])
+        h.GetYaxis().SetTitle(head[0].title())
         
                 
     def getHist(self):
