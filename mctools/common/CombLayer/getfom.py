@@ -37,6 +37,7 @@ def getGraph(args, tname, color):
         f = ROOT.TFile(mctal)
         if args.axis>=0: # axis and bin are specified
             f.Get(tname).GetAxis(2).SetRange(1,1)
+            print >> sys.stderr, "f.Get(tname).GetAxis(2).SetRange(1,1) called!"
             tally = f.Get(tname).Projection(args.axis);
         else: # args.bin is absolute bin number
             tally = f.Get(tname)
@@ -62,7 +63,9 @@ def getGraph(args, tname, color):
 # sort all arrays
     x,y,ex,ey = zip(*sorted(zip(x,y,ex,ey)))
     gr = ROOT.TGraphErrors(len(x), array('f', x), array('f', y), array('f', ex), array('f', ey))
-    gr.SetNameTitle("gr%s" % tname, tname)
+    gr.SetNameTitle("gr%s" % tname, args.title)
+    gr.GetXaxis().SetTitle(args.xtitle)
+    gr.GetYaxis().SetTitle(args.ytitle)
     gr.SetMarkerStyle(ROOT.kFullCircle)
     gr.SetMarkerColor(color)
     return gr
