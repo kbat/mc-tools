@@ -21,27 +21,30 @@ class Table:
 
     def setXYtitle(self, h):
         """ Set x-title based of head """
-        h.GetXaxis().SetBinLabel(1, "T_{1/2} [sec]")
+#        h.GetXaxis().SetBinLabel(1, "T_{1/2} [sec]")
         head = re.sub(" Y", "Y", self.head)
         head = re.sub(" H", "H", head)
         head = head.split()
         for i,label in enumerate(head[1:],1):
             h.GetXaxis().SetBinLabel(i, label)
+        h.GetYaxis().SetTitle(head[0])
         
                 
     def getHist(self):
         """ Return TH2D """
+        if self.n >= 7:
+            return 0
         self.checkBuffer()
         ny = len(self.buf)
         nx = len(self.buf[0])-1
         h = ROOT.TH2D("table%d" % self.n, self.title, nx, 0, nx, ny, 0, ny)
         self.setXYtitle(h)
-        h.Print()
         for iy,b in enumerate(self.buf):
             data = map(float, b[1:])
+            h.GetYaxis().SetBinLabel(iy+1, b[0])
             for ix,d in enumerate(data):
                 h.SetBinContent(ix+1, iy+1, data[ix])
-        h.SaveAs("a.root")
+        return h
 
     def Print(self):
         print "Table %d: %s" % (self.n, self.title)
@@ -66,7 +69,7 @@ class AllTabs:
         
         f = open(fname)
         it = 0
-        tables = []
+        self.tables = []
         t = 0 # current table
         for i,line in enumerate(f.readlines()):
 #            line = line.rstrip()
@@ -82,7 +85,7 @@ class AllTabs:
             if re.search(" TABLE ", line):
                 tn = int(line.split()[-1]) # table number
                 if t != 0:
-                    tables.append(t)
+                    self.tables.append(t)
                 t = Table(tn)
                 it = i # save the line number where the current table starts
             if i == it+2:
@@ -99,10 +102,3 @@ class AllTabs:
                 t.buf.append(line.split())
 
         f.close()
-
-        for t in tables:
-            if t.n == 1:
-                t.Print()
-#                frame = pd.read_table("data3.txt", header=0, sep=' ', error_bad_lines=True)
-#                print frame
-                t.getHist()
