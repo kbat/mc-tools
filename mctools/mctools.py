@@ -1,7 +1,7 @@
 #! /usr/bin/python -W all
 
 # from scipy import constants
-import subprocess
+import subprocess, os, sys
 from math import sqrt
 
 def L2E(l, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0]):
@@ -35,6 +35,22 @@ def GetVariable(f, var):
     pid = p.pid
     output, error = p.communicate()
     return output
+
+def checkPaths(dirs, files, verbose=True):
+    """
+    Checks if folders/files exist
+    """
+    for d in dirs:
+        if not os.path.isdir(d):
+            if verbose:
+                print>>sys.stderr, d, "does not exist"
+            return 1
+
+    for f in files:
+        if not os.path.isfile(f): 
+            print>>sys.stderr, f, "does not exist"
+            return 2
+    return 0
 
 
 ### MIXTURES ###
