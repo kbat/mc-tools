@@ -100,7 +100,7 @@ Uninstall: ```pip uninstall mc-tools```.
 ```export MCTOOLS=/path/to/mc-tools/mctools```
 3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
-```export PYTHONPATH=$MCTOOLS/phits:$MCTOOLS/mcnp:$PYTHONPATH```
+```export PYTHONPATH=$MCTOOLS:$PYTHONPATH```
 4. Add the folders with necessary scripts in your $PATH or create symblinks to these scrips:
 ```export PATH=$MCTOOLS/mcnp:$PATH``` or
 ```ln -s $MCTOOLS/mcnp/mctal2root.py ~/bin/mctal2root```
