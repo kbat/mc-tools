@@ -59,17 +59,19 @@ def main():
     print xbins
     print ybins
     print zbins
-    
-    h = ROOT.TH3F("h%d" % (bin.score), bin.name, bin.nx, np.array(xbins, dtype=float), bin.ny, np.array(ybins, dtype=float), bin.nz, np.array(zbins, dtype=float))
+
+    # bins are always uniform -> use xmin/xmax, nbins
+    h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, np.array(xbins, dtype=float), bin.ny, np.array(ybins, dtype=float), bin.nz, np.array(zbins, dtype=float))
     h.Print("a")
     print h.GetTitle()
 
     for i in range(bin.nx):
         for j in range(bin.ny):
             for k in range(bin.nz):
-                gbin = k + j*bin.ny + i * bin.ny * bin.nx
+                gbin = i + j * bin.nx + k * bin.nx * bin.ny
                 h.SetBinContent(i+1, j+1, k+1, val[gbin])
                 h.SetBinError(i+1, j+1, k+1, err[gbin])
+    h.SetEntries(b.weight)
     h.SaveAs(rootFileName)
 
 if __name__=="__main__":
