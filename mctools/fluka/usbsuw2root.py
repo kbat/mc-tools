@@ -47,7 +47,7 @@ def main():
         err = unpackArray(b.readStat(i))
         bin = b.detector[i]
         
-        h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
+        h = ROOT.TH3F("h%d" % (bin.score), "%s;x [cm];y [cm];z [cm]" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
         
         for i in range(bin.nx):
             for j in range(bin.ny):
