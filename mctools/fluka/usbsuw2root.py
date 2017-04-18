@@ -34,25 +34,32 @@ def main():
     val = unpackArray(b.readData(0))
     err = unpackArray(b.readStat(0))
 
+    ND = len(b.detector)
+    
 # for i in range(len(b.detector)):
     if args.verbose:
         b.sayHeader()
-        b.say(0)
+        print "\n%d tallies found:" % ND
+        for i in range(ND):
+            b.say(i)
+            print ""
 
-    bin = b.detector[0]
+    fout = ROOT.TFile(rootFileName, "recreate")
+    for i in range(ND):
+        bin = b.detector[i]
+        
+        h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
+        
+        for i in range(bin.nx):
+            for j in range(bin.ny):
+                for k in range(bin.nz):
+                    gbin = i + j * bin.nx + k * bin.nx * bin.ny
+                    h.SetBinContent(i+1, j+1, k+1, val[gbin])
+                    h.SetBinError(i+1, j+1, k+1, err[gbin])
+        h.SetEntries(b.weight)
+        h.Write()
 
-    h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
-    h.Print("a")
-    print h.GetTitle()
-
-    for i in range(bin.nx):
-        for j in range(bin.ny):
-            for k in range(bin.nz):
-                gbin = i + j * bin.nx + k * bin.nx * bin.ny
-                h.SetBinContent(i+1, j+1, k+1, val[gbin])
-                h.SetBinError(i+1, j+1, k+1, err[gbin])
-    h.SetEntries(b.weight)
-    h.SaveAs(rootFileName)
+    fout.Close()
 
 if __name__=="__main__":
     sys.exit(main())
