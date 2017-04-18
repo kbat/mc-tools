@@ -31,12 +31,9 @@ def main():
     
     b = Usrbin()
     b.readHeader(args.usrbin)
-    val = unpackArray(b.readData(0))
-    err = unpackArray(b.readStat(0))
 
     ND = len(b.detector)
     
-# for i in range(len(b.detector)):
     if args.verbose:
         b.sayHeader()
         print "\n%d tallies found:" % ND
@@ -46,6 +43,8 @@ def main():
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
+        val = unpackArray(b.readData(i))
+        err = unpackArray(b.readStat(i))
         bin = b.detector[i]
         
         h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
