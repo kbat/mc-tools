@@ -46,8 +46,11 @@ def main():
         val = unpackArray(b.readData(i))
         err = unpackArray(b.readStat(i))
         bin = b.detector[i]
-        
-        h = ROOT.TH3F("h%d" % (bin.score), "%s;x [cm];y [cm];z [cm]" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
+
+        title = bin.name
+        if bin.type % 10 in (0, 3, 4, 5, 6):  # Fluka Manual, pages 250-251
+            title = title +  ";x [cm];y [cm];z [cm]"
+        h = ROOT.TH3F("h%d" % (bin.score), title, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
         
         for i in range(bin.nx):
             for j in range(bin.ny):
