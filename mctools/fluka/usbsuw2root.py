@@ -10,11 +10,11 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def main():
-    """ Converts USRBIN output into a ROOT histogram """
+    """ Converts usbsuw output into a ROOT histogram """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('usrbin', type=str, help='usrbin binary output')
+    parser.add_argument('usrbin', type=str, help='usrxxx binary output (produced by usbsuw)')
     parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='Print some output')
     
@@ -41,27 +41,7 @@ def main():
 
     bin = b.detector[0]
 
-    x = bin.xlow
-    xbins = []
-    for i in range(bin.nx+1):
-        xbins.append(x + i*bin.dx)
-
-    y = bin.ylow
-    ybins = []
-    for i in range(bin.ny+1):
-        ybins.append(y + i*bin.dy)
-
-    z = bin.zlow
-    zbins = []
-    for i in range(bin.nz+1):
-        zbins.append(z + i*bin.dz)
-
-    print xbins
-    print ybins
-    print zbins
-
-    # bins are always uniform -> use xmin/xmax, nbins
-    h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, np.array(xbins, dtype=float), bin.ny, np.array(ybins, dtype=float), bin.nz, np.array(zbins, dtype=float))
+    h = ROOT.TH3F("h%d" % (bin.score), "%s;x;y;z" % bin.name, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
     h.Print("a")
     print h.GetTitle()
 
