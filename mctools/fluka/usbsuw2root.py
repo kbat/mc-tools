@@ -57,7 +57,7 @@ def main():
                 for k in range(bin.nz):
                     gbin = i + j * bin.nx + k * bin.nx * bin.ny
                     h.SetBinContent(i+1, j+1, k+1, val[gbin])
-                    h.SetBinError(i+1, j+1, k+1, err[gbin])
+                    h.SetBinError(i+1, j+1, k+1, err[gbin]*val[gbin])
         h.SetEntries(b.weight)
         h.Write()
 
