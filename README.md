@@ -1,9 +1,10 @@
 # mc-tools
-Some Monte Carlo tools for MCNP(X), PHITS and FLUKA
+Some Monte Carlo tools for MCNPX, PHITS and FLUKA
 
 Project homepage: https://github.com/kbat/mc-tools
 
-* MСNР(Х)
+* MСNРХ
+  * **Note:** These tools are for MCNPX. MCNP6 is not fully supported since we do not use it for several reasons.
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for MCNP
   * An implementation of application programming interface (API) to
     read tallies from **mctal** files into a
