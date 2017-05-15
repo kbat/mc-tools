@@ -81,7 +81,7 @@ D2O.Print()
 Hydrogen = Material("Hydrogen", 0.07)
 Hydrogen.AddIsotope(H, 1)
 
-Aluminium = Material("Aluminium", 2.73)
+Aluminium = Material("Aluminium", 2.7) # cold Al: 2.73
 Aluminium.AddIsotope(Al, 1)
 
 SS316L = Material("SS316L", 7.76)
@@ -206,3 +206,12 @@ SS316LH2O = Compound("SS316L20H2O")
 SS316LH2O.AddMaterial(water, waterfrac)
 SS316LH2O.AddMaterial(SS316L, 1-waterfrac)
 SS316LH2O.PrintAtomicFractions()
+
+
+print "\nWater and Al"
+
+waterfrac = 1-0.07 #
+waterAl = Compound("WaterAl")
+waterAl.AddMaterial(water, waterfrac)
+waterAl.AddMaterial(Aluminium, 1-waterfrac)
+waterAl.PrintAtomicFractions()
