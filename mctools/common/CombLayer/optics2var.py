@@ -3,6 +3,39 @@ from __future__ import print_function
 import sys, argparse, re
 from os import path
 
+def read(opt,dtl,start,end):
+    """ Read the optics file """
+
+    pmqBase = dtl + "PMQ"
+
+    f = open(opt)
+    val = 0.0
+    iPMQ = int(1)
+    found = False
+    for l in f:
+        if re.search(start,l):
+            found = True
+        if found:
+            val = float(l.split()[4])*100.0
+            var = "%s%dLength" % (pmqBase, iPMQ)
+            print("Control.addVariable(\"%s\",%g);" % (var,val))
+            # read the next line with GapLength
+            l = f.readline()
+            val = float(l.split()[4])*100.0
+            var = "%s%dGapLength" % (pmqBase, iPMQ)
+            print("Control.addVariable(\"%s\",%g);" % (var,val))
+
+        if found:
+            iPMQ += 1
+
+        if found and re.search(end,l):
+            stop = True
+            break
+            
+    f.close()
+
+
+    
 def main():
     """ Convert optics file into CombLayer variables """
 
@@ -19,33 +52,7 @@ def main():
         print("optics2var: Can't open %s" % args.opt, file=sys.stderr)
         return 1
 
-    pmqBase = args.dtl + "PMQ"
-
-    f = open(args.opt)
-    val = 0.0
-    iPMQ = int(1)
-    found = False
-    for l in f:
-        if re.search(args.start,l):
-            found = True
-        if found:
-            val = float(l.split()[4])*100.0
-            var = "Control.addVariable(\"%s%dLength\",%g);" % (pmqBase, iPMQ, val)
-            print(var)
-            # read the next line with GapLength
-            l = f.readline()
-            val = float(l.split()[4])*100.0
-            var = "Control.addVariable(\"%s%dGapLength\"%g);" % (pmqBase,iPMQ,val)
-            print(var)
-
-        if found:
-            iPMQ += 1
-
-        if found and re.search(args.end,l):
-            stop = True
-            break
-            
-    f.close()
+    read(args.opt, args.dtl, args.start, args.end)
 
 if __name__ == "__main__":
     sys.exit(main())
