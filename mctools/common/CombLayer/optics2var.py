@@ -33,6 +33,7 @@ def read(opt,dtl,start,end):
             break
             
     f.close()
+#    print("  Control.addVariable(\"%sPMQ%dMat5\", \"SS304L\");" % (dtl,iPMQ-1)) # last half
     print("  Control.addVariable(\"%sNPMQ\",%d);" % (dtl,iPMQ-1))
     print("")
 
@@ -100,7 +101,7 @@ def main():
     parser.add_argument('opt', type=str, help='optics file name')
     parser.add_argument('-dtl', type=str, help='DTL name (e.g. LinacDTL1)', required=True)
     parser.add_argument('-start', type=str, help='first record (e.g. quad1213)', required=True)
-    parser.add_argument('-end', type=str, help='last record (e.g. D204)')
+    parser.add_argument('-end', type=str, help='last record (e.g. D204US)')
 
     args = parser.parse_args()
 
@@ -112,6 +113,8 @@ def main():
     read(args.opt, args.dtl, args.start, args.end)
     read(args.opt, "LinacDTL2", "quad137", "D276US") # q_flg_DTL_US -> flg_DTL
     read(args.opt, "LinacDTL3", "quad209", "D340US")
+    read(args.opt, "LinacDTL4", "quad273", "D396US")
+    read(args.opt, "LinacDTL5", "quad329", "D442US")
     printTail()
 
 if __name__ == "__main__":
