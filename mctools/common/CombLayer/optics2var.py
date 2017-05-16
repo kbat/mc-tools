@@ -33,6 +33,7 @@ def read(opt,dtl,start,end):
             break
             
     f.close()
+    print("")
 
 
 def printHead(args):
@@ -85,8 +86,7 @@ EssLinacPMQVariables(FuncDataBase &Control)
 
 def printTail():
     """ Print the closing brackets in the end """
-    print("""
-  return;
+    print("""  return;
 }
 }
     """)
@@ -109,6 +109,7 @@ def main():
 
     printHead(args)
     read(args.opt, args.dtl, args.start, args.end)
+    read(args.opt, "LinacDTL2", "quad137", "D276US")
     printTail()
 
 if __name__ == "__main__":
