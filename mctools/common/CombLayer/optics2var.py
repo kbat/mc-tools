@@ -110,7 +110,8 @@ def main():
 
     printHead(args)
     read(args.opt, args.dtl, args.start, args.end)
-    read(args.opt, "LinacDTL2", "quad137", "D276US")
+    read(args.opt, "LinacDTL2", "quad137", "D276US") # q_flg_DTL_US -> flg_DTL
+    read(args.opt, "LinacDTL3", "quad209", "D340US")
     printTail()
 
 if __name__ == "__main__":
