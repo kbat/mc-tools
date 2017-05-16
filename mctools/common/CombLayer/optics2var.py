@@ -33,6 +33,7 @@ def read(opt,dtl,start,end):
             break
             
     f.close()
+    print("  Control.addVariable(\"%sNPMQ\",%d);" % (dtl,iPMQ-1))
     print("")
 
 
