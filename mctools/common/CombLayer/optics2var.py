@@ -35,6 +35,7 @@ def read(opt,dtl,start,end):
     f.close()
 #    print("  Control.addVariable(\"%sPMQ%dMat5\", \"SS304L\");" % (dtl,iPMQ-1)) # last half
     print("  Control.addVariable(\"%sNPMQ\",%d);" % (dtl,iPMQ-1))
+    print("  Control.addVariable(\"%sPMQ%dMat5\",\"SS304L\");" % (dtl,iPMQ-1))
     print("")
 
 
