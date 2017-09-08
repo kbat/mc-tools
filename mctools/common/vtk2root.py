@@ -76,9 +76,13 @@ class VTK:
         return val
 
     def getTH3(self):
-        h = ROOT.TH3F("h3", "%s;x;y;z" % self.fname, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
-        for i in range(self.N):
-            h.SetBinContent(i+1, self.table[i])
+        h = ROOT.TH3D("h3", "%s;x;y;z" % self.fname, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
+        ii = 0
+        for k in range(self.nz):
+            for j in range(self.ny):
+                for i in range(self.nx):
+                    h.SetBinContent(i+1,j+1,k+1, self.table[ii])
+                    ii = ii+1
         return h
 
 def main():
