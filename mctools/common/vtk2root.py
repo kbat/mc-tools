@@ -76,7 +76,8 @@ class VTK:
         return val
 
     def getTH3(self):
-        h = ROOT.TH3D("h3", "%s;x;y;z" % self.fname, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
+        title = os.path.splitext(os.path.basename(self.fname))[0]
+        h = ROOT.TH3D("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
         ii = 0
         for k in range(self.nz):
             for j in range(self.ny):
