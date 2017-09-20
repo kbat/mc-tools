@@ -116,6 +116,10 @@ def main():
     read(args.opt, "LinacDTL3", "quad209", "D340US")
     read(args.opt, "LinacDTL4", "quad273", "D396US")
     read(args.opt, "LinacDTL5", "quad329", "D442US")
+
+    for i in range(6,51):
+            read(args.opt, "LinacDTL%d" % i, "quad329", "D442US")
+
     printTail()
 
 if __name__ == "__main__":
