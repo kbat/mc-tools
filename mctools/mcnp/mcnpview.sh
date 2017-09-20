@@ -45,9 +45,9 @@ if [ ! -z $com -a -f $com ]; then
     shift
     shift
     echo $@ >> $com
-    mcnp6 ip name=$tmpdir/foo. i=$i com=$com
+    mcnpx ip name=$tmpdir/foo. i=$i com=$com
 else
-    mcnp6 ip name=$tmpdir/foo. i=$i
+    mcnpx ip name=$tmpdir/foo. i=$i
 fi
 
 # copy the command file to /tmp, so 'zoom' could find it:
