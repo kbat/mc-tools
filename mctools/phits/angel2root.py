@@ -467,11 +467,18 @@ class Angel:
         dy = float(words[6])
         ymin = float(words[2])
         ymax = float(words[4])
-        if ymin<ymax:
-            ymin,ymax = ymin-dy/2.0,ymax+dy/2.0
-        else:
-            ymin,ymax = ymax-dy/2.0, ymin+dy/2.0
-        ny = int(round((ymax-ymin)/dy))
+        if dy>0:
+            if ymin<ymax:
+                ymin,ymax = ymin-dy/2.0,ymax+dy/2.0
+            else:
+                ymin,ymax = ymax-dy/2.0, ymin+dy/2.0
+        elif dy<0:
+            if ymin<ymax:
+                sys.exit("Fix me: ymin<ymax when dy<0")
+#                ymin,ymax = ymin-dy/2.0,ymax+dy/2.0
+            else:
+                ymin,ymax = ymax+dy/2.0, ymin-dy/2.0
+        ny = abs(int(round((ymax-ymin)/dy)))
         if DEBUG: print "y:", dy, ymin, ymax, ny
 
         dx = float(words[13])
