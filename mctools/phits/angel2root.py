@@ -1,8 +1,8 @@
 #! /usr/bin/python -W all
 #
-#  A script to convert ANGEL (PHITS) output to the ROOT format
+#  A script to convert ANGEL (PHITS) output into the ROOT format
 #  Author: Konstantin Batkov
-#  Contact: kbat.phits ((at)) lizardie.com
+#  Contact: batkov@gmail.com
 #
 #  Usage: angel2root.py file.dat
 #
@@ -147,7 +147,7 @@ class Angel:
                     self.reg.append(r)
                 if DEBUG: print "reg: ", self.reg
                 continue
-            if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin's width
+            if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin width
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
                 self.last_nbins_read = words[0]
