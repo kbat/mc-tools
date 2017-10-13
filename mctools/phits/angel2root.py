@@ -460,8 +460,7 @@ class Angel:
         if len(words) != 15:
             print words
             print len(words)
-            print "Read2DHist: format error"
-            exit(1)
+            sys.exit("Read2DHist: format error")
 #        print words
 
         dy = float(words[6])
@@ -597,8 +596,8 @@ def main():
     """
     angel2root - ANGEL to ROOT converter
     """
-    parser = argparse.ArgumentParser(
-        description="angel2root - ANGEL to ROOT converter.")
+    parser = argparse.ArgumentParser(description=main.__doc__, epilog="Homepage: https://github.com/kbat/mc-tools")
+
     parser.add_argument("-a", "--average", action="store_true",
                         help="set the TH1.kIsAverage bit for averaging")
     parser.add_argument("infilename", action="store", nargs=1, type=str,
