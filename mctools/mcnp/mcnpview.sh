@@ -1,5 +1,5 @@
 #! /bin/bash
-# mcnpview - a wrapper around "mcnpx ip"
+# mcnpview - a wrapper around "mcnp6 ip"
 # This script has to be used with zoom.sh
 # It allows to plot geometry with the same view
 # as it was done during one of the previous calls of mcnpview.
@@ -14,6 +14,8 @@
 #    mcnpview inp zoom
 #
 # https://github.com/kbat/mc-tools
+
+mcnp=$(echo $(basename $0) | sed -e "s/pview/p6/" -e "s/view//")
 
 tmpdir=`mktemp -d`
 
@@ -45,9 +47,9 @@ if [ ! -z $com -a -f $com ]; then
     shift
     shift
     echo $@ >> $com
-    mcnpx ip name=$tmpdir/foo. i=$i com=$com
+    $mcnp ip name=$tmpdir/foo. i=$i com=$com
 else
-    mcnpx ip name=$tmpdir/foo. i=$i
+    $mcnp ip name=$tmpdir/foo. i=$i
 fi
 
 # copy the command file to /tmp, so 'zoom' could find it:
@@ -56,7 +58,7 @@ cp -f $tmpdir/foo.c /tmp/foo.c
 
 #echo $tmpdir
 rm -fr $tmpdir
-# the lines below are called AFTER we exit from mcnpx
+# the lines below are called AFTER we exit from mcnp
 #	xdotool mousemove 155 635 click 1
 # update the plot
 #	xdotool mousemove 100 100 click 1
