@@ -193,13 +193,6 @@ Helium.AddIsotope(He3, 0.00000137)
 Helium.AddIsotope(He4, 0.99999863)
 Helium.Print()
 
-print "\ParaH and Al"
-
-ParaHAl = Compound("ParaHAl")
-ParaHAl.AddMaterial(Hydrogen, 0.95)
-ParaHAl.AddMaterial(Aluminium, 0.05)
-ParaHAl.PrintAtomicFractions()
-
 waterfrac = float(0.2)
 print "\nSS316L and %.0f%% of water" % (waterfrac*100)
 SS316LH2O = Compound("SS316L20H2O")
@@ -219,7 +212,7 @@ waterAl.PrintAtomicFractions()
 
 print "\nHydrogen and Al"
 Alfrac = 2.9 # %
-hAl = Compound("H2Al")
-hAl.AddMaterial(Aluminium,Alfrac/100.0)
-hAl.AddMaterial(Hydrogen,1-Alfrac/100.0)
-hAl.PrintAtomicFractions()
+ParaHAl = Compound("ParaHAl")
+ParaHAl.AddMaterial(Aluminium,Alfrac/100.0)
+ParaHAl.AddMaterial(Hydrogen,1-Alfrac/100.0)
+ParaHAl.PrintAtomicFractions()

@@ -110,7 +110,7 @@ class Compound:
     def PrintAtomicFractions(self):
         for i,f in sorted(self.GetAtomicFractions().iteritems()):
             print i,f
-        print "Density: ", self.GetDensity()
+        print "Density: ", -self.GetDensity()
 
     def Print(self):
         print "Compound:", self.name
