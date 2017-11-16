@@ -215,3 +215,11 @@ waterAl = Compound("WaterAl")
 waterAl.AddMaterial(water, waterfrac)
 waterAl.AddMaterial(Aluminium, 1-waterfrac)
 waterAl.PrintAtomicFractions()
+
+
+print "\nHydrogen and Al"
+Alfrac = 2.9 # %
+hAl = Compound("H2Al")
+hAl.AddMaterial(Aluminium,Alfrac/100.0)
+hAl.AddMaterial(Hydrogen,1-Alfrac/100.0)
+hAl.PrintAtomicFractions()
