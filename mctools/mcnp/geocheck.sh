@@ -49,7 +49,8 @@ rm -f /tmp/geocheck.*
 mcnpx i=$inp name=/tmp/geocheck. > /dev/null
 out=/tmp/geocheck.o
 
-if grep "run terminated when [[:space:]]* $N particle histories were done" > /dev/null $out; then
+# if grep "run terminated when [[:space:]]* $N particle histories were done"  $out; then
+if grep "particle histories were done" > /dev/null $out; then
     echo "geometry check passed with nps=$N"
     exit 0
 else
