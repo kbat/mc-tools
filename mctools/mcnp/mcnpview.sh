@@ -17,6 +17,9 @@
 
 mcnp=$(echo $(basename $0) | sed -e "s/pview/p6/" -e "s/view//")
 
+ln -sf ~/.xbindkeysrc-$mcnp ~/.xbindkeysrc
+killall xbindkeys; xbindkeys
+
 tmpdir=`mktemp -d`
 
 if [ $# -eq 0 ]; then
