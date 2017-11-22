@@ -39,7 +39,7 @@ sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' $inp
 # insert void if not there
 grep -i "^void *$" $inp || echo void >> $inp
 
-sed -i -n '/^[sS][dD][eE][fF]/{p;:a;N;/prdmp/!ba;s/.*\n//};p' $inp
+sed -i -n '/^[sS][dD][eE][fF]/{p;:a;N;/c ++++/!ba;s/.*\n//};p' $inp
 sed -i "s/^sdef.*/sdef/i" $inp
 
 sed -i "s/^mt/c mt/i" $inp
