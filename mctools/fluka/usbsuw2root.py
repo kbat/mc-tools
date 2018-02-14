@@ -5,7 +5,7 @@ import numpy as np
 from os import path
 sys.path.append("/usr/local/flair")
 sys.path.append("/usr/local/flair/lib")
-from Data import *
+import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -29,7 +29,7 @@ def main():
     else:
         rootFileName = args.root
     
-    b = Usrbin()
+    b = Data.Usrbin()
     b.readHeader(args.usrbin)
 
     ND = len(b.detector)
@@ -43,8 +43,8 @@ def main():
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
-        val = unpackArray(b.readData(i))
-        err = unpackArray(b.readStat(i))
+        val = Data.unpackArray(b.readData(i))
+        err = Data.unpackArray(b.readStat(i))
         bin = b.detector[i]
 
         title = bin.name
