@@ -20,12 +20,25 @@ def getType(n):
     print >> sys.stderr, "usrbdx2root: what(1) == %d undefined" % n
     sys.exit(1)
 
-def getAxesTitle(x):
+def isLogE(x):
+    if x in (-2,-1):
+        return True
+    return False
+
+def isLogA(x):
+    if x in (-2,2):
+        return True
+    return False
+
+def getAxesTitle(det,x):
+    ztitle = "1/cm^{2}/GeV/sr"
+    if int(det.dist) in (208,211): # differential energy fluence/current
+        ztitle = "GeV/cm^{2}/GeV/sr"   # FLUKA manual page 247
     return {
-        -2 : ";log10(Energy/GeV);log10(#Omega/rad)",
-        -1 : ";log10(Energy/GeV);#Omega [rad]",
-         1 : ";Energy [GeV];#Omega [rad]",
-         2 : ";Energy [GeV];log10(#Omega/rad)",
+        -2 : ";log10(Energy/GeV);log10(#Omega/rad);" + ztitle,
+        -1 : ";log10(Energy/GeV);#Omega [rad];" + ztitle,
+         1 : ";Energy [GeV];#Omega [rad];" + ztitle,
+         2 : ";Energy [GeV];log10(#Omega/rad);" + ztitle,
         }[x]
 
 def getLogBins(nbins, low, high):
@@ -46,7 +59,7 @@ def getLinBins(nbins, low, high):
 def getEbins(det, i):
     """ Return lin or log energy bins depending on the value of i """
 
-    if i in (-1, -2):
+    if isLogE(i):
         return getLogBins(det.ne, det.elow, det.ehigh)
     else:
         return getLinBins(det.ne, det.elow, det.ehigh)
@@ -54,7 +67,7 @@ def getEbins(det, i):
 def getAbins(det, i):
     """ Return lin or log angular bins depending on the value of i """
 
-    if i in (-2, 2):
+    if isLogA(i):
         return getLogBins(det.na, det.alow, det.ahigh)
     else:
         return getLinBins(det.na, det.alow, det.ahigh)
@@ -63,7 +76,7 @@ def hist(det):
     """ Create histogram for the given detector """
 
     w1 = getType(det.type) # decrypted what(1)
-    title = det.name + getAxesTitle(w1[0])
+    title = det.name + getAxesTitle(det,w1[0])
     return ROOT.TH2F(det.name, title, det.ne, getEbins(det, w1[0]), det.na, getAbins(det, w1[0]))
 
 def main():
@@ -102,13 +115,13 @@ def main():
     for i in range(ND):
         val = Data.unpackArray(b.readData(i))
         err = Data.unpackArray(b.readStat(i))
-        bin = b.detector[i]
+        det = b.detector[i]
 
-        h = hist(bin)
+        h = hist(det)
         
-        for i in range(bin.ne):
-            for j in range(bin.na):
-                    gbin = i + j * bin.ne
+        for i in range(det.ne):
+            for j in range(det.na):
+                    gbin = i + j * det.ne
                     h.SetBinContent(i+1, j+1, val[gbin])
                     h.SetBinError(i+1, j+1, err[gbin]*val[gbin])
         h.SetEntries(b.weight)
