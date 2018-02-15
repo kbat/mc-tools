@@ -17,7 +17,8 @@ def printincolor(s,col=33):
     """
     print "\033[1;%dm%s\033[0m" % (col, s)
 
-def merge_files(thelist, suffix, thecommand, N, M, inpname):
+def merge_files(thelist, suffix, thecommand, N, M, args):
+    inpname = args.inp
     suwfile = inpname.replace(".inp", "%.3d-%.3d_%s" % (N, M, suffix) )
     temp_path = tempfile.mktemp()
     tmpfile = open(temp_path, "w")
@@ -27,15 +28,18 @@ def merge_files(thelist, suffix, thecommand, N, M, inpname):
     tmpfile.write("\n")
     tmpfile.write("%s\n" % suwfile)
     tmpfile.close()
-    os.system("cat %s" % tmpfile.name)
-    command = "cat %s | $FLUTIL/%s" % (tmpfile.name, thecommand)
-    printincolor(command)
+    verbose = "" if args.verbose else ">/dev/null"
+    os.system("cat %s %s" % (tmpfile.name, verbose))
+    command = "cat %s | $FLUTIL/%s %s" % (tmpfile.name, thecommand, verbose)
+    if args.verbose:
+        printincolor(command)
     return_value = os.system(command)
     if return_value:
         sys.exit(1);
     os.unlink(tmpfile.name)
     command = "%s2root %s" % (thecommand, suwfile)
-    printincolor(command)
+    if args.verbose:
+        printincolor(command)
     return_value = os.system(command)
     if return_value:
         sys.exit(2)
@@ -80,7 +84,6 @@ def main():
         sys.exit("Error: M>=N")
 
     inp = open(args.inp, "r")
-    print "Input file: %s" % args.inp
     isname = False
     for line in inp.readlines():
         if re.search("\AFREE", line):
@@ -99,20 +102,17 @@ def main():
         print "Opened units: ", opened
 
     inp.seek(0)
-    print "Supported estimators:"
+    if args.verbose:
+        print "Supported estimators:"
     for line in inp.readlines():
         for e in estimators:
             if e == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
                 if re.search("\A%s" % e, line):
                     unit = line[10:20].strip()
                     name = "" #line[0:10].strip() # actually, name for EVENTDAT does not matter - the Tree name will be used
-#                    print "eventdat: \t", e, unit,name
                     if str2int(unit)<0: # we are interested in binary files only
-#                        print "here", e, unit, estimators
                         if not unit in estimators[e]:
-#                            print unit
                             estimators[e] = ["%s" % unit]
-#                            print estimators
             else:
                 if re.search("\A%s" % e, line) and not re.search("\&", line[70:80]):
                     if e == "RESNUCLE":
@@ -120,12 +120,12 @@ def main():
                     else:
                         unit = line[30:40].strip()
                     name = line[70:80].strip()
-#                    print "\t", e, unit, name
                     if str2int(unit)<0: # we are interested in binary files only
                         if not unit in estimators[e]:
                             estimators[e].append(unit)
 
-    print estimators
+    if args.verbose:
+        print estimators
 
 # Convert units in the file names:
     for e, units in estimators.iteritems():
@@ -139,7 +139,8 @@ def main():
                 else:
                     units[units.index(u)] = "_fort.%d" % abs(iu)
 
-    print estimators
+    if args.verbose:
+        print estimators
 
     inp.close()
 
@@ -161,17 +162,16 @@ def main():
                         e = "RESNUCLEI"
                         resnuclei_binary_files.append(binfilename)
                     elif re.search("USRBIN", e):
-#                        print "AAAAAAAAAAAAAAAAAAAAAAA"
                         usrbin_binary_files.append(binfilename)
                     elif re.search("USRTRACK", e):
                         usrtrack_binary_files.append(binfilename)
                     elif re.search("USRBDX", e):
                         usrbdx_binary_files.append(binfilename)
                     else:
-#                        print "HHHHHHHHHHHHHHHHHHHHHHHo%so" % e
                         rootfilenames.append(binfilename + ".root")
                         command =  "%s2root %s" % (e.lower(), binfilename)
-                        printincolor(command)
+                        if args.verbose:
+                            printincolor(command)
                         return_value = os.system(command)
                         if return_value is not 0:
                             printincolor("ERROR: " % return_value, 33)
@@ -197,16 +197,18 @@ def main():
                     sys.exit(return_value)
 
     if len(resnuclei_binary_files): # usrsuw to sum RESNUCLEI
-        out_root_files.append(merge_files(resnuclei_binary_files, "resnuclei", "usrsuw", N, M, args.inp))
+        out_root_files.append(merge_files(resnuclei_binary_files, "resnuclei", "usrsuw", N, M, args))
 
     if len(usrbin_binary_files):
-        out_root_files.append(merge_files(usrbin_binary_files, "usrbin", "usbsuw", N, M, args.inp))
+        out_root_files.append(merge_files(usrbin_binary_files, "usrbin", "usbsuw", N, M, args))
     if len(usrbdx_binary_files):
-        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, args.inp))
+        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, args))
     if len(usrtrack_binary_files):
-        out_root_files.append(merge_files(usrtrack_binary_files, "usrtrack", "ustsuw", N, M, args.inp))
+        out_root_files.append(merge_files(usrtrack_binary_files, "usrtrack", "ustsuw", N, M, args))
 
-    print out_root_files
+    if args.verbose:
+        print "ROOT files produced: ", out_root_files
+
     if return_value is 0 and len(out_root_files)>1:
         out_root_file = args.inp.replace(".inp", ".root");
         force = ""
