@@ -1,13 +1,7 @@
 #! /usr/bin/python -Qwarn
-import sys, getopt, re, string, os
+import sys, re, string, os, argparse
 import glob
 import tempfile
-
-def usage():
-    print main.__doc__
-
-def notsupported():
-    printincolor("fluka2root:\tFree-format input is not supported.")
 
 def str2int(s):
     try:
@@ -18,8 +12,8 @@ def str2int(s):
 
 def printincolor(s,col=33):
     """
-Print a string with a given color using ANSI/VT100 Terminal Control Escape Sequences
-http://www.termsys.demon.co.uk/vtansi.htm
+    Print a string with a given color using ANSI/VT100 Terminal Control Escape Sequences
+    http://www.termsys.demon.co.uk/vtansi.htm
     """
     print "\033[1;%dm%s\033[0m" % (col, s)
 
@@ -51,17 +45,11 @@ def findNM(inpname):
     """
     Find the N and M-numbers used when a FLUKA job with input file 'inpname' was run
     """
-    inpname = inpname.replace(".inp", "")
-    N = 1
-# the same without using glob:
-# len([f for f in os.listdir(myPath) 
-#     if f.endswith('.tif') and os.path.isfile(os.path.join(myPath, f))])
-    M = len(glob.glob1(".", "%s???.out" % inpname))
-    return N,M
+    return 1,len(glob.glob1(".", "%s???.out" % os.path.splitext(inpname)[0]))
 
-def main(argv=None):
+def main():
     """
-fluka2root - a script to convert the output of all FLUKA estimators (supported by readfluka) to a single ROOT file.
+fluka2root - a script to convert the output of all FLUKA estimators (supported by the mc-tools project) into a single ROOT file.
 Usage: There are several ways to run this program:
  1. fluka2root inpfile.inp N M
  \tN - number of previous run plus 1. The default value is 1.
@@ -71,48 +59,40 @@ Usage: There are several ways to run this program:
  3. fluka2root inpfile.inp
  \tscript will try to guess N and M based on the files inpfile???.out in the current folder
     """
-    if argv is None:
-        argv = sys.argv
 
-    if len(argv) is 1:
-        usage()
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                     epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser.add_argument('inp', type=str, help='FLUKA input file')
+    parser.add_argument('-N',  dest='N',  type=int, help='number of previous run plus 1', required=False, default=-1)
+    parser.add_argument('-M',  dest='M',  type=int, help='number of final run plus 1', required=False, default=-1)
+    parser.add_argument('-f', action='store_true', default=False, dest='force_overwrite', help='Overwrite the ROOT files produced by hadd')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
 
-#    printincolor("Note that the corresponding USRBIN histograms from different ROOT files will be summed up but not averaged unless it is implemented in the ROOT's hadd. All the other supported histograms should work fine", 33)
+    args = parser.parse_args()
 
-#    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
+    #    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
     estimators = {"USRBIN" : [], "USRBDX" : []} # dictionary of supported estimators and their file units
     opened = {} # dictionary of the opened units (if any)
     out_root_files = [] # list of output ROOT files
     
-    inpname = argv[1]
+    # guess N and M from the output file
+    N,M = findNM(args.inp)
 
-    N,M = findNM(inpname)
+    if args.N>0:
+        N = args.N
 
-#    N = 1
-    if len(argv) > 2:
-        try:
-            N = str2int(argv[2])
-        except ValueError:
-            print main.__doc__
-            sys.exit(1)
-#    M = N
-    if len(argv) == 4:
-        try:
-            M = str2int(argv[3])
-        except ValueError:
-            print main.__doc__
-            sys.exit(1)
-#    print N, M
-#    sys.exit(0)
+    if args.M>0:
+        M = args.M
 
-    inp = open(argv[1], "r")
-#    print "Input file: %s" % inpname
+    if N>=M:
+        sys.exit("Error: M>=N")
+
+    inp = open(args.inp, "r")
+    print "Input file: %s" % args.inp
     isname = False
     for line in inp.readlines():
         if re.search("\AFREE", line):
-            notsupported()
-            sys.exit(2)
+            sys.exit("fluka2root:\tFree-format input is not supported.")
 
         if isname is True:
             name = line[0:10].strip()
@@ -183,7 +163,7 @@ Usage: There are several ways to run this program:
         command = ""
         for e in estimators:
             for s in estimators[e]:
-                binfilename = inpname.replace(".inp", "%.3d%s" % (run, s))
+                binfilename = args.inp.replace(".inp", "%.3d%s" % (run, s))
                 if os.path.isfile(binfilename):
                     if re.search("RESNUCLE", e): # RESNUCLE = RESNUCLEi = RESNUCLEI
                         e = "RESNUCLEI"
@@ -210,7 +190,7 @@ Usage: There are several ways to run this program:
 # hadd within one sample
         if len(rootfilenames):
             print "The following ROOT files will be hadded", rootfilenames
-            out_root_file = inpname.replace(".inp", "%.3d%s" % (run, ".root"))
+            out_root_file = args.inp.replace(".inp", "%.3d%s" % (run, ".root"))
             command = "hadd %s %s" % (out_root_file, string.join(rootfilenames))
             printincolor(command)
             return_value = os.system(command)
@@ -225,27 +205,38 @@ Usage: There are several ways to run this program:
                     sys.exit(return_value)
 
     if len(resnuclei_binary_files): # usrsuw to sum RESNUCLEI
-        out_root_files.append(merge_files(resnuclei_binary_files, "resnuclei", "usrsuw", N, M, inpname))
+        out_root_files.append(merge_files(resnuclei_binary_files, "resnuclei", "usrsuw", N, M, args.inp))
 
     if len(usrbin_binary_files):
-        out_root_files.append(merge_files(usrbin_binary_files, "usrbin", "usbsuw", N, M, inpname))
+        out_root_files.append(merge_files(usrbin_binary_files, "usrbin", "usbsuw", N, M, args.inp))
     if len(usrbdx_binary_files):
-        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, inpname))
+        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, args.inp))
     if len(usrtrack_binary_files):
-        out_root_files.append(merge_files(usrtrack_binary_files, "usrtrack", "ustsuw", N, M, inpname))
+        out_root_files.append(merge_files(usrtrack_binary_files, "usrtrack", "ustsuw", N, M, args.inp))
 
     print out_root_files
     if return_value is 0 and len(out_root_files)>1:
-        out_root_file = inpname.replace(".inp", ".root");
-        command = "hadd %s %s" % (out_root_file, string.join(out_root_files))
-        printincolor(command)
+        out_root_file = args.inp.replace(".inp", ".root");
+        force = ""
+        if args.force_overwrite:
+            force = "-f"
+        verbose = "-v 0"
+        if args.verbose:
+            verbose = "-v 99"
+        command = "hadd %s %s %s %s" % (force, verbose, out_root_file, string.join(out_root_files))
+        if args.verbose:
+            printincolor(command)
         return_value = os.system(command)
         if return_value is 0:
-            command = "rm -f %s" % string.join(out_root_files)
-            printincolor(command)
+            verbose = ""
+            if args.verbose:
+                verbose = "-v"
+            command = "rm -f %s %s" % (verbose, string.join(out_root_files))
+            if args.verbose:
+                printincolor(command)
             return_value = os.system(command)
 
-    sys.exit(return_value)
+    return return_value
 
 if __name__ == "__main__":
     sys.exit(main())
