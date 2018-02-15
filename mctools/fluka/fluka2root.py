@@ -49,23 +49,15 @@ def findNM(inpname):
 
 def main():
     """
-fluka2root - a script to convert the output of all FLUKA estimators (supported by the mc-tools project) into a single ROOT file.
-Usage: There are several ways to run this program:
- 1. fluka2root inpfile.inp N M
- \tN - number of previous run plus 1. The default value is 1.
- \tM - number of final run plus 1. The default value is N.
- 2. fluka2root inpfile.inp M
- \tN assumed to be 1
- 3. fluka2root inpfile.inp
- \tscript will try to guess N and M based on the files inpfile???.out in the current folder
+    fluka2root - a script to convert the output of all FLUKA estimators (supported by the mc-tools project) into a single ROOT file.
     """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('inp', type=str, help='FLUKA input file')
-    parser.add_argument('-N',  dest='N',  type=int, help='number of previous run plus 1', required=False, default=-1)
-    parser.add_argument('-M',  dest='M',  type=int, help='number of final run plus 1', required=False, default=-1)
-    parser.add_argument('-f', action='store_true', default=False, dest='force_overwrite', help='Overwrite the ROOT files produced by hadd')
+    parser.add_argument('-N',  dest='N',  type=int, help='number of previous run plus 1 (1 if omitted)', required=False, default=-1)
+    parser.add_argument('-M',  dest='M',  type=int, help='number of final run plus 1 (if omitted, guessed based on the files in the current folder)', required=False, default=-1)
+    parser.add_argument('-f', action='store_true', default=False, dest='force_overwrite', help='overwrite the ROOT files produced by hadd')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
 
     args = parser.parse_args()
