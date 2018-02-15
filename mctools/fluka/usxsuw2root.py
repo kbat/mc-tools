@@ -67,13 +67,13 @@ def hist(det):
     return ROOT.TH2F(det.name, title, det.ne, getEbins(det, w1[0]), det.na, getAbins(det, w1[0]))
 
 def main():
-    """ Converts usxsuw output into a ROOT histogram """
+    """ Converts usxsuw output into a ROOT TH2F histogram """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('usrbdx', type=str, help='usxxxx binary output (produced by usxsuw)')
+    parser.add_argument('usrbdx', type=str, help='usxsuw binary output')
     parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
-    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='Print some output')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
     
     args = parser.parse_args()
 
