@@ -7,7 +7,7 @@ def usage():
     print main.__doc__
 
 def notsupported():
-    printincolor("fluka2root:\tFree-format input is not yet supported.\n\t\tYou might consider writing a feature request at http://readfluka.googlecode.com.")
+    printincolor("fluka2root:\tFree-format input is not supported.")
 
 def str2int(s):
     try:
@@ -80,8 +80,8 @@ Usage: There are several ways to run this program:
 
 #    printincolor("Note that the corresponding USRBIN histograms from different ROOT files will be summed up but not averaged unless it is implemented in the ROOT's hadd. All the other supported histograms should work fine", 33)
 
-    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
-#    estimators = {"USRBIN" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
+#    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
+    estimators = {"USRBIN" : [], "USRBDX" : []} # dictionary of supported estimators and their file units
     opened = {} # dictionary of the opened units (if any)
     out_root_files = [] # list of output ROOT files
     
@@ -175,6 +175,7 @@ Usage: There are several ways to run this program:
     return_value = 0
     resnuclei_binary_files = []
     usrbin_binary_files = []
+    usrbdx_binary_files = []
     usrtrack_binary_files = []
     for run in range(N, M+1):
         binfilename = ""
@@ -192,6 +193,8 @@ Usage: There are several ways to run this program:
                         usrbin_binary_files.append(binfilename)
                     elif re.search("USRTRACK", e):
                         usrtrack_binary_files.append(binfilename)
+                    elif re.search("USRBDX", e):
+                        usrbdx_binary_files.append(binfilename)
                     else:
 #                        print "HHHHHHHHHHHHHHHHHHHHHHHo%so" % e
                         rootfilenames.append(binfilename + ".root")
@@ -226,6 +229,8 @@ Usage: There are several ways to run this program:
 
     if len(usrbin_binary_files):
         out_root_files.append(merge_files(usrbin_binary_files, "usrbin", "usbsuw", N, M, inpname))
+    if len(usrbdx_binary_files):
+        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, inpname))
     if len(usrtrack_binary_files):
         out_root_files.append(merge_files(usrtrack_binary_files, "usrtrack", "ustsuw", N, M, inpname))
 
