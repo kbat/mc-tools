@@ -66,6 +66,10 @@ def main():
 
     args = parser.parse_args()
 
+    out_root_file = os.path.splitext(args.inp)[0]+".root"
+    if not args.force_overwrite and os.path.isfile(out_root_file):
+        sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % out_root_file)
+
     #    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
     estimators = {"USRBIN" : [], "USRBDX" : []} # dictionary of supported estimators and their file units
     opened = {} # dictionary of the opened units (if any)
@@ -182,7 +186,6 @@ def main():
 # hadd within one sample
         if len(rootfilenames):
             print "The following ROOT files will be hadded", rootfilenames
-            out_root_file = args.inp.replace(".inp", "%.3d%s" % (run, ".root"))
             command = "hadd %s %s" % (out_root_file, string.join(rootfilenames))
             printincolor(command)
             return_value = os.system(command)
