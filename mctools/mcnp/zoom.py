@@ -43,11 +43,20 @@ def main():
                     cmd['label'] = map(int, map(float, words[i+1:i+3])) + [words[i+3]]
                 elif re.search("^p[xyz]", w):
                     cmd[w] = [float(words[i+1])]
+                elif re.search("^legend", w):
+                    cmd[w] = [words[i+1]]
+                elif re.search("^scale", w):
+                    cmd[w] = [words[i+1]]
+                elif re.search("^mesh", w):
+                    cmd[w] = [words[i+1]]
 
-    keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label')
+    keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label', 'legend', 'scale', 'mesh')
     with open(args.comout, 'w') as f:
         for key in keys:
             if key in cmd:
+                # newline needed for mcplot:
+                if key in ('label', 'scale', 'mesh'):
+                    f.write("\n")
                 f.write("%s %s " % (key," ".join(str(e) for e in cmd[key]),))
         f.write("\n")
 
