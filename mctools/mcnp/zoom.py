@@ -44,10 +44,11 @@ def main():
                 elif re.search("^p[xyz]", w):
                     cmd[w] = [float(words[i+1])]
 
-#    print cmd
+    keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label')
     with open(args.comout, 'w') as f:
-        for key,value in cmd.iteritems():
-            f.write("%s %s " % (key," ".join(str(e) for e in value),))
+        for key in keys:
+            if key in cmd:
+                f.write("%s %s " % (key," ".join(str(e) for e in cmd[key]),))
         f.write("\n")
 
 
