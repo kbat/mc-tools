@@ -36,11 +36,11 @@ def main():
                 elif re.search("^ex", w):
                     try: # both x and y scales are given
                         cmd['ex'] = map(float, words[i+1:i+3])
-                        break
+                        continue
                     except ValueError: # just 1 scale is given
                         cmd['ex'] = map(float, words[i+1:i+2])
                 elif re.search("^lab", w):
-                    cmd['label'] = map(int, map(float, words[i+1:i+3])) + [words[i+3]]
+                    cmd['label'] = map(int, map(float, words[i+1:i+3])) #+ [words[i+3]]
                 elif re.search("^p[xyz]", w):
                     cmd[w] = [float(words[i+1])]
                 elif re.search("^legend", w):
