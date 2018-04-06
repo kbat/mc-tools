@@ -22,6 +22,9 @@ def main():
 
     cmd = {} # dictionary of commands
 
+    bas = False
+    plane = False
+    
     with open(args.com) as f:
         for line in f.readlines():
             words = line.strip().split()
@@ -31,6 +34,7 @@ def main():
             for i,w in enumerate(words):
                 if re.search("^bas", w):
                     cmd['bas'] = map(float, words[i+1:i+7])
+                    if plane is False: bas = True # basis was before plane cuts
                 elif re.search("^or", w):
                     cmd['or'] = map(float, words[i+1:i+4])
                 elif re.search("^ex", w):
@@ -43,16 +47,26 @@ def main():
                     cmd['label'] = map(int, map(float, words[i+1:i+3])) #+ [words[i+3]]
                 elif re.search("^p[xyz]", w):
                     cmd[w] = [float(words[i+1])]
+                    if bas is False: plane = True # plane cuts were before basis
                 elif re.search("^legend", w):
                     cmd[w] = [words[i+1]]
-                elif w in ("scale"):
+                elif w == "scale":
+                    print w
                     if int(words[i+1]): # no need to put 'scale 0'
                         cmd[w] = [words[i+1]]
                 elif w in ("mesh"):
                     if int(words[i+1])==1: # no need to put 'mesh 1'
                         cmd[w] = [words[i+1]]
 
-    keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label', 'mesh', 'legend', 'scale')
+    print bas, plane
+
+    if plane: # bas was first
+        keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label', 'mesh', 'legend', 'scale')
+    elif bas:
+        keys = ('or', 'ex', 'px', 'py', 'pz', 'bas', 'label', 'mesh', 'legend', 'scale')
+    else:
+        keys = {'or', 'ex', 'label', 'mesh', 'legend', 'scale'}
+        
     with open(args.comout, 'w') as f:
         for key in keys:
             if key in cmd:
