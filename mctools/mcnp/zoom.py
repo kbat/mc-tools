@@ -71,7 +71,7 @@ def main():
         for key in keys:
             if key in cmd:
                 # newline required by mcplot:
-                if key in ('mesh', 'legend', 'scale'):
+                if key in ('mesh', 'legend', 'scale', 'label'):
                     f.write("\n")
                 f.write("%s %s " % (key," ".join(str(e) for e in cmd[key]),))
         f.write("\n")
