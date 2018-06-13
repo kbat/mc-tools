@@ -28,7 +28,7 @@ class VTK:
         self.nx,self.ny,self.nz = map(int, f.readline().strip().split()[1:])
         f.close()
 
-#        print title,form, dataset,nx,ny,nz
+#        print title,form, dataset
         self.x = self.readCoordinates("X")
         self.y = self.readCoordinates("Y")
         self.z = self.readCoordinates("Z")
@@ -64,20 +64,21 @@ class VTK:
         "Read LOOKUP_TABLE"
         found = False
         val = []
-        f = open(self.fname)
-        for line in f:
-            l = line.strip()
-            if re.search("\ALOOKUP_TABLE", l):
-                found = True
-                continue
-            if found:
-                for v in l.split():
-                    val.append(float(v))
+        with open(self.fname) as f:
+            for line in f:
+                l = line.strip()
+                if re.search("\ALOOKUP_TABLE", l):
+                    found = True
+                    continue
+                if found:
+                    for v in l.split():
+                        val.append(int(v))
+
         return val
 
     def getTH3(self):
         title = os.path.splitext(os.path.basename(self.fname))[0]
-        h = ROOT.TH3D("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
+        h = ROOT.TH3S("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
         ii = 0
         for k in range(self.nz):
             for j in range(self.ny):
@@ -98,6 +99,7 @@ def main():
     if args.root == "":
         args.root = os.path.splitext(os.path.basename(args.vtk))[0] + ".root"
 
+    print "vtk2root: short integer values are assumed"
     fin = VTK(args.vtk)
     h = fin.getTH3()
     h.SaveAs(args.root)
