@@ -11,6 +11,12 @@ He4 = Isotope("02004.70c", 4.002602)
 C   = Isotope("06000.71c", 12.011)
 O   = Isotope("08016.70c", 15.999)
 Be  = Isotope("04009.70c", 9.012)
+
+Mg24 = Isotope("12024.70c",23.985042)
+Mg25 = Isotope("12025.70c",24.985837)
+Mg26 = Isotope("12026.70c",25.982593)
+
+
 Al  = Isotope("13027.70c", 26.981539)
 
 Si28 = Isotope("14028.71c", 27.9769265325) # wiki
@@ -44,6 +50,9 @@ Ni61 = Isotope("28061.71c", 60.9310560) # wiki
 Ni62 = Isotope("28062.71c", 61.9283451) # wiki
 Ni64 = Isotope("28064.71c", 63.9279660) # wiki
 
+Cu63 = Isotope("29063.70c", 62.9295975) # wiki
+Cu65 = Isotope("29065.70c", 64.9277895) # wiki
+
 Zr90 = Isotope("40090.70c", 89.9047026)
 Zr91 = Isotope("40091.70c", 90.9056439)
 Zr92 = Isotope("40092.70c", 91.9050386)
@@ -62,6 +71,13 @@ Pb204 = Isotope("82204.70c", 203.973020)
 Pb206 = Isotope("82206.70c", 205.974440)
 Pb207 = Isotope("82207.70c", 206.975872)
 Pb208 = Isotope("82208.70c", 207.976627)
+
+##### Elements with natural abundance #####
+
+Mg = Material("Mg", 1.738)
+Mg.AddIsotope(Mg24,0.7899)
+Mg.AddIsotope(Mg25,0.1)
+Mg.AddIsotope(Mg26,0.1101)
 
 ##### Materials ####
 
@@ -117,6 +133,18 @@ SS316L.AddIsotope(Mo97,  0.001388944)
 SS316L.AddIsotope(Mo98,  0.003514494)
 SS316L.AddIsotope(Mo100,  0.001404926)
 SS316L.Print()
+
+# Poly
+Poly = Material("Poly", 0.91)
+Poly.AddIsotope(C, 1)
+Poly.AddIsotope(H, 2)
+Poly.Print()
+
+# Copper
+Copper = Material("Copper", 8.91) # as material 73 in CombLayer
+Copper.AddIsotope(Cu63, 0.058389212)
+Copper.AddIsotope(Cu65, 0.02604927)
+Copper.Print()
 
 
 ##### Compounds ####
@@ -216,3 +244,19 @@ ParaHAl = Compound("ParaHAl")
 ParaHAl.AddMaterial(Aluminium,Alfrac/100.0)
 ParaHAl.AddMaterial(Hydrogen,1-Alfrac/100.0)
 ParaHAl.PrintAtomicFractions()
+
+print "\nMagnesium"
+Mg.Print()
+
+print "\nClay Till Lera"
+ClayTillLera = Compound("ClayTillLera")
+ClayTillLera.AddMaterial(water,0.1)
+ClayTillLera.AddMaterial(Mg, 0.9)
+
+ClayTillLera.Print()
+
+print "\nPoly+Copper"
+Cable = Compound("Cable")
+Cable.AddMaterial(Poly,0.5)
+Cable.AddMaterial(Copper, 0.5)
+Cable.PrintAtomicFractions()
