@@ -154,10 +154,10 @@ class Material:
     def Print(self):
         print " Material:", self.name
         print "  Density:", self.density
-        print "  Atomic weight: ", self.GetA()
+        print "  Atomic weight: ", self.GetA(), "g/mole"
         print "  Isotopes:"
         for j,i in enumerate(self.isotopes):
-            print " "*2, self.nn[j],
+#            print " "*2, self.nn[j],
             i.Print()
             print "   Volume fraction in %s: %g" % (self.name, self.GetVolumeFraction(i))
 
@@ -168,6 +168,6 @@ class Isotope:
         self.A = A # atomic weight
 
     def Print(self):
-        print "\t%s %g" % (self.name, self.A)
+        print "\t%s \t A = %g" % (self.name, self.A)
 
 ### END MIXTURES ###
