@@ -37,7 +37,7 @@ def merge_files(thelist, suffix, thecommand, N, M, args):
     if return_value:
         sys.exit(1);
     os.unlink(tmpfile.name)
-    command = "%s2root %s" % (thecommand, suwfile)
+    command = "%s2root %s.bnn %s.root" % (thecommand, suwfile, suwfile)
     if args.verbose:
         printincolor(command)
     return_value = os.system(command)
