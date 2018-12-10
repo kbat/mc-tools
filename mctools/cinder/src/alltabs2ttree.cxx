@@ -1,6 +1,5 @@
 #include "TTable.h"
 #include "TNuclide.h"
-#include "alltabsDict.h"
 
 #include <TROOT.h>
 #include <TEnv.h>
@@ -144,8 +143,8 @@ void Read(ifstream &alltabs, TBranch *bTable, TTable *table, TNuclide *nuclide) 
                         ssline << pline;
                         ssline >> tNumber >> dummy >> tNumber;
 
-                        table->setName(line);
-                        table->setNumber(tNumber);
+                        table->SetName(line);
+                        table->SetNumber(tNumber);
 
                         inTable = true;
 
@@ -221,20 +220,20 @@ void Read(ifstream &alltabs, TBranch *bTable, TTable *table, TNuclide *nuclide) 
                                              >> activities.at(8)
                                              >> activities.at(9);
 
-                                existingNuclide = table->findNuclide(element+isotope);
+                                existingNuclide = table->FindNuclide(element+isotope);
 
                                 if (existingNuclide == -1) {
 
                                         nuclide = new TNuclide(element+isotope,hL);
-                                        existingNuclide = table->addNuclide(*nuclide);
+                                        existingNuclide = table->AddNuclide(*nuclide);
 
                                 }
 
-                                nuclide = table->getNuclide(existingNuclide);
+                                nuclide = table->GetNuclide(existingNuclide);
 
                                 for (Int_t i = 0; i < 10; i++) {
 
-                                        nuclide->addActivity(activities.at(i));
+                                        nuclide->AddActivity(activities.at(i));
 
                                 }
 
@@ -249,7 +248,7 @@ void Read(ifstream &alltabs, TBranch *bTable, TTable *table, TNuclide *nuclide) 
 
         }
 
-        table->finalizeTable();
+        table->FinalizeTable();
 
         bTable->Fill();
 
@@ -334,8 +333,8 @@ void readTimeAndBeamHeadings(ifstream &alltabs, string line, TTable *table) {
 
                 if ( (beamStates.at(i) != "") && (timeSteps.at(i) != 0) ) {
 
-                        table->addBeamState(bS);
-                        table->addTimeStep(timeSteps.at(i));
+                        table->AddBeamState(bS);
+                        table->AddTimeStep(timeSteps.at(i));
 
                 }
 
