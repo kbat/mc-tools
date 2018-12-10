@@ -5,28 +5,12 @@ IMPORTANT: in order to ensure the correct operation of the converter, the option
 
 ###################################################################################################
 
-This to compile the libAlltabs.so into ROOT.
+This to compile the libAlltabs.so and alltabs2ttree into ROOT.
 
-make libAlltabs.so
+make all
+make install
 
----------------------------------------------------------------------------------------------------
-Create a symbolic link to the ROOT default lib folder to make the libAlltabs.so available system-wide:
+To clean and uninstall, respectively:
 
-ln -s $PWD/libAlltabs.so $ROOTSYS/lib/
-
----------------------------------------------------------------------------------------------------
-Map the library to libTree.so so that it gets loaded by default
-
-rlibmap -o libAlltabs.rootmap -l libAlltabs.so -d libTree.so -c LinkDef.h
-
----------------------------------------------------------------------------------------------------
-Move the map file to the ROOT library folder:
-
-mv libAlltabs.rootmap $ROOTSYS/lib/
-
-###################################################################################################
-
-The alltabs2ttree is a code to read and save to a ROOT TTree the alltabs file (ONLY TABLE 4 FOR NOW)
-To compile, just run:
-
-make
+make clean
+make uninstall
