@@ -1,6 +1,7 @@
 CXXFLAGS  := -Wall -fPIC
 ROOTFLAGS := $(shell root-config --cflags --glibs)
 ROOT_LIBDIR := $(shell root-config --libdir)
+ROOT_INCDIR := $(shell root-config --incdir)
 ROOT_BINDIR := $(shell root-config --bindir)
 
 all: alltabs2ttree
@@ -29,14 +30,19 @@ install: alltabs2ttree
 	@install -C $(CURDIR)/lib/libAlltabs.rootmap $(ROOT_LIBDIR)/
 	@install -C $(CURDIR)/lib/libAlltabs_rdict.pcm $(ROOT_LIBDIR)/
 	@install -C $(CURDIR)/lib/libAlltabs.so $(ROOT_LIBDIR)/
+	@echo "Installing header files to $(ROOT_INCDIR)"
+	@install -C $(CURDIR)/include/TNuclide.h $(ROOT_INCDIR)/
+	@install -C $(CURDIR)/include/TTable.h $(ROOT_INCDIR)/
 	@echo "Installing alltabs2ttree to $(ROOT_BINDIR)"
 	@install -C $(CURDIR)/bin/alltabs2ttree $(ROOT_BINDIR)/
 
 uninstall:
-	@echo "Uninstalling libAlltabs.so and alltabs2ttree"
+	@echo "Uninstalling libAlltabs.so, header files and alltabs2ttree"
 	@rm -fv $(ROOT_LIBDIR)/libAlltabs.rootmap
 	@rm -fv $(ROOT_LIBDIR)/libAlltabs_rdict.pcm
 	@rm -fv $(ROOT_LIBDIR)/libAlltabs.so
+	@rm -fv $(ROOT_INCDIR)/TNuclide.h
+	@rm -fv $(ROOT_INCDIR)/TTable.h
 	@rm -fv $(ROOT_BINDIR)/alltabs2ttree
 
 clean:
