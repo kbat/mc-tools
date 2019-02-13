@@ -15,10 +15,6 @@ Project homepage: https://github.com/kbat/mc-tools
   * The [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
     script shows an example how to save a mctal file in the
     [ROOT](http://root.cern.ch)  format.
-    [This poster](https://drive.google.com/file/d/0B35Xg1IpFgVycXRiWWh0VTJnczQ/edit?usp=sharing)
-    presented on the
-    [ICANS XXI](http://j-parc.jp/researcher/MatLife/en/meetings/ICANS_XXI/)
-    conference shows some usage examples. 
   * WSSA file converters **(MCNP6 is not fully supported)**
     * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
       converter: it converts WSSA files produced by MCNP(X) into plain
@@ -27,17 +23,15 @@ Project homepage: https://github.com/kbat/mc-tools
       WSSA records.
     * [ssw2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2root.py)
       converter: it converts WSSA files produced by MСNР(X) into a ROOT
-      ntuple.  Use TTree::GetAlias() to get particle type and surface
-      crossed.  The list of aliases defined in the tree can be printed
+      ntuple.
+      The list of aliases defined in the tree can be printed
       by the TTree::GetListOfAliases()::Print()
-      method.
+      method. In particular, this list shows how to get particle type and surface number.
       [This macro](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/examples/ssw2root/example.C)
       shows several very simple examples how to analyse SSW files with
       ROOT.  
     The WSSA file format depends on the MCNPX version, and currently
-    the script has been tested with versions 2.6.0, 26b, 2.7.0 and
-    MCNP6. If you are experiencing problems with this script, you are
-    welcome [to contact the author](https://github.com/kbat). 
+    the script has been tested with versions 2.6.0, 26b and 2.7.0.
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
