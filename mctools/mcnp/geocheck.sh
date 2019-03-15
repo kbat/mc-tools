@@ -45,6 +45,10 @@ sed -i "s/^sdef.*/sdef/i" $inp
 sed -i "s/^mt/c mt/i" $inp
 sed -i "s/^rand/c rand/i" $inp
 
+# comment out reflection cards
+sed -i "s/^REFLE/c REFLE/" $inp
+sed -i "s/^REFF/c REFF/" $inp
+
 rm -f /tmp/geocheck.*
 mcnpx i=$inp name=/tmp/geocheck. > /dev/null
 out=/tmp/geocheck.o
