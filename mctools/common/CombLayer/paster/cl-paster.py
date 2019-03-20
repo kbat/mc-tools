@@ -79,11 +79,9 @@ def main():
     parser.add_argument('className', type=str, help='class name')
     args = parser.parse_args()
 
-    home=os.path.expanduser("~")
-    mctools=os.environ["MCTOOLS"]
-    base = os.path.join(home,mctools)
-    cxxOrig = os.path.join(base, "common/CombLayer/paster/MyComponent.cxx")
-    hOrig   = os.path.join(base, "common/CombLayer/paster/MyComponent.h")
+    path    = os.path.join(os.environ["MCTOOLS"], "common/CombLayer/paster")
+    cxxOrig = os.path.join(path, "MyComponent.cxx")
+    hOrig   = os.path.join(path, "MyComponent.h")
 
     p = Paster(args.model, args.className)
     p.setAuthor(args.author)
