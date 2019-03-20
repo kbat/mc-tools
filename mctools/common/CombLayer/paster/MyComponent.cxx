@@ -1,6 +1,6 @@
-/********************************************************************* 
+/*********************************************************************
   CombLayer : MCNP(X) Input builder
- 
+
  * File:   essBuild/MyComponent.cxx
  *
  * Copyright (c) YEAR-YEAR by AUTHOR
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
 #include <fstream>
@@ -95,7 +95,7 @@ MyComponent::MyComponent(const std::string& Key)  :
   */
 {}
 
-MyComponent::MyComponent(const MyComponent& A) : 
+MyComponent::MyComponent(const MyComponent& A) :
   attachSystem::ContainedComp(A),
   attachSystem::FixedOffset(A),
   engActive(A.engActive),
@@ -137,8 +137,8 @@ MyComponent::clone() const
 {
     return new MyComponent(*this);
 }
-  
-MyComponent::~MyComponent() 
+
+MyComponent::~MyComponent()
   /*!
     Destructor
   */
@@ -164,7 +164,7 @@ MyComponent::populate(const FuncDataBase& Control)
 
   return;
 }
-  
+
 void
 MyComponent::createUnitVector(const attachSystem::FixedComp& FC,
 			      const long int sideIndex)
@@ -181,7 +181,7 @@ MyComponent::createUnitVector(const attachSystem::FixedComp& FC,
 
   return;
 }
-  
+
 void
 MyComponent::createSurfaces()
   /*!
@@ -201,7 +201,7 @@ MyComponent::createSurfaces()
 
   return;
 }
-  
+
 void
 MyComponent::createObjects(Simulation& System)
   /*!
@@ -220,7 +220,7 @@ MyComponent::createObjects(Simulation& System)
   return;
 }
 
-  
+
 void
 MyComponent::createLinks()
   /*!
@@ -246,13 +246,10 @@ MyComponent::createLinks()
 
   FixedComp::setConnect(5,Origin+Z*(height/2.0),Z);
   FixedComp::setLinkSurf(5,SMap.realSurf(buildIndex+6));
-  
+
   return;
 }
-  
-  
 
-  
 void
 MyComponent::createAll(Simulation& System,
 		       const attachSystem::FixedComp& FC,
@@ -271,7 +268,7 @@ MyComponent::createAll(Simulation& System,
   createSurfaces();
   createObjects(System);
   createLinks();
-  insertObjects(System);              
+  insertObjects(System);
 
   return;
 }

@@ -1,6 +1,6 @@
-/********************************************************************* 
+/*********************************************************************
   CombLayer : MCNP(X) Input builder
- 
+
  * File:   essBuildInc/MyComponent.h
  *
  * Copyright (c) YEAR-YEAR by AUTHOR
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
 #ifndef essSystem_MyComponent_h
@@ -47,15 +47,15 @@ class MyComponent : public attachSystem::ContainedComp,
   double height;                ///< height
 
   int mainMat;                   ///< main material
-  
+
   void populate(const FuncDataBase&);
   void createUnitVector(const attachSystem::FixedComp&,
 			const long int);
-  
+
   void createSurfaces();
   void createObjects(Simulation&);
   void createLinks();
-  
+
  public:
 
   MyComponent(const std::string&);
@@ -63,7 +63,7 @@ class MyComponent : public attachSystem::ContainedComp,
   MyComponent& operator=(const MyComponent&);
   virtual MyComponent* clone() const;
   virtual ~MyComponent();
-  
+
   void createAll(Simulation&,const attachSystem::FixedComp&,const long int);
 
 };
@@ -71,5 +71,5 @@ class MyComponent : public attachSystem::ContainedComp,
 }
 
 #endif
- 
+
 
