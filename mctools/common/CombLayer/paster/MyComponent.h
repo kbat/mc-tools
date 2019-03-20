@@ -46,10 +46,7 @@ class MyComponent : public attachSystem::ContainedComp,
   double width;                 ///< Width
   double height;                ///< height
 
-  double wallThick;             ///< Thickness of wall
-
   int mainMat;                   ///< main material
-  int wallMat;                   ///< wall material  
   
   void populate(const FuncDataBase&);
   void createUnitVector(const attachSystem::FixedComp&,

@@ -100,8 +100,7 @@ MyComponent::MyComponent(const MyComponent& A) :
   attachSystem::FixedOffset(A),
   engActive(A.engActive),
   length(A.length),width(A.width),height(A.height),
-  wallThick(A.wallThick),
-  mainMat(A.mainMat),wallMat(A.wallMat)
+  mainMat(A.mainMat)
   /*!
     Copy constructor
     \param A :: MyComponent to copy
@@ -124,9 +123,7 @@ MyComponent::operator=(const MyComponent& A)
       length=A.length;
       width=A.width;
       height=A.height;
-      wallThick=A.wallThick;
       mainMat=A.mainMat;
-      wallMat=A.wallMat;
     }
   return *this;
 }
@@ -162,10 +159,8 @@ MyComponent::populate(const FuncDataBase& Control)
   length=Control.EvalVar<double>(keyName+"Length");
   width=Control.EvalVar<double>(keyName+"Width");
   height=Control.EvalVar<double>(keyName+"Height");
-  wallThick=Control.EvalVar<double>(keyName+"WallThick");
 
   mainMat=ModelSupport::EvalMat<int>(Control,keyName+"MainMat");
-  wallMat=ModelSupport::EvalMat<int>(Control,keyName+"WallMat");
 
   return;
 }
@@ -234,8 +229,23 @@ MyComponent::createLinks()
 {
   ELog::RegMethod RegA("MyComponent","createLinks");
 
-  //  FixedComp::setConnect(0,Origin,-Y);
-  //  FixedComp::setLinkSurf(0,-SMap.realSurf(buildIndex+1));
+  FixedComp::setConnect(0,Origin-Y*(length/2.0),-Y);
+  FixedComp::setLinkSurf(0,-SMap.realSurf(buildIndex+1));
+
+  FixedComp::setConnect(1,Origin+Y*(length/2.0),Y);
+  FixedComp::setLinkSurf(1,SMap.realSurf(buildIndex+2));
+
+  FixedComp::setConnect(2,Origin-X*(width/2.0),-X);
+  FixedComp::setLinkSurf(2,-SMap.realSurf(buildIndex+3));
+
+  FixedComp::setConnect(3,Origin+X*(width/2.0),X);
+  FixedComp::setLinkSurf(3,SMap.realSurf(buildIndex+4));
+
+  FixedComp::setConnect(4,Origin-Z*(height/2.0),-Z);
+  FixedComp::setLinkSurf(4,-SMap.realSurf(buildIndex+5));
+
+  FixedComp::setConnect(5,Origin+Z*(height/2.0),Z);
+  FixedComp::setLinkSurf(5,SMap.realSurf(buildIndex+6));
   
   return;
 }
