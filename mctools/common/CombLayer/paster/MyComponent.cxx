@@ -63,7 +63,8 @@
 #include "inputParam.h"
 #include "HeadRule.h"
 #include "Object.h"
-#include "Qhull.h"
+#include "groupRange.h"
+#include "objectGroups.h"
 #include "Simulation.h"
 #include "ReadFunctions.h"
 #include "ModelSupport.h"
@@ -221,7 +222,7 @@ MyComponent::createObjects(Simulation& System)
 
   std::string Out;
   Out=ModelSupport::getComposite(SMap,surfIndex," 1 -2 3 -4 5 -6 ");
-  System.addCell(MonteCarlo::Qhull(cellIndex++,mainMat,0.0,Out));
+  System.addCell(MonteCarlo::Object(cellIndex++,mainMat,0.0,Out));
 
   addOuterSurf(Out);
 
