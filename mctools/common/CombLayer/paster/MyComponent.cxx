@@ -88,10 +88,8 @@ namespace NAMESPACE
 
 MyComponent::MyComponent(const std::string& Key)  :
   attachSystem::ContainedComp(),
-  attachSystem::FixedOffset(Key,6),
-  surfIndex(ModelSupport::objectRegister::Instance().cell(Key)),
-  cellIndex(surfIndex+1)
-  /*!
+  attachSystem::FixedOffset(Key,6)
+ /*!
     Constructor BUT ALL variable are left unpopulated.
     \param Key :: Name for item in search
   */
@@ -100,7 +98,6 @@ MyComponent::MyComponent(const std::string& Key)  :
 MyComponent::MyComponent(const MyComponent& A) : 
   attachSystem::ContainedComp(A),
   attachSystem::FixedOffset(A),
-  surfIndex(A.surfIndex),cellIndex(A.cellIndex),
   engActive(A.engActive),
   length(A.length),width(A.width),height(A.height),
   wallThick(A.wallThick),
@@ -123,7 +120,6 @@ MyComponent::operator=(const MyComponent& A)
     {
       attachSystem::ContainedComp::operator=(A);
       attachSystem::FixedOffset::operator=(A);
-      cellIndex=A.cellIndex;
       engActive=A.engActive;
       length=A.length;
       width=A.width;
@@ -199,14 +195,14 @@ MyComponent::createSurfaces()
 {
   ELog::RegMethod RegA("MyComponent","createSurfaces");
 
-  ModelSupport::buildPlane(SMap,surfIndex+1,Origin-Y*(length/2.0),Y);
-  ModelSupport::buildPlane(SMap,surfIndex+2,Origin+Y*(length/2.0),Y);
+  ModelSupport::buildPlane(SMap,buildIndex+1,Origin-Y*(length/2.0),Y);
+  ModelSupport::buildPlane(SMap,buildIndex+2,Origin+Y*(length/2.0),Y);
 
-  ModelSupport::buildPlane(SMap,surfIndex+3,Origin-X*(width/2.0),X);
-  ModelSupport::buildPlane(SMap,surfIndex+4,Origin+X*(width/2.0),X);
+  ModelSupport::buildPlane(SMap,buildIndex+3,Origin-X*(width/2.0),X);
+  ModelSupport::buildPlane(SMap,buildIndex+4,Origin+X*(width/2.0),X);
 
-  ModelSupport::buildPlane(SMap,surfIndex+5,Origin-Z*(height/2.0),Z);
-  ModelSupport::buildPlane(SMap,surfIndex+6,Origin+Z*(height/2.0),Z);
+  ModelSupport::buildPlane(SMap,buildIndex+5,Origin-Z*(height/2.0),Z);
+  ModelSupport::buildPlane(SMap,buildIndex+6,Origin+Z*(height/2.0),Z);
 
   return;
 }
@@ -221,7 +217,7 @@ MyComponent::createObjects(Simulation& System)
   ELog::RegMethod RegA("MyComponent","createObjects");
 
   std::string Out;
-  Out=ModelSupport::getComposite(SMap,surfIndex," 1 -2 3 -4 5 -6 ");
+  Out=ModelSupport::getComposite(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
   System.addCell(MonteCarlo::Object(cellIndex++,mainMat,0.0,Out));
 
   addOuterSurf(Out);
@@ -239,7 +235,7 @@ MyComponent::createLinks()
   ELog::RegMethod RegA("MyComponent","createLinks");
 
   //  FixedComp::setConnect(0,Origin,-Y);
-  //  FixedComp::setLinkSurf(0,-SMap.realSurf(surfIndex+1));
+  //  FixedComp::setLinkSurf(0,-SMap.realSurf(buildIndex+1));
   
   return;
 }
