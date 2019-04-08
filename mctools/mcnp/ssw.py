@@ -28,7 +28,7 @@ def unpackArray(data):
 
 
 def unsupported():
-	print >> sys.stderr, "Your MCNP(X) version is not supported.\nConsider contacting Konstantin Batkov <kbat.mc-tools@lizardie.com> if you want to change this."
+	print >> sys.stderr, "Your MCNP(X) version is not supported."
 	sys.exit(1)
 
 
