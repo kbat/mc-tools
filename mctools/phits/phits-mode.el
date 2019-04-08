@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 ;;
 ;; Author: Konstantin Batkov
-;; e-mail: kbat.phits ((at)) lizardie.com
+;; e-mail: batkov ((at)) gmail.com
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 ;;         How to use:

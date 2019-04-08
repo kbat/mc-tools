@@ -17,7 +17,7 @@ def printincolor(s,col=33):
     """
     print "\033[1;%dm%s\033[0m" % (col, s)
 
-def merge_files(thelist, suffix, thecommand, N, M, args):
+def merge_files(thelist, suffix, thecommand, N, M, args, ext="bnn"):
     inpname = args.inp
     suwfile = inpname.replace(".inp", "%.3d-%.3d_%s" % (N, M, suffix) )
     temp_path = tempfile.mktemp()
@@ -37,7 +37,7 @@ def merge_files(thelist, suffix, thecommand, N, M, args):
     if return_value:
         sys.exit(1);
     os.unlink(tmpfile.name)
-    command = "%s2root %s.bnn %s.root" % (thecommand, suwfile, suwfile)
+    command = "%s2root %s.%s %s.root" % (thecommand, suwfile, ext, suwfile)
     if args.verbose:
         printincolor(command)
     return_value = os.system(command)
@@ -205,7 +205,7 @@ def main():
     if len(usrbin_binary_files):
         out_root_files.append(merge_files(usrbin_binary_files, "usrbin", "usbsuw", N, M, args))
     if len(usrbdx_binary_files):
-        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, args))
+        out_root_files.append(merge_files(usrbdx_binary_files, "usrbdx", "usxsuw", N, M, args, "bnx"))
     if len(usrtrack_binary_files):
         out_root_files.append(merge_files(usrtrack_binary_files, "usrtrack", "ustsuw", N, M, args))
 
@@ -220,7 +220,8 @@ def main():
         verbose = "-v 0"
         if args.verbose:
             verbose = "-v 99"
-        command = "hadd %s %s %s %s" % (force, verbose, out_root_file, string.join(out_root_files))
+#        command = "hadd %s %s %s %s" % (force, verbose, out_root_file, string.join(out_root_files))
+        command = "hadd %s %s %s" % (force, out_root_file, string.join(out_root_files))
         if args.verbose:
             printincolor(command)
         return_value = os.system(command)
