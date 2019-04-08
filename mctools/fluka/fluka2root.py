@@ -18,7 +18,7 @@ def printincolor(s,col=33):
     print "\033[1;%dm%s\033[0m" % (col, s)
 
 def merge_files(thelist, suffix, thecommand, N, M, args, ext="bnn"):
-    inpname = args.inp
+    inpname = args.inp[0]
     suwfile = inpname.replace(".inp", "%.3d-%.3d_%s" % (N, M, suffix) )
     temp_path = tempfile.mktemp()
     tmpfile = open(temp_path, "w")
@@ -45,50 +45,13 @@ def merge_files(thelist, suffix, thecommand, N, M, args, ext="bnn"):
         sys.exit(2)
     return "%s.root" % suwfile
 
-def findNM(inpname):
+def getOpenedUnits(inpname):
+    """Get the list of opened (named) units
     """
-    Find the N and M-numbers used when a FLUKA job with input file 'inpname' was run
-    """
-    return 1,len(glob.glob1(".", "%s???.out" % os.path.splitext(inpname)[0]))
-
-def main():
-    """
-    fluka2root - a script to convert the output of all FLUKA estimators (supported by the mc-tools project) into a single ROOT file.
-    """
-
-    parser = argparse.ArgumentParser(description=main.__doc__,
-                                     epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('inp', type=str, help='FLUKA input file')
-    parser.add_argument('-N',  dest='N',  type=int, help='number of previous run plus 1 (1 if omitted)', required=False, default=-1)
-    parser.add_argument('-M',  dest='M',  type=int, help='number of final run plus 1 (if omitted, guessed based on the files in the current folder)', required=False, default=-1)
-    parser.add_argument('-f', action='store_true', default=False, dest='force_overwrite', help='overwrite the ROOT files produced by hadd')
-    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
-
-    args = parser.parse_args()
-
-    out_root_file = os.path.splitext(args.inp)[0]+".root"
-    if not args.force_overwrite and os.path.isfile(out_root_file):
-        sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % out_root_file)
-
-    #    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
-    estimators = {"USRBIN" : [], "USRBDX" : []} # dictionary of supported estimators and their file units
-    opened = {} # dictionary of the opened units (if any)
-    out_root_files = [] # list of output ROOT files
     
-    # guess N and M from the output file
-    N,M = findNM(args.inp)
-
-    if args.N>0:
-        N = args.N
-
-    if args.M>0:
-        M = args.M
-
-    if N>=M:
-        sys.exit("Error: M>=N")
-
-    inp = open(args.inp, "r")
+    inp = open(inpname, "r")
     isname = False
+    opened = []
     for line in inp.readlines():
         if re.search("\AFREE", line):
             sys.exit("fluka2root:\tFree-format input is not supported.")
@@ -103,9 +66,24 @@ def main():
             isname = True
 
     if len(opened):
-        print "Opened units: ", opened
+        print "Opened (named) units: ", opened
+    inp.close()
+    
+    return 0
 
-    inp.seek(0)
+def getROOTFile(inp):
+    """Return output ROOT file name
+    """
+    val = os.path.splitext(inp)[0]+".root"
+    val = re.sub(r'[0-9]+\.root','.root',val)
+    return val
+
+def assignUnits(args,estimators):
+    """Assigns units to estimators
+    """
+    opened = getOpenedUnits(args.inp[0])
+
+    inp = open(args.inp[0], "r")
     if args.verbose:
         print "Supported estimators:"
     for line in inp.readlines():
@@ -127,26 +105,68 @@ def main():
                     if str2int(unit)<0: # we are interested in binary files only
                         if not unit in estimators[e]:
                             estimators[e].append(unit)
-
-    if args.verbose:
-        print estimators
-
+    inp.close()
 # Convert units in the file names:
     for e, units in estimators.iteritems():
 #        if e == "EVENTDAT":
 #            continue
         for u in units:
+            print u
             iu = str2int(u)
             if iu<0: # we are interested in binary files only
-                if iu in opened:
+                if opened and iu in opened:
                     units[units.index(u)] = str("_%s" % opened[iu])
                 else:
                     units[units.index(u)] = "_fort.%d" % abs(iu)
 
+    return estimators
+
+def main():
+    """
+    fluka2root - a script to convert the output of all FLUKA estimators (supported by the mc-tools project) into a single ROOT file.
+    """
+
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                     epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser.add_argument('inp', type=str, nargs="+", help='FLUKA input file(s). If one file is given, the script will average the runs between N and M. If multiple files are given, the script will assume there is one run with each input file and average all "*001*" files.')
+    parser.add_argument('-f', action='store_true', default=False, dest='force_overwrite', help='overwrite the ROOT files produced by hadd')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
+
+    args = parser.parse_args()
+    ninp = len(args.inp)
+    
+    print args.inp, ninp
+
+    out_root_file = getROOTFile(args.inp[0])
+    print out_root_file
+
+    if not args.force_overwrite and os.path.isfile(out_root_file):
+        sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % out_root_file)
+
+    #    estimators = {"EVENTDAT" : [], "USRBDX" : [], "USRBIN" : [], "RESNUCLE" : [], "USRTRACK" : []} # dictionary of supported estimators and their file units
+    estimators = {"USRBIN" : [], "USRBDX" : []} # dictionary of supported estimators and their file units
+    files =      {"USRBIN" : [], "USRBDX" : []}
+    print "fix me here - create an independent copy of estimators"
+    print id(estimators)
+    print id(files)
+#    return 0
+#   files =  {"USRBIN" : [], "USRBDX" : []}
+    opened = {} # dictionary of the opened units (if any)
+    out_root_files = [] # list of output ROOT files
+
+    estimators = assignUnits(args,estimators)
+
     if args.verbose:
         print estimators
 
-    inp.close()
+    print " lists of files:"
+    for e in estimators:
+        for u in estimators[e]:
+            for f in glob.glob("*%s" % u):
+                files[e].append(f)
+    print files
+        
+    return 0
 
 # run converters
     return_value = 0
@@ -160,7 +180,7 @@ def main():
         command = ""
         for e in estimators:
             for s in estimators[e]:
-                binfilename = args.inp.replace(".inp", "%.3d%s" % (run, s))
+                binfilename = args.inp[0].replace(".inp", "%.3d%s" % (run, s))
                 if os.path.isfile(binfilename):
                     if re.search("RESNUCLE", e): # RESNUCLE = RESNUCLEi = RESNUCLEI
                         e = "RESNUCLEI"
@@ -213,7 +233,7 @@ def main():
         print "ROOT files produced: ", out_root_files
 
     if return_value is 0 and len(out_root_files)>1:
-        out_root_file = args.inp.replace(".inp", ".root");
+        out_root_file = args.inp[0].replace(".inp", ".root");
         force = ""
         if args.force_overwrite:
             force = "-f"
