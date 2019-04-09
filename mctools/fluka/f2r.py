@@ -44,9 +44,9 @@ class Converter:
         self.verbose = verbose
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw")]
-#                           Estimator("USRTRACK", "ustsuw", "bnn")]
-        
+        #                           Estimator("USRTRACK", "ustsuw", "bnn")]
         self.opened = {}         # dict of opened units (if any)
+
         self.out_root_files = [] # list of output ROOT files
 
         # Generate the output root file name:
@@ -117,7 +117,9 @@ class Converter:
     def assignUnits(self):
         """Assigns units to estimators
         """
-        opened = self.getOpenedUnits()
+        self.opened = self.getOpenedUnits()
+        if len(self.opened):
+            sys.exit("Opened units not yet supported")
 
         inp = open(self.inp[0], "r")
         for line in inp.readlines():
