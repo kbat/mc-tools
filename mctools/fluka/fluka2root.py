@@ -69,7 +69,7 @@ def getOpenedUnits(inpname):
         print "Opened (named) units: ", opened
     inp.close()
     
-    return 0
+    return opened
 
 def getROOTFile(inp):
     """Return output ROOT file name
@@ -128,8 +128,8 @@ def main():
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('inp', type=str, nargs="+", help='FLUKA input file(s). If one file is given, the script will average the runs between N and M. If multiple files are given, the script will assume there is one run with each input file and average all "*001*" files.')
-    parser.add_argument('-f', action='store_true', default=False, dest='force_overwrite', help='overwrite the ROOT files produced by hadd')
+    parser.add_argument('inp', type=str, nargs="+", help='FLUKA input file(s). If one file is given, the script will average the runs between N and M. If multiple files are given, the script will assume there is one run with each input file and average all corresponding data files.')
+    parser.add_argument('-f', '--force', action='store_true', default=False, dest='force_overwrite', help='overwrite the output ROOT files produced by hadd')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
 
     args = parser.parse_args()
