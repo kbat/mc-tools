@@ -51,11 +51,11 @@ class Converter:
 
         # Generate the output root file name:
         # todo: mv out_root_file to root
-        self.out_root_file = os.path.splitext(inp[0])[0]+".root"
-        self.out_root_file = re.sub(r'[0-9]+\.root','.root', self.out_root_file)
+        self.root = os.path.splitext(inp[0])[0]+".root"
+        self.root = re.sub(r'[0-9]+\.root','.root', self.root)
         
-        if not self.overwrite and os.path.isfile(self.out_root_file):
-            sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % self.out_root_file)
+        if not self.overwrite and os.path.isfile(self.root):
+            sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % self.root)
 
         if self.checkInputFiles():
             sys.exit(1)
@@ -65,7 +65,7 @@ class Converter:
 
         if self.verbose:
             print "input files:", self.inp
-            print "output ROOT files:", self.out_root_file
+            print "output ROOT files:", self.root
 
     def checkInputFiles(self):
         """Does some checks of the input files
@@ -216,7 +216,7 @@ class Converter:
             print "ROOT files produced: ", self.out_root_files
 
         f = "-f" if self.overwrite else ""
-        command = "hadd %s %s %s" % (f, self.out_root_file, string.join(self.out_root_files))
+        command = "hadd %s %s %s" % (f, self.root, string.join(self.out_root_files))
         if self.verbose:
             printincolor(command)
         return_value = os.system(command)
