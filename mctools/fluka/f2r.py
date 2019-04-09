@@ -10,17 +10,42 @@ def str2int(s):
         ret = int(float(s))
     return ret
 
+def printincolor(s,col=33):
+    """
+    Print a string with a given color using ANSI/VT100 Terminal Control Escape Sequences
+    http://www.termsys.demon.co.uk/vtansi.htm
+    """
+    print "\033[1;%dm%s\033[0m" % (col, s)
+
+
+class Estimator:
+    def __init__(self, name, converter):
+        self.name = name
+        self.converter = converter
+        self.units = []
+        self.files = []
+
+    def addUnit(self, units):
+        self.units.append(units)
+
+    def addFile(self, files):
+        self.files.append(files)
+
+    def Print(self):
+        print self.name
+        print " ", self.converter, self.extension
+        print " units: ", self.units
+        print " files: ", self.files
+
 class Converter:
     def __init__(self, inp, overwrite, verbose):
         self.inp = inp # input files
         self.overwrite = overwrite
         self.verbose = verbose
-        # dict of supported estimators and their file units
-        self.estimators = {"USRBIN" : [], "USRBDX" : []}
-        # dict of estimators and their file names
-        # todo make a copy of self.estimators
-        self.files = {"USRBIN" : [], "USRBDX" : []}
-        self.converters = {"USRBIN" : ["usbsuw", "bnn"], "USRBDX" : ["usxsuw", "bnn"], "USRTRACK" : ["ustsuw", "bnn"]}
+        self.estimators = [Estimator("USRBIN",   "usbsuw"),
+                           Estimator("USRBDX",   "usxsuw")]
+#                           Estimator("USRTRACK", "ustsuw", "bnn")]
+        
         self.opened = {}         # dict of opened units (if any)
         self.out_root_files = [] # list of output ROOT files
 
@@ -37,11 +62,10 @@ class Converter:
 
         self.assignUnits()
         self.assignFileNames()
-            
-        print self.inp
-        print self.out_root_file
-        print "estimators: ", self.estimators
-        print "files: ", self.files
+
+        if self.verbose:
+            print "input files:", self.inp
+            print "output ROOT files:", self.out_root_file
 
     def checkInputFiles(self):
         """Does some checks of the input files
@@ -61,6 +85,11 @@ class Converter:
                     sys.exit("Error:\tFree-format input is not supported.")
                     
         return 0
+
+    def getSuwFileName(self, e):
+        """Reuturn suw file name for the given estimator
+        """
+        return os.path.splitext(self.inp[0])[0]+"."+e.name.lower()
 
     def getOpenedUnits(self):
         """Get the list of opened (named) units
@@ -91,73 +120,113 @@ class Converter:
         opened = self.getOpenedUnits()
 
         inp = open(self.inp[0], "r")
-        if self.verbose:
-            print "Supported estimators:"
         for line in inp.readlines():
             for e in self.estimators:
-                if e == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
-                    if re.search("\A%s" % e, line):
+                if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
+                    if re.search("\A%s" % e.name, line):
                         unit = line[10:20].strip()
                         name = "" #line[0:10].strip() # actually, name for EVENTDAT does not matter - the Tree name will be used
                         if str2int(unit)<0: # we are interested in binary files only
                             if not unit in self.estimators[e]:
-                                self.estimators[e] = ["%s" % unit]
+                                self.estimators[e].addUnit("%s" % unit)
                 else:
-                    if re.search("\A%s" % e, line) and not re.search("\&", line[70:80]):
-                        if e == "RESNUCLE":
-                            unit = line[20:30].strip()
+                    if re.search("\A%s" % e.name, line) and not re.search("\&", line[70:80]):
+                        if e.name == "RESNUCLE":
+                            unit = line[20:30]
                         else:
-                            unit = line[30:40].strip()
+                            unit = line[30:40]
+                        unit = str2int(unit.strip())
                         name = line[70:80].strip()
                         if str2int(unit)<0: # we are interested in binary files only
-                            if not unit in self.estimators[e]:
-                                self.estimators[e].append(unit)
+                            if not unit in e.units:
+                                e.addUnit(unit)
         inp.close()
-        # Convert units in the file names:
-        # todo: is this piece of code really needed - it is never used!
-        for e, units in self.estimators.iteritems():
-            #        if e == "EVENTDAT":
-            #            continue
-            for u in units:
-#                print u
-                iu = str2int(u)
-                if iu<0: # we are interested in binary files only
-                    if opened and iu in opened:
-                        units[units.index(u)] = str("_%s" % opened[iu])
-                    else:
-                        units[units.index(u)] = "_fort.%d" % abs(iu)
 
     def assignFileNames(self):
         """Assign file names to units
         """
-        print " lists of files:"
         for e in self.estimators:
-            for u in self.estimators[e]:
-                for f in glob.glob("*%s" % u):
-                    self.files[e].append(f)
-
-    def mergeFiles(self, suffix, command):
-        """ Merge data from different runs with standard FLUKA tools for the given estimator
-        """
-        suwfile = os.path.splitext(self.inp[0])[0]+"."+suffix
-        print suwfile
-
-        temp_path = tempfile.mktemp()
-        print temp_path
-        tmpfile = open(temp_path, "w")
+            for u in e.units:
+                for f in glob.glob("*_fort.%d" % abs(u)):
+                    e.addFile(f)
 
                     
     def Merge(self):
-        """ Merge all data
+        """ Merge all data with standard FLUKA tools
         """
-        print "Merging..."
-        print self.files
-        for f in self.files:
-            print f
-        self.mergeFiles("usrbin", "usxsuw")
+        if self.verbose:
+            print "Merging..."
         
+        for e in self.estimators:
+            if not len(e.files):
+                continue
+            
+            temp_path = tempfile.mktemp()
+            if self.verbose:
+                print e.name, temp_path
+            with open(temp_path, "w") as tmpfile:
+                suwfile = self.getSuwFileName(e)
+                if self.verbose:
+                    print suwfile
 
+                for f in e.files:
+                    tmpfile.write("%s\n" % f)
+                    
+                tmpfile.write("\n")
+                tmpfile.write("%s\n" % suwfile)
 
+            verbose = "" if self.verbose else ">/dev/null"
+            #os.system("cat %s %s" % (tmpfile.name, verbose))
+            
+            command = "cat %s | $FLUTIL/%s %s" % (tmpfile.name, e.converter, verbose)
+            if self.verbose:
+                printincolor(command)
+                
+            return_value = os.system(command)
+            if return_value:
+                sys.exit(printincolor("Coult not convert %s" % e.name));
+                
+            if not self.verbose:
+                os.unlink(tmpfile.name)
+
+    def Convert(self):
+        """Convert merged files into ROOT
+        """
+        if self.verbose:
+            print "Converting..."
+
+        v = "-v" if self.verbose else ""
+            
+        for e in self.estimators:
+            if not len(e.files):
+                continue
+
+            suwfile = self.getSuwFileName(e)
+            rootfile = "%s.root" % suwfile
+            command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
+            if self.verbose:
+                printincolor(command)
+            return_value = os.system(command)
+            if return_value:
+                sys.exit(2)
+
+            self.out_root_files.append(rootfile)
+
+        if self.verbose:
+            print "ROOT files produced: ", self.out_root_files
+
+        f = "-f" if self.overwrite else ""
+        command = "hadd %s %s %s" % (f, self.out_root_file, string.join(self.out_root_files))
+        if self.verbose:
+            printincolor(command)
+        return_value = os.system(command)
+        if return_value is 0:
+            command = "rm -f %s %s" % (v, string.join(self.out_root_files))
+            if self.verbose:
+                printincolor(command)
+            return_value = os.system(command)
+
+        return return_value
 
 def main():
     """fluka2root - a script to convert the output of some FLUKA estimators (supported by the mc-tools project) into a single ROOT file.
@@ -173,6 +242,9 @@ def main():
 
     c = Converter(args.inp, args.overwrite, args.verbose)
     c.Merge()
+    val = c.Convert()
+
+    return val
 
 
 
