@@ -20,6 +20,7 @@ class Converter:
         # dict of estimators and their file names
         # todo make a copy of self.estimators
         self.files = {"USRBIN" : [], "USRBDX" : []}
+        self.converters = {"USRBIN" : ["usbsuw", "bnn"], "USRBDX" : ["usxsuw", "bnn"], "USRTRACK" : ["ustsuw", "bnn"]}
         self.opened = {}         # dict of opened units (if any)
         self.out_root_files = [] # list of output ROOT files
 
@@ -135,6 +136,27 @@ class Converter:
                 for f in glob.glob("*%s" % u):
                     self.files[e].append(f)
 
+    def mergeFiles(self, suffix, command):
+        """ Merge data from different runs with standard FLUKA tools for the given estimator
+        """
+        suwfile = os.path.splitext(self.inp[0])[0]+"."+suffix
+        print suwfile
+
+        temp_path = tempfile.mktemp()
+        print temp_path
+        tmpfile = open(temp_path, "w")
+
+                    
+    def Merge(self):
+        """ Merge all data
+        """
+        print "Merging..."
+        print self.files
+        for f in self.files:
+            print f
+        self.mergeFiles("usrbin", "usxsuw")
+        
+
 
 
 def main():
@@ -150,6 +172,7 @@ def main():
     args = parser.parse_args()
 
     c = Converter(args.inp, args.overwrite, args.verbose)
+    c.Merge()
 
 
 
