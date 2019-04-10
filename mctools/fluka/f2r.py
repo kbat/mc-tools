@@ -22,20 +22,22 @@ class Estimator:
     def __init__(self, name, converter):
         self.name = name
         self.converter = converter
-        self.units = []
-        self.files = []
+        self.units = {} # dictionary of units corresponding files
 
-    def addUnit(self, units):
-        self.units.append(units)
+    def addUnit(self, u):
+        """ Adds a key with the given unit in the units dictionary
+        """
+        self.units[u] = []
 
-    def addFile(self, files):
-        self.files.append(files)
+    def addFile(self, u, f):
+        """ Adds the given file name to the unit
+        """
+        self.units[u].append(f)
 
     def Print(self):
         print self.name
-        print " ", self.converter, self.extension
+        print " ", self.converter
         print " units: ", self.units
-        print " files: ", self.files
 
 class Converter:
     def __init__(self, inp, overwrite, verbose):
@@ -50,9 +52,9 @@ class Converter:
         self.out_root_files = [] # list of output ROOT files
 
         # Generate the output root file name:
-        # todo: mv out_root_file to root
-        self.root = os.path.splitext(inp[0])[0]+".root"
+        self.root = os.path.splitext(self.inp[0])[0]+".root"
         self.root = re.sub(r'[0-9]+\.root','.root', self.root)
+        self.basename = os.path.splitext(self.root)[0]
         
         if not self.overwrite and os.path.isfile(self.root):
             sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % self.root)
@@ -62,6 +64,7 @@ class Converter:
 
         self.assignUnits()
         self.assignFileNames()
+        return 
 
         if self.verbose:
             print "input files:", self.inp
@@ -71,7 +74,7 @@ class Converter:
         """Does some checks of the input files
 
            - check if all input files exist
-           - check whether input follows standard Fluka format (free format is not supported)
+           - check whether input follows the standard Fluka format (free format is not supported)
         """
 
         for f in self.inp:
@@ -82,7 +85,8 @@ class Converter:
         with open(self.inp[0]) as f:
             for line in f.readlines():
                 if re.search("\AFREE", line):
-                    sys.exit("Error:\tFree-format input is not supported.")
+                    print>>sys.sterr, "Error:\tFree-format input is not supported."
+                    return 2
                     
         return 0
 
@@ -126,9 +130,9 @@ class Converter:
             for e in self.estimators:
                 if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
                     if re.search("\A%s" % e.name, line):
-                        unit = line[10:20].strip()
+                        unit = str2int(line[10:20].strip())
                         name = "" #line[0:10].strip() # actually, name for EVENTDAT does not matter - the Tree name will be used
-                        if str2int(unit)<0: # we are interested in binary files only
+                        if unit<0: # we are interested in binary files only
                             if not unit in self.estimators[e]:
                                 self.estimators[e].addUnit("%s" % unit)
                 else:
@@ -139,9 +143,11 @@ class Converter:
                             unit = line[30:40]
                         unit = str2int(unit.strip())
                         name = line[70:80].strip()
-                        if str2int(unit)<0: # we are interested in binary files only
+                        if unit<0: # we are interested in binary files only
                             if not unit in e.units:
                                 e.addUnit(unit)
+                        else:
+                            print>>sys.stderr, "Warning: ascii files not supported", unit, name
         inp.close()
 
     def assignFileNames(self):
@@ -149,9 +155,9 @@ class Converter:
         """
         for e in self.estimators:
             for u in e.units:
-                for f in glob.glob("*_fort.%d" % abs(u)):
-                    e.addFile(f)
-
+                for f in glob.glob("%s*_fort.%d" % (self.basename, abs(u))):
+                    e.addFile(u,f)
+            e.Print()
                     
     def Merge(self):
         """ Merge all data with standard FLUKA tools
@@ -243,10 +249,10 @@ def main():
     args = parser.parse_args()
 
     c = Converter(args.inp, args.overwrite, args.verbose)
-    c.Merge()
-    val = c.Convert()
+#    c.Merge()
+#    val = c.Convert()
 
-    return val
+#    return val
 
 
 
