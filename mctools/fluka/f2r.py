@@ -90,10 +90,13 @@ class Converter:
                     
         return 0
 
-    def getSuwFileName(self, e):
+    def getSuwFileName(self, e, u):
         """Reuturn suw file name for the given estimator
+        Parameters:
+        e: estimator
+        u: unit
         """
-        return os.path.splitext(self.inp[0])[0]+"."+e.name.lower()
+        return "%s.%d.%s" % (os.path.splitext(self.inp[0])[0], abs(u), e.name.lower())
 
     def getOpenedUnits(self):
         """Get the list of opened (named) units
@@ -166,36 +169,37 @@ class Converter:
             print "Merging..."
         
         for e in self.estimators:
-            if not len(e.files):
+            if not len(e.units):
                 continue
-            
-            temp_path = tempfile.mktemp()
-            if self.verbose:
-                print e.name, temp_path
-            with open(temp_path, "w") as tmpfile:
-                suwfile = self.getSuwFileName(e)
+
+            for u in e.units:
+                temp_path = tempfile.mktemp()
                 if self.verbose:
-                    print suwfile
+                    print e.name, temp_path
+                with open(temp_path, "w") as tmpfile:
+                    suwfile = self.getSuwFileName(e,u)
+                    if self.verbose:
+                        print suwfile
 
-                for f in e.files:
-                    tmpfile.write("%s\n" % f)
+                    for f in e.units[u]:
+                        tmpfile.write("%s\n" % f)
                     
-                tmpfile.write("\n")
-                tmpfile.write("%s\n" % suwfile)
+                    tmpfile.write("\n")
+                    tmpfile.write("%s\n" % suwfile)
 
-            verbose = "" if self.verbose else ">/dev/null"
-            #os.system("cat %s %s" % (tmpfile.name, verbose))
+                verbose = "" if self.verbose else ">/dev/null"
+                #os.system("cat %s %s" % (tmpfile.name, verbose))
             
-            command = "cat %s | $FLUTIL/%s %s" % (tmpfile.name, e.converter, verbose)
-            if self.verbose:
-                printincolor(command)
+                command = "cat %s | $FLUTIL/%s %s" % (tmpfile.name, e.converter, verbose)
+                if self.verbose:
+                    printincolor(command)
                 
-            return_value = os.system(command)
-            if return_value:
-                sys.exit(printincolor("Coult not convert %s" % e.name));
+                return_value = os.system(command)
+                if return_value:
+                    sys.exit(printincolor("Coult not convert %s" % e.name));
                 
-            if not self.verbose:
-                os.unlink(tmpfile.name)
+                if not self.verbose:
+                    os.unlink(tmpfile.name)
 
     def Convert(self):
         """Convert merged files into ROOT
@@ -206,19 +210,20 @@ class Converter:
         v = "-v" if self.verbose else ""
             
         for e in self.estimators:
-            if not len(e.files):
+            if not len(e.units):
                 continue
 
-            suwfile = self.getSuwFileName(e)
-            rootfile = "%s.root" % suwfile
-            command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
-            if self.verbose:
-                printincolor(command)
-            return_value = os.system(command)
-            if return_value:
-                sys.exit(2)
+            for u in e.units:
+                suwfile = self.getSuwFileName(e,u)
+                rootfile = suwfile + ".root"
+                command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
+                if self.verbose:
+                    printincolor(command)
+                return_value = os.system(command)
+                if return_value:
+                    sys.exit(2)
 
-            self.out_root_files.append(rootfile)
+                self.out_root_files.append(rootfile)
 
         if self.verbose:
             print "ROOT files produced: ", self.out_root_files
@@ -249,10 +254,10 @@ def main():
     args = parser.parse_args()
 
     c = Converter(args.inp, args.overwrite, args.verbose)
-#    c.Merge()
-#    val = c.Convert()
+    c.Merge()
+    val = c.Convert()
 
-#    return val
+    return val
 
 
 
