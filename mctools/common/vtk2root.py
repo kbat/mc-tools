@@ -51,7 +51,10 @@ class VTK:
                 continue
             if found:
                 if re.search("_COORDINATES", l) or re.search("DATA", l):
-                    dx = val[-1]-val[-2]
+                    if len(val)>1:
+                        dx = val[-1]-val[-2]
+                    else:
+                        dx = 1 # arbitrary
                     val.append(val[-1]+dx)
                     d[n] = val
                     return val
