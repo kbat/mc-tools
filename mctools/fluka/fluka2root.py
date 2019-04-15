@@ -160,7 +160,6 @@ class Converter:
             for u in e.units:
                 for f in glob.glob("%s*_fort.%d" % (self.basename, abs(u))):
                     e.addFile(u,f)
-            e.Print()
                     
     def Merge(self):
         """ Merge all data with standard FLUKA tools
@@ -229,7 +228,7 @@ class Converter:
             print "ROOT files produced: ", self.out_root_files
 
         f = "-f" if self.overwrite else ""
-        command = "hadd %s %s %s" % (f, self.root, string.join(self.out_root_files))
+        command = "hadd %s %s %s" % (f, self.root, string.join(self.out_root_files)) + " > /dev/null" if self.verbose else ""
         if self.verbose:
             printincolor(command)
         return_value = os.system(command)
