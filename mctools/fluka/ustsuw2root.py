@@ -10,36 +10,15 @@ import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-def getType(n):
-    """ Decrypt what(1) of usrbdx """
-    for i1 in (-2,-1,1,2):
-        for i2 in (0,1):
-            for i3 in (0,1):
-                if (i1+10*i2+100*i3 == n):
-                    return (i1,i2,i3) # i3 is irrelevant - use bin.fluence instead
-    print >> sys.stderr, "usrbdx2root: what(1) == %d undefined" % n
-    sys.exit(1)
 
-def isLogE(x):
-    if x in (-2,-1):
-        return True
-    return False
-
-def isLogA(x):
-    if x in (-2,2):
-        return True
-    return False
-
-def getAxesTitle(det,x):
-    ztitle = "1/cm^{2}/GeV/sr"
+def getAxesTitle(det):
+    ytitle = "1/GeV/cm^{2}"
     if int(det.dist) in (208,211): # differential energy fluence/current
-        ztitle = "GeV/cm^{2}/GeV/sr"   # FLUKA manual page 247
+        ytitle = "GeV/cm^{2}"   # FLUKA manual page 259
     return {
-        -2 : ";log10(Energy/GeV);log10(#Omega/rad);" + ztitle,
-        -1 : ";log10(Energy/GeV);#Omega [rad];" + ztitle,
-         1 : ";Energy [GeV];#Omega [rad];" + ztitle,
-         2 : ";Energy [GeV];log10(#Omega/rad);" + ztitle,
-        }[x]
+        -1: ";log10(Energy/GeV);" + ytitle,
+         1 : ";Energy [GeV];" + ytitle,
+        }[det.type]
 
 def getLogBins(nbins, low, high):
     """ Return array of bins with log10 equal widths """
@@ -56,28 +35,19 @@ def getLinBins(nbins, low, high):
 
     return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
-def getEbins(det, i):
+def getEbins(det):
     """ Return lin or log energy bins depending on the value of i """
 
-    if isLogE(i):
+    if det.type == -1:
         return getLogBins(det.ne, det.elow, det.ehigh)
     else:
         return getLinBins(det.ne, det.elow, det.ehigh)
 
-def getAbins(det, i):
-    """ Return lin or log angular bins depending on the value of i """
-
-    if isLogA(i):
-        return getLogBins(det.na, det.alow, det.ahigh)
-    else:
-        return getLinBins(det.na, det.alow, det.ahigh)
-
 def hist(det):
     """ Create histogram for the given detector """
 
-    w1 = getType(det.type) # decrypted what(1)
-    title = det.name + getAxesTitle(det,w1[0])
-    return ROOT.TH2F(det.name, title, det.ne, getEbins(det, w1[0]), det.na, getAbins(det, w1[0]))
+    title = det.name + getAxesTitle(det)
+    return ROOT.TH1F(det.name, title, det.ne, getEbins(det))
 
 
 class Usrtrack(Data.Usrxxx):
@@ -89,13 +59,13 @@ class Usrtrack(Data.Usrxxx):
             Based on Data.Usrbdx
         """
         f = Data.Usrxxx.readHeader(self, filename)
-        self.sayHeader()
+#        self.sayHeader()
         
         for i in range(1000):
             data = fortran.read(f)
             if data is None: break
             size = len(data)
-            print "size: ", size
+#            print "size: ", size
 
             if size == 14 and data[:10] == "STATISTICS":
                 self.statpos = f.tell()
@@ -103,8 +73,8 @@ class Usrtrack(Data.Usrxxx):
                     data = Data.unpackArray(fortran.read(f))
                     det.total = data[0]
                     det.totalerror = data[1]
-                    for j in range(6):
-                        fortran.skip(f)
+#                    for j in range(6):
+#                        fortran.skip(f)
                 break
 
             if size != 50: raise IOError("Invalid USRTRACK/USRCOLL file")
@@ -128,20 +98,20 @@ class Usrtrack(Data.Usrxxx):
 
             if det.lowneu:
                 data = fortran.read(f)
-                det.ngroup =  struct.unpack("=i",data[:4])[0]
+                det.ngroup = struct.unpack("=i",data[:4])[0]
                 det.egroup = struct.unpack("=%df"%(det.ngroup+1), data[4:])
             else:
 		det.ngroup = 0
 		det.egroup = []
 
-            self.printHeader(det)
 	    size  = (det.ngroup+det.ne) * 4
 	    if size != fortran.skip(f):
 		raise IOError("Invalid USRBDX file")
         f.close()
 
-    def printHeader(self, det):
+    def printHeader(self, i):
         """ Prints the header """
+        det = self.detector[i]
         print "Detector:", det.name
         print " binning type: ", det.type
         print " distribution to be scored:", det.dist
@@ -150,6 +120,15 @@ class Usrtrack(Data.Usrxxx):
         print " low energy neutrons:", det.lowneu
         print " %g < E < %g GeV / %d bins; bin width: %g" % (det.elow, det.ehigh, det.ne, det.de)
         
+    def readStat(self, det):
+	""" Read detector # det statistical data """
+	if self.statpos < 0: return None
+	with open(self.file,"rb") as f:
+	    f.seek(self.statpos)
+	    for i in range(det+3): # check that 3 gives correct errors with 1 USRTRACK detector
+	        fortran.skip(f)	# skip previous detectors
+	    data = fortran.read(f)
+	return data
             
                 
 
@@ -179,25 +158,27 @@ def main():
     ND = len(b.detector)
     
     if args.verbose:
-        b.sayHeader()
-        print "\n%d tallies found:" % ND
+        #b.sayHeader()
         for i in range(ND):
-            b.say(i)
+            b.printHeader(i)
             print ""
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
         val = Data.unpackArray(b.readData(i))
         err = Data.unpackArray(b.readStat(i))
+
         det = b.detector[i]
 
         h = hist(det)
-        
+        n = h.GetNbinsX()
+
         for i in range(det.ne):
-            for j in range(det.na):
-                    gbin = i + j * det.ne
-                    h.SetBinContent(i+1, j+1, val[gbin])
-                    h.SetBinError(i+1, j+1, err[gbin]*val[gbin])
+            h.SetBinContent(i+1, val[i])
+
+        for i in range(det.ne):
+            h.SetBinError(i+1,   err[n-i-1]*val[i])
+
         h.SetEntries(b.weight)
         h.Write()
 
