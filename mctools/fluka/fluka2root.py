@@ -45,8 +45,8 @@ class Converter:
         self.overwrite = overwrite
         self.verbose = verbose
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
-                           Estimator("USRBDX",   "usxsuw")]
-        #                           Estimator("USRTRACK", "ustsuw", "bnn")]
+                           Estimator("USRBDX",   "usxsuw"),
+                           Estimator("USRTRACK", "ustsuw")]
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
