@@ -49,6 +49,15 @@ def hist(det):
     title = det.name + getAxesTitle(det)
     return ROOT.TH1F(det.name, title, det.ne, getEbins(det))
 
+def histN(det):
+    """ Create histogram for the given detector with low energy neutrons """
+    if det.lowneu:
+        name = det.name + "_lowneu"
+        title = name + getAxesTitle(det)
+        return ROOT.TH1F(name, title, det.ngroup, np.array(det.egroup[::-1]))
+    else:
+        return 0
+
 
 class Usrtrack(Data.Usrxxx):
     """ Reads the ustsuw binary output
@@ -61,7 +70,7 @@ class Usrtrack(Data.Usrxxx):
         f = Data.Usrxxx.readHeader(self, filename)
 #        self.sayHeader()
         
-        for i in range(1000):
+        while True:
             data = fortran.read(f)
             if data is None: break
             size = len(data)
@@ -100,13 +109,14 @@ class Usrtrack(Data.Usrxxx):
                 data = fortran.read(f)
                 det.ngroup = struct.unpack("=i",data[:4])[0]
                 det.egroup = struct.unpack("=%df"%(det.ngroup+1), data[4:])
+                print "Low energy neutrons scored with %d groups" % det.ngroup
             else:
 		det.ngroup = 0
 		det.egroup = []
 
 	    size  = (det.ngroup+det.ne) * 4
 	    if size != fortran.skip(f):
-		raise IOError("Invalid USRBDX file")
+		raise IOError("Invalid USRTRACK file")
         f.close()
 
     def printHeader(self, i):
@@ -120,7 +130,7 @@ class Usrtrack(Data.Usrxxx):
         print " low energy neutrons:", det.lowneu
         print " %g < E < %g GeV / %d bins; bin width: %g" % (det.elow, det.ehigh, det.ne, det.de)
         
-    def readStat(self, det):
+    def readStat(self, det,lowneu):
 	""" Read detector # det statistical data """
 	if self.statpos < 0: return None
 	with open(self.file,"rb") as f:
@@ -129,6 +139,20 @@ class Usrtrack(Data.Usrxxx):
 	        fortran.skip(f)	# skip previous detectors
 	    data = fortran.read(f)
 	return data
+
+    def readData(self, det,lowneu):
+	"""Read detector det data structure"""
+	f = open(self.file,"rb")
+	fortran.skip(f)	# Skip header
+	for i in range(2*det):
+	    fortran.skip(f)	# Detector Header & Data
+	fortran.skip(f)		# Detector Header
+        if lowneu:
+            fortran.skip(f) # skip low enery neutron data
+	data = fortran.read(f)
+	f.close()
+	return data
+
             
                 
 
@@ -165,13 +189,16 @@ def main():
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
-        val = Data.unpackArray(b.readData(i))
-        err = Data.unpackArray(b.readStat(i))
+        val = Data.unpackArray(b.readData(i,b.detector[i].lowneu))
+        err = Data.unpackArray(b.readStat(i,b.detector[i].lowneu))
 
         det = b.detector[i]
 
         h = hist(det)
+        hn = histN(det) # filled only if det.lowneu
+            
         n = h.GetNbinsX()
+        print n, len(val), det.ne, val
 
         for i in range(det.ne):
             h.SetBinContent(i+1, val[i])
@@ -181,6 +208,8 @@ def main():
 
         h.SetEntries(b.weight)
         h.Write()
+        if det.lowneu:
+            hn.Write()
 
     fout.Close()
 
