@@ -29,9 +29,9 @@
 (make-face 'font-lock-transformation-face)
 (set-face-foreground 'font-lock-transformation-face "yellow")
 
-(make-face 'font-lock-skip-face)
-(set-face-foreground 'font-lock-skip-face "green")
-(set-face-attribute  'font-lock-skip-face nil :slant 'italic)
+(make-face 'font-lock-defaults-face)
+(set-face-foreground 'font-lock-defaults-face "red")
+(set-face-attribute  'font-lock-defaults-face nil :weight 'bold)
 
 (make-face 'font-lock-surface-face)
 (set-face-foreground 'font-lock-surface-face "red")
@@ -54,19 +54,24 @@
   ;; font-lock-list (additional expressions to highlight) 
   '(
     ("^*.*" . 'font-lock-comment-face)         ;; star sign comment indicator
-    ("\\<\\(BME\\|DPMJET\\|EVENTDAT\\|MYRQMD\\|OPEN\\|RQMD\\|SOURCE\\|US\\(ERDUMP\\|R\\(GCALL\\|ICALL\\|OCALL\\)\\)\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(DE\\(FAULTS\\|LTARAY\\)\\|END\\|FREE\\|G\\(LOBAL\\|EO\\(BEGIN\\|END\\)\\)\\|PLOTGEOM\\|R\\(ANDOMIZ\\|OT-DEFI\\)\\|ST\\(ART\\|OP\\)\\|TITLE\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(BIASING\\|D\\(ISCARD\\|PMJET\\)\\|E\\(M\\(F-BIAS\\|F-OFF\\|FCUT\\|FFIX\\|FFLUO\\|FRAY\\)\\|XPTRANS\\)\\|FLUKAFIX\\|HI-PROPE\\|IONFLUCT\\|L\\(AM-BIAS\\|OW-BIAS\\|OW-DOWN\\)\\|M\\(CSTHRES\\|U\\(LSOPT\\|PHOTON\\)\\)\\|OPT-PROD\\|P\\(AIRBREM\\|HOTONUC\\)\\|WW-\\(FACTO\\|PROFI\\|THRES\\)\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(BEA\\(MAXES\\|MPART\\|MPOS\\|M\\)\\|DCYTIMES\\|E\\(LCFIELD\\|MF\\|VENTYPE\\)\\|IRRPROFI\\|LOW-NEUT\\|MGNFIELD\\|P\\(ART-THR\\|HYSICS\\|OLARIZA\\)\\|RADDECAY\\)\\|STEPSIZE\\|T\\(HRESHOL\\|IME-CUT\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(BME\\|DPMJET\\|MYRQMD\\|OPEN\\|RQMD\\|SOURCE\\|ERDUMP\\|USRGCALL\\|USRICALL\\|USROCALL\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(COMBNAME\\|DEFAULTS\\|DELTARAY\\|END\\|FREE\\|GLOBAL\\|GEOBEGIN\\|GEOEND\\|PLOTGEOM\\|RANDOMIZE\\|ROT-DEFI\\|START\\|STOP\\|TITLE\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(BIASING\\|DISCARD\\|DPMJET\\|EMF-BIAS\\|EMFF-OFF\\|EMFCUT\\|EMFFIX\\|EMFFLUO\\|EMFRAY\\|EMXPTRANS\\|FLUKAFIX\\|HI-PROPE\\|IONFLUCT\\|LAM-BIAS\\|LOW-BIAS\\|LOW-DOWN\\|MCSTHRES\\|MULSOPT\\|MUPHOTON\\|OPT-PROD\\|PAIRBREM\\|PHOTONUC\\|WW-FACTO\\|WW-PROFI\\|WW-THRES\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(BEAMAXES\\|BEAMPART\\|BEAMPOS\\|BEAM\\|DCYTIMES\\|ELCFIELD\\|EMF\\|EVENTYPE\\|IRRPROFI\\|LAMBBREM\\|LOW-NEUT\\|MGNFIELD\\|PART-THR\\|PHYSICS\\|POLARIZA\\|RADDECAY\\|PROD-CUT\\|STEPSIZE\\|THRESHOL\\|TIME-CUT\\)\\>" . 'font-lock-keyword-face)
+
     ("\\<\\(^\\(ARB\\|BOX\\|ELL\\|PLA\\|R\\(AW\\|CC\\|EC\\|PP\\)\\|SPH\\|TRC\\|WED\\|X\\(CC\\|EC\\|YP\\|ZP\\)\\|Y\\(CC\\|EC\\|ZP\\)\\|Z\\(CC\\|EC\\)\\|QUA\\)\\)\\>" . 'font-lock-surface-face)
-    ("\\<\\(AUXSCORE\\|D\\(CYSCORE\\|ETECT\\)\\|EVENTBIN\\|R\\(ESNUCLE\\|OTPRBIN\\)\\|SCORE\\|TCQUENCH\\|US\\(ERWEIG\\|\\(R\\(B\\(DX\\|IN\\)\\|COLL\\|TRACK\\|YIELD\\)\\)\\)\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(AUXSCORE\\|DCYSCORE\\|DETECT\\|EVENTBIN\\|EVENTDAT\\|RESNUCLE\\|ROTPRBIN\\|SCORE\\|TCQUENCH\\|USERWEIG\\|USRBDX\\|USRBIN\\|USRCOLL\\|USRTRACK\\|USRYIELD\\)\\>" . 'font-lock-tally-face)
+
     ("\\<\\(ASSIGNMAT\\|MATERIAL\\)\\>" . 'font-lock-material-face)
-    ("\\<\\(CO\\(MPOUND\\|RRFACT\\)\\|LOW-MAT\\|MAT-PROP\\|OPT-PROP\\|STERNHEI\\)\\>" . 'font-lock-material-face)
-    ("\\<\\(ALL-PART\\|DOSE-EQ\\|NEUTRON\\|PHOTON\\)\\>" . 'font-lock-particle-face)
+    ("\\<\\(COMPOUND\\|CORRFACT\\|LOW-MAT\\|MAT-PROP\\|OPT-PROP\\|STERNHEI\\)\\>" . 'font-lock-material-face)
+
+    ("\\<\\(ALL-PART\\|DOSE-EQ\\|ELECTRON\\|ENERGY\\|NEUTRON\\|PHOTON\\|PROTON\\)\\>" . 'font-lock-particle-face)
     ("\\<\\(EAP74\\|ERT74\\|EWT74\\|EAPMP\\|ERTMP\\|EWTMP\\|AMB74\\|AMBGS\\)\\>" . 'font-lock-flux2dose-face)
+
+    ("\\<\\(CALORIME\\|EET\/TRANS\\|EM-CASCA\\|ICARUS\\|HADRONTHE\\|NEW-DEFA\\|PRECISIO\\|SHIELDIN\\)\\>" . 'font-lock-defaults-face)
     )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
-  '("inp\\'")
+  '(".inp\\'")
   ;; function-list
   nil
   ;; description
