@@ -95,7 +95,7 @@ Uninstall: ```pip uninstall mc-tools```.
    Now you need to adjust the $PYTHONPATH and $PATH variables for your system. You can do it as you like. The following steps describe an example how to do it.
 2. Set the variable MCTOOLS to the folder where you have installed the
    code. For instance:   
-```export MCTOOLS=/path/to/mc-tools/mctools```
+```export MCTOOLS=/path/to/mc-tools```
 3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
 ```export PYTHONPATH=$MCTOOLS:$PYTHONPATH```

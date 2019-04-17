@@ -3,7 +3,7 @@
 # $URL$
 
 import sys, math, struct
-from ..mcnp.ssw import fortranRead
+from mctools.mcnp.ssw import fortranRead
 
 def sr2deg(val):
     """Converts steradians to degrees"""
