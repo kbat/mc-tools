@@ -8,6 +8,7 @@ sys.path.append("/usr/local/flair/lib")
 import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+from mctools import fluka
 
 def main():
     """ Converts usbsuw output into a ROOT histogram """
@@ -47,7 +48,7 @@ def main():
         err = Data.unpackArray(b.readStat(i))
         bin = b.detector[i]
 
-        title = bin.name
+        title = fluka.particle.get(bin.score, "unknown")
         if bin.type % 10 in (0, 3, 4, 5, 6):  # Fluka Manual, pages 250-251
             title = title +  ";x [cm];y [cm];z [cm]"
         h = ROOT.TH3F(bin.name, title, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
