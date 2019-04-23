@@ -3,7 +3,8 @@
 # https://github.com/kbat/mc-tools
 #
 
-import sys, argparse
+import argparse
+from sys import exit
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -81,4 +82,4 @@ def main():
         input()
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit(main())
