@@ -1,15 +1,12 @@
 #! /usr/bin/python -W all
 
 import sys, argparse
-import numpy as np
 from os import path
-sys.path.append("/usr/local/flair")
-sys.path.append("/usr/local/flair/lib")
-import Data
 import numpy as np
+from mctools import fluka
+from mctools.fluka.flair import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from mctools import fluka
 
 def getType(n):
     """ Decrypt what(1) of usrbdx """

@@ -1,14 +1,11 @@
 #! /usr/bin/python -W all
 
 import sys, argparse
-import numpy as np
 from os import path
-sys.path.append("/usr/local/flair")
-sys.path.append("/usr/local/flair/lib")
-import Data
+from mctools import fluka
+from mctools.fluka.flair import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from mctools import fluka
 
 def main():
     """ Converts usbsuw output into a ROOT histogram """

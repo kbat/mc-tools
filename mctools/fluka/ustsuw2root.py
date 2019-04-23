@@ -1,16 +1,12 @@
 #! /usr/bin/python -W all
 
-import sys, argparse
-import numpy as np
+import sys, argparse, struct
 from os import path
-sys.path.append("/usr/local/flair")
-sys.path.append("/usr/local/flair/lib")
-import Data, fortran, struct
 import numpy as np
+from mctools import fluka
+from mctools.fluka.flair import Data, fortran
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from mctools import fluka
-
 
 def getAxesTitle(det):
     # differential energy fluence/current
