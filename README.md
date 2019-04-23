@@ -55,6 +55,8 @@ Project homepage: https://github.com/kbat/mc-tools
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org).
   * [usbsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usbsuw2root.py) converter: it converts the USRBIN results into a TH3F histogram. Note that this tool does not directly convert the files produced by the USRBIN card, but these files must be processed by the $FLUTIL/usbsuw program which averages results and calculates statistical errors. The resulting file can be converted into ROOT by usbsuw2root. The $FLUTIL/usbsuw call is done automatically if the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) general converter is used.
   * [usxsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usxsuw2root.py) converter: it converts the USRBDX results into a TH2F histogram. + see the comments for the previous item.
+  * [ustsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/ustsuw2root.py) converter: it converts the USRTRACK results into a TH1F histogram. + see the comments for the first item.
+  * [eventdat2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/eventdat2root.py) converter: it converts the EVENTDAT results into a TTree object.
 * Generic tools
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
@@ -63,17 +65,16 @@ Project homepage: https://github.com/kbat/mc-tools
    * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE to ROOT formats. Loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
-* Python. Versions >= 3 are not supported (with exception of the ```rotate3dshow.py``` script).
+* Python 2. Versions >= 3 are not supported (with exception of the ```rotate3dshow.py``` script).
 * If you are going to use the ROOT-related scripts (such as mctal2root,
    ssw2root or angel2root), you need to have [ROOT](http://root.cern.ch)
-   to be compiled with Python support. Follow
+   to be compiled with Python 2 support. Follow
    [this manual](http://root.cern.ch/drupal/content/pyroot) for more
    details. To check whether the Python
    support is set up correctly, say   
    ```import ROOT```  
-   in the Python shell. You should not see any error messages.
+   in the Python 2 shell. You should not see any error messages.
 * If you are going to use the ```ace2root``` converter, you need to have [PyNE](http://pyne.io) toolkit to be installed.
-* The FLUKA-related tools depend on [flair](http://www.fluka.org/flair) and assume it is installed in the `/usr/local/flair` folder. If your flair is installed in a different location, add it (as well as the `lib` subfolder) into $PYTHONPATH.
 
 ## Installation ##
 Linux and MacOS are supported. However, we never tried yet to use these tools on Windows.
