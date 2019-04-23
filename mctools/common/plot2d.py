@@ -4,7 +4,6 @@
 #
 
 import sys, argparse
-from os import path
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
