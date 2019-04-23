@@ -1,0 +1,58 @@
+#! /usr/bin/python -W all
+#
+# https://github.com/kbat/mc-tools
+#
+
+import re, sys
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+def compare(val1, val2, msg="", relPrec=1.0e-5):
+    """ Compare two float variables with the given relative precision
+    """
+    if not ROOT.TMath.AreEqualRel(val1, val2, relPrec):
+        print >> sys.stderr, msg, "values do not match: ", val1, val2
+        return False
+    else:
+        return True
+
+def usrtrack(rootfname, hname, lisfname):
+    """ Test USRTRACK output
+    """
+
+    rootf = ROOT.TFile(rootfname)
+    h = rootf.Get(hname)
+
+    b = 0
+    with open(lisfname) as lisf:
+        for line in lisf.readlines():
+            if re.search("\A #", line):
+                continue
+            w =  line.strip().split()
+            b += 1
+            val = h.GetBinContent(b)
+            err = h.GetBinError(b)
+            relerr = err/val*100 if val>0.0  else 0.0
+            
+            #print b, w, h.GetBinLowEdge(b), h.GetBinLowEdge(b+1), val, relerr
+            
+            if not compare(float(w[2]), val, "Bin content") or \
+               not compare(float(w[3]), relerr, "Relative bin error") or \
+               not compare(float(w[0]), h.GetBinLowEdge(b), "Bin %d low edge" % b) or \
+               not compare(float(w[1]), h.GetBinLowEdge(b+1), "Bin %d up edge" % b):
+                rootf.Close()
+                return False
+
+    rootf.Close()
+    print hname, "usrtrack test passed"
+    return True
+    
+
+def main():
+	"""Some tests of the FLUKA converters
+	"""
+        rootfname = "test.root"
+        usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
+
+if __name__ == "__main__":
+    sys.exit(main())
