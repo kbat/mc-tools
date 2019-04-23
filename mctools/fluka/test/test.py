@@ -24,6 +24,7 @@ def usrtrack(rootfname, hname, lisfname):
     h = rootf.Get(hname)
 
     b = 0
+    passed = True
     with open(lisfname) as lisf:
         for line in lisf.readlines():
             if re.search("\A #", line):
@@ -40,12 +41,17 @@ def usrtrack(rootfname, hname, lisfname):
                not compare(float(w[3]), relerr, "Relative bin error") or \
                not compare(float(w[0]), h.GetBinLowEdge(b), "Bin %d low edge" % b) or \
                not compare(float(w[1]), h.GetBinLowEdge(b+1), "Bin %d up edge" % b):
-                rootf.Close()
-                return False
+                passed = False
+                break
+
+    if passed and not compare(b, h.GetNbinsX(), "NBinsX"):
+        passed = False
 
     rootf.Close()
-    print hname, "usrtrack test passed"
-    return True
+
+    print>>sys.stderr, hname, "usrtrack test passed" if passed else "test failed"
+
+    return passed
     
 
 def main():
@@ -53,6 +59,7 @@ def main():
 	"""
         rootfname = "test.root"
         usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
+        usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
 
 if __name__ == "__main__":
     sys.exit(main())
