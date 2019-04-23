@@ -57,7 +57,7 @@ Project homepage: https://github.com/kbat/mc-tools
   * [usxsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usxsuw2root.py) converter: it converts the USRBDX results into a TH2F histogram. + see the comments for the previous item.
   * [ustsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/ustsuw2root.py) converter: it converts the USRTRACK results into a TH1F histogram. + see the comments for the first item.
   * [eventdat2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/eventdat2root.py) converter: it converts the EVENTDAT results into a TTree object.
-  * [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) converter. We believe it's convenient to call all the previous converters from the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) script. In order to understand how it works, run the ```$FLUTIL/rfluka -N0 -M3 $FLUPRO/exmixed.inp``` and then execute ```fluka2root exmixed.inp```. It creates a single ROOT file out of all FLUKA-produced data files.
+  * [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) converter. We believe it's convenient to call all the previous converters from the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) script. In order to understand how it works, run ```$FLUTIL/rfluka -N0 -M3 $FLUPRO/exmixed.inp``` and then execute ```fluka2root exmixed.inp```. It creates a single ROOT file out of all FLUKA-produced data files.
 * Generic tools
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
@@ -98,7 +98,7 @@ Uninstall: ```pip uninstall mc-tools```.
 2. Set the variable MCTOOLS to the folder where you have installed the
    code. For instance:   
 ```export MCTOOLS=/path/to/mc-tools```
-3. Update your PHYTHONPATH (add this line in ~/.bashrc in order to
+3. Update your PYTHONPATH (add this line in ~/.bashrc in order to
    save this setting for your future sessions):   
 ```export PYTHONPATH=$MCTOOLS:$PYTHONPATH```
 4. Create symbolic links to the scrips which you need to use, e.g.   
