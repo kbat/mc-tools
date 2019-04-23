@@ -9,16 +9,14 @@ import Data, fortran, struct
 import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+from mctools import fluka
 
 
 def getAxesTitle(det):
-    ytitle = "1/GeV/cm^{2}"
-    if int(det.dist) in (208,211): # differential energy fluence/current
-        ytitle = "GeV/cm^{2}"   # FLUKA manual page 259
-    return {
-        -1: ";log10(Energy/GeV);" + ytitle,
-         1 : ";Energy [GeV];" + ytitle,
-        }[det.type]
+    # differential energy fluence/current
+    # FLUKA manual page 259
+    ytitle = "GeV/cm^{2}"  if int(det.dist) in (208,211) else "1/GeV/cm^{2}"
+    return ";Energy [GeV];" + ytitle
 
 def getLogBins(nbins, low, high):
     """ Return array of bins with log10 equal widths """
@@ -46,7 +44,14 @@ def getEbins(det):
 def hist(det):
     """ Create histogram for the given detector """
 
-    title = det.name + getAxesTitle(det)
+    title = fluka.particle.get(det.dist, "undefined")
+    title += " #diamond "
+    title += "reg %d" % det.reg
+    title += " #diamond "
+    title += "%g cm^{3}" % det.volume
+    title += " #diamond "
+    title += "%g < E < %g GeV" % (det.elow, det.ehigh)
+    title += getAxesTitle(det)
     return ROOT.TH1F(det.name, title, det.ne, getEbins(det))
 
 def histN(det):
