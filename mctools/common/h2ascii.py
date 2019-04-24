@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 
 from sys import argv, exit
 from ROOT import ROOT, TFile, TH1, TH2, TH3

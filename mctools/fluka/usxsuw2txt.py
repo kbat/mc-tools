@@ -1,6 +1,4 @@
-#! /usr/bin/python -W all
-# $Id$
-# $URL$
+#! /usr/bin/python2 -W all
 
 import sys
 from fluka import USXSUW

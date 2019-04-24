@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 # Generates the MCNP vol cards
 # https://github.com/kbat/mc-tools
 

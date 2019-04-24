@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 # https://github.com/kbat/mc-tools
 # 
 

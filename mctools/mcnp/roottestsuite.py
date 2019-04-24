@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 import time
 import subprocess
 import tempfile

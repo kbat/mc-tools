@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 # Generates xbindkeys configuration file for MCNP viewer
 
 import sys

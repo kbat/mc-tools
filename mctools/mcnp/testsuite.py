@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 import subprocess
 import tempfile
 import os, sys

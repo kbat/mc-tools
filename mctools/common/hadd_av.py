@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 
 from sys import argv, exit
 from string import join, ascii_lowercase, digits

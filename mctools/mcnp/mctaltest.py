@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 import sys, argparse
 from mctal import MCTAL
 from testsuite import TestSuite

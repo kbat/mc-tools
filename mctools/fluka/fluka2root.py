@@ -1,4 +1,4 @@
-#! /usr/bin/python -Qwarn
+#! /usr/bin/python2 -Qwarn
 import sys, re, string, os, argparse
 import glob
 import tempfile

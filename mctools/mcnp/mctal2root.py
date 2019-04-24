@@ -1,4 +1,4 @@
-#!/usr/bin/python -W all
+#!/usr/bin/python2 -W all
 #
 # https://github.com/kbat/mc-tools
 #
@@ -9,7 +9,7 @@ from mctal import MCTAL
 import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-sys.path.insert(1, '@pythondir@')
+sys.path.insert(1, '@python2dir@')
 
 def main():
 	"""

@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 
 #%matplotlib inline
 from pylab import savefig

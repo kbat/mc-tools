@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 # $Id: ssw2root.py 250 2015-05-04 09:35:55Z batkov $
 # $URL: https://github.com/kbat/mc-tools/blob/master/mcnp/ssw2root.py $
 
