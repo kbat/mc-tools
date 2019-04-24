@@ -83,7 +83,7 @@ Linux and MacOS are supported. We have never tried to use these tools on Windows
 The pip-based installation is recommended if you just intend to use the package, while the git-based installation is recommended if you are going to contribute in the ```mc-tools``` development.
 
 ### Installation with pip ###
-In order to use [pip](https://pip.pypa.io/en/stable/), you need to have the **python-setuptools** and **python-pip** modules installed on your system.
+In order to use [pip](https://pip.pypa.io/en/stable), you need to have the **python-setuptools** and **python-pip** modules installed on your system.
 
 ```pip install git+https://github.com/kbat/mc-tools.git```
 
