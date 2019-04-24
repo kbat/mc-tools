@@ -4,7 +4,7 @@
 #
 
 import argparse
-from sys import exit
+from sys import exit, argv
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -33,13 +33,15 @@ def main():
                             help='Right margin of the canvas in order to allocate enough space for the z-axis title. \
                             Used only if ZTITLE is set and DOPTION="colz"', default=0.17)
         parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the colour axis')
-	parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
+        parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
 
 	args = parser.parse_args()
 
         ROOT.gStyle.SetOptStat(False)
         ROOT.gStyle.SetPalette(ROOT.kTemperatureMap)
-        
+
+        if args.output:
+                ROOT.gROOT.SetBatch(True)
         
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
@@ -77,9 +79,11 @@ def main():
             gh2.SetLineColor(eval("ROOT.%s" % args.glcolor))
             gh2.Draw("same %s" % args.goption)
 
-        ROOT.gPad.GetCanvas().ToggleEventStatus()
-        
-        input()
+        if args.output:
+                ROOT.gPad.Print(args.output)
+        else:
+                ROOT.gPad.GetCanvas().ToggleEventStatus()
+                input()
 
 if __name__ == "__main__":
     exit(main())

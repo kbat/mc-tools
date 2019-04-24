@@ -23,13 +23,16 @@ def main():
         parser.add_argument("-ytitle", type=str, dest='ytitle', help='y-axis title', default=None)
         parser.add_argument("-logx", action='store_true', default=False, dest='logx', help='Set log scale for the horizontal axis')
         parser.add_argument("-logy", action='store_true', default=False, dest='logy', help='Set log scale for the vertical axis')
+        parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
 
 	args = parser.parse_args()
 
         ROOT.gStyle.SetOptStat(False)
         ROOT.gStyle.SetPalette(ROOT.kTemperatureMap)
-        
-        
+
+        if args.output:
+                ROOT.gROOT.SetBatch(True)
+
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
 
@@ -49,9 +52,11 @@ def main():
         ROOT.gPad.SetLogx(args.logx)
         ROOT.gPad.SetLogy(args.logy)
 
-        ROOT.gPad.GetCanvas().ToggleEventStatus()
-        
-        input()
+        if args.output:
+                ROOT.gPad.Print(args.output)
+        else:
+                ROOT.gPad.GetCanvas().ToggleEventStatus()
+                input()
 
 if __name__ == "__main__":
     exit(main())
