@@ -19,7 +19,7 @@ except ImportError:
         sys.exit(1)
 
 setup(
-    name = "mctools",
+    name = "mc-tools",
     version = os.popen("git describe --tags --long").read().strip(),
     author = "Konstantin Batkov",
     author_email = "batkov@gmail.com",
