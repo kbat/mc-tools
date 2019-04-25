@@ -1,5 +1,6 @@
 #! /usr/bin/python -W all
 
+from __future__ import print_function
 from comblayer import getOmega, getPar
 import argparse, sys
 
@@ -15,9 +16,9 @@ def main():
     if args.inv:
         omega = 1.0/omega
     if args.verbose:
-        print args.inp, args.col, omega, "sr"
+        print(args.inp, args.col, omega, "sr")
     else:
-        print omega
+        print(omega)
 
 if __name__=="__main__":
     sys.exit(main())

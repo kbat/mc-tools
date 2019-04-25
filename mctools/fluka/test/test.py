@@ -3,6 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
+from __future__ import print_function
 import re, sys
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -11,7 +12,7 @@ def compare(val1, val2, msg="", relPrec=1.0e-5):
     """ Compare two float variables with the given relative precision
     """
     if not ROOT.TMath.AreEqualRel(val1, val2, relPrec):
-        print >> sys.stderr, msg, "values do not match: ", val1, val2
+        print(msg, "values do not match: ", val1, val2, file=sys.stderr)
         return False
     else:
         return True
@@ -35,7 +36,7 @@ def usrtrack(rootfname, hname, lisfname):
             err = h.GetBinError(b)
             relerr = err/val*100 if val>0.0  else 0.0
             
-            #print b, w, h.GetBinLowEdge(b), h.GetBinLowEdge(b+1), val, relerr
+            #print(b, w, h.GetBinLowEdge(b), h.GetBinLowEdge(b+1), val, relerr)
             
             if not compare(float(w[2]), val, "Bin content") or \
                not compare(float(w[3]), relerr, "Relative bin error") or \
@@ -49,7 +50,7 @@ def usrtrack(rootfname, hname, lisfname):
 
     rootf.Close()
 
-    print>>sys.stderr, hname, "usrtrack test passed" if passed else "test failed"
+    print(hname, "usrtrack test passed" if passed else "test failed", file=sys.stderr)
 
     return passed
     

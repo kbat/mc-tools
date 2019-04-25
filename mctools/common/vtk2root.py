@@ -3,6 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
+from __future__ import print_function
 import os,sys,re,numpy,argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -13,7 +14,7 @@ class VTK:
         self.read()
 
     def Print(self):
-        print self.fname
+        print(self.fname)
 
     def read(self):
         "Read vtk file"
@@ -25,10 +26,10 @@ class VTK:
         
         if dataset != 'RECTILINEAR_GRID':
             sys.exit("Error: Unsupported format")
-        self.nx,self.ny,self.nz = map(int, f.readline().strip().split()[1:])
+        self.nx,self.ny,self.nz = list(map(int, f.readline().strip().split()[1:]))
         f.close()
 
-#        print title,form, dataset
+#        print(title,form, dataset)
         self.x = self.readCoordinates("X")
         self.y = self.readCoordinates("Y")
         self.z = self.readCoordinates("Z")
@@ -102,7 +103,7 @@ def main():
     if args.root == "":
         args.root = os.path.splitext(os.path.basename(args.vtk))[0] + ".root"
 
-    print "vtk2root: short integer values are assumed"
+    print("vtk2root: short integer values are assumed")
     fin = VTK(args.vtk)
     h = fin.getTH3()
     h.SaveAs(args.root)

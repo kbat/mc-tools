@@ -1,33 +1,34 @@
 #! /usr/bin/python -W all
 # Generates xbindkeys configuration file for MCNP viewer
 
+from __future__ import print_function
 import sys
 
 class XDoTool:
     def __init__(self, title):
-        print "# ", title
-        print '"xdotool',
+        print("# ", title)
+        print('"xdotool',)
 
     def MouseMove(self, x, y):
-        print "mousemove %d %d" % (x, y),
+        print("mousemove %d %d" % (x, y),)
 
     def MouseMove1(self, coord):
         return self.MouseMove(coord[0], coord[1])
 
     def Click(self, button, repeat=1):
         if repeat==1:
-            print "click %d" % button,
+            print("click %d" % button,)
         else:
-            print "click --repeat %d %d" % (repeat, button),
+            print("click --repeat %d %d" % (repeat, button),)
 
     def SetKey(self, title, key):
-        print '"'
-        print " "*3, key
-        print "# ", title
-        print ""
+        print('"')
+        print(" "*3, key)
+        print("# ", title)
+        print("")
 
     def Restore(self):
-        print "restore",
+        print("restore",)
 
     def Redraw(self):
         self.MouseMove(100,100)

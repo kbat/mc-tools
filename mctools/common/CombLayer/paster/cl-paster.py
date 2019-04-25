@@ -2,6 +2,7 @@
 #
 # Paster for CombLayer
 
+from __future__ import print_function
 from sys import exit,stderr
 import argparse, re
 import os
@@ -45,9 +46,9 @@ class Paster:
         """
 
         if os.path.isfile(dest):
-            print "File %s exists -> aborting" % dest
+            print("File %s exists -> aborting" % dest)
             exit(1)
-        print dest
+        print(dest)
     
         fin = open(source)
         fout = open(dest, 'w')

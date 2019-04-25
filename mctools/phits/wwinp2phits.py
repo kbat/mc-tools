@@ -4,9 +4,9 @@
 #
 #
 
+from __future__ import print_function, absolute_import
 import re, sys
-from string import join
-from phits import mcnp_phits_particles as particle
+from .phits import mcnp_phits_particles as particle
 
 def getCells(fname):
     """
@@ -41,7 +41,7 @@ def get_weight_titles(ni):
     tmparray = ["     reg"]
     for i in range(ni):
         tmparray.append("%9s%d" % ('ww', i+1))
-    return join(tmparray)
+    return ' '.join(tmparray)
 
 def print_weights(weights, cells):
     """
@@ -57,8 +57,8 @@ def print_weights(weights, cells):
         for i in intervals:
             tmparray.append(weights[i][icell-1])
         if len(tmparray) != 0:
-            print "    %4d" % cells[icell-1], join(tmparray)
-#        outarray.append("    %4d %s" % (icell, join(tmparray)))
+            print("    %4d" % cells[icell-1], ' '.join(tmparray))
+#        outarray.append("    %4d %s" % (icell, ' '.join(tmparray)))
         del tmparray[:]
 #    return outarray
 
@@ -79,17 +79,17 @@ def my_print_weights(weights, cells):
         for i in intervals:
             tmparray.append(weights[i][icell-1])
         if len(tmparray) != 0:
-            the_line = "    %4d %s"  % (cells[icell-1], join(tmparray))
-            print the_line
-            if cells[icell-1] == 242: w442 = "    %4d %s"  % (442, join(tmparray))
-            if cells[icell-1] == 260: w460 = "    %4d %s"  % (460, join(tmparray))
-            if cells[icell-1] == 260: w461 = "    %4d %s"  % (461, join(tmparray))
-            if cells[icell-1] == 260: w462 = "    %4d %s"  % (462, join(tmparray))
+            the_line = "    %4d %s"  % (cells[icell-1], ' '.join(tmparray))
+            print(the_line)
+            if cells[icell-1] == 242: w442 = "    %4d %s"  % (442, ' '.join(tmparray))
+            if cells[icell-1] == 260: w460 = "    %4d %s"  % (460, ' '.join(tmparray))
+            if cells[icell-1] == 260: w461 = "    %4d %s"  % (461, ' '.join(tmparray))
+            if cells[icell-1] == 260: w462 = "    %4d %s"  % (462, ' '.join(tmparray))
         del tmparray[:]
-    print w442
-    print w460
-    print w461
-    print w462
+    print(w442)
+    print(w460)
+    print(w461)
+    print(w462)
 #    return outarray
 
 def main():
@@ -108,7 +108,7 @@ Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
     i = 0 # energy/time interval
 
     if len(sys.argv) != 3:
-        print main.__doc__
+        print(main.__doc__)
         sys.exit(1)
 
     cells = getCells(sys.argv[1])
@@ -128,10 +128,10 @@ Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
             wwn = False
 
 
-            print "\n[Weight Window]"
-            tmp = join(line.split(":")[1]).split()
+            print("\n[Weight Window]")
+            tmp = ' '.join(line.split(":")[1]).split()
             p = tmp[0]
-            print "  part = %s" % particle[p]
+            print("  part = %s" % particle[p])
             del energies[:]
             for w in line.split()[1:]:
                 energies.append(w)
@@ -148,9 +148,9 @@ Usage: wwin2phits input.phits wwinp [ > wwinp.phits ]
             weights[i] = []
 
             if i == 1:
-                print "   eng = %d" % len(energies)
-                print "         %s" % join(energies)
-                print get_weight_titles(len(energies))
+                print("   eng = %d" % len(energies))
+                print("         %s" % ' '.join(energies))
+                print(get_weight_titles(len(energies)))
 
             for w in line.split()[1:]:
                 weights[i].append(w)

@@ -10,9 +10,9 @@
 ### SOURCE GAUS SIGMAX SIGMAY NX NY TH ### - not yet implemented
 #
 
+from __future__ import print_function
 import fileinput
 import sys
-from string import join
 
 def getParabola(fullwidth, x):
     """
@@ -41,11 +41,11 @@ def main():
     is_fixed = False
     for line in fileinput.input():
         if line[0:23] == "### SOURCE 2D PARABOLIC":
-            print "c %s" % line.rstrip()
+            print("c %s" % line.rstrip())
             is_fixed = True
             words = line.split()
             if words[-1] != '###':
-                print >> sys.stderr, "ERROR in mcnp-source: wrong source definition format"
+                print("ERROR in mcnp-source: wrong source definition format", file=sys.stderr)
                 return 1
             AA = float(words[4])
             BB = float(words[5])
@@ -55,34 +55,34 @@ def main():
             dx = AA/NX
             ymin = -BB/2.0
             dy = BB/NY
-            print "c     Full x-width:", AA, "     Number of x-bins:", NX
-            print "c     Full y-width:", BB, "     Number of y-bins:", NY
+            print("c     Full x-width:", AA, "     Number of x-bins:", NX)
+            print("c     Full y-width:", BB, "     Number of y-bins:", NY)
             for x in range(NX+1):
                 if x == 0:
-                    print "SI1  A  ", xmin + x*dx
+                    print("SI1  A  ", xmin + x*dx)
                 else:
-                    print " "*8, xmin + x*dx
+                    print(" "*8, xmin + x*dx)
             for x in range(NX+1):
                 if x == 0:
-                    print "SP1     ", getParabola(AA, xmin+x*dx)
+                    print("SP1     ", getParabola(AA, xmin+x*dx))
                 else:
-                    print " "*8, getParabola(AA, xmin+x*dx)
+                    print(" "*8, getParabola(AA, xmin+x*dx))
             for y in range(NY+1):
                 if y == 0:
-                    print "SI2  A  ", ymin + y*dy
+                    print("SI2  A  ", ymin + y*dy)
                 else:
-                    print " "*8, ymin + y*dy
+                    print(" "*8, ymin + y*dy)
             for y in range(NY+1):
                 if y == 0:
-                    print "SP2     ", getParabola(BB, ymin+y*dy)
+                    print("SP2     ", getParabola(BB, ymin+y*dy))
                 else:
-                    print " "*8, getParabola(BB, ymin+y*dy)
+                    print(" "*8, getParabola(BB, ymin+y*dy))
         elif line[0:18] == "### SOURCE UNIFORM":
-            print "c %s" % line.rstrip()
+            print("c %s" % line.rstrip())
             is_fixed = True
             words = line.split()
             if words[-1] != '###':
-                print >> sys.stderr, "ERROR in mcnp-source: wrong source definition format"
+                print("ERROR in mcnp-source: wrong source definition format", file=sys.stderr)
                 return 2
             AA = float(words[3])
             BB = float(words[4])
@@ -92,37 +92,37 @@ def main():
             dx = AA/NX
             ymin = -BB/2.0
             dy = BB/NY
-            print "c     Full x-width:", AA, "     Number of x-bins:", NX
-            print "c     Full y-width:", BB, "     Number of y-bins:", NY
+            print("c     Full x-width:", AA, "     Number of x-bins:", NX)
+            print("c     Full y-width:", BB, "     Number of y-bins:", NY)
             for x in range(NX+1):
                 if x == 0:
-                    print "SI1  A  ", xmin + x*dx
+                    print("SI1  A  ", xmin + x*dx)
                 else:
-                    print " "*8, xmin + x*dx
+                    print(" "*8, xmin + x*dx)
             for x in range(NX+1):
                 if x == 0:
                     if getUniform(AA, xmin+x*dx) != 0:
-                        print >> sys.stderr, "First bin is not zero"
+                        print("First bin is not zero", file=sys.stderr)
                         return 3
-                    print "SP1     ", getUniform(AA, xmin+x*dx)
+                    print("SP1     ", getUniform(AA, xmin+x*dx))
                 else:
-                    print " "*8, getUniform(AA, xmin+x*dx)
+                    print(" "*8, getUniform(AA, xmin+x*dx))
             for y in range(NY+1):
                 if y == 0:
-                    print "SI2  A  ", ymin + y*dy
+                    print("SI2  A  ", ymin + y*dy)
                 else:
-                    print " "*8, ymin + y*dy
+                    print(" "*8, ymin + y*dy)
             for y in range(NY+1):
                 if y == 0:
-                    print "SP2     ", getUniform(BB, ymin+y*dy)
+                    print("SP2     ", getUniform(BB, ymin+y*dy))
                 else:
-                    print " "*8, getUniform(BB, ymin+y*dy)
+                    print(" "*8, getUniform(BB, ymin+y*dy))
         elif line[0:18] == "### SOURCE GAUS": # !!! not yet implemented - below is just copied from UNIFORM
-            print "c %s" % line.rstrip()
+            print("c %s" % line.rstrip())
             is_fixed = True
             words = line.split()
             if words[-1] != '###':
-                print >> sys.stderr, "ERROR in mcnp-source: wrong source definition format"
+                print("ERROR in mcnp-source: wrong source definition format", file=sys.stderr)
                 return 2
             SIGMAX = float(words[3])
             SIGMAY = float(words[4])
@@ -132,36 +132,36 @@ def main():
             dx = AA/NX
             ymin = -BB/2.0
             dy = BB/NY
-            print "c     Full x-width:", AA, "     Number of x-bins:", NX
-            print "c     Full y-width:", BB, "     Number of y-bins:", NY
+            print("c     Full x-width:", AA, "     Number of x-bins:", NX)
+            print("c     Full y-width:", BB, "     Number of y-bins:", NYP
             for x in range(NX+1):
                 if x == 0:
-                    print "SI1  A  ", xmin + x*dx
+                    print("SI1  A  ", xmin + x*dx)
                 else:
-                    print " "*8, xmin + x*dx
+                    print(" "*8, xmin + x*dx)
             for x in range(NX+1):
                 if x == 0:
                     if getUniform(AA, xmin+x*dx) != 0:
-                        print >> sys.stderr, "First bin is not zero"
+                        print("First bin is not zero", file=sys.stderr)
                         return 3
-                    print "SP1     ", getUniform(AA, xmin+x*dx)
+                    print("SP1     ", getUniform(AA, xmin+x*dx))
                 else:
-                    print " "*8, getUniform(AA, xmin+x*dx)
+                    print(" "*8, getUniform(AA, xmin+x*dx))
             for y in range(NY+1):
                 if y == 0:
-                    print "SI2  A  ", ymin + y*dy
+                    print("SI2  A  ", ymin + y*dy)
                 else:
-                    print " "*8, ymin + y*dy
+                    print(" "*8, ymin + y*dy)
             for y in range(NY+1):
                 if y == 0:
-                    print "SP2     ", getUniform(BB, ymin+y*dy)
+                    print("SP2     ", getUniform(BB, ymin+y*dy))
                 else:
-                    print " "*8, getUniform(BB, ymin+y*dy)
+                    print(" "*8, getUniform(BB, ymin+y*dy))
         else:
-            print line.rstrip()
+            print(line.rstrip())
     
     if is_fixed == False:
-        print >> sys.stderr, "WARNING in mcnp-source.py: source definition not found"
+        print("WARNING in mcnp-source.py: source definition not found", sys.stderr)
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -1,6 +1,7 @@
 #! /usr/bin/python -W all
 #
 
+from __future__ import print_function
 import sys, argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -13,34 +14,34 @@ def h2pgf(h):
     """
     nbins = h.GetNbinsX()
 
-#    print "# \\begin{axis}"
-#    print "# \\addplot[const plot mark mid, black, solid, no markers, error bars/.cd, y dir=both, y explicit, error mark=none]"
-#    print " coordinates {"
-    print "x ex y ey"
+#    print("# \\begin{axis}")
+#    print("# \\addplot[const plot mark mid, black, solid, no markers, error bars/.cd, y dir=both, y explicit, error mark=none]")
+#    print(" coordinates {")
+    print("x ex y ey")
     for b in range(1, nbins+1):
         x = h.GetBinCenter(b)
         ex = h.GetBinWidth(b)/2.0
         y = h.GetBinContent(b)
         ey = h.GetBinError(b)
-# print x,ex,y,ey
+# print(x,ex,y,ey)
         if y>0.0:
-            print x, ex, y, ey
+            print(x, ex, y, ey)
 
 def g2pgf(h):
     """ Convert TGraph into pgfplot data """
 
     N = h.GetN()
 
-    print "\\begin{axis}"
-    print "\\addplot[ultra thick]"
-    print " coordinates {"
-    print "x ex y ey"
+    print("\\begin{axis}")
+    print("\\addplot[ultra thick]")
+    print(" coordinates {")
+    print("x ex y ey")
     for b in range(N):
         x = h.GetX()[b]
         y = h.GetY()[b]
-        print x, y
-    print "};"
-    print "\\addlegendentry{TGraph};"
+        print(x, y)
+    print("};")
+    print("\\addlegendentry{TGraph};")
 
 def main():
     """ A script to convert TH1 and TGraph into a pgfplot format """

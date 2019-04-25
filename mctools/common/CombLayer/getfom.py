@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+from __future__ import print_function
 from sys import argv, exit
 from math import sqrt
 import ROOT
@@ -8,6 +9,12 @@ from comblayer import getPar as getParCL
 import glob, os, argparse
 from array import array
 from datetime import datetime
+
+# runs in both Python 2 and 3
+try:
+        input = raw_input
+except NameError:
+        pass
 
 def saveGraph(gr, fout):
     """
@@ -19,11 +26,11 @@ def saveGraph(gr, fout):
 
 def printGraph(gr):
     """ Prints TGraphErrors """
-    print "# ", gr.GetTitle()
-    print "# format: x ex y ey"
+    print("# ", gr.GetTitle())
+    print("# format: x ex y ey")
     N = gr.GetN()
     for i in range(N):
-        print i, gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i]
+        print(i, gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i])
 
 def getGraph(args, tname, color):
     x = []
@@ -32,12 +39,12 @@ def getGraph(args, tname, color):
     ey = []
     for mctal in glob.glob(args.mctal):
         dirname = os.path.split(mctal)[0]
-#        print dirname
+#        print(dirname)
         inp = os.path.join(dirname, 'inp')
         f = ROOT.TFile(mctal)
         if args.axis>=0: # axis and bin are specified
             f.Get(tname).GetAxis(2).SetRange(1,1)
-            print >> sys.stderr, "f.Get(tname).GetAxis(2).SetRange(1,1) called!"
+            print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=sys.stderr)
             tally = f.Get(tname).Projection(args.axis);
         else: # args.bin is absolute bin number
             tally = f.Get(tname)
@@ -45,7 +52,7 @@ def getGraph(args, tname, color):
         ex.append(0.0)
 
         bins = args.bin.split(',')
-#        print "args.bin: ", bins
+#        print("args.bin: ", bins)
         nbins = len(bins)
         ytmp = 0.0
         eytmp = 0.0
@@ -57,11 +64,11 @@ def getGraph(args, tname, color):
         y.append(eval("%g%s" % (ytmp, args.yscale)))
         ey.append(eval("%g%s" % (eytmp, args.yscale)))
         f.Close()
-#    print x
-#    print y
+#    print(x)
+#    print(y)
 
 # sort all arrays
-    x,y,ex,ey = zip(*sorted(zip(x,y,ex,ey)))
+    x,y,ex,ey = list(zip(*sorted(zip(x,y,ex,ey))))
     gr = ROOT.TGraphErrors(len(x), array('f', x), array('f', y), array('f', ex), array('f', ey))
     gr.SetNameTitle("gr%s" % tname, args.title)
     gr.GetXaxis().SetTitle(args.xtitle)
@@ -97,7 +104,7 @@ def getAverage(args, mg):
                 y[i] = y[i] + gr.GetY()[i]/ngr
                 ey[i] = ey[i] + pow(gr.GetEY()[i], 2)/ngr
         first = False
-        ey = map(sqrt, ey)
+        ey = list(map(sqrt, ey))
 
     gr = ROOT.TGraphErrors(len(x), array('f', x), array('f', y), array('f', ex), array('f', ey))
     gr.SetNameTitle("grAverage", "%s;%s;%s" % (title, args.xtitle, args.ytitle))
@@ -220,7 +227,9 @@ def main():
     if os.path.isfile(analysis_fname):
         fan = open(analysis_fname)
         for l in fan.readlines():
-            exec l
+            # "The Python 3 syntax without the global and local dictionaries
+            # will work in Python 2 as well:" (from `Supporting Python 3' by L. Regebro et al.)
+            exec(l)
 
 
     if args.pdf == "do not save":

@@ -8,6 +8,12 @@ from sys import exit
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
+# runs in both Python 2 and 3
+try:
+        input = raw_input
+except NameError:
+        pass
+
 def main():
 	"""A simple TH1/TGraph plotter
 	"""

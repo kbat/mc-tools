@@ -1,7 +1,8 @@
 #! /usr/bin/python -W all
+from __future__ import print_function, absolute_import
 import sys, argparse
-from mctal import MCTAL
-from roottestsuite import RootTest
+from .mctal import MCTAL
+from .roottestsuite import RootTest
 
 def main():
 	"""
@@ -31,7 +32,7 @@ def main():
 
 	else:
 
-		print >> sys.stderr, " \033[31mTest on MCTAL file %s was skipped due to NaN values\033[0m\n" % arguments.mctal_file
+		print(" \033[31mTest on MCTAL file %s was skipped due to NaN values\033[0m\n" % arguments.mctal_file, file=sys.stderr)
 		sys.exit(1)
 
 

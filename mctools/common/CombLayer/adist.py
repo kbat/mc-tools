@@ -1,9 +1,16 @@
 #! /usr/bin/python -W all
 
+from __future__ import print_function
 from sys import argv, exit
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 import os, argparse, re, math
+
+# runs in both Python 2 and 3
+try:
+        input = raw_input
+except NameError:
+        pass
 
 def getFOM(mctal, tname, bins):
     """
@@ -40,10 +47,10 @@ def getTheta(tname, inp):
                 theta = 2*math.pi + math.atan2(x,y)
             theta *= 180/math.pi
             if found == True:
-                print "Error: theta has already been found in ", inp
+                print("Error: theta has already been found in ", inp)
             Found = True
             
-#            print inp, tname, x,y, theta
+#            print(inp, tname, x,y, theta)
     f.close()
     return theta
     
@@ -75,7 +82,7 @@ def main():
         tallies = args.tally.split(',')
 
     bins = args.bin.split(',')
-#    print "Tallies:", tallies
+#    print("Tallies:", tallies)
 
     nt = len(tallies)
     ge = ROOT.TGraphErrors(nt)
@@ -94,7 +101,7 @@ def main():
     ge.Fit("pol0", "q")
     average = ge.GetFunction("pol0").GetParameter(0)
     err = ge.GetFunction("pol0").GetParError(0)
-    print "(", average/1E+13, " +- ", err/1E+13, ") x 1E+13"
+    print("(", average/1E+13, " +- ", err/1E+13, ") x 1E+13")
 
     if args.draw:
         ge.Draw("ap")

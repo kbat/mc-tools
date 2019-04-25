@@ -2,8 +2,9 @@
 # $Id$
 # $URL$
 
+from __future__ import print_function, absolute_import
 import sys, argparse
-from ssw import SSW
+from .ssw import SSW
 
 def main():
     """
@@ -28,7 +29,7 @@ def main():
 
     ssw = SSW(fin_name)
 
-    print "history id weight energy time x y z wx wy k"
+    print("history id weight energy time x y z wx wy k")
 
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
@@ -43,7 +44,7 @@ def main():
         wx = ssb[8] # x-direction cosine
         wy = ssb[9] # y-direction cosine
         k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
-        print history, id, weight, energy, time, x, y, z, wx, wy, k
+        print(history, id, weight, energy, time, x, y, z, wx, wy, k)
 
 
 if __name__ == "__main__":

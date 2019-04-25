@@ -2,7 +2,7 @@
 
 
 
-
+from __future__ import print_function
 import sys, re
 import argparse
 
@@ -33,32 +33,32 @@ def main():
 
             for i,w in enumerate(words):
                 if re.search("^bas", w):
-                    cmd['bas'] = map(float, words[i+1:i+7])
+                    cmd['bas'] = list(map(float, words[i+1:i+7]))
                     if plane is False: bas = True # basis was before plane cuts
                 elif re.search("^or", w):
-                    cmd['or'] = map(float, words[i+1:i+4])
+                    cmd['or'] = list(map(float, words[i+1:i+4]))
                 elif re.search("^ex", w):
                     try: # both x and y scales are given
-                        cmd['ex'] = map(float, words[i+1:i+3])
+                        cmd['ex'] = list(map(float, words[i+1:i+3]))
                         continue
                     except ValueError: # just 1 scale is given
-                        cmd['ex'] = map(float, words[i+1:i+2])
+                        cmd['ex'] = list(map(float, words[i+1:i+2]))
                 elif re.search("^lab", w):
-                    cmd['label'] = map(int, map(float, words[i+1:i+3])) #+ [words[i+3]]
+                    cmd['label'] = list(map(int, map(float, words[i+1:i+3]))) #+ [words[i+3]]
                 elif re.search("^p[xyz]", w):
                     cmd[w] = [float(words[i+1])]
                     if bas is False: plane = True # plane cuts were before basis
                 elif re.search("^legend", w):
                     cmd[w] = [words[i+1]]
                 elif w == "scale":
-                    print w
+                    print(w)
                     if int(words[i+1]): # no need to put 'scale 0'
                         cmd[w] = [words[i+1]]
                 elif w in ("mesh"):
                     if int(words[i+1])==1: # no need to put 'mesh 1'
                         cmd[w] = [words[i+1]]
 
-    print bas, plane
+    print(bas, plane)
 
     if plane: # bas was first
         keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label', 'mesh', 'legend', 'scale')

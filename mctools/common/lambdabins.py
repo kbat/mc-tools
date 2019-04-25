@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+from __future__ import print_function
 import sys, argparse
 from string import strip
 from mctools import L2E, E2L
@@ -46,14 +47,14 @@ def main():
     args = parser.parse_args()
 
     if args.edgesE:
-        edgesE = map(float, map(strip, args.edgesE.split(',')))
+        edgesE = list(map(float, list(map(strip, args.edgesE.split(',')))))
     else:
         edgesE = []
 
     if args.width:
-        print textwrap.fill(" ".join(map(str, LambdaBins(args.nbins, args.lmin, args.lmax, edgesE))), width=80, subsequent_indent=" "*7)
+        print(textwrap.fill(" ".join(map(str, LambdaBins(args.nbins, args.lmin, args.lmax, edgesE))), width=80, subsequent_indent=" "*7))
     else:
-        print " ".join(map(str, LambdaBins(args.nbins, args.lmin, args.lmax, edgesE)))
+        print(" ".join(map(str, LambdaBins(args.nbins, args.lmin, args.lmax, edgesE))))
 
 if __name__=="__main__":
     sys.exit(main())

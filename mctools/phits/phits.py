@@ -1,6 +1,7 @@
 #! /usr/bin/python -W all
 
-import sys, re, string
+from __future__ import print_function
+import sys, re
 from math import *
 
 try:
@@ -16,7 +17,7 @@ mcnp_phits_particles = {"n" : "neutron", "h":"proton", "/":"pion+ pion-", "z":"p
 
 def ReadSection(line):
     """ Section is a part of the ANGEL input file starting from alphabet characters with colon ':' line H:"""
-    print "ReadSection", line
+    print("ReadSection", line)
     sys.exit(0)
 
 # exception classes
@@ -168,7 +169,7 @@ class TallyOutputParser:
             if line == '' or line[0] == '#':
                 if isData  and line == '':
                     isData = False
-                    print "data end"
+                    print("data end")
                     self.data[self.nhist] = data[:] # [:] makes a slice (copy) of the tuple since we are going to delete it:
                     del data[:]
                     self.subtitle[self.nhist] = subtitle
@@ -184,12 +185,12 @@ class TallyOutputParser:
 #            words = line.split()
 #            for iw, w in enumerate(words):
 #                if w == '#':
-#                    line = string.join(words[:iw])
+#                    line = ' '.join(words[:iw])
             
             mo = self.SECTCRE.match(line)
             if mo:
                 sectname = mo.group('header')
-#                print sectname
+#                print(sectname)
                 if sectname in self.sections:
                     cursect = self.sections[sectname]
                 else:
@@ -218,7 +219,7 @@ class TallyOutputParser:
 #                    try:
 #                        cursect[optname]
 #                    except KeyError:
-#                        print "current section already has option ", optname
+#                        print("current section already has option ", optname)
 #                    else:
                     cursect[optname] = optval
                     # set the axis - we will need it below to parse the data format
@@ -227,17 +228,17 @@ class TallyOutputParser:
 
                 if re.search("^h", line) and not isData:
                     ReadSection(line)
-                    print "data start"
+                    print("data start")
                     isData = True
                     continue
 
                 if isData:
-                    print "data: ", line
+                    print("data: ", line)
                     words = line.split()
                     try:
                         float(words[0])
                     except ValueError:
-#                        print "Ignoring line: ", line
+#                        print("Ignoring line: ", line)
                         continue
                     
 
@@ -260,8 +261,8 @@ class TallyOutputParser:
   # if any parsing errors occurred, raise an exception
 #        if e:
 #            raise e
-        print self.nhist, "histos found"
-        print "xarray", self.xarray
+        print(self.nhist, "histos found")
+        print("xarray", self.xarray)
         self.file.close()
 
     def get(self, section, option):
@@ -284,8 +285,8 @@ class Input:
 
     def FixLine1(self, line):
         # we sort the dictionary by the key length, so we replace the longer keys first
-        # in order avoid mistakes like AA = 5, AAB = 6 -> '5B'
-        for key, value in sorted(self.pars.iteritems(), key=lambda(k,v):(len(k),v), reverse=True):
+        # in order to avoid mistakes like AA = 5, AAB = 6 -> '5B'
+        for key, value in sorted(iter(self.pars.items()), key=lambda k,v: (len(k),v), reverse=True):
             line = line.replace("%s" % key, "%s" % str(value))
 
 #            line = line.replace(" %s " % i, " %s " % str(self.pars[i]))
@@ -308,7 +309,7 @@ class Input:
         line = self.FixLine(line)
         if comment:
             line = line + " $ " + comment
-        print >> self.inp, line
+        print(line, file=self.inp)
 
     def Section(self, sectname):
         self.Line('[%s]' % sectname)
@@ -332,7 +333,7 @@ class Input:
             try:
                 value = eval(value)
             except NameError:
-                print "ERROR: cannot eval value '%s'" % value
+                print("ERROR: cannot eval value '%s'" % value)
                 sys.exit(1)
 
         name = name.strip()
@@ -340,7 +341,7 @@ class Input:
         if value_orig != value:
             value_orig = value_orig + " = " + str(value)
         if comment: value_orig = str(value_orig) + "\t(%s)" % str(comment)
-        print >> self.inp, "c %s = %s" % (name, value_orig)
+        print("c %s = %s" % (name, value_orig), file=self.inp)
         
 
     def Get(self, name):

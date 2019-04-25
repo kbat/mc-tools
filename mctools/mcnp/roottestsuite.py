@@ -1,10 +1,11 @@
 #! /usr/bin/python -W all
+from __future__ import print_function, absolute_import
 import time
 import subprocess
 import tempfile
 import os,sys,math
 import numpy as np
-from testsuite import FormatStrings
+from .testsuite import FormatStrings
 import ROOT
 
 #############################################################################################################################
@@ -47,7 +48,7 @@ class RootTest:
 
 		binIndexList = ("f","d","u","s","m","c","e","t","i","j","k")
 		binNumberList = (tally.nCells,tally.nDir,tally.nUsr,tally.nSeg,tally.nMul,tally.nCos,tally.nErg,tally.nTim,tally.meshInfo[1],tally.meshInfo[2],tally.meshInfo[3])
-		binList = dict(zip(binIndexList,binNumberList))
+		binList = dict(list(zip(binIndexList,binNumberList)))
 
 		for axis in binIndexList:
 
@@ -184,7 +185,7 @@ class RootTest:
 						self.rootOutFile.write(fs.binValuesLine % axisValues[kk])
 					except:
 						if self.verbose:
-							print >> sys.stderr, "\033[1;30m %s " % hs.GetTitle() + "k = %5d " % kk + "Index out of range for axis %3d. (Skipping without errors)\033[0m" % (a+1)
+							print("\033[1;30m %s " % hs.GetTitle() + "k = %5d " % kk + "Index out of range for axis %3d. (Skipping without errors)\033[0m" % (a+1), file=sys.stderr)
 						break
 					if (k+1) > 0 and (k+1) % 6 == 0 and (k+1) != nB:
 						self.rootOutFile.write("\n")
@@ -241,25 +242,25 @@ class RootTest:
 				else:
 					pre_text = "\033[33m"
 					post_text = "\033[0m"
-				print "%s Testing with relative error: %s%s" % (pre_text,self.precision[i],post_text)
+				print("%s Testing with relative error: %s%s" % (pre_text,self.precision[i],post_text))
 				if i == 2:
-					print >> sys.stderr,  "\033[1;31m Try:\033[0m\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name)
+					print("\033[1;31m Try:\033[0m\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name), file=sys.stderr)
 					f.write("\tndiff-2.00 --relative-error %s %s %s\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name))
 					f.flush
 			if not subprocess.call(['ndiff-2.00','--relative-error', self.precision[i], '--quiet', self.mctalOutFile.name, self.rootOutFile.name],shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
 				if self.verbose:
-					print "\n\033[1;32m[TEST PASSED]\033[0m\n"
+					print("\n\033[1;32m[TEST PASSED]\033[0m\n")
 				if i < 2:
 					os.remove(self.mctalOutFile.name)
 					os.remove(self.rootOutFile.name)
 				f.close()
 				return 0
 		if self.verbose:
-			print >> sys.stderr, "\n\033[1;31m[TEST FAILED]\033[0m"
-			print >> sys.stderr,  "\033[1;31m Original MCTAL:\033[31m %s - \033[1;31mTest MCTAL:\033[31m %s\033[0m" % (self.mctalOutFile.name,self.rootOutFile.name)
-			print >> sys.stderr,  "\033[1;31m Try:\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1], self.mctalOutFile.name,self.rootOutFile.name)
+			print("\n\033[1;31m[TEST FAILED]\033[0m", file=sys.stderr)
+			print("\033[1;31m Original MCTAL:\033[31m %s - \033[1;31mTest MCTAL:\033[31m %s\033[0m" % (self.mctalOutFile.name,self.rootOutFile.name), file=sys.stderr)
+			print("\033[1;31m Try:\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1], self.mctalOutFile.name,self.rootOutFile.name), file=sys.stderr)
 		else:
-			print >> sys.stderr, "\033[1;31mFAILED FOR FILE: \033[0m%s" % (self.mctalOutFile.name)
-			print >> sys.stderr,  "\033[1;31m Try:\033[0m\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name)
+			print("\033[1;31mFAILED FOR FILE: \033[0m%s" % (self.mctalOutFile.name), file=sys.stderr)
+			print("\033[1;31m Try:\033[0m\033[31m ndiff-2.00 --relative-error %s %s %s\033[0m\n" % (self.precision[1],self.mctalOutFile.name,self.rootOutFile.name), file=sys.stderr)
 		f.close()
 		return 1

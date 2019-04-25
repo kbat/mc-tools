@@ -2,9 +2,9 @@
 #
 # ASCII to TGraph  converter
 
+from __future__ import print_function
 import sys,time,os,re
 from array import array
-from string import join
 import argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -41,7 +41,7 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
         l2 = len(ftmp.readlines()) # set to the number of lines in the file
         ftmp.close()
 
-    print "--->reading between lines", l1, l2
+    print("--->reading between lines", l1, l2)
 
     f = open(fname)
     for nline, line in enumerate(f.readlines(), 1):
@@ -49,18 +49,18 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
         if l2 and nline>l2: break
 
         words = line.split()
-#        print words, len(words)
+#        print(words, len(words))
 
         if len(words) == 0:
             if npoints == 0:
                 continue # we have not read any points yet -> just continue
             else:
-#            print "creating new graph object"
+#            print("creating new graph object")
                 break
         if words[0][0] == '#':
             continue
         if len(words) < 2:
-            print "Skipping line ", line.strip()
+            print("Skipping line ", line.strip())
             continue
 
         vx.append(float(words[colx-1]))
@@ -76,7 +76,7 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
 
     f.close()
 
-#    print "number of points: ", npoints
+#    print("number of points: ", npoints)
 
     if npoints>0:
 
@@ -95,7 +95,7 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
                     
         graphs.Add(gr)
 
-#    print "nlines:", nline, l2
+#    print("nlines:", nline, l2)
     if nline<l2:
         GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, nline+1, l2, name, graphs, name_index)
 
@@ -119,7 +119,7 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
         l2 = len(ftmp.readlines()) # set to the number of lines in the file
         ftmp.close()
 
-    print "--->reading between lines", l1, l2
+    print("--->reading between lines", l1, l2)
 
     f = open(fname)
     for nline, line in enumerate(f.readlines(), 1):
@@ -127,26 +127,26 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
         if l2 and nline>l2: break
 
         words = line.split()
-#        print words, len(words)
+#        print(words, len(words))
 
         if len(words) == 0:
             if npoints == 0:
                 continue # we have not read any points yet -> just continue
             else:
-#            print "creating new graph object"
+#            print("creating new graph object")
                 break
 
         if words[0][0] == '#':
             # set titles in the case of data files downloaded from nndc.bnl.gov/exfor
             if words[0] == '#name:':
-                title = join(words[1:])
+                title = ' '.join(words[1:])
             elif words[0] == '#X.axis:':
-                xtitle = join(words[1:])
+                xtitle = ' '.join(words[1:])
             elif words[0] == '#Y.axis:':
-                ytitle = join(words[1:])
+                ytitle = ' '.join(words[1:])
             continue
         if len(words) < 2:
-            print "Skipping line ", line.strip()
+            print("Skipping line ", line.strip())
             continue
 
         vx.append(float(words[colx-1]))
@@ -161,7 +161,7 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
 
     f.close()
 
-#    print "number of points: ", npoints
+#    print("number of points: ", npoints)
 
     if npoints>0:
 
@@ -199,9 +199,9 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
                     
         graphs.Add(gr)
 
-#    print "nlines:", nline, l2
+#    print("nlines:", nline, l2)
     if nline<l2:
-#        print "again"
+#        print("again")
         GetGraph(colx, colex, coly, coley, fname, nline+1, l2, name, graphs, name_index)
 
 def main():
@@ -231,7 +231,7 @@ def main():
     parser.add_argument('-eylow', dest='eylow', type=int, help='low abs error on Y in the case of TGraphAsymmErrors')
     parser.add_argument('-eyhigh', dest='eyhigh', type=int, help='high abs error on Y in the case of TGraphAsymmErrors')
 
-    print parser.parse_args()
+    print(parser.parse_args())
 
     results = parser.parse_args()
 
@@ -242,7 +242,7 @@ def main():
         fname_out = fname_in.replace(".dat", ".root")
     
     if fname_in == fname_out: fname_out = fname_in + ".root"
-    print fname_in, '=>',fname_out
+    print(fname_in, '=>',fname_out)
 
     if results.update:
         fout_option = 'update'

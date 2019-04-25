@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 #%matplotlib inline
+from __future__ import print_function
 from pylab import savefig
 import matplotlib.pyplot as plt
 from pyne import ace
@@ -17,7 +18,7 @@ def main():
     args = parser.parse_args()
 
     if not os.path.isfile(args.acefile):
-        print >> sys.stderr, "ace2root: File %s does not exist." % args.acefile
+        print("ace2root: File %s does not exist." % args.acefile, file=sys.stderr)
         sys.exit(1)
 
     if args.rootfile == "":
@@ -31,21 +32,21 @@ def main():
     ntables = len(lib.tables)
 
     if not ntables:
-        print >> sys.stderr, "ace2root: no tables found in", args.acefile
+        print("ace2root: no tables found in", args.acefile, file=sys.stderr)
         sys.exit(2)
 #    else:
-#        print ntables, "tables found"
+#        print(ntables, "tables found")
 
     rootfile = ROOT.TFile(rootFileName, "recreate")
 
     for tname in lib.tables:
         table = lib.tables[tname]
-#        print tname, table.reactions
+#        print(tname, table.reactions)
         newdir = ROOT.gDirectory.mkdir(tname, "");
         newdir.cd()
         for mt in table.reactions:
             reaction = table.find_reaction(mt)
-#            print reaction.text
+#            print(reaction.text)
             gr = ROOT.TGraph(len(table.energy), table.energy, reaction.sigma)
             gr.SetName("mt%s" % str(mt))
             gr.SetTitle("%s #bullet MT=%d;Enegy [MeV];#sigma [barn]" % (tname, mt))

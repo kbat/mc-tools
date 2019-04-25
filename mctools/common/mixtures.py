@@ -2,6 +2,7 @@
 # Some examples of calculation of atomic fractions for the given volume fractions
 # https://github.com/kbat/mc-tools
 
+from __future__ import print_function
 from mctools import Isotope, Material, Compound
 
 H   = Isotope("01001.70c", 1.00794)
@@ -149,21 +150,21 @@ Copper.Print()
 
 ##### Compounds ####
 
-print "\n04005"
+print("\n04005")
 waterfrac = 0.05
 BeWater = Compound("BeH2O")
 BeWater.AddMaterial(water, waterfrac)
 BeWater.AddMaterial(beryllium, 1.0-waterfrac)
 #    BeWater.Print()
-print "Atomic fractions in %s with water vol fraction %g %%:" % (BeWater.name, waterfrac*100)
+print("Atomic fractions in %s with water vol fraction %g %%:" % (BeWater.name, waterfrac*100))
 BeWater.PrintAtomicFractions()
 
-print "\n04020"
+print("\n04020")
 waterfrac = 0.1
 BeD2O10 = Compound("BeD2O10%")
 BeD2O10.AddMaterial(D2O, waterfrac)
 BeD2O10.AddMaterial(beryllium, 1.0-waterfrac)
-print "Atomic fractions in %s with D2O vol fraction %g %%:" % (BeD2O10.name, waterfrac*100)
+print("Atomic fractions in %s with D2O vol fraction %g %%:" % (BeD2O10.name, waterfrac*100))
 BeD2O10.PrintAtomicFractions()
 
 
@@ -177,7 +178,7 @@ waterfrac = 0.1
 FeWater = Compound("IronH2O")
 FeWater.AddMaterial(water, waterfrac)
 FeWater.AddMaterial(Fe, 1.0-waterfrac)
-print "Atomic fractions in %s with water vol fraction %g %%:" % (FeWater.name, waterfrac*100)
+print("Atomic fractions in %s with water vol fraction %g %%:" % (FeWater.name, waterfrac*100))
 FeWater.PrintAtomicFractions()
 
 Zirconium = Material("Zirconium", 6.49)
@@ -191,7 +192,7 @@ waterfrac = 0.1
 ZrWater = Compound("ZrH2O")
 ZrWater.AddMaterial(water, waterfrac)
 ZrWater.AddMaterial(Zirconium, 1.0-waterfrac)
-print "Atomic fractions in %s with water vol fraction %g %%:" % (ZrWater.name, waterfrac*100)
+print("Atomic fractions in %s with water vol fraction %g %%:" % (ZrWater.name, waterfrac*100))
 ZrWater.PrintAtomicFractions()
 
 Lead = Material("Lead", 11.4)
@@ -200,36 +201,36 @@ Lead.AddIsotope(Pb206, 24.1)
 Lead.AddIsotope(Pb207, 22.1)
 Lead.AddIsotope(Pb208, 52.4)
 
-print "\n82010"
+print("\n82010")
 PbWater = Compound("PbH2O")
 PbWater.AddMaterial(water, waterfrac)
 PbWater.AddMaterial(Lead, 1.0-waterfrac)
-print "Atomic fractions in %s with water vol fraction %g %%:" % (PbWater.name, waterfrac*100)
+print("Atomic fractions in %s with water vol fraction %g %%:" % (PbWater.name, waterfrac*100))
 PbWater.PrintAtomicFractions()
 
-print "\n82020"
+print("\n82020")
 waterfrac = 0.1
 PbD2O = Compound("PbD2O20%")
 PbD2O.AddMaterial(D2O, waterfrac)
 PbD2O.AddMaterial(Lead, 1.0-waterfrac)
-print "Atomic fractions in %s with D2O vol fraction %g %%:" % (PbD2O.name, waterfrac*100)
+print("Atomic fractions in %s with D2O vol fraction %g %%:" % (PbD2O.name, waterfrac*100))
 PbD2O.PrintAtomicFractions()
 
-print "\nHelium"
+print("\nHelium")
 Helium = Material("Helium", 0.1786E-3)
 Helium.AddIsotope(He3, 0.00000137)
 Helium.AddIsotope(He4, 0.99999863)
 Helium.Print()
 
 waterfrac = float(0.2)
-print "\nSS316L and %.0f%% of water" % (waterfrac*100)
+print("\nSS316L and %.0f%% of water" % (waterfrac*100))
 SS316LH2O = Compound("SS316L20H2O")
 SS316LH2O.AddMaterial(water, waterfrac)
 SS316LH2O.AddMaterial(SS316L, 1-waterfrac)
 SS316LH2O.PrintAtomicFractions()
 
 
-print "\nWater and Al"
+print("\nWater and Al")
 
 waterfrac = 1-0.07 #
 waterAl = Compound("WaterAl")
@@ -238,24 +239,24 @@ waterAl.AddMaterial(Aluminium, 1-waterfrac)
 waterAl.PrintAtomicFractions()
 
 
-print "\nHydrogen and Al"
+print("\nHydrogen and Al")
 Alfrac = 2.9 # %
 ParaHAl = Compound("ParaHAl")
 ParaHAl.AddMaterial(Aluminium,Alfrac/100.0)
 ParaHAl.AddMaterial(Hydrogen,1-Alfrac/100.0)
 ParaHAl.PrintAtomicFractions()
 
-print "\nMagnesium"
+print("\nMagnesium")
 Mg.Print()
 
-print "\nClay Till Lera"
+print("\nClay Till Lera")
 ClayTillLera = Compound("ClayTillLera")
 ClayTillLera.AddMaterial(water,0.1)
 ClayTillLera.AddMaterial(Mg, 0.9)
 
 ClayTillLera.Print()
 
-print "\nPoly+Copper"
+print("\nPoly+Copper")
 Cable = Compound("Cable")
 Cable.AddMaterial(Poly,0.5)
 Cable.AddMaterial(Copper, 0.5)
