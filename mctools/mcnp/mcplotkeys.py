@@ -1,33 +1,34 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
 # Generates xbindkeys configuration file for MCNP viewer
 
+from __future__ import print_function
 import sys
 
 class XDoTool:
     def __init__(self, title):
-        print "# ", title
-        print '"xdotool',
+        print("# ", title)
+        print('"xdotool ', end='')
 
     def MouseMove(self, x, y):
-        print "mousemove %d %d" % (x, y),
+        print(" mousemove %d %d" % (x, y), end='')
 
     def MouseMove1(self, coord):
         return self.MouseMove(coord[0], coord[1])
 
     def Click(self, button, repeat=1):
         if repeat==1:
-            print "click %d" % button,
+            print(" click %d" % button, end='')
         else:
-            print "click --repeat %d %d" % (repeat, button),
+            print(" click --repeat %d %d" % (repeat, button), end='')
 
     def SetKey(self, title, key):
-        print '"'
-        print " "*3, key
-        print "# ", title
-        print ""
+        print('"')
+        print(" "*3, key)
+        print("# ", title)
+        print("")
 
     def Restore(self):
-        print "restore",
+        print(" restore", end='')
 
     def Redraw(self):
         self.MouseMove(100,100)
@@ -35,42 +36,50 @@ class XDoTool:
 
 def main():
     COLOR = [25, 650]
+
+    # screen resolution
+    dx = 1920
+    dy = 1200
     
     update = XDoTool("update (draw) mcplot")
     update.Redraw()
-    update.SetKey("Control+Mod4 + r", "m:0x44 + c:27")
+    update.SetKey("Control+Mod4 + r", "control+alt+r")
 
     q = XDoTool("exit mcplot")
-    q.MouseMove(1307,864)
+    q.MouseMove(0.86*dx,0.96*dy)
     q.Click(1)
-    q.SetKey("Control+Mod4 + q",  "m:0x44 + c:24")
+    q.SetKey("Control+Mod4 + q",  "control+alt+q")
+
+    y = 0.06*dy
 
     unzoom2 = XDoTool("zoom x.2")
-    unzoom2.MouseMove(1036, 42)
+    unzoom2.MouseMove(0.703*dx, y)
     unzoom2.Click(1, 2)
     unzoom2.Restore()
-    unzoom2.SetKey("Control+Mod4 + minus", "m:0x44 + c:20")
+    unzoom2.SetKey("Control+Mod4 + minus", "control+alt+minus")
 
     zoom5 = XDoTool("zoom x5")
-    zoom5.MouseMove(1251, 43)
+    zoom5.MouseMove(0.833*dx, y)
     zoom5.Click(1, 2)
     zoom5.Restore()
-    zoom5.SetKey("Control+Mod4 + equal", "m:0x44 + c:21")
+    zoom5.SetKey("Control+Mod4 + equal", "control+alt+equal")
+
+    y = 0.775*dy
 
     xy = XDoTool("show xy projection")
-    xy.MouseMove(25, 690)
+    xy.MouseMove(0.052*dx, y)
     xy.Click(1)
-    xy.SetKey("Control+Mod4 + x", "m:0x44 + c:53")
+    xy.SetKey("Control+Mod4 + x", "control+alt+x")
 
     yz = XDoTool("show yz projection")
-    yz.MouseMove(183, 690)
+    yz.MouseMove(0.104*dx, y)
     yz.Click(1)
-    yz.SetKey("Control+Mod4 + y", "m:0x44 + c:29")
+    yz.SetKey("Control+Mod4 + y", "control+alt+y")
 
     zx = XDoTool("show zx projection")
-    zx.MouseMove(336, 690)
+    zx.MouseMove(0.208*dx, y)
     zx.Click(1)
-    zx.SetKey("Control+Mod4 + z", "m:0x44 + c:52")
+    zx.SetKey("Control+Mod4 + z", "control+alt+z")
 
     up  = XDoTool("shift a bit up")
     up.MouseMove(782, 42)
@@ -122,10 +131,10 @@ def main():
     M.SetKey("Control+Mod4 + m", "m:0x44 + c:58")
     
     rotate = XDoTool("rotate")
-    rotate.MouseMove(200, 630)
+    rotate.MouseMove(0.104*dx, 0.708*dy)
     rotate.Click(1)
     M.Redraw()
-    rotate.SetKey("Control + Mod4 + e", "m:0x44 + c:26")
+    rotate.SetKey("Control + Mod4 + e", "control+alt+e")
 
     scales = XDoTool("scales")
     scales.MouseMove(200, 650)
