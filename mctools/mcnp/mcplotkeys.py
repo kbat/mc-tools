@@ -7,19 +7,19 @@ import sys
 class XDoTool:
     def __init__(self, title):
         print("# ", title)
-        print('"xdotool',)
+        print('"xdotool', end='')
 
     def MouseMove(self, x, y):
-        print("mousemove %d %d" % (x, y),)
+        print("mousemove %d %d" % (x, y), end='')
 
     def MouseMove1(self, coord):
         return self.MouseMove(coord[0], coord[1])
 
     def Click(self, button, repeat=1):
         if repeat==1:
-            print("click %d" % button,)
+            print("click %d" % button, end='')
         else:
-            print("click --repeat %d %d" % (repeat, button),)
+            print("click --repeat %d %d" % (repeat, button), end='')
 
     def SetKey(self, title, key):
         print('"')
@@ -28,7 +28,7 @@ class XDoTool:
         print("")
 
     def Restore(self):
-        print("restore",)
+        print("restore", end='')
 
     def Redraw(self):
         self.MouseMove(100,100)

@@ -158,7 +158,7 @@ class Material:
         print("  Atomic weight: ", self.GetA(), "g/mole")
         print("  Isotopes:")
         for j,i in enumerate(self.isotopes):
-#            print(" "*2, self.nn[j],)
+#            print(" "*2, self.nn[j], end='')
             i.Print()
             print("   Volume fraction in %s: %g" % (self.name, self.GetVolumeFraction(i)))
 

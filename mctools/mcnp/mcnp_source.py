@@ -133,7 +133,7 @@ def main():
             ymin = -BB/2.0
             dy = BB/NY
             print("c     Full x-width:", AA, "     Number of x-bins:", NX)
-            print("c     Full y-width:", BB, "     Number of y-bins:", NYP
+            print("c     Full y-width:", BB, "     Number of y-bins:", NY)
             for x in range(NX+1):
                 if x == 0:
                     print("SI1  A  ", xmin + x*dx)
