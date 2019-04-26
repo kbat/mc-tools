@@ -35,6 +35,7 @@ class XDoTool:
 
 def main():
     """ Generates xbindkeys configuration file for MCNP viewer
+    The key names can be obtained with the 'xev' tool from x11-utils
     """
     COLOR = [25, 650]
 
@@ -84,37 +85,40 @@ def main():
     zx.Click(1)
     zx.SetKey("Control+Mod4 + z", "control+alt+z")
 
+    origin = (0.573*args.dx, 0.06*args.dy)
+    center = (0.625*args.dx, 0.5*args.dy)
+
     up  = XDoTool("shift a bit up")
-    up.MouseMove(782, 42)
+    up.MouseMove1(origin)
     up.Click(1)
-    up.MouseMove(900, 500)
+    up.MouseMove(center[0], center[1]+50)
     up.Click(1)
     up.Restore()
-    up.SetKey("Control+Mod4 + Down", "m:0x44 + c:116")
+    up.SetKey("Control+Mod4 + Down", "control+alt+Down")
 
     down  = XDoTool("shift a bit down")
-    down.MouseMove(782, 42)
+    down.MouseMove1(origin)
     down.Click(1)
-    down.MouseMove(900, 400)
+    down.MouseMove(center[0], center[1]-50)
     down.Click(1)
     down.Restore()
-    down.SetKey("Control+Mod4 + Up", "m:0x44 + c:111")
+    down.SetKey("Control+Mod4 + Up", "control+alt+Up")
 
     left  = XDoTool("shift a bit left")
-    left.MouseMove(782, 42)
+    left.MouseMove1(origin)
     left.Click(1)
-    left.MouseMove(850, 450)
+    left.MouseMove(center[0]-50, center[1])
     left.Click(1)
     left.Restore()
-    left.SetKey("Control+Mod4 + Left", "m:0x44 + c:113")
+    left.SetKey("Control+Mod4 + Left", "control+alt+Left")
 
     right  = XDoTool("shift a bit right")
-    right.MouseMove(782, 42)
+    right.MouseMove1(origin)
     right.Click(1)
-    right.MouseMove(950, 450)
+    right.MouseMove(center[0]+50, center[1])
     right.Click(1)
     right.Restore()
-    right.SetKey("Control+Mod4 + Right", "m:0x44 + c:114")
+    right.SetKey("Control+Mod4 + Right", "control+alt+Right")
 
     T  = XDoTool("color temperature")
     T.MouseMove(1400, 370)
