@@ -71,7 +71,9 @@ Project homepage: https://github.com/kbat/mc-tools
    details. To check whether the Python
    support is set up correctly, say   
    ```import ROOT```  
-   in the Python 2 shell. You should not see any error messages.
+   in the Python shell. You should not see any error messages.
+  The ```fluka2root''' converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:
+```-DPYTHON_EXECUTABLE=/usr/bin/python2 -Dpython=ON```
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Installation ##
