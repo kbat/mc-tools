@@ -1,8 +1,7 @@
 #! /usr/bin/python -W all
-# Generates xbindkeys configuration file for MCNP viewer
 
 from __future__ import print_function
-import sys
+import sys, argparse
 
 class XDoTool:
     def __init__(self, title):
@@ -35,49 +34,53 @@ class XDoTool:
         self.Click(1)
 
 def main():
+    """ Generates xbindkeys configuration file for MCNP viewer
+    """
     COLOR = [25, 650]
 
-    # screen resolution
-    dx = 1920
-    dy = 1200
-    
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                     epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser.add_argument('-dx', type=int, default=1920, dest='dx', help='X screen resolution')
+    parser.add_argument('-dy', type=int, default=1200, dest='dy', help='Y screen resolution')
+    args = parser.parse_args()
+
     update = XDoTool("update (draw) mcplot")
     update.Redraw()
     update.SetKey("Control+Mod4 + r", "control+alt+r")
 
     q = XDoTool("exit mcplot")
-    q.MouseMove(0.86*dx,0.96*dy)
+    q.MouseMove(0.86*args.dx,0.96*args.dy)
     q.Click(1)
     q.SetKey("Control+Mod4 + q",  "control+alt+q")
 
-    y = 0.06*dy
+    y = 0.06*args.dy
 
     unzoom2 = XDoTool("zoom x.2")
-    unzoom2.MouseMove(0.703*dx, y)
+    unzoom2.MouseMove(0.703*args.dx, y)
     unzoom2.Click(1, 2)
     unzoom2.Restore()
     unzoom2.SetKey("Control+Mod4 + minus", "control+alt+minus")
 
     zoom5 = XDoTool("zoom x5")
-    zoom5.MouseMove(0.833*dx, y)
+    zoom5.MouseMove(0.833*args.dx, y)
     zoom5.Click(1, 2)
     zoom5.Restore()
     zoom5.SetKey("Control+Mod4 + equal", "control+alt+equal")
 
-    y = 0.775*dy
+    y = 0.775*args.dy
 
     xy = XDoTool("show xy projection")
-    xy.MouseMove(0.052*dx, y)
+    xy.MouseMove(0.052*args.dx, y)
     xy.Click(1)
     xy.SetKey("Control+Mod4 + x", "control+alt+x")
 
     yz = XDoTool("show yz projection")
-    yz.MouseMove(0.104*dx, y)
+    yz.MouseMove(0.104*args.dx, y)
     yz.Click(1)
     yz.SetKey("Control+Mod4 + y", "control+alt+y")
 
     zx = XDoTool("show zx projection")
-    zx.MouseMove(0.208*dx, y)
+    zx.MouseMove(0.208*args.dx, y)
     zx.Click(1)
     zx.SetKey("Control+Mod4 + z", "control+alt+z")
 
@@ -131,7 +134,7 @@ def main():
     M.SetKey("Control+Mod4 + m", "m:0x44 + c:58")
     
     rotate = XDoTool("rotate")
-    rotate.MouseMove(0.104*dx, 0.708*dy)
+    rotate.MouseMove(0.104*args.dx, 0.708*args.dy)
     rotate.Click(1)
     M.Redraw()
     rotate.SetKey("Control + Mod4 + e", "control+alt+e")
