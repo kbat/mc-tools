@@ -1,6 +1,4 @@
-#! /usr/bin/python2
-# $Id$
-# $URL$
+#! /usr/bin/python -W all
 
 from __future__ import print_function
 import sys, argparse

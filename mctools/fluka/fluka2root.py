@@ -85,7 +85,7 @@ class Converter:
 
         with open(self.inp[0]) as f:
             for line in f.readlines():
-                if re.search("\AFREE", line):
+                if re.search(r"\AFREE", line):
                     print("Error:\tFree-format input is not supported.", sys=sys.stderr)
                     return 2
                     
@@ -112,7 +112,7 @@ class Converter:
                 opened[unit] = name
                 isname = False
 
-            if re.search("\AOPEN", line):
+            if re.search(r"\AOPEN", line):
                 unit = str2int(line[11:20].strip())
                 isname = True
 
@@ -133,14 +133,14 @@ class Converter:
         for line in inp.readlines():
             for e in self.estimators:
                 if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
-                    if re.search("\A%s" % e.name, line):
+                    if re.search(r"\A%s" % e.name, line):
                         unit = str2int(line[10:20].strip())
                         name = "" #line[0:10].strip() # actually, name for EVENTDAT does not matter - the Tree name will be used
                         if unit<0: # we are interested in binary files only
                             if not unit in self.estimators[e]:
                                 self.estimators[e].addUnit("%s" % unit)
                 else:
-                    if re.search("\A%s" % e.name, line) and not re.search("\&", line[70:80]):
+                    if re.search(r"\A%s" % e.name, line) and not re.search(r"\&", line[70:80]):
                         if e.name == "RESNUCLE":
                             unit = line[20:30]
                         else:

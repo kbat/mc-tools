@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
 #
 
 from __future__ import print_function

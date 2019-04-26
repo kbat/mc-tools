@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
 #
 # Syntaxis:
 ### SOURCE 2D PARABOLIC AA BB NX NY ###

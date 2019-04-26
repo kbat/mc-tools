@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python
 
 #%matplotlib inline
 from __future__ import print_function

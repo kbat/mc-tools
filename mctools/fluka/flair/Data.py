@@ -39,10 +39,10 @@ __email__  = "Vasilis.Vlachoudis@cern.ch"
 
 import re
 import math
-import bmath
+import mctools.fluka.flair.bmath as bmath
 import struct
-import fortran
-from log import say
+import mctools.fluka.flair.fortran as fortran
+from mctools.fluka.flair.log import say
 
 try:
 	from cStringIO import StringIO

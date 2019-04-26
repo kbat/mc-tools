@@ -13,7 +13,7 @@ test.root:
 convert: run test.root
 
 test: convert
-	python test.py
+	./test.py
 
 clean:
 	rm -fv test00* rantest* test*usrbin test*usrbdx test*usrtrack test.*lis test.root

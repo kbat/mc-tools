@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
 # Some examples of calculation of atomic fractions for the given volume fractions
 # https://github.com/kbat/mc-tools
 

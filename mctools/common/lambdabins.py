@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python -W all
 
 from __future__ import print_function
 import sys, argparse

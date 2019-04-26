@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 #
 # https://github.com/kbat/mc-tools
 #
@@ -56,11 +56,11 @@ def usrtrack(rootfname, hname, lisfname):
     
 
 def main():
-	"""Some tests of the FLUKA converters
-	"""
-        rootfname = "test.root"
-        usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
-        usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
+    """Some tests of the FLUKA converters
+    """
+    rootfname = "test.root"
+    usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
+    usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
 
 if __name__ == "__main__":
     sys.exit(main())

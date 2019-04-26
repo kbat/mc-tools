@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
 #
 # scales all histos in the given ROOT file by a given factor
 #
