@@ -1,5 +1,6 @@
 #! /usr/bin/python -W all
 
+from __future__ import print_function
 import argparse, re
 from sys import exit
 from os import path
@@ -17,9 +18,9 @@ def getCombLayerCell(mcnpcell):
     for line in f.readlines():
         if re.search("^Cell Changed", line):
             words = line.strip().split()
-#            print words
+#            print(words)
             if int(words[3]) == int(mcnpcell):
-                print words
+                print(words)
                 clcell = int(words[2][1:])
     f.close()
     return clcell
@@ -35,7 +36,7 @@ def getCombLayerObject(clcell):
     for line in f.readlines():
         words = line.strip().split()
         if (int(words[1]) == c):
-            print words
+            print(words)
             obj = words[0]
     f.close()
     return obj
@@ -53,7 +54,7 @@ def main():
 
     clcell = getCombLayerCell(mcnpcell)
     obj = getCombLayerObject(clcell)
-    print obj
+    print(obj)
                 
 
 if __name__ == "__main__":

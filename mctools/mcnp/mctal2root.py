@@ -1,11 +1,12 @@
-#!/usr/bin/python2 -W all
+#!/usr/bin/python -W all
 #
 # https://github.com/kbat/mc-tools
 #
 
-import sys, argparse, string
+from __future__ import print_function
+import sys, argparse
 from os import path
-from mctal import MCTAL
+from mctools.mcnp.mctal import MCTAL
 import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -25,7 +26,7 @@ def main():
 	arguments = parser.parse_args()
 
 	if not path.isfile(arguments.mctal):
-		print >> sys.stderr, "mctal2root: File %s does not exist." % arguments.mctal
+		print("mctal2root: File %s does not exist." % arguments.mctal, file=sys.stderr)
 		return 1
 
 	m = MCTAL(arguments.mctal,arguments.verbose)
@@ -33,7 +34,7 @@ def main():
 	T = m.Read()
 
 	if m.thereAreNaNs:
-		print >> sys.stderr, " \033[1;30mOne or more tallies contain NaN values. Conversion will succeed anyway.\033[0m"
+		print(" \033[1;30mOne or more tallies contain NaN values. Conversion will succeed anyway.\033[0m", file=sys.stderr)
 
 	if arguments.root == "":
 		rootFileName = "%s%s" % (arguments.mctal,".root")
@@ -43,7 +44,7 @@ def main():
 	rootFile = ROOT.TFile(rootFileName,"RECREATE");
 
 	if arguments.verbose:
-		print "\n\033[1;34m[Converting...]\033[0m"
+		print("\n\033[1;34m[Converting...]\033[0m")
 
 	for tally in T:
 
@@ -86,7 +87,7 @@ def main():
 			binsMin = np.array( [0.,        0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,       0.,       0.] )
 			binsMax = np.array( [1.,        1.,      1.,      1.,      1.,      1.,      1.,      1.,      1.,       1.,       1.] )
 
-			hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment.tolist()).strip(), 11, bins, binsMin, binsMax)
+			hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), ' '.join(tally.tallyComment.tolist()).strip(), 11, bins, binsMin, binsMax)
 
 		else:
 
@@ -94,7 +95,7 @@ def main():
 			binsMin = np.array( [0,        0,      0,      0,      0,      0,      0,      0], dtype=float)
 			binsMax = np.array( [1,        1,      1,      1,      1,      1,      1,      1], dtype=float)
 
-			hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), string.join(tally.tallyComment.tolist()).strip(), 8, bins, binsMin, binsMax)
+			hs = ROOT.THnSparseF("%s%d" % (tallyLetter, tally.tallyNumber), ' '.join(tally.tallyComment.tolist()).strip(), 8, bins, binsMin, binsMax)
 
 
 
@@ -137,7 +138,7 @@ def main():
 													val = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0)
 													err = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)
 
-													#print "%5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %13.5E" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val)
+													#print("%5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %5d - %13.5E" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val))
 
 													if tally.mesh == True:
 														hs.SetBinContent(np.array([f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1],dtype=np.dtype('i4')), val)
@@ -155,11 +156,11 @@ def main():
 		hs.Write()
 
 		if arguments.verbose:
-			print " \033[33mTally %5d saved\033[0m" % (tally.tallyNumber)
+			print(" \033[33mTally %5d saved\033[0m" % (tally.tallyNumber))
 
 
 	rootFile.Close()
-	print "\n\033[1;34mROOT file saved to:\033[1;32m %s\033[0m\n" % (rootFileName)
+	print("\n\033[1;34mROOT file saved to:\033[1;32m %s\033[0m\n" % (rootFileName))
 
 
 if __name__ == "__main__":

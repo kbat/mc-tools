@@ -1,5 +1,6 @@
 #! /usr/bin/python2 -W all
 
+from __future__ import print_function
 import sys, argparse
 from os import path
 from mctools import fluka
@@ -19,7 +20,7 @@ def main():
     args = parser.parse_args()
 
     if not path.isfile(args.usrbin):
-        print >> sys.stderr, "usrbin2root: File %s does not exist." % args.usrbin
+        print("usrbin2root: File %s does not exist." % args.usrbin, file=sys.stderr)
         return 1
 
     if args.root == "":
@@ -34,10 +35,10 @@ def main():
     
     if args.verbose:
         b.sayHeader()
-        print "\n%d tallies found:" % ND
+        print("\n%d tallies found:" % ND)
         for i in range(ND):
             b.say(i)
-            print ""
+            print("")
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):

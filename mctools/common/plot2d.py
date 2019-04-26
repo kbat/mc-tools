@@ -3,10 +3,17 @@
 # https://github.com/kbat/mc-tools
 #
 
+from __future__ import print_function
 import argparse
 from sys import exit, argv
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+# runs in both Python 2 and 3
+try:
+        input = raw_input
+except NameError:
+        pass
 
 def main():
 	"""A simple TH2 plotter with optional geometry overlay
@@ -70,7 +77,7 @@ def main():
             ROOT.gPad.SetLogz()
 
 
-        print "a", args.gfile
+        print("a", args.gfile)
         if args.gfile is not None:
             gf = ROOT.TFile(args.gfile)
             gh = gf.Get(args.ghist)

@@ -1,5 +1,6 @@
 #! /usr/bin/python -W all
 
+from __future__ import print_function
 import argparse, re
 from sys import exit
 from os import path
@@ -18,7 +19,7 @@ def getCombLayerSurf(mcnpsurf):
         if re.search("^Surf Change", line):
             words = line.strip().split()
             if int(words[-1]) == int(mcnpsurf):
-                print words
+                print(words)
                 clsurf = int(words[1].split(":")[1])
     f.close()
     return clsurf
@@ -36,7 +37,7 @@ def main():
 
     clsurf = getCombLayerSurf(mcnpsurf)
 #    obj = getCombLayerObject(clsurf)
-    print clsurf
+    print(clsurf)
                 
 
 if __name__ == "__main__":

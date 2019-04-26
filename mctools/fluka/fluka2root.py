@@ -1,5 +1,6 @@
-#! /usr/bin/python2 -Qwarn
-import sys, re, string, os, argparse
+#! /usr/bin/python -Wall
+from __future__ import print_function
+import sys, re, os, argparse
 import glob
 import tempfile
 
@@ -15,7 +16,7 @@ def printincolor(s,col=33):
     Print a string with a given color using ANSI/VT100 Terminal Control Escape Sequences
     http://www.termsys.demon.co.uk/vtansi.htm
     """
-    print "\033[1;%dm%s\033[0m" % (col, s)
+    print("\033[1;%dm%s\033[0m" % (col, s))
 
 
 class Estimator:
@@ -35,9 +36,9 @@ class Estimator:
         self.units[u].append(f)
 
     def Print(self):
-        print self.name
-        print " ", self.converter
-        print " units: ", self.units
+        print(self.name)
+        print(" ", self.converter)
+        print(" units: ", self.units)
 
 class Converter:
     def __init__(self, inp, overwrite, verbose):
@@ -67,8 +68,8 @@ class Converter:
         return 
 
         if self.verbose:
-            print "input files:", self.inp
-            print "output ROOT files:", self.root
+            print("input files:", self.inp)
+            print("output ROOT files:", self.root)
 
     def checkInputFiles(self):
         """Does some checks of the input files
@@ -79,13 +80,13 @@ class Converter:
 
         for f in self.inp:
             if not os.path.isfile(f):
-                print>>sys.stderr, "Error: %s does not exist" % f
+                print("Error: %s does not exist" % f, sys=sys.stderr)
                 return 1
 
         with open(self.inp[0]) as f:
             for line in f.readlines():
                 if re.search("\AFREE", line):
-                    print>>sys.sterr, "Error:\tFree-format input is not supported."
+                    print("Error:\tFree-format input is not supported.", sys=sys.stderr)
                     return 2
                     
         return 0
@@ -116,7 +117,7 @@ class Converter:
                 isname = True
 
             if len(opened):
-                print "Opened (named) units: ", opened
+                print("Opened (named) units: ", opened)
         inp.close()
     
         return opened
@@ -150,7 +151,7 @@ class Converter:
                             if not unit in e.units:
                                 e.addUnit(unit)
                         else:
-                            print>>sys.stderr, "Warning: ascii files not supported", unit, name
+                            print("Warning: ascii files not supported", unit, name, sys=sys.stderr)
         inp.close()
 
     def assignFileNames(self):
@@ -165,7 +166,7 @@ class Converter:
         """ Merge all data with standard FLUKA tools
         """
         if self.verbose:
-            print "Merging..."
+            print("Merging...")
         
         for e in self.estimators:
             if not len(e.units):
@@ -174,11 +175,11 @@ class Converter:
             for u in e.units:
                 temp_path = tempfile.mktemp()
                 if self.verbose:
-                    print e.name, temp_path
+                    print(e.name, temp_path)
                 with open(temp_path, "w") as tmpfile:
                     suwfile = self.getSuwFileName(e,u)
                     if self.verbose:
-                        print suwfile
+                        print(suwfile)
 
                     for f in e.units[u]:
                         tmpfile.write("%s\n" % f)
@@ -204,7 +205,7 @@ class Converter:
         """Convert merged files into ROOT
         """
         if self.verbose:
-            print "Converting..."
+            print("Converting...")
 
         v = "-v" if self.verbose else ""
             
@@ -225,15 +226,15 @@ class Converter:
                 self.out_root_files.append(rootfile)
 
         if self.verbose:
-            print "ROOT files produced: ", self.out_root_files
+            print("ROOT files produced: ", self.out_root_files)
 
         f = "-f" if self.overwrite else ""
-        command = "hadd %s %s %s" % (f, self.root, string.join(self.out_root_files)) + (" > /dev/null" if self.verbose else "")
+        command = "hadd %s %s %s" % (f, self.root, ' '.join(self.out_root_files)) + (" > /dev/null" if self.verbose else "")
         if self.verbose:
             printincolor(command)
         return_value = os.system(command)
         if return_value is 0:
-            command = "rm -f %s %s" % (v, string.join(self.out_root_files))
+            command = "rm -f %s %s" % (v, ' '.join(self.out_root_files))
             if self.verbose:
                 printincolor(command)
             return_value = os.system(command)

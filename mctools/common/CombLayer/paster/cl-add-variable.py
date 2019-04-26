@@ -1,6 +1,7 @@
 #! /usr/bin/python -W all
 #
 
+from __future__ import print_function
 import argparse, os, re, sys
 import fileinput
 from mctools import checkPaths
@@ -12,7 +13,7 @@ def checkName(n, t):
     """
     if len(n) == 0:
         if not re.search("vector",t) and not re.search("shared_ptr", t):
-            print>>sys.stderr, "Argument '-name' must be specified for type '%s'" % t
+            print("Argument '-name' must be specified for type '%s'" % t, file=sys.stderr)
             sys.exit(4)
 
 def main():
@@ -46,8 +47,8 @@ def main():
     if checkPaths([hDir, cxxDir], [h,cxx]) > 0:
         sys.exit(1)
 
-    print h
-    print cxx
+    print(h)
+    print(cxx)
     mat = False
     hFixed = False
     ccFixed = False
@@ -61,10 +62,10 @@ def main():
 
 # fix the header
     for line in fileinput.input(h, inplace=True, backup='.bak'):
-       print line.rstrip()
+       print(line.rstrip())
        if re.search(" %s;" % args.after, line):
            hFixed = True
-           print "  %s %s; ///< %s" % (args.type, args.var, args.comment)
+           print("  %s %s; ///< %s" % (args.type, args.var, args.comment))
 
 # fix implementation
     for line in fileinput.input(cxx, inplace=True, backup='.bak'):
@@ -107,18 +108,18 @@ def main():
             else:
                 l = "  %s=Control.EvalVar<%s>(keyName+\"%s\");" % (args.var, args.type, args.name)
 
-        print line
+        print(line)
         if l:
-            print l
+            print(l)
 
     if not hFixed:
-        print>>sys.stderr, "!!! No record added in the header"
+        print("!!! No record added in the header", file=sys.stderr)
     if not ccFixed:
-        print>>sys.stderr, "!!! No record added in the copy constructor"
+        print("!!! No record added in the copy constructor", file=sys.stderr)
     if not equalFixed:
-        print>>sys.stderr, "!!! No record added in the operator="
+        print("!!! No record added in the operator=", file=sys.stderr)
     if not evalFixed:
-        print>>sys.stderr, "!!! No record added in the %s::populate() method." % args.className
+        print("!!! No record added in the %s::populate() method." % args.className, file=sys.stderr)
                 
 if __name__ == "__main__":
     sys.exit(main())

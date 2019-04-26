@@ -2,6 +2,7 @@
 #
 # ASCII to TH1F converter
 
+from __future__ import print_function
 import sys,time,os,re
 from array import array
 import ROOT, argparse
@@ -9,8 +10,8 @@ import ROOT, argparse
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
-#    print colxmin, colxmax, coly, coley, opt, fname
-    print opt
+#    print(colxmin, colxmax, coly, coley, opt, fname)
+    print(opt)
     f = open(fname)
     vx = []  # upper border of the energy bin
     vy = []  # flux
@@ -21,7 +22,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
 
     for iline,line in enumerate(f.readlines()):
         words = line.split()
-#        print words;
+#        print(words);
         if len(words) == 0:
             break
         if words[0][0] == '#':
@@ -50,9 +51,9 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
 
     f.close()
 
-#    print "vx", vx
-#    print "vy", vy
-#    print "ey", vey
+#    print("vx", vx)
+#    print("vy", vy)
+#    print("ey", vey)
 
     nbins = len(vy)
     h = ROOT.TH1F(hname, htitle, nbins, array('f', vx))
@@ -99,14 +100,14 @@ def main():
     results = parser.parse_args()
 
     if len(sys.argv) == 1:
-        print main.__doc__
+        print(main.__doc__)
         sys.exit(1)
 
 
     fname_in = results.inname
     fname_out = fname_in.replace(".dat", ".root")
     if fname_in == fname_out: fname_out = fname_in + ".root"
-    print fname_in, '=>',fname_out
+    print(fname_in, '=>',fname_out)
 
     fout = ROOT.TFile(fname_out, "recreate")
     GetHistogram(results.colxmin, results.colxmax, results.coly, results.coley, results.option, results.hname, results.htitle, fname_in).Write()

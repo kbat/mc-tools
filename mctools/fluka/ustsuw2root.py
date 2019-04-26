@@ -1,5 +1,6 @@
 #! /usr/bin/python2 -W all
 
+from __future__ import print_function
 import sys, argparse, struct
 from os import path
 import numpy as np
@@ -75,7 +76,7 @@ class Usrtrack(Data.Usrxxx):
             data = fortran.read(f)
             if data is None: break
             size = len(data)
-#            print "size: ", size
+#            print("size: ", size)
 
             if size == 14 and data[:10] == "STATISTICS":
                 self.statpos = f.tell()
@@ -110,7 +111,7 @@ class Usrtrack(Data.Usrxxx):
                 data = fortran.read(f)
                 det.ngroup = struct.unpack("=i",data[:4])[0]
                 det.egroup = struct.unpack("=%df"%(det.ngroup+1), data[4:])
-                print "Low energy neutrons scored with %d groups" % det.ngroup
+                print("Low energy neutrons scored with %d groups" % det.ngroup)
             else:
 		det.ngroup = 0
 		det.egroup = []
@@ -123,13 +124,13 @@ class Usrtrack(Data.Usrxxx):
     def printHeader(self, i):
         """ Prints the header """
         det = self.detector[i]
-        print "Detector:", det.name
-        print " binning type: ", det.type
-        print " distribution to be scored:", det.dist
-        print " region:", det.reg
-        print " volume:", det.volume
-        print " low energy neutrons:", det.lowneu
-        print " %g < E < %g GeV / %d bins; bin width: %g" % (det.elow, det.ehigh, det.ne, det.de)
+        print("Detector:", det.name)
+        print(" binning type: ", det.type)
+        print(" distribution to be scored:", det.dist)
+        print(" region:", det.reg)
+        print(" volume:", det.volume)
+        print(" low energy neutrons:", det.lowneu)
+        print(" %g < E < %g GeV / %d bins; bin width: %g" % (det.elow, det.ehigh, det.ne, det.de))
         
     def readStat(self, det,lowneu):
 	""" Read detector # det statistical data """
@@ -169,7 +170,7 @@ def main():
     args = parser.parse_args()
 
     if not path.isfile(args.usrtrack):
-        print >> sys.stderr, "ustsuw2root: File %s does not exist." % args.usrtrack
+        print("ustsuw2root: File %s does not exist." % args.usrtrack, file=sys.stderr)
         return 1
 
     if args.root == "":
@@ -186,7 +187,7 @@ def main():
         #b.sayHeader()
         for i in range(ND):
             b.printHeader(i)
-            print ""
+            print("")
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
@@ -199,7 +200,7 @@ def main():
         hn = histN(det) # filled only if det.lowneu
             
         n = h.GetNbinsX()
-        print n, len(val), det.ne, val
+        print(n, len(val), det.ne, val)
 
         for i in range(det.ne):
             h.SetBinContent(i+1, val[i])

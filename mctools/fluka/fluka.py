@@ -2,6 +2,7 @@
 # $Id$
 # $URL$
 
+from __future__ import print_function
 import sys, math, struct
 from mctools.mcnp.ssw import fortranRead
 
@@ -98,7 +99,7 @@ class USRBDXCARD:
             y = ie + ia*self.igmusx 
             val = self.gdstor[y]  # !!! FIX THIS !!!
             err = self.gbstor[y]
-#            print "ie,ia,y, val,err", ie, ia, y, val, err
+#            print("ie,ia,y, val,err", ie, ia, y, val, err)
             val /= self.engmax[y-1]-self.engmax[y]
         else:
             y = ie + ia*self.nebxbn 
@@ -117,105 +118,105 @@ class USRBDXCARD:
     def Print(self):
         def PrintV(val, sameline):
             """Prints value"""
-            print "%e" % val,
-            if not sameline: print "\n\t",
+            print("%e" % val, end='')
+            if not sameline: print("\n\t", end='')
         
         def PrintVE(val, err, sameline):
             """Prints value and error"""
-            print "%e +/- %g %%\t" % (val, err),
-            if not sameline: print "\n\t",
+            print("%e +/- %g %%\t" % (val, err), end='')
+            if not sameline: print("\n\t", end='')
 
-        print "\nDetector n: %d (%d) %s" % (self.nx, self.nx, self.titusx)
-        print "\t(Area: %g cmq," % self.ausbdx
-        print "\t distr. scored: %d," % self.idusbx
-        print "\t from reg. %d to %d," % (self.nr1usx, self.nr2usx)
+        print("\nDetector n: %d (%d) %s" % (self.nx, self.nx, self.titusx))
+        print("\t(Area: %g cmq," % self.ausbdx)
+        print("\t distr. scored: %d," % self.idusbx)
+        print("\t from reg. %d to %d," % (self.nr1usx, self.nr2usx))
 
-        if self.isOneWay(): print "\t one way scoring,"
-        else: print "\t this is a two ways estimator"
+        if self.isOneWay(): print("\t one way scoring,")
+        else: print("\t this is a two ways estimator")
         
-        if self.isFluence(): print "\t fluence scoring scoring)"
-        else: print "\t current scoring)"
+        if self.isFluence(): print("\t fluence scoring scoring)")
+        else: print("\t current scoring)")
         
-        print ""
+        print("")
         
-        print "\tTot. resp. (Part/cmq/pr) %e +/- %e %%" % (self.totresp, 100*self.totresperr)
-        print "\t( -->      (Part/pr)     %e +/- %e %% )"  % (self.totresp*self.ausbdx, 100*self.totresperr)
+        print("\tTot. resp. (Part/cmq/pr) %e +/- %e %%" % (self.totresp, 100*self.totresperr))
+        print("\t( -->      (Part/pr)     %e +/- %e %% )"  % (self.totresp*self.ausbdx, 100*self.totresperr))
 
-        print ""
+        print("")
 
-        print "\t**** Different. Fluxes as a function of energy ****",
-        print "\t****      (integrated over solid angle)        ****"
-        print "\t Energy boundaries (GeV):\n"
-        print "\t",
+        print("\t**** Different. Fluxes as a function of energy ****", end='')
+        print("\t****      (integrated over solid angle)        ****")
+        print("\t Energy boundaries (GeV):\n")
+        print("\t", end='')
         for i in range(self.nebxbn):
             PrintV(self.epgmax[i], (i+1) % 5)
-        print "\n\tLowest boundary (GeV):", self.epgmax[self.nebxbn] # if does not work, see UsxSuw::GetLowsetBoundary
+        print("\n\tLowest boundary (GeV):", self.epgmax[self.nebxbn]) # if does not work, see UsxSuw::GetLowsetBoundary
 
-        print "\n\tFlux (Part/GeV/cmq/pr):"
-        print "\t",
+        print("\n\tFlux (Part/GeV/cmq/pr):")
+        print("\t", end='')
         for i in range(self.nebxbn):
             PrintVE(self.flux[i], 100.0*self.fluxerr[i], (i+1)%2)
 
         if self.llnusx:
-            print "\t Energy boundaries (GeV):\n"
-            print "\t",
+            print("\t Energy boundaries (GeV):\n")
+            print("\t", end='')
             for i in range(self.igmusx): PrintV(self.engmax[i], (i+1) % 5)
-            print "\n\tLowest boundary (GeV):", self.engmax[i]
-            print self.igmusx
-#            print "here", len(self.gbstor), len(self.gdstor), self.nabxbn
-            print "\n\tFlux (Part/GeV/cmq/pr): (!!! SOMETHING IS WRONG WITH VALUE NORMALISATION HERE (not divided by energy?), BUT ERRORS ARE OK !!!)\n\t",
+            print("\n\tLowest boundary (GeV):", self.engmax[i])
+            print(self.igmusx)
+#            print("here", len(self.gbstor), len(self.gdstor), self.nabxbn)
+            print("\n\tFlux (Part/GeV/cmq/pr): (!!! SOMETHING IS WRONG WITH VALUE NORMALISATION HERE (not divided by energy?), BUT ERRORS ARE OK !!!)\n\t", end='')
             for ie in range(self.igmusx):
                 for ia in range(self.nabxbn):
                     val = self.getData(ie+1, ia, 'deg', True)
                     PrintVE(val[0], 100*val[1], (ie+1)%2)
                 
 
-        print "\n\t**** Cumulative Fluxes as a function of energy ****",
-        print "\t****      (integrated over solid angle)        ****"
+        print("\n\t**** Cumulative Fluxes as a function of energy ****", end='')
+        print("\t****      (integrated over solid angle)        ****")
 
-        print "\n\t Energy boundaries (GeV):"
-        print "\t",
+        print("\n\t Energy boundaries (GeV):")
+        print("\t", end='')
         for i in range(self.nebxbn):
             PrintV(self.epgmax[i], (i+1) % 5)
-        print "Lowest boundary (GeV):", self.epgmax[self.nebxbn] # if does not work, see
+        print("Lowest boundary (GeV):", self.epgmax[self.nebxbn]) # if does not work, see
 
-        print "\n\tCumul. Flux (Part/cmq/pr):\n\n\t",
+        print("\n\tCumul. Flux (Part/cmq/pr):\n\n\t", end='')
         for i in range(self.nebxbn):
             PrintVE(self.cumulflux[i], 100.0*self.cumulfluxerr[i], (i+1)%2)
 
         if self.llnusx:
-            print "\n\t Energy boundaries (GeV):\n"
-            print "\t",
+            print("\n\t Energy boundaries (GeV):\n")
+            print("\t", end='')
             for i in range(self.igmusx): PrintV(self.engmax[i], (i+1) % 5)
-            print "\n\tLowest boundary (GeV):", self.engmax[i]
+            print("\n\tLowest boundary (GeV):", self.engmax[i])
 
-            print "\n\tCumul. Flux (Part/cmq/pr):here\n\t",
+            print("\n\tCumul. Flux (Part/cmq/pr):here\n\t", end='')
 
             for i in range(self.igmusx):
                 PrintVE(self.cumulflux[i+self.nebxbn], 100*self.cumulfluxerr[i+self.nebxbn], (i+1)%2) # this is OK
         
         if self.nabxbn>1: # if more than one angle required
-            print "\n\t**** Double diff. Fluxes as a function of energy ****"
+            print("\n\t**** Double diff. Fluxes as a function of energy ****")
             alowedges = self.getALowEdge()
-            print "\tSolid angle minimum value (sr): ", alowedges[0]
-            print "\tSolid angle upper boundaries (sr):\n\t",
+            print("\tSolid angle minimum value (sr): ", alowedges[0])
+            print("\tSolid angle upper boundaries (sr):\n\t", end='')
             for i, val in enumerate(alowedges[1:], 1):
                 PrintV(val, i%5)
 
             alowedgesdeg = map(sr2deg, alowedges)
-            print "\n\tAngular minimum value (deg.): ", alowedgesdeg[0]
-            print "\tAngular upper boundaries (deg.):\n\t",
+            print("\n\tAngular minimum value (deg.): ", alowedgesdeg[0])
+            print("\tAngular upper boundaries (deg.):\n\t", end='')
             for i,val in enumerate(alowedgesdeg[1:], 1):
                 PrintV(val, i%5)
 
         # high-energy part
             for ie in range(self.nebxbn):
-                print "\n\tEnergy interval (GeV): %e %e" % (self.epgmax[ie], self.epgmax[ie+1])
-                print "\tFlux (Part/sr/GeV/cmq/pr):\n\t",
+                print("\n\tEnergy interval (GeV): %e %e" % (self.epgmax[ie], self.epgmax[ie+1]))
+                print("\tFlux (Part/sr/GeV/cmq/pr):\n\t", end='')
                 for ia in range(self.nabxbn):
                     val = self.getData(self.nebxbn-ie-1, ia, 'sr')
                     PrintVE(val[0], 100*val[1], (ia+1)%2)
-                print "Flux (Part/deg/GeV/cmq/pr):\n\t",
+                print("Flux (Part/deg/GeV/cmq/pr):\n\t", end='')
                 for ia in range(self.nabxbn):
                     val = self.getData(self.nebxbn-ie-1, ia, 'deg')
                     PrintVE(val[0], 100*val[1], (ia+1)%2)
@@ -226,19 +227,19 @@ class USRBDXCARD:
             
 
 
-        # print self.itusbx, self.idusbx, self.nr1usx, self.nr2usx, self.ausbdx, self.lwusbx, self.lfusbx, self.llnusx
-        # print "energy binning: ", self.ebxlow, self.ebxhgh, self.nebxbn, self.debxbn
-        # print "angular binning: ", self.abxlow, self.abxhgh, self.nabxbn, self.dabxbn
-        # print "number of low energy neutron groups: ", self.igmusx#, self.engmax
+        # print(self.itusbx, self.idusbx, self.nr1usx, self.nr2usx, self.ausbdx, self.lwusbx, self.lfusbx, self.llnusx)
+        # print("energy binning: ", self.ebxlow, self.ebxhgh, self.nebxbn, self.debxbn)
+        # print("angular binning: ", self.abxlow, self.abxhgh, self.nabxbn, self.dabxbn)
+        # print("number of low energy neutron groups: ", self.igmusx#, self.engmax)
 
-        # print "total responce: %e +- %g" % (self.totresp, self.totresperr)
+        # print("total responce: %e +- %g" % (self.totresp, self.totresperr))
 
 
 
 class USXSUW:
     def __init__(self, fname):
         self.fname = fname
-        print self.fname
+        print(self.fname)
 
         self.title  = ""
         self.time   = ""
@@ -297,26 +298,26 @@ class USXSUW:
             self.ubsarray.append(ubs)
 
         self.nrecords = record
-        print self.nrecords, "USRBDX cards found"
+        print(self.nrecords, "USRBDX cards found")
 
         for record in range(self.nrecords):
             data = fortranRead(self.file)
             ubs = self.ubsarray[record]
             ubs.totresp, ubs.totresperr = struct.unpack("=2f", data)
-#            print ubs.igmusx
+#            print(ubs.igmusx)
             data = fortranRead(self.file)
-#            print "here:", len(data)/4,  ubs.nebxbn+ubs.igmusx, ubs.getNbinsTotal()
+#            print("here:", len(data)/4,  ubs.nebxbn+ubs.igmusx, ubs.getNbinsTotal())
             vtmp = struct.unpack("=2i2f%df" % ubs.getNEbinsTotal(), data)
-            print "check:"
+            print("check:")
             if vtmp[0] != ubs.nebxbn: raise IOError("nebxbn record is wrong")
             if vtmp[1] != ubs.igmusx: raise IOError("igmusx record is wrong")
-            print "emin, emax:", vtmp[2], vtmp[3] # !!! maybe not only these 2 records are written when more than 1 user interval ???
+            print("emin, emax:", vtmp[2], vtmp[3]) # !!! maybe not only these 2 records are written when more than 1 user interval ???
             ubs.epgmax = vtmp[3:][:]
 
             data = fortranRead(self.file)
             ubs.flux = struct.unpack("=%df" % ubs.getNEbinsTotal(), data)
-#            print ubs.flux[1:10]
-#            print ubs.gdstor[1:10]
+#            print(ubs.flux[1:10])
+#            print(ubs.gdstor[1:10])
 
             data = fortranRead(self.file)
             ubs.fluxerr = struct.unpack("=%df" % ubs.getNEbinsTotal(), data)
@@ -333,16 +334,16 @@ class USXSUW:
                 
 
 
-        print ""
+        print("")
         #data = fortranRead(self.file)
-        #print len(data)
+        #print(len(data))
 
         self.file.close()
 
 
     def Print(self):
-        print self.title
-        print self.time
-        print self.wctot, self.nctot, self.mctot, self.mbatch
+        print(self.title)
+        print(self.time)
+        print(self.wctot, self.nctot, self.mctot, self.mbatch)
         for ubs in self.ubsarray:
             ubs.Print()

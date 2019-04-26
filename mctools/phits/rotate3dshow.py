@@ -20,7 +20,7 @@
 # https://github.com/kbat/mc-tools
 
 
-import re, sys, string, argparse, os
+import re, sys, argparse, os
 
 def main():
     """

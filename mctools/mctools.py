@@ -1,5 +1,6 @@
 #! /usr/bin/python -W all
 
+from __future__ import print_function
 # from scipy import constants
 import subprocess, os, sys
 from math import sqrt
@@ -43,12 +44,12 @@ def checkPaths(dirs, files, verbose=True):
     for d in dirs:
         if not os.path.isdir(d):
             if verbose:
-                print>>sys.stderr, d, "does not exist"
+                print(d, "does not exist", file=sys.stderr)
             return 1
 
     for f in files:
         if not os.path.isfile(f): 
-            print>>sys.stderr, f, "does not exist"
+            print(f, "does not exist", file=sys.stderr)
             return 2
     return 0
 
@@ -105,20 +106,20 @@ class Compound:
         for i,v in enumerate(af):
             af[i] = v/s
 
-        return dict(zip(iname, af))
+        return dict(list(zip(iname, af)))
 
     def PrintAtomicFractions(self):
-        for i,f in sorted(self.GetAtomicFractions().iteritems()):
-            print i,f
-        print "Density: ", -self.GetDensity()
+        for i,f in sorted(self.GetAtomicFractions().items()):
+            print(i,f)
+        print("Density: ", -self.GetDensity())
 
     def Print(self):
-        print "Compound:", self.name
-        print " Density:", self.GetDensity()
+        print("Compound:", self.name)
+        print(" Density:", self.GetDensity())
         for j,m in enumerate(self.materials):
-            print "", self.vf[j], "%"
+            print("", self.vf[j], "%")
             m.Print()
-        print " Mass fractions:"
+        print(" Mass fractions:")
         self.GetAtomicFractions()
 
 class Material:
@@ -152,14 +153,14 @@ class Material:
         return vf
 
     def Print(self):
-        print " Material:", self.name
-        print "  Density:", self.density
-        print "  Atomic weight: ", self.GetA(), "g/mole"
-        print "  Isotopes:"
+        print(" Material:", self.name)
+        print("  Density:", self.density)
+        print("  Atomic weight: ", self.GetA(), "g/mole")
+        print("  Isotopes:")
         for j,i in enumerate(self.isotopes):
-#            print " "*2, self.nn[j],
+#            print(" "*2, self.nn[j], end='')
             i.Print()
-            print "   Volume fraction in %s: %g" % (self.name, self.GetVolumeFraction(i))
+            print("   Volume fraction in %s: %g" % (self.name, self.GetVolumeFraction(i)))
 
 class Isotope:
     """ Isotopes form material """
@@ -168,6 +169,6 @@ class Isotope:
         self.A = A # atomic weight
 
     def Print(self):
-        print "\t%s \t A = %g" % (self.name, self.A)
+        print("\t%s \t A = %g" % (self.name, self.A))
 
 ### END MIXTURES ###

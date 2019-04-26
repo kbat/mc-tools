@@ -1,5 +1,6 @@
 #! /usr/bin/python2
 
+from __future__ import print_function
 from ROOT import ROOT, TFile, TTree
 from sys import argv, exit
 
@@ -8,7 +9,7 @@ name_out = argv[2]
 branchDescriptor=""
 if len(argv)==4:
         branchDescriptor=argv[3]
-        print branchDescriptor
+        print(branchDescriptor)
 
 fout = TFile(name_out, "recreate")
 T = TTree("T", branchDescriptor)

@@ -2,6 +2,7 @@
 #
 # ASCII to TH3F converter
 
+from __future__ import print_function
 import sys,time,os,re
 from ROOT import ROOT, TH3F, TH1F, TFile
 from array import array
@@ -13,7 +14,7 @@ def str2float(s):
     f = []
     for i in s:
         f.append(float(i))
-    print "array: ", f
+    print("array: ", f)
     return f
         
 
@@ -62,25 +63,25 @@ def main():
 
     vx = sorted(str2float(list(set(x))))
 #    vx =  [ x*-1 for x in vx[::-1]] + vx[1:]
-#    print "\n!!! vx: added reversed values - used only for polar plots !!!\n"
+#    print("\n!!! vx: added reversed values - used only for polar plots !!!\n")
     vy = sorted(str2float(list(set(y))))
     vz = sorted(str2float(list(set(z))))
 #    vz =  [-600] + [ z*-1 for z in vz[::-1]] + vz[1:] + [600] # !!! add reversed values - used only for polar plots !!!
-#    print "\n!!! vz: added reversed values - used only for polar plots !!!\n"
+#    print("\n!!! vz: added reversed values - used only for polar plots !!!\n")
 
-#        print i, j, k
+#        print(i, j, k)
 #        val[(i,j,k)] = w[6]
 #        relerr[(i,j,k)] = w[7]
 
-    print "x: ", vx
-    print "y: ", vy
-    print "z: ", vz
+    print("x: ", vx)
+    print("y: ", vy)
+    print("z: ", vz)
 
     nx = len(vx)-1
     ny = len(vy)-1
     nz = len(vz)-1
     
-    print nx, ny, nz
+    print(nx, ny, nz)
 
     h = TH3F("neutron", "%s;%s;%s;%s" % (title, xtitle, ytitle, ztitle), nx, array('f', vx), ny, array('f', vy), nz, array('f', vz))
 

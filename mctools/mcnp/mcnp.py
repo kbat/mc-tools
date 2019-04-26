@@ -1,4 +1,5 @@
-#! /usr/bin/python2
+#! /usr/bin/python
+from __future__ import print_function
 import re
 
 def getPar(masterfile, parname, pos=3):
@@ -11,7 +12,7 @@ def getPar(masterfile, parname, pos=3):
     for line in f.readlines():
         if re.search("\Ac THE%s" % parname, line, re.IGNORECASE):
             val = float(line.split()[pos])
-#            print line.strip(), val
+#            print(line.strip(), val)
     f.close()
     if val is "":
         raise IOError("Value of %s not found in %s" % (parname, masterfile))
@@ -30,12 +31,12 @@ def GetParticleNames(a):
              'pion+', 'pion-', 'pion0', 'kaon+', 'kaon-', 'K0short', 'K0long', 'D+', 'D0', 'Ds+', 'B+', 'B0', 'Bs0',
              'deuteron', 'triton', 'He3', 'He4', 'heavy ions']
     vals = []
-    print "a", a
+    print("a", a)
     if isinstance(a, int):
-        print a
+        print(a)
     else:
         for i in range(len(a)):
             if a[i] == 1: vals.append(names[i])
             elif a[i] != 0:
-                print 'strange values (not 0 or 1) found in the list of particles:', a
+                print('strange values (not 0 or 1) found in the list of particles:', a)
     return vals

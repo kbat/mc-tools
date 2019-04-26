@@ -1,7 +1,7 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
 import sys, argparse
-from mctal import MCTAL
-from testsuite import TestSuite
+from mctools.mcnp.mctal import MCTAL
+from mctools.mcnp.testsuite import TestSuite
 
 def main():
 	"""

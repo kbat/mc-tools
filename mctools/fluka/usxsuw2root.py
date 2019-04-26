@@ -1,5 +1,6 @@
 #! /usr/bin/python2 -W all
 
+from __future__ import print_function
 import sys, argparse
 from os import path
 import numpy as np
@@ -15,7 +16,7 @@ def getType(n):
             for i3 in (0,1):
                 if (i1+10*i2+100*i3 == n):
                     return (i1,i2,i3) # i3 is irrelevant - use bin.fluence instead
-    print >> sys.stderr, "usrbdx2root: what(1) == %d undefined" % n
+    print("usrbdx2root: what(1) == %d undefined" % n, file=sys.stderr)
     sys.exit(1)
 
 def isLogE(x):
@@ -90,7 +91,7 @@ def main():
     args = parser.parse_args()
 
     if not path.isfile(args.usrbdx):
-        print >> sys.stderr, "usrbdx2root: File %s does not exist." % args.usrbdx
+        print("usrbdx2root: File %s does not exist." % args.usrbdx, file=sys.stderr)
         return 1
 
     if args.root == "":
@@ -105,10 +106,10 @@ def main():
     
     if args.verbose:
         b.sayHeader()
-        print "\n%d tallies found:" % ND
+        print("\n%d tallies found:" % ND)
         for i in range(ND):
             b.say(i)
-            print ""
+            print("")
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):

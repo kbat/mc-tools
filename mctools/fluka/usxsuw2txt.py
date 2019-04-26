@@ -1,13 +1,14 @@
 #! /usr/bin/python2 -W all
 
+from __future__ import print_function
 import sys
-from fluka import USXSUW
+from mctools.fluka.fluka import USXSUW
 
 def main():
     """Converts usxsuw binary output to ASCII"""
 
     if len(sys.argv) != 2:
-        print "Usage: usxsuw2txt.py usxsuw_file"
+        print("Usage: usxsuw2txt.py usxsuw_file")
         sys.exit(1)
 
     fin_name = sys.argv[1]

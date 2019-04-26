@@ -3,7 +3,8 @@
 # https://github.com/kbat/mc-tools
 #
 
-import sys, re, string, math
+from __future__ import print_function
+import sys, re, math
 import numpy as np
 
 #############################################################################################################################
@@ -39,9 +40,9 @@ class Header:
 		        print ("title: %s" % self.title)
 
 		        if self.ntal>1:
-				print self.ntal, 'tallies:', self.ntals
+				print(self.ntal, 'tallies:', self.ntals)
 	        	else:
-				print self.ntal, 'tally:', self.ntals
+				print(self.ntal, 'tally:', self.ntals)
 
 
 		        if self.npert != 0:
@@ -474,13 +475,13 @@ class MCTAL:
 		"""This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
 
 		if self.verbose:
-			print "\n\033[1;34m[Parsing file: %s...]\033[0m" % self.mctalFileName
+			print("\n\033[1;34m[Parsing file: %s...]\033[0m" % self.mctalFileName)
 
 		self.getHeaders()
 		self.getTallies()
 
 		if self.thereAreNaNs and self.verbose:
-			print >> sys.stderr, "\n \033[1;30mThe MCTAL file contains one or more tallies with NaN values. Flagged.\033[0m\n"
+			print("\n \033[1;30mThe MCTAL file contains one or more tallies with NaN values. Flagged.\033[0m\n", file=sys.stderr)
 
 		self.mctalFile.close()
 		return self.tallies
@@ -513,12 +514,12 @@ class MCTAL:
 		self.header.ntal = int(self.line[1])
 
 		if self.header.ntal == 0:
-			print >> sys.stderr, "\n \033[1;31mNo tallies in this MCTAL file. Exiting.\033[0m\n"
+			print("\n \033[1;31mNo tallies in this MCTAL file. Exiting.\033[0m\n", file=sys.stderr)
 			sys.exit(1)
 
 		if len(self.line) == 4:
 			self.header.npert = int(self.line[3])
-			print >> sys.stderr, "\n \033[1;31mMCTAL file with perturbation card. Not supported. Exiting.\033[0m\n"
+			print("\n \033[1;31mMCTAL file with perturbation card. Not supported. Exiting.\033[0m\n", file=sys.stderr)
 			sys.exit(1)
 
 		self.line = self.mctalFile.readline().split()
@@ -544,7 +545,7 @@ class MCTAL:
 		tally = Tally(int(self.line[1]),self.verbose)
 
 		if self.verbose:
-			print " \033[33mParsing tally: %5d\033[0m" % (tally.tallyNumber)
+			print(" \033[33mParsing tally: %5d\033[0m" % (tally.tallyNumber))
 
 		tally.typeNumber = int(self.line[2])
 		if len(self.line) == 4: tally.detectorType = int(self.line[3])
@@ -726,17 +727,17 @@ class MCTAL:
 		nErg   = tally.getNbins("e")
 		nTim   = tally.getNbins("t")
 
-		for c in xrange(nCells):
-			for d in xrange(nDir):
-				for u in xrange(nUsr):
-					for s in xrange(nSeg):
-						for m in xrange(nMul):
-							for a in xrange(nCos): # a is for Angle...forgive me
-								for e in xrange(nErg):
-									for t in xrange(nTim):
-										for k in xrange(nCorc):
-											for j in xrange(nCorb):
-												for i in xrange(nCora):
+		for c in range(nCells):
+			for d in range(nDir):
+				for u in range(nUsr):
+					for s in range(nSeg):
+						for m in range(nMul):
+							for a in range(nCos): # a is for Angle...forgive me
+								for e in range(nErg):
+									for t in range(nTim):
+										for k in range(nCorc):
+											for j in range(nCorb):
+												for i in range(nCora):
 													if (f > nFld): # f is for Field...again, forgive me
 														del Fld
 														del self.line
@@ -772,7 +773,7 @@ class MCTAL:
 			self.line = self.mctalFile.readline().strip()
 			while "tally" not in self.line and len(self.line) != 0:
 				if "kcode" in self.line:
-					print >> sys.stderr, "\n \033[1;31m Tally with KCODE card. Not supported. Exiting.\033[0m\n"
+					print("\n \033[1;31m Tally with KCODE card. Not supported. Exiting.\033[0m\n", file=sys.stderr)
 					sys.exit(1)
 
 				self.line = self.line.split()

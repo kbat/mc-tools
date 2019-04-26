@@ -16,16 +16,16 @@ def main():
     args = parser.parse_args()
 
     a = args.vol.split()
-    vols = dict(zip(map(int, a[0::2]), map(float, a[1::2])))
+    vols = dict(list(zip(list(map(int, a[0::2])), list(map(float, a[1::2])))))
 
     s = "vol"
     c0 = 0 # number of previous cell in the 'vols' dict
     dist = 0 # distance from the current cell to the previous one in the 'vols' dict
-    for i,c in enumerate(sorted(vols.iterkeys())):
+    for i,c in enumerate(sorted(vols.keys())):
         v = vols[c]
         dist=c-c0
     
-        #    print "%d:" % i, c,v, dist
+        #    print("%d:" % i, c,v, dist)
     
         if dist==1:
             s += " %g " % v
@@ -37,7 +37,7 @@ def main():
 
     s += " 1 %dr" % (args.N-c-3)
 
-    print textwrap.fill(s, width=80, subsequent_indent=" "*7)
+    print(textwrap.fill(s, width=80, subsequent_indent=" "*7))
 
 if __name__ == "__main__":
     sys.exit(main())

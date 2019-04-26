@@ -1,4 +1,5 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python -W all
+from __future__ import print_function
 import subprocess
 import tempfile
 import os, sys
@@ -68,7 +69,7 @@ class TestSuite:
                         headerLine = fs.headerLine_250
 
 		if self.mctalObject.header.ver != "2.7.0" and self.mctalObject.header.ver != "2.5.0" and self.mctalObject.header.ver != "":
-			print "\033[1;31m[* WARNING *]\033[0m\033[31m This MCNPX version is not officially supported. Results could be wrong.\033[0m"
+			print("\033[1;31m[* WARNING *]\033[0m\033[31m This MCNPX version is not officially supported. Results could be wrong.\033[0m")
 
 		if len(self.mctalObject.header.probid) == 0:
 			probid = str("").rjust(19)
@@ -266,17 +267,17 @@ class TestSuite:
 
 		if not subprocess.call(['diff', '-bi', self.mctalObject.mctalFileName, self.outFile.name], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT):
 			if self.verbose:
-				print "\n\033[1;32m[TEST PASSED]\033[0m"
+				print("\n\033[1;32m[TEST PASSED]\033[0m")
 			os.remove(self.outFile.name)
 			return 0
 		else:
 			if self.verbose:
-				print >> sys.stderr, "\n\033[1;31m[TEST FAILED]\033[0m"
-				print >> sys.stderr,  "\033[1;31mOriginal MCTAL:\033[0m\033[31m %s - \033[0m\033[1;31mTest MCTAL:\033[0m\033[31m %s\033[0m" % (self.mctalObject.mctalFileName,self.outFile.name)
-				print >> sys.stderr,  "\033[1;31mTry:\033[0m\033[31m diff -b -i %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
+				print("\n\033[1;31m[TEST FAILED]\033[0m", file=sys.stderr)
+				print("\033[1;31mOriginal MCTAL:\033[0m\033[31m %s - \033[0m\033[1;31mTest MCTAL:\033[0m\033[31m %s\033[0m" % (self.mctalObject.mctalFileName,self.outFile.name), file=sys.stderr)
+				print("\033[1;31mTry:\033[0m\033[31m diff -b -i %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name), file=sys.stderr)
 			else:
-				print >> sys.stderr, "\033[1;31mFAILED FOR FILE: \033[0m\033[31m%s\033[0m" % (self.mctalObject.mctalFileName)
-				print >> sys.stderr,  "\033[1;31mTry:\033[0m\033[31m diff -b -i %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name)
+				print("\033[1;31mFAILED FOR FILE: \033[0m\033[31m%s\033[0m" % (self.mctalObject.mctalFileName), file=sys.stderr)
+				print("\033[1;31mTry:\033[0m\033[31m diff -b -i %s %s\033[0m\n" % (self.mctalObject.mctalFileName,self.outFile.name), file=sys.stderr)
 			return 1
 
 		

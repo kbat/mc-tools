@@ -66,10 +66,8 @@ Project homepage: https://github.com/kbat/mc-tools
    * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE to ROOT formats. Loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
-* Python 2. Versions >= 3 are not supported (with exception of the ```rotate3dshow.py``` script).
 * If you are going to use the ROOT-related scripts (```*2root```), you need to have [ROOT](http://root.cern.ch)
-   to be compiled with Python 2 support. Follow
-   [this manual](http://root.cern.ch/drupal/content/pyroot) for more
+   to be compiled with Python support. Follow  [this manual](http://root.cern.ch/drupal/content/pyroot) for more
    details. To check whether the Python
    support is set up correctly, say   
    ```import ROOT```  

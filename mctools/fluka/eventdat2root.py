@@ -1,5 +1,6 @@
 #! /usr/bin/python2 -W all
 
+from __future__ import print_function
 import sys, argparse, os, struct
 from array import array
 from mctools.fluka.flair import fortran
@@ -22,7 +23,7 @@ def main():
 
     for f in args.eventdat:
         if not os.path.isfile(f):
-            print >> sys.stderr, "eventdat2root: File %s does not exist." % f
+            print("eventdat2root: File %s does not exist." % f, file=sys.stderr)
             return 1
 
     if not args.overwrite and os.path.isfile(args.root):
@@ -31,24 +32,24 @@ def main():
     first = True
     for eventdat in args.eventdat:
         with open(eventdat, 'rb') as f:
-            print eventdat
+            print(eventdat)
             while True:
                 data = fortran.read(f)
                 if data is None:
                     break
                 size = len(data)
-                print "\nsize:",size
+                print("\nsize:",size)
                 
                 if first:
                     first = False
 
                     title, time, nregs, nsco, dist = struct.unpack("=80s32siii", data)
 
-                    print "title:", title
-                    print "time:", time
-                    print "number of regions:",nregs
-                    print "number of scoring distributions:", nsco
-                    print "distribution:",dist
+                    print("title:", title)
+                    print("time:", time)
+                    print("number of regions:",nregs)
+                    print("number of scoring distributions:", nsco)
+                    print("distribution:",dist)
 
                     DATA = array('f', nsco*nregs*[0.0])
                     
