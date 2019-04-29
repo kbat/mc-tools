@@ -5,56 +5,43 @@ import argparse, re
 from sys import exit
 from os import path
 
-def getCombLayerCell(mcnpcell):
-    """Return CombLayer cell number"""
-
-    clcell = 0 #  CombLayer cell number
-    
-    fname = "Renumber.txt"
-    if not path.isfile(fname):
-        fname = path.join("case001", fname)
-    f = open(fname)
-        
-    for line in f.readlines():
-        if re.search("^Cell Changed", line):
-            words = line.strip().split()
-#            print(words)
-            if int(words[3]) == int(mcnpcell):
-                print(words)
-                clcell = int(words[2][1:])
-    f.close()
-    return clcell
-
-def getCombLayerObject(clcell):
+def getCombLayerObject(cell):
     """Return CombLayer object name based on its cell number"""
-    obj = "Not found"
-    c = clcell - (clcell % 1000)
+
     fname = "ObjectRegister.txt"
     if not path.isfile(fname):
         fname = path.join("case001", fname);
-    f = open(fname)
-    for line in f.readlines():
-        words = line.strip().split()
-        if (int(words[1]) == c):
-            print(words)
-            obj = words[0]
-    f.close()
-    return obj
+
+    with open(fname) as f:
+        for line in f.readlines():
+            words = line.strip().split()
+            if len(words) == 8:
+                # print(words, words[6][1:], words[7][:-1])
+                if words[0] != 'World':
+                    cmin,cmax = map(int,(words[6][1:], words[7][:-1]))
+                    if cell >= cmin and cell <= cmax:
+                        print(line.strip())
+                        return words[0]
+                elif cell == int(words[7]): # World
+                    print(line.strip())
+                    return words[0]
+
+    return "Not found"
     
                 
 def main():
     """
-    Finds a CombLayer cell number
+    Finds the CombLayer object name for the given MCNP(X) cell number
+    based on the CombLayer-generated object register
+    argument: cell - MCNP(X) cell number
     """
     parser = argparse.ArgumentParser(description=main.__doc__, epilog="")
-    parser.add_argument('cell', type=int, help='MCNP(X) cell number to find')
+    parser.add_argument('cell', type=int, help=__doc__)
 
-    arguments = parser.parse_args()
-    mcnpcell = arguments.cell
+    args = parser.parse_args()
 
-    clcell = getCombLayerCell(mcnpcell)
-    obj = getCombLayerObject(clcell)
-    print(obj)
+    obj = getCombLayerObject(args.cell)
+#    print(obj)
                 
 
 if __name__ == "__main__":
