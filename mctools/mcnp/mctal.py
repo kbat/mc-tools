@@ -555,10 +555,11 @@ class MCTAL:
                 tally.typeNumber = int(self.line[2])
                 if len(self.line) == 4: tally.detectorType = int(self.line[3])
 
-                if tally.detectorType >=  3: tally.radiograph = True
-                # check for None is needed for MCNP6 and F1 tally
-                if tally.detectorType is not None and tally.detectorType <= -1:
-                        tally.mesh = True
+                if tally.detectorType is not None: # check for None is needed for MCNP6 and F1 tally
+                        if tally.detectorType >=  3:
+                                tally.radiograph = True
+                        elif tally.detectorType <= -1:
+                                tally.mesh = True
 
                 self.line = self.mctalFile.readline()
                 line = self.line.split() # I must use this trick because some MCTAL files seem to omit
