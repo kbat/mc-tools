@@ -1,6 +1,6 @@
 #! /usr/bin/python -W all
-# $Id: ssw2root.py 250 2015-05-04 09:35:55Z batkov $
-# $URL: https://github.com/kbat/mc-tools/blob/master/mcnp/ssw2root.py $
+# https://github.com/kbat/mc-tools
+#
 
 import sys, argparse
 from mctools.mcnp.ssw import SSW
@@ -92,4 +92,4 @@ def main():
     fout.Close()
 
 if __name__ == "__main__":
-	sys.exit(main())
+        sys.exit(main())
