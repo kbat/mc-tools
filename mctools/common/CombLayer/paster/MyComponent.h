@@ -1,9 +1,9 @@
 /*********************************************************************
   CombLayer : MCNP(X) Input builder
 
- * File:   essBuildInc/MyComponent.h
+ * File:   INCDIR/MyComponent.h
  *
- * Copyright (c) YEAR-YEAR by AUTHOR
+ * Copyright (c) YEAR by AUTHOR
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
-#ifndef essSystem_MyComponent_h
-#define essSystem_MyComponent_h
+#ifndef NAMESPACE_MyComponent_h
+#define NAMESPACE_MyComponent_h
 
 class Simulation;
 

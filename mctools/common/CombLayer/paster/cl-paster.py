@@ -58,6 +58,8 @@ class Paster:
             l = l.replace("DESCRIPTION", self.description)
             l = l.replace("NAMESPACE", self.namespace)
             l = l.replace("MyComponent", self.className)
+            l = l.replace("INCDIR", self.hDir)
+            l = l.replace("CXXDIR", self.cxxDir)
             l = l.replace("YEAR", str(self.now.year))
             l = l.replace("DATE", "%d %s %d" % (self.now.day, self.now.strftime("%b"), self.now.year))
             fout.write(l)
