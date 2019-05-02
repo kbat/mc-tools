@@ -24,7 +24,7 @@
 
 class Simulation;
 
-namespace essSystem
+namespace NAMESPACE
 {
 
 /*!
