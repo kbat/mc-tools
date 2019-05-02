@@ -1,6 +1,7 @@
 #! /usr/bin/python -W all
 #
-# Paster for CombLayer
+# https://github.com/kbat/mc-tools
+#
 
 from __future__ import print_function
 from sys import exit,stderr
@@ -8,7 +9,7 @@ import argparse, re
 import os
 import pwd
 from datetime import datetime
-from mctools import checkPaths
+from mctools.mctools import checkPaths
 
 class Paster:
     def __init__(self, m, c):
@@ -80,7 +81,7 @@ def main():
     parser.add_argument('className', type=str, help='class name')
     args = parser.parse_args()
 
-    path    = os.path.join(os.environ["MCTOOLS"], "common/CombLayer/paster")
+    path    = os.path.join(os.environ["MCTOOLS"], "mctools/common/CombLayer/paster")
     cxxOrig = os.path.join(path, "MyComponent.cxx")
     hOrig   = os.path.join(path, "MyComponent.h")
 
