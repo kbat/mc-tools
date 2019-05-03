@@ -53,7 +53,6 @@
 #include "surfEqual.h"
 #include "Quadratic.h"
 #include "Plane.h"
-#include "Cylinder.h"
 #include "Line.h"
 #include "Rules.h"
 #include "varList.h"
@@ -97,7 +96,6 @@ MyComponent::MyComponent(const std::string& Key)  :
 MyComponent::MyComponent(const MyComponent& A) :
   attachSystem::ContainedComp(A),
   attachSystem::FixedOffset(A),
-  engActive(A.engActive),
   length(A.length),width(A.width),height(A.height),
   mainMat(A.mainMat)
   /*!
@@ -118,7 +116,6 @@ MyComponent::operator=(const MyComponent& A)
     {
       attachSystem::ContainedComp::operator=(A);
       attachSystem::FixedOffset::operator=(A);
-      engActive=A.engActive;
       length=A.length;
       width=A.width;
       height=A.height;
@@ -153,7 +150,6 @@ MyComponent::populate(const FuncDataBase& Control)
   ELog::RegMethod RegA("MyComponent","populate");
 
   FixedOffset::populate(Control);
-  engActive=Control.EvalPair<int>(keyName,"","EngineeringActive");
 
   length=Control.EvalVar<double>(keyName+"Length");
   width=Control.EvalVar<double>(keyName+"Width");

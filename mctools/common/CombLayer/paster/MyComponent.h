@@ -40,13 +40,11 @@ class MyComponent : public attachSystem::ContainedComp,
 {
  private:
 
-  int engActive;                ///< Engineering active flag
-
   double length;                ///< Total length including void
   double width;                 ///< Width
-  double height;                ///< height
+  double height;                ///< Height
 
-  int mainMat;                   ///< main material
+  int mainMat;                   ///< Main material
 
   void populate(const FuncDataBase&);
   void createUnitVector(const attachSystem::FixedComp&,
