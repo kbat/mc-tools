@@ -24,7 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-var', dest='var', type=str, help='variable name', required=True)
-    parser.add_argument('-name', dest='name', type=str, help='variable name in essVariables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
+    parser.add_argument('-name', dest='name', type=str, help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
     parser.add_argument('-type', dest='type', type=str, help='variable type', required=True)
     parser.add_argument('-comment', dest='comment', type=str, help='variable description', required=True)
     parser.add_argument('-after', dest='after', type=str, help='the variable will be put after the given one', required=True)
