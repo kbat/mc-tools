@@ -4,7 +4,7 @@
 from __future__ import print_function
 import argparse, os, re, sys
 import fileinput
-from mctools import checkPaths
+from mctools.mctools import checkPaths
 
 def checkName(n, t):
     """ Check if name can be omitted for the given type.
@@ -74,7 +74,7 @@ def main():
         line = line.rstrip()
 
 # copy constructor
-        if re.search("%s\(A.%s\)" % (args.after, args.after), line) or re.search("%s\(new .*\(\*A.%s\)\)" % (args.after, args.after), line):
+        if re.search(r"%s\(A.%s\)" % (args.after, args.after), line) or re.search(r"%s\(new .*\(\*A.%s\)\)" % (args.after, args.after), line):
             ccFixed = True
             if isPointer:
                 try:
@@ -91,7 +91,7 @@ def main():
                 line = line + ","
 
 # operator =
-        if re.search("\*?%s=\*?A.%s;" % (args.after, args.after), line):
+        if re.search(r"\*?%s=\*?A.%s;" % (args.after, args.after), line):
             equalFixed = True
             star=""
             if isPointer:
