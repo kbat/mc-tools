@@ -80,12 +80,13 @@ def main():
     parser.add_argument('-namespace', dest='namespace', type=str, help='namespace name', required=False, default='essSystem')
     parser.add_argument('-author', dest='author', type=str, help='author', required=False, default=defauthor)
     parser.add_argument('-m', dest='description', type=str, help='class description', required=True)
+    parser.add_argument('-t', dest='template', type=str, help='template name', required=False, default="Default", choices=['Default','FrontBackCut'])
     parser.add_argument('className', type=str, help='class name')
     args = parser.parse_args()
 
     path    = os.path.join(os.environ["MCTOOLS"], "mctools/common/CombLayer/paster")
-    cxxOrig = os.path.join(path, "MyComponent.cxx")
-    hOrig   = os.path.join(path, "MyComponent.h")
+    cxxOrig = os.path.join(path, ("MyComponent-%s.cxx" % args.template))
+    hOrig   = os.path.join(path, ("MyComponent-%s.h" % args.template))
 
     p = Paster(args.model, args.className)
     p.setAuthor(args.author)
