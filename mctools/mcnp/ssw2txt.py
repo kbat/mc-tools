@@ -43,6 +43,7 @@ def main():
         k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
         print(history, id, weight, energy, time, x, y, z, wx, wy, k)
 
+    ssw.file.close()
 
 if __name__ == "__main__":
 	sys.exit(main())

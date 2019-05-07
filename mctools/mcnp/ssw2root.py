@@ -75,6 +75,8 @@ def main():
         hits.wy = ssb[9]
         hits.k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
         T.Fill()
+
+    ssw.file.close()
         
     sinfo = ROOT.TObjString("%d" % ssw.N); # number of incident particles for correct normalisation
     T.GetUserInfo().Add(sinfo);
