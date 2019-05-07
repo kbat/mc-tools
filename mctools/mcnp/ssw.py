@@ -28,11 +28,6 @@ def unpackArray(data):
         return struct.unpack("=%df"%(len(data)//4),  data)
 
 
-def unsupported():
-        print("Your MCNP(X) version is not supported.", file=sys.stderr)
-        sys.exit(1)
-
-
 #       """Class to read the SSW output file (wssa)"""
 class SSW:
     def __init__(self, filename=None):
@@ -67,16 +62,24 @@ class SSW:
         self.ssb  = [] # 11   Surface-Source info
         self.nslr = [] # 14,10  SS Info record
 
+        self.supported_mcnpx_verstions = ('2.6.0', '26b', '2.7.0')
+        self.supported_mcnp6_versions = ('6', '6.mpi')
+        self.supported_mcnp_versions = self.supported_mcnpx_verstions + self.supported_mcnp6_versions
+
+
     def getTitle(self):
         """Return the problem title"""
         return self.aids
 
+    def unsupported(self):
+            print("WARNING: This version of MCNP(X) (%s) is not supported." % self.vers,
+                  file=sys.stderr)
+            print("\t       The code was developed for SSW files produced by these MCNP(X) versions:",
+                  self.supported_mcnp_versions, file=sys.stderr)
+
+
     def readHeader(self, filename, nevt=0):
         """Read header information and return the file handle"""
-
-        supported_mcnpx_verstions = ('2.6.0', '26b', '2.7.0')
-        supported_mcnp6_versions = ('6', '6.mpi')
-        supported_mcnp_versions = supported_mcnpx_verstions + supported_mcnp6_versions
 
         self.reset()
         self.fname = filename
@@ -99,7 +102,7 @@ class SSW:
                 self.lods = self.lods.decode().strip() # date
                 self.idtms = self.idtms.decode().strip() # machine designator
                 self.aids = self.aids.decode().strip() # title
-                if self.vers not in supported_mcnp6_versions:
+                if self.vers not in self.supported_mcnp6_versions:
                         print("version: %s" % self.vers)
                         raise IOError("ssw.py: format error _%s_" % self.vers)
         elif size==163:
@@ -112,6 +115,7 @@ class SSW:
                 self.vers = self.vers.decode().strip()
         else:
                 unsupported()
+                sys.exit(1)
 
         print("Code:\t\t%s" % self.kods)
         print("Version:\t%s" % self.vers)
@@ -121,10 +125,8 @@ class SSW:
         print("Title:\t\t%s" % self.aids)
         print("knods:", self.knods)
 
-#        print(self.kods.strip(), self.vers)
-        if self.kods not in ['mcnpx', 'mcnp'] or self.vers not in supported_mcnp_versions:
-                print("WARNING: This version of MCNPx (%s) might not be supported." % self.vers, file=sys.stderr)
-                print("\t The code was developed for SSW files produced by these MCNPX versions:", supported_mcnp_versions, file=sys.stderr)
+        if self.kods not in ['mcnpx', 'mcnp'] or self.vers not in self.supported_mcnp_versions:
+                unsupported()
 
         data = fortranRead(self.file)
         size = len(data)
@@ -135,7 +137,7 @@ class SSW:
         # niwr - number of cells in RSSA data (np1<0)
         # mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
 #       print("size", size)
-        if self.vers in ("6", "6.mpi"):
+        if self.vers in self.supported_mcnp6_versions:
 #               (np1,nrss,self.nrcd,njsw,niss,self.probs) = struct.unpack("=5i12s", data)
                 (np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=4i4i", data)
                 print("probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss)
@@ -143,11 +145,10 @@ class SSW:
                 (np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
         elif size==40: # Tibor with 2.7.0
                 (np1,tmp4,nrss,tmp2,self.nrcd, tmp1, njsw, tmp3, niss, tmp5) = struct.unpack("=5i5i", data)
-#               print("A", np1,nrss, niss, tmp2, self.nrcd)
-#               print("B", tmp1, njsw, tmp3, tmp4, tmp5)
         else:
                 print(self.vers, size)
                 unsupported()
+                sys.exit(1)
 
         self.N = abs(np1)
         print("number of incident particles:\t%i" % abs(np1))
