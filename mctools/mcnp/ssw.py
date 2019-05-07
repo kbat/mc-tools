@@ -69,10 +69,15 @@ class SSW:
 
     def getTitle(self):
         """Return the problem title"""
-        return self.aids.strip()
+        return self.aids
 
     def readHeader(self, filename, nevt=0):
         """Read header information and return the file handle"""
+
+        supported_mcnpx_verstions = ('2.6.0', '26b', '2.7.0')
+        supported_mcnp6_versions = ('6', '6.mpi')
+        supported_mcnp_versions = supported_mcnpx_verstions + supported_mcnp6_versions
+
         self.reset()
         self.fname = filename
         self.file = open(self.fname, "rb")
@@ -85,22 +90,26 @@ class SSW:
         # This has been modified to fix the format:
 #        print("size: ", size)
         if size == 8: # mcnp 6
-                (tmpi0) = struct.unpack("8s", data) # wssa file type
-#               print("type_of_rssa:", tmpi0)
+                (tmpi0) = struct.unpack('8s',data) # wssa file type
+ #               print(" type_of_rssa:", tmpi0[0].decode())
                 data = fortranRead(self.file)
                 (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
-                self.vers = self.vers.strip()
-                if self.vers not in  ("6", "6.mpi"):
-                        print("'%s'" % self.vers)
-                        raise IOError("ssw.py: format error %s")
+                self.kods = self.kods.decode().strip()
+                self.vers = self.vers.decode().strip()
+                self.lods = self.lods.decode().strip() # date
+                self.idtms = self.idtms.decode().strip() # machine designator
+                self.aids = self.aids.decode().strip() # title
+                if self.vers not in supported_mcnp6_versions:
+                        print("version: %s" % self.vers)
+                        raise IOError("ssw.py: format error _%s_" % self.vers)
         elif size==163:
                 (self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods) = struct.unpack("=8s5s28s19s19s80si", data) # length=160
-                self.vers = self.vers.strip()
+                self.vers = self.vers.decode().strip()
         elif size==167: # like in the Tibor's file with 2.7.0
                 tmp = float(0)
                 (self.kods, self.vers, self.lods, self.idtms, self.probs, self.aids, self.knods, tmp) = struct.unpack("=8s5s28s19s19s80sif", data) # length=160
 #               print("tmp: ", tmp)
-                self.vers = self.vers.strip()
+                self.vers = self.vers.decode().strip()
         else:
                 unsupported()
 
@@ -109,12 +118,11 @@ class SSW:
         print("Date:\t\t%s" % self.lods)
         print("Machine designator:", self.idtms)
         print("Problem id:\t%s" % self.probs)
-        print("Title:\t\t%s" % self.aids.strip())
-#        print("knods:", self.knods)
+        print("Title:\t\t%s" % self.aids)
+        print("knods:", self.knods)
 
-        supported_mcnp_versions = ['2.6.0', '26b', '2.7.0', '6', '6.mpi']
 #        print(self.kods.strip(), self.vers)
-        if self.kods.strip() not in ['mcnpx', 'mcnp'] or self.vers not in supported_mcnp_versions:
+        if self.kods not in ['mcnpx', 'mcnp'] or self.vers not in supported_mcnp_versions:
                 print("WARNING: This version of MCNPx (%s) might not be supported." % self.vers, file=sys.stderr)
                 print("\t The code was developed for SSW files produced by these MCNPX versions:", supported_mcnp_versions, file=sys.stderr)
 

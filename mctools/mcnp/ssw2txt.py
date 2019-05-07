@@ -17,7 +17,6 @@ def main():
     surface = TMath::Abs(id) % 1000000        # surface crossed
     """
 
-    allowed_splitlevels = (1, 99)
     parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools', formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('wssa', type=str, help='ssw output file name')
     arguments = parser.parse_args()
