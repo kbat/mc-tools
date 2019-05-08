@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from __future__ import print_function
-from sys import argv, exit
+from sys import argv, exit, stderr
 from math import sqrt
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -44,7 +44,7 @@ def getGraph(args, tname, color):
         f = ROOT.TFile(mctal)
         if args.axis>=0: # axis and bin are specified
             f.Get(tname).GetAxis(2).SetRange(1,1)
-            print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=sys.stderr)
+            print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=stderr)
             tally = f.Get(tname).Projection(args.axis);
         else: # args.bin is absolute bin number
             tally = f.Get(tname)
@@ -161,7 +161,7 @@ def main():
         hs.Add(gr)
         leg.AddEntry(gr, gr.GetTitle(), "p")
         if args.dump:
-            printGraph(gr)
+                printGraph(gr)
         if args.save != "":
             saveGraph(gr, args.save)
 
