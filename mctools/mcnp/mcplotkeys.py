@@ -37,13 +37,21 @@ def main():
     """ Generates xbindkeys configuration file for MCNP viewer
     The key names can be obtained with the 'xev' tool from x11-utils
     """
-    COLOR = [25, 650]
-
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-dx', type=int, default=1920, dest='dx', help='X screen resolution')
     parser.add_argument('-dy', type=int, default=1200, dest='dy', help='Y screen resolution')
+    parser.add_argument('-mcnp', type=int, default=6, dest='mcnp', help='MCNP version. Either 6 or 10 (10 stands for X)', choices=(6,10))
     args = parser.parse_args()
+
+    print("# ",sys.argv)
+
+    if args.mcnp == 6:
+        COLOR = [25, 650] # dummy
+        right_menu_x = 0.9*args.dx # dummy
+    else:
+        COLOR = [0.06*args.dx, 0.78*args.dy]
+        right_menu_x = 0.98*args.dx
 
     update = XDoTool("update (draw) mcplot")
     update.Redraw()
@@ -68,7 +76,10 @@ def main():
     zoom5.Restore()
     zoom5.SetKey("Control+Mod4 + equal", "control+alt+equal")
 
-    y = 0.775*args.dy
+    if args.mcnp == 6:
+        y = 0.775*args.dy
+    else:
+        y = 0.8 * args.dy
 
     xy = XDoTool("show xy projection")
     xy.MouseMove(0.052*args.dx, y)
@@ -86,7 +97,10 @@ def main():
     zx.SetKey("Control+Mod4 + z", "control+alt+z")
 
     origin = (0.573*args.dx, 0.06*args.dy)
-    center = (0.625*args.dx, 0.5*args.dy)
+    if args.mcnp == 6:
+        center = (0.625*args.dx, 0.5*args.dy)
+    else:
+        center = (0.625*args.dx, 0.509*args.dy)
 
     up  = XDoTool("shift a bit up")
     up.MouseMove1(origin)
@@ -120,25 +134,40 @@ def main():
     right.Restore()
     right.SetKey("Control+Mod4 + Right", "control+alt+Right")
 
+    if args.mcnp == 6:
+        y = 0.708*args.dy
+    else:
+        y = 0.415*args.dy
+
     T  = XDoTool("color temperature")
-    T.MouseMove(1400, 370)
+    T.MouseMove(right_menu_x, y)
     T.Click(1)
     T.MouseMove1(COLOR)
     T.Click(1, 2)
     T.Redraw()
     T.Restore()
-    T.SetKey("Control+Mod4 + t", "m:0x44 + c:28")
+    T.SetKey("Control+Mod4 + t", "control+alt+t")
     
+    if args.mcnp == 6:
+        y = 0.708*args.dy # dummy
+    else:
+        y = 0.38*args.dy
+
     M  = XDoTool("color material")
-    M.MouseMove(1400, 335)
+    M.MouseMove(right_menu_x, y)
     M.Click(1)
     M.MouseMove1(COLOR)
     M.Click(1, 2)
     M.Redraw()
-    M.SetKey("Control+Mod4 + m", "m:0x44 + c:58")
+    M.SetKey("Control+Mod4 + m", "control+alt+m")
     
+    if args.mcnp == 6:
+        y = 0.708*args.dy
+    else:
+        y = 0.73 * args.dy
+
     rotate = XDoTool("rotate")
-    rotate.MouseMove(0.104*args.dx, 0.708*args.dy)
+    rotate.MouseMove(0.104*args.dx, y)
     rotate.Click(1)
     M.Redraw()
     rotate.SetKey("Control + Mod4 + e", "control+alt+e")
