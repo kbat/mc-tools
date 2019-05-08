@@ -73,6 +73,7 @@
 #include "FixedOffset.h"
 #include "ContainedComp.h"
 #include "BaseMap.h"
+#include "CellMap.h"
 #include "surfDBase.h"
 #include "surfDIter.h"
 #include "surfDivide.h"
@@ -86,7 +87,8 @@ namespace NAMESPACE
 
 MyComponent::MyComponent(const std::string& Key)  :
   attachSystem::ContainedComp(),
-  attachSystem::FixedOffset(Key,6)
+  attachSystem::FixedOffset(Key,6),
+  attachSystem::CellMap()
  /*!
     Constructor BUT ALL variable are left unpopulated.
     \param Key :: Name for item in search
@@ -96,6 +98,7 @@ MyComponent::MyComponent(const std::string& Key)  :
 MyComponent::MyComponent(const MyComponent& A) :
   attachSystem::ContainedComp(A),
   attachSystem::FixedOffset(A),
+  attachSystem::CellMap(A),
   length(A.length),width(A.width),height(A.height),
   mainMat(A.mainMat)
   /*!
@@ -116,6 +119,7 @@ MyComponent::operator=(const MyComponent& A)
     {
       attachSystem::ContainedComp::operator=(A);
       attachSystem::FixedOffset::operator=(A);
+      attachSystem::CellMap::operator=(A);
       length=A.length;
       width=A.width;
       height=A.height;
@@ -208,7 +212,7 @@ MyComponent::createObjects(Simulation& System)
 
   std::string Out;
   Out=ModelSupport::getComposite(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
-  System.addCell(MonteCarlo::Object(cellIndex++,mainMat,0.0,Out));
+  makeCell("MainCell",System,cellIndex++,mainMat,0.0,Out);
 
   addOuterSurf(Out);
 

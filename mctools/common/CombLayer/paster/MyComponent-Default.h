@@ -36,7 +36,8 @@ namespace NAMESPACE
 */
 
 class MyComponent : public attachSystem::ContainedComp,
-  public attachSystem::FixedOffset
+		    public attachSystem::FixedOffset,
+		    public attachSystem::CellMap
 {
  private:
 
