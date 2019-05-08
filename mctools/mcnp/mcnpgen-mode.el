@@ -77,6 +77,7 @@
     ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EF][0-9]+\\|^F[QST][0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|TMESH\\)\\>" . 'font-lock-tally-face)
     ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[ef][0-9]+\\|^f[qst][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|tmesh\\)\\>" . 'font-lock-tally-face)
     ("^+?[fF][0-9]+" . 'font-lock-tally-face) ;; +tallies
+    ("^*?[cC][0-9]+" . 'font-lock-tally-face) ;; *tallies
 
     ("^FC[0-9]+ .*" . 'font-lock-comment-face) ;; +TALLY COMMENT
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
