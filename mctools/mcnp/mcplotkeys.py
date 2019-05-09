@@ -4,12 +4,15 @@ from __future__ import print_function
 import sys, argparse
 
 class XDoTool:
+    xoffset = 0
+    yoffset = 0
+
     def __init__(self, title):
         print("# ", title)
         print('"xdotool ', end='')
 
     def MouseMove(self, x, y):
-        print(" mousemove %d %d" % (x, y), end='')
+        print(" mousemove %d %d" % (x+self.xoffset, y+self.yoffset), end='')
 
     def MouseMove1(self, coord):
         return self.MouseMove(coord[0], coord[1])
@@ -41,8 +44,13 @@ def main():
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-dx', type=int, default=1920, dest='dx', help='X screen resolution')
     parser.add_argument('-dy', type=int, default=1200, dest='dy', help='Y screen resolution')
+    parser.add_argument('-xoffset', type=int, default=2560, dest='xoffset', help='Absolute X offset (e.g. due to 2nd monitor)')
+    parser.add_argument('-yoffset', type=int, default=0, dest='yoffset', help='Absolute Y offset (e.g. due to 2nd monitor)')
     parser.add_argument('-mcnp', type=int, default=6, dest='mcnp', help='MCNP version. Either 6 or 10 (10 stands for X)', choices=(6,10))
     args = parser.parse_args()
+
+    XDoTool.xoffset = args.xoffset
+    XDoTool.yoffset = args.yoffset
 
     print("# ",sys.argv)
 
