@@ -100,7 +100,7 @@ def main():
     yz.SetKey("Control+Mod4 + y", "control+alt+y")
 
     zx = XDoTool("show zx projection")
-    zx.MouseMove(0.208*args.dx, y)
+    zx.MouseMove(0.211*args.dx, y)
     zx.Click(1)
     zx.SetKey("Control+Mod4 + z", "control+alt+z")
 
