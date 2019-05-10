@@ -166,8 +166,8 @@ def main():
             saveGraph(gr, args.save)
 
     # draw fit if only one graph is requested
-    if hs.GetListOfGraphs().GetSize()==1:
-        gr.Fit(args.fit)
+    if hs.GetListOfGraphs().GetSize()==1 and len(args.fit):
+            gr.Fit(args.fit)
 #        gr.GetFunction(args.fit).SetLineColor(gr.GetMarkerColor())
             
 
@@ -230,7 +230,6 @@ def main():
             # "The Python 3 syntax without the global and local dictionaries
             # will work in Python 2 as well:" (from `Supporting Python 3' by L. Regebro et al.)
             exec(l)
-
 
     if args.pdf == "do not save":
         input()
