@@ -28,7 +28,7 @@ def main():
     parser.add_argument('-type', dest='type', type=str, help='variable type', required=True)
     parser.add_argument('-comment', dest='comment', type=str, help='variable description', required=True)
     parser.add_argument('-after', dest='after', type=str, help='the variable will be put after the given one', required=True)
-    parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=False, default='ess')
+    parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
     parser.add_argument('-class', dest='className', type=str, help='class name', required=True)
 
     args = parser.parse_args()

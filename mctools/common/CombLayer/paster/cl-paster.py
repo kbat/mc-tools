@@ -16,11 +16,8 @@ class Paster:
         """Paster Constructor"""
         self.model = m
         self.className = c
-        self.cxxDir = os.path.join("Model", "%sBuild" % self.model)
-        self.hDir   = os.path.join("Model", "%sBuildInc" % self.model)
-        if checkPaths([self.hDir, self.cxxDir], [], False) == 1: # folder name should be different (blame SA :) )
-            self.cxxDir = os.path.join("Model", "%s" % self.model) # e.g. args.model = essLinac
-            self.hDir   = os.path.join("Model", "%sInc" % self.model)
+        self.cxxDir = self.model
+        self.hDir   = self.cxxDir+'Inc'
 
         self.now = datetime.now()
 
@@ -76,7 +73,7 @@ def main():
     
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('-model', dest='model', type=str, help='model name', required=False, default='ess')
+    parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
     parser.add_argument('-namespace', dest='namespace', type=str, help='namespace name', required=False, default='essSystem')
     parser.add_argument('-author', dest='author', type=str, help='author', required=False, default=defauthor)
     parser.add_argument('-m', dest='description', type=str, help='class description', required=True)
