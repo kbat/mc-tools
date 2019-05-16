@@ -51,7 +51,7 @@ def getGraph(args, tname, color):
         x.append(eval("%g%s" % (getParCL(inp, args.var, int(args.varpos)), args.xscale)))
         ex.append(0.0)
 
-        bins = args.bin.split(',')
+        bins = args.bin.split('+')
 #        print("args.bin: ", bins)
         nbins = len(bins)
         ytmp = 0.0
@@ -123,7 +123,7 @@ def main():
     parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-tally', dest='tally', type=str, default="f5", help='Tally name')
     parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on. If <0, the absolute value of BIN must be specified (see next argument).')
-    parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin of the axis to use as the figure of merit. Comma-separated list of bins is allowed, then the result will be the sum over all bins')
+    parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin number to use as the figure of merit. Plus-sign-separated list of bins is allowed: the result will be the sum over all bins. Hint: the bin number is the serial number of the bin in the outp file provided that no FQ print hierarhy was used.')
     parser.add_argument('-title', dest='title', type=str, default="", help='graph title')
     parser.add_argument('-xtitle', dest='xtitle', type=str, default="par [cm]", help='x-axis title')
     parser.add_argument('-ytitle', dest='ytitle', type=str, default="Figure of Merit [a.u.]", help='y-axis title')
@@ -132,7 +132,7 @@ def main():
     parser.add_argument('-fit', dest='fit', type=str, default="", help='fitting function')
     parser.add_argument('-pdf', dest='pdf', type=str, default="do not save", help='PDF file name to save canvas to')
     parser.add_argument('-only-average', dest='average', action='store_true', help='Draws only average of all points')
-    parser.add_argument('-no-footer', dest='footer', action='store_false', help='Do not draw footer')
+    parser.add_argument('-no-footer', dest='nofooter', action='store_true', help='Do not draw footer')
     parser.add_argument('-dump', dest='dump', action='store_true', help='Dump the values in stdout')
     parser.add_argument('-save', dest='save', type=str, help='Saves resulting graph into a ROOT file', default="")
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
@@ -202,7 +202,7 @@ def main():
 #    hs.SetMinimum(4E+13)
 #    hs.SetMaximum(6E+13)
 
-    if args.footer:
+    if not args.nofooter:
         footer = ROOT.TLatex()
         footer.SetTextSize(0.02)
         footer.SetTextColor(ROOT.kGray)
