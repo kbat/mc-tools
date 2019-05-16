@@ -30,7 +30,7 @@ def printGraph(gr):
     print("# format: x ex y ey")
     N = gr.GetN()
     for i in range(N):
-        print(i, gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i])
+        print("case%03d:" % (i+1), gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i])
 
 def getGraph(args, tname, color):
     x = []
