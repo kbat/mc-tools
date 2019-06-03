@@ -206,7 +206,7 @@ MyComponent::createSurfaces()
   if (!frontActive())
     {
       ModelSupport::buildPlane(SMap,buildIndex+11,Origin,Y);
-      FrontBackCut::setFront(SMap.realSurf(buildIndex+11));
+      ExternalCut::setCutSurf("front",SMap.realSurf(buildIndex+1));
 
       ModelSupport::buildPlane(SMap,buildIndex+1,Origin+Y*(wallThick),Y);
     } else
@@ -219,7 +219,7 @@ MyComponent::createSurfaces()
   if (!backActive())
     {
       ModelSupport::buildPlane(SMap,buildIndex+12,Origin+Y*(length+wallThick),Y);
-      FrontBackCut::setBack(-SMap.realSurf(buildIndex+12));
+      ExternalCut::setCutSurf("front",-SMap.realSurf(buildIndex+12));
 
       ModelSupport::buildPlane(SMap,buildIndex+2,Origin+Y*(length),Y);
     } else
