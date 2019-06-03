@@ -3,7 +3,7 @@
 from __future__ import print_function
 import sys, argparse
 from string import strip
-from mctools import L2E, E2L
+from mctools.mctools import L2E, E2L
 import textwrap
 
 def LambdaBins(nbins, lmin, lmax, edgesE):
