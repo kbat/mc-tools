@@ -66,14 +66,12 @@ Project homepage: https://github.com/kbat/mc-tools
    * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE to ROOT formats. Loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
-* If you are going to use the ROOT-related scripts (```*2root```), you need to have [ROOT](http://root.cern.ch)
-   to be compiled with Python support. Follow  [this manual](http://root.cern.ch/drupal/content/pyroot) for more
-   details. To check whether the Python
-   support is set up correctly, say   
+* If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern.ch) to be compiled with Python support. In order to check whether the Python
+   support in ROOT is set up correctly, say   
    ```import ROOT```  
    in the Python shell. You should not see any error messages.
-  The ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:
-```-DPYTHON_EXECUTABLE=/usr/bin/python2 -Dpython=ON```
+  The ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:  
+```cmake  -DPYTHON_EXECUTABLE="/usr/bin/python" -Dpython="ON" -Dpython3="OFF" /path/to/root/source```
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Installation ##
