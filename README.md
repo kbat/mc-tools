@@ -73,10 +73,9 @@ Project homepage: https://github.com/kbat/mc-tools
   The ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:  
 ```cmake  -DPYTHON_EXECUTABLE="/usr/bin/python" -Dpython="ON" -Dpython3="OFF" /path/to/root/source```
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
+* Linux and MacOS are supported. We have never tried to use these tools on Windows.
 
 ## Installation ##
-Linux and MacOS are supported. We have never tried to use these tools on Windows.
-
 ```mc-tools``` can be installed either with the python package installer [pip](https://pip.pypa.io/en/stable) or by clonning with [git](https://git-scm.com).
 The pip-based installation is recommended if you just intend to use the package, while the git-based installation is recommended if you are going to contribute in the ```mc-tools``` development.
 
