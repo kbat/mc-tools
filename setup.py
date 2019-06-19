@@ -61,35 +61,40 @@ setup(
     entry_points = {
         "console_scripts" : [
             # COMMON
+            "ace2root     = mctools.common.ace2root:main"
             "ascii2gr     = mctools.common.ascii2gr:main",
             "ascii2th1    = mctools.common.ascii2th1:main",
             "ascii2th3    = mctools.common.ascii2th3:main",
             "ascii2tree   = mctools.common.ascii2tree:main",
             "h2ascii      = mctools.common.h2ascii:main",
-            "hadd_av      = mctools.common.hadd_av:main",
-            "scale_hist   = mctools.common.scale_hist:main",
+            "vtk2root     = mctools.common.vtk2root:main",
+            "lsroot       = mctools.common.lsroot:main",
             # FLUKA
-            "usxsuw2txt   = mctools.fluka.usxsuw2txt:main",
+            "fluka2root    = mctools.fluka.fluka2root:main",
+            "eventdat2root = mctools.fluka.eventdat2root:main",
+            "usbsuw2root   = mctools.fluka.usbsuw2root:main",
+            "ustsuw2root   = mctools.fluka.ustsuw2root:main",
+            "usxsuw2root   = mctools.fluka.usxsuw2root:main",
             # MCNP
-            "mcnp_source  = mctools.mcnp.mcnp_source:main",
             "mctal2root   = mctools.mcnp.mctal2root:main",
             "ssw2root     = mctools.mcnp.ssw2root:main",
             "ssw2txt      = mctools.mcnp.ssw2txt:main",
+            "mcnpview     = mctools.mcnp.mcnpview:main",
+            "mcnpxview    = mctools.mcnp.mcnpview:main",
             # PHITS
             "angel2root   = mctools.phits.angel2root:main",
             "rotate3dshow = mctools.phits.rotate3dshow:main",
-            "wwinp2phits  = mctools.phits.wwinp2phits:main"
         ]
     },
-    # other executable scripts
-    scripts = [
-        # COMMON
-        "mctools/common/ll-self-submit.sh",
-        # MCNP
-        "mctools/mcnp/conversiontest.sh", "mctools/mcnp/loop_convert.sh",
-        "mctools/mcnp/loop_test.sh",
-        # PHITS
-        "mctools/phits/epsout.sh", "mctools/phits/phits-set-n.sh",
-        "mctools/phits/submit.py"
-    ],
+    # # other executable scripts
+    # scripts = [
+    #     # COMMON
+    #     "mctools/common/ll-self-submit.sh",
+    #     # MCNP
+    #     "mctools/mcnp/conversiontest.sh", "mctools/mcnp/loop_convert.sh",
+    #     "mctools/mcnp/loop_test.sh",
+    #     # PHITS
+    #     "mctools/phits/epsout.sh", "mctools/phits/phits-set-n.sh",
+    #     "mctools/phits/submit.py"
+    # ],
 )
