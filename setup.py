@@ -61,7 +61,7 @@ setup(
     entry_points = {
         "console_scripts" : [
             # COMMON
-            "ace2root     = mctools.common.ace2root:main"
+            "ace2root     = mctools.common.ace2root:main",
             "ascii2gr     = mctools.common.ascii2gr:main",
             "ascii2th1    = mctools.common.ascii2th1:main",
             "ascii2th3    = mctools.common.ascii2th3:main",
