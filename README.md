@@ -96,16 +96,12 @@ Uninstall: ```pip uninstall mc-tools```.
 1. Get the source code:  
 ```git clone https://github.com/kbat/mc-tools.git```
 2. Set the variable MCTOOLS to the folder where you have installed the
-   code. For instance:   
+   code:   
 ```export MCTOOLS=/path/to/mc-tools```
-3. Update your PYTHONPATH (add this line in ~/.bashrc in order to
-   save this setting for your future sessions):   
+3. Add the ```$MCTOOLS``` folder into ```$PYTHONPATH```:  
 ```export PYTHONPATH=$MCTOOLS:$PYTHONPATH```
-
-   Now you need to make your system to be aware where the scrips you are going to use are located.
-   You can do it as you like. The following steps describe an example how to do it.
-4. Add symbolic links to the scrips which you need to use into a folder in your $PATH, i.e.
-```ln -s $MCTOOLS/mctools/mcnp/mctal2root.py ~/bin/mctal2root```
+4. Add the ```$MCTOOLS/bin``` folder into your ```$PATH```:  
+``` export PATH=$MCTOOLS/bin:$PATH ```
 
 
 ### Contacts ###
