@@ -1,19 +1,35 @@
 #! /usr/bin/python -W all
 
 from __future__ import print_function
-from ROOT import ROOT, TFile, TTree
-from sys import argv, exit
+import os, sys, argparse
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-name_in = argv[1]
-name_out = argv[2]
-branchDescriptor=""
-if len(argv)==4:
-        branchDescriptor=argv[3]
-        print(branchDescriptor)
+def main():
+        """ Converts ASCII to TTree.
 
-fout = TFile(name_out, "recreate")
-T = TTree("T", branchDescriptor)
-T.ReadFile(name_in, branchDescriptor)
-T.Write()
-fout.Close()
+        TTree::ReadFiule syntax is explained in the ROOT manual:
+        https://root.cern.ch/doc/master/classTTree.html#a9c8da1fbc68221b31c21e55bddf72ce7
+        """
+        parser = argparse.ArgumentParser(description=main.__doc__,
+                                         epilog="Homepage: https://github.com/kbat/mc-tools")
+        parser.add_argument('txt', type=str, help='input file name')
+        parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
+        parser.add_argument('-branch', type=str, dest='branch', help='Branch descriptor. If not given, the first input line is used.', default="")
+
+        args = parser.parse_args()
+
+        if args.root == "":
+                fout = os.path.splitext(args.txt)[0] + ".root"
+        else:
+                fout = args.root
+
+        f = ROOT.TFile(fout, "recreate", args.txt)
+        T = ROOT.TTree("T", args.branch)
+        T.ReadFile(args.txt, args.branch)
+        T.Write()
+        f.Close()
+
+if __name__ == "__main__":
+        sys.exit(main())
 
