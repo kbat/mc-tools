@@ -258,7 +258,7 @@ MyComponent::createObjects(Simulation& System)
   const std::string backStr(backRule());
 
   Out=ModelSupport::getComposite(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
-  makeCell("MainCell",System,cellIndex++,0,0.0,Out);
+  makeCell("MainCell",System,cellIndex++,mainMat,0.0,Out);
 
   Out=ModelSupport::getComposite(SMap,buildIndex,
 				 " 13 -14 15 -16 (-1:2:-3:4:-5:6) ");
