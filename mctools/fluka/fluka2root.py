@@ -3,6 +3,7 @@ from __future__ import print_function
 import sys, re, os, argparse
 import glob
 import tempfile
+from distutils.spawn import find_executable
 
 def str2int(s):
     try:
@@ -45,6 +46,7 @@ class Converter:
         self.inp = inp # input files
         self.overwrite = overwrite
         self.verbose = verbose
+        self.parallel = find_executable("parallel") is not None
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw"),
                            Estimator("USRTRACK", "ustsuw")]
@@ -65,7 +67,6 @@ class Converter:
 
         self.assignUnits()
         self.assignFileNames()
-        return 
 
         if self.verbose:
             print("input files:", self.inp)
@@ -213,17 +214,30 @@ class Converter:
             if not len(e.units):
                 continue
 
+            datafiles = []
             for u in e.units:
                 suwfile = self.getSuwFileName(e,u)
                 rootfile = suwfile + ".root"
-                command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
+                self.out_root_files.append(rootfile)
+                datafiles.append(suwfile)
+
+            if self.parallel:
+                command="parallel --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
                 if self.verbose:
                     printincolor(command)
                 return_value = os.system(command)
                 if return_value:
                     sys.exit(2)
-
-                self.out_root_files.append(rootfile)
+            else:
+                for u in e.units:
+                    suwfile = self.getSuwFileName(e,u)
+                    rootfile = suwfile + ".root"
+                    command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
+                    if self.verbose:
+                        printincolor(command)
+                    return_value = os.system(command)
+                    if return_value:
+                        sys.exit(2)
 
         if self.verbose:
             print("ROOT files produced: ", self.out_root_files)
