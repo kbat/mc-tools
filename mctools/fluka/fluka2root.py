@@ -229,7 +229,7 @@ class Converter:
             print("ROOT files produced: ", self.out_root_files)
 
         f = "-f" if self.overwrite else ""
-        command = "hadd %s %s %s" % (f, self.root, ' '.join(self.out_root_files)) + (" > /dev/null" if self.verbose else "")
+        command = "hadd %s %s %s" % (f, self.root, ' '.join(self.out_root_files)) + ("" if self.verbose else " > /dev/null")
         if self.verbose:
             printincolor(command)
         return_value = os.system(command)
