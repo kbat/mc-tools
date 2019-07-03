@@ -41,6 +41,9 @@ class Estimator:
         print(" ", self.converter)
         print(" units: ", self.units)
 
+    def __str__(self):
+        return self.name+" "+self.converter+" "+str(self.units)
+
 class Converter:
     def __init__(self, inp, overwrite, verbose):
         self.inp        = inp # all input files
