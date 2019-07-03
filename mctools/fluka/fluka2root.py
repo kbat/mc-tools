@@ -62,7 +62,7 @@ class Converter:
             sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % self.root)
 
         if self.checkInputFiles():
-            sys.exit(1)
+            sys.exit("Input file check failed")
 
         self.assignUnits()
         self.assignFileNames()
@@ -86,13 +86,13 @@ class Converter:
 
         for f in self.inp:
             if not os.path.isfile(f):
-                print("Error: %s does not exist" % f, sys=sys.stderr)
+                print("Error: %s does not exist" % f, file=sys.stderr)
                 return 1
 
         with open(self.inp[0]) as f:
             for line in f.readlines():
                 if re.search(r"\AFREE", line):
-                    print("Error:\tFree-format input is not supported.", sys=sys.stderr)
+                    print("Error:\tFree-format input is not supported.", file=sys.stderr)
                     return 2
                     
         return 0
@@ -157,7 +157,7 @@ class Converter:
                             if not unit in e.units:
                                 e.addUnit(unit)
                         else:
-                            print("Warning: ascii files not supported", unit, name, sys=sys.stderr)
+                            print("Warning: ascii files not supported", unit, name, file=sys.stderr)
         inp.close()
 
     def assignFileNames(self):
