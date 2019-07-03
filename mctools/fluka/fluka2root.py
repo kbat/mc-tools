@@ -178,15 +178,16 @@ class Converter:
         """
         if self.verbose:
             print("Merging...")
-        
+
+        tmpfiles=[]
         for e in self.estimators:
             if not len(e.units):
                 continue
 
             for u in e.units:
-                temp_path = tempfile.mktemp()
+                temp_path = tempfile.mktemp(".%s" % e.converter)
                 if self.verbose:
-                    print(e.name, temp_path)
+                    print("unit=%d" % u, e.name, temp_path)
                 with open(temp_path, "w") as tmpfile:
                     suwfile = self.getSuwFileName(e,u)
                     if self.verbose:
@@ -194,23 +195,32 @@ class Converter:
 
                     for f in e.units[u]:
                         tmpfile.write("%s\n" % f)
-                    
+
                     tmpfile.write("\n")
                     tmpfile.write("%s\n" % suwfile)
 
-                verbose = "" if self.verbose else ">/dev/null"
-                #os.system("cat %s %s" % (tmpfile.name, verbose))
-            
-                command = "cat %s | $FLUTIL/%s %s" % (tmpfile.name, e.converter, verbose)
+                    tmpfiles.append(tmpfile.name)
+
+        verbose = "" if self.verbose else ">/dev/null"
+        if self.parallel:
+            command="parallel --max-args=1 mc-tools-fluka-merge ::: " + " ".join(tmpfiles) + verbose
+            if self.verbose:
+                printincolor(command)
+            return_value = os.system(command)
+            if return_value:
+                sys.exit(2)
+        else:
+            for f in tmpfiles:
+                command = "mc-tools-fluka-merge %s %s" % (f, verbose)
                 if self.verbose:
                     printincolor(command)
-                
                 return_value = os.system(command)
                 if return_value:
-                    sys.exit(printincolor("Coult not convert %s" % e.name));
-                
-                if not self.verbose:
-                    os.unlink(tmpfile.name)
+                    sys.exit(printincolor("Coult not convert an estimator"));
+
+        if not self.verbose:
+            for f in tmpfiles:
+                os.unlink(f)
 
     def Convert(self):
         """Convert merged files into ROOT
