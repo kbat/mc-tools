@@ -24,7 +24,7 @@ class Estimator:
     def __init__(self, name, converter):
         self.name = name
         self.converter = converter
-        self.units = {} # dictionary of units corresponding files
+        self.units = {} # dictionary of units and corresponding files
 
     def addUnit(self, u):
         """ Adds a key with the given unit in the units dictionary
@@ -43,10 +43,10 @@ class Estimator:
 
 class Converter:
     def __init__(self, inp, overwrite, verbose):
-        self.inp = inp # input files
-        self.overwrite = overwrite
-        self.verbose = verbose
-        self.parallel = find_executable("parallel") is not None
+        self.inp        = inp # all input files
+        self.overwrite  = overwrite
+        self.verbose    = verbose
+        self.parallel   = find_executable("parallel") is not None
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw"),
                            Estimator("USRTRACK", "ustsuw")]
@@ -55,8 +55,7 @@ class Converter:
         self.out_root_files = [] # list of output ROOT files
 
         # Generate the output root file name:
-        self.root = os.path.splitext(self.inp[0])[0]+".root"
-        self.root = re.sub(r'[0-9]+\.root','.root', self.root)
+        self.root  = self.getROOTFileName()
         self.basename = os.path.splitext(self.root)[0]
         
         if not self.overwrite and os.path.isfile(self.root):
@@ -70,7 +69,13 @@ class Converter:
 
         if self.verbose:
             print("input files:", self.inp)
-            print("output ROOT files:", self.root)
+            print("output ROOT file:", self.root)
+
+    def getROOTFileName(self):
+        """ Generate the output ROOT file name based on the input files """
+        root = os.path.splitext(self.inp[0])[0]+".root"
+        root = re.sub(r'[0-9]+\.root','.root', root)
+        return root
 
     def checkInputFiles(self):
         """Does some checks of the input files
