@@ -107,7 +107,7 @@ class Converter:
         e: estimator
         u: unit
         """
-        return "%s.%d.%s" % (os.path.splitext(self.inp[0])[0], abs(u), e.name.lower())
+        return "%s.%d.%s" % (self.basename, abs(u), e.name.lower())
 
     def getOpenedUnits(self):
         """Get the list of opened (named) units
