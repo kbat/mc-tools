@@ -169,8 +169,9 @@ class Converter:
         """
         for e in self.estimators:
             for u in e.units:
-                for f in glob.glob("%s*_fort.%d" % (self.basename, abs(u))):
-                    e.addFile(u,f)
+                for inp in self.inp:
+                    for f in glob.glob("%s*_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
+                        e.addFile(u,f)
                     
     def Merge(self):
         """ Merge all data with standard FLUKA tools
