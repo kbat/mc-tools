@@ -74,7 +74,8 @@ class Converter:
     def getROOTFileName(self):
         """ Generate the output ROOT file name based on the input files """
         root = os.path.splitext(self.inp[0])[0]+".root"
-        root = re.sub(r'[0-9]+\.root','.root', root)
+        if len(self.inp)>1:
+            root = re.sub(r'[0-9]+\.root','.root', root)
         return root
 
     def checkInputFiles(self):
