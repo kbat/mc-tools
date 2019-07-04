@@ -47,8 +47,6 @@ def setColourMap():
 def main():
 	"""A simple TH2 plotter with optional geometry overlay
 	"""
-        setColourMap()
-
 	parser = argparse.ArgumentParser(description=main.__doc__,
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 					 epilog="Homepage: https://github.com/kbat/mc-tools")
@@ -90,6 +88,7 @@ def main():
 
         c1title = args.dfile+" "+args.dhist+" "+args.plane
         c1 = ROOT.TCanvas("c1", c1title, args.width, height)
+        setColourMap()
 
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
