@@ -88,7 +88,8 @@ def main():
         if height is None:
                 height = int(args.width * 2.0 / (1.0+sqrt(5.0))) # golden ratio
 
-        c1 = ROOT.TCanvas("c1","",args.width,height)
+        c1title = args.dfile+" "+args.dhist+" "+args.plane
+        c1 = ROOT.TCanvas("c1", c1title, args.width, height)
 
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
@@ -107,7 +108,7 @@ def main():
             
         if args.ztitle:
             if args.doption == 'colz':
-                ROOT.gStyle.SetPadRightMargin(args.right_margin);
+                c1.SetRightMargin(args.right_margin);
             dh2.SetZTitle(args.ztitle)
         
         dh2.Draw(args.doption)
