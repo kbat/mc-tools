@@ -5,8 +5,9 @@
 
 from __future__ import print_function
 import argparse
-from sys import exit
+from sys   import exit
 from array import array
+from math  import sqrt
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -67,6 +68,8 @@ def main():
         parser.add_argument("-xtitle", type=str, dest='xtitle', help='x-axis title', default=None)
         parser.add_argument("-ytitle", type=str, dest='ytitle', help='y-axis title', default=None)
         parser.add_argument("-ztitle", type=str, dest='ztitle', help='z-axis title', default=None)
+        parser.add_argument("-width",  type=int, dest='width',  help='Canvas width',  default=800)
+        parser.add_argument("-height", type=int, dest='height', help='Canvas height', default=None)
         parser.add_argument("-right-margin", type=float, dest='right_margin',
                             help='Right margin of the canvas in order to allocate enough space for the z-axis title. \
                             Used only if ZTITLE is set and DOPTION="colz"', default=0.17)
@@ -80,6 +83,12 @@ def main():
 
         if args.output:
                 ROOT.gROOT.SetBatch(True)
+
+        height = args.height
+        if height is None:
+                height = int(args.width * 2.0 / (1.0+sqrt(5.0))) # golden ratio
+
+        c1 = ROOT.TCanvas("c1","",args.width,height)
 
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
