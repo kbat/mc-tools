@@ -5,7 +5,8 @@
 
 from __future__ import print_function
 import argparse
-from sys import exit, argv
+from sys import exit
+from array import array
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -15,9 +16,38 @@ try:
 except NameError:
         pass
 
+def setColourMap():
+        """ Sets the colour map used at MAX IV """
+
+        # PView is exported from para view
+        PView = (0, 0.27843137254900002, 0.27843137254900002, 0.85882352941200002, 0.143, 0, 0, 0.36078431372500003, 0.285, 0, 1, 1, 0.429, 0, 0.50196078431400004, 0, 0.571, 1, 1, 0, 0.714, 1, 0.38039215686299999, 0, 0.857, 0.419607843137, 0, 0, 1, 0.87843137254899994, 0.30196078431399997, 0.30196078431399997)
+
+        NCont = 99
+        NRGBs = 8
+        stops = []
+        red = []
+        green = []
+        blue = []
+
+        for i in range(NRGBs):
+                stops.append(PView[4*i])
+                red.append(PView[4*i+1])
+                green.append(PView[4*i+2])
+                blue.append(PView[4*i+3])
+
+        stops = array('d',stops)
+        red   = array('d',red)
+        green = array('d',green)
+        blue  = array('d',blue)
+
+        ROOT.TColor.CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont)
+        ROOT.gStyle.SetNumberContours(NCont)
+
 def main():
 	"""A simple TH2 plotter with optional geometry overlay
 	"""
+        setColourMap()
+
 	parser = argparse.ArgumentParser(description=main.__doc__,
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 					 epilog="Homepage: https://github.com/kbat/mc-tools")
@@ -39,7 +69,7 @@ def main():
         parser.add_argument("-right-margin", type=float, dest='right_margin',
                             help='Right margin of the canvas in order to allocate enough space for the z-axis title. \
                             Used only if ZTITLE is set and DOPTION="colz"', default=0.17)
-        parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the colour axis')
+        parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
 
 	args = parser.parse_args()
@@ -49,7 +79,7 @@ def main():
 
         if args.output:
                 ROOT.gROOT.SetBatch(True)
-        
+
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
 
@@ -76,8 +106,6 @@ def main():
         if args.logz:
             ROOT.gPad.SetLogz()
 
-
-        print("a", args.gfile)
         if args.gfile is not None:
             gf = ROOT.TFile(args.gfile)
             gh = gf.Get(args.ghist)
