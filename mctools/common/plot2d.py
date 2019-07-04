@@ -59,7 +59,8 @@ def main():
         parser.add_argument("-scale", type=float, dest='scale', help='Scale', default=1.0)
         parser.add_argument("-doption", type=str, dest='doption', help='Data draw option', default="colz")
         parser.add_argument("-goption", type=str, dest='goption', help='Geometry draw option', default="cont3")
-        parser.add_argument("-dcont", type=int, dest='dcont', help='Set the number of contour levels', default=200)
+        parser.add_argument("-dcont", type=int, dest='dcont', help='Set the number of contour levels for data', default=200)
+        parser.add_argument("-gcont", type=int, dest='gcont', help='Set the number of contour levels for geometry', default=25)
         parser.add_argument("-glwidth", type=int, dest='glwidth', help='Geometry line width', default=2)
         parser.add_argument("-glcolor", type=str, dest='glcolor', help='Geometry line color (ROOT names)', default="kBlack")
         parser.add_argument("-title", type=str, dest='title',   help='Plot title',   default=None)
@@ -112,6 +113,7 @@ def main():
             gh2 = gh.Project3D(args.plane)
             gh2.SetLineWidth(args.glwidth)
             gh2.SetLineColor(eval("ROOT.%s" % args.glcolor))
+            gh2.SetContour(args.gcont)
             gh2.Draw("same %s" % args.goption)
 
         if args.output:
