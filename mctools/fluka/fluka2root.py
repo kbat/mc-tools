@@ -268,7 +268,7 @@ class Converter:
             printincolor(command)
         return_value = os.system(command)
         if return_value is 0:
-            command = "rm -f %s %s" % (v, ' '.join(self.out_root_files))
+            command = "rm -f %s %s" % (v, ' '.join(self.out_root_files + datafiles))
             if self.verbose:
                 printincolor(command)
             return_value = os.system(command)
