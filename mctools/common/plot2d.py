@@ -74,6 +74,7 @@ def main():
                             Used only if ZTITLE is set and DOPTION="colz"', default=0.17)
         parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
         parser.add_argument("-flip", action='store_true', default=False, dest='flip', help='Flip the vertical axis')
+        parser.add_argument("-bcol", action='store_true', default=False, dest='bcol', help='Set the frame background colour')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
 
 	args = parser.parse_args()
@@ -135,6 +136,15 @@ def main():
         if args.flip:
                 a = ReverseYAxis(dh2)
                 a.Draw()
+
+        ci = ROOT.TColor.GetFreeColorIndex()
+        color = ROOT.TColor(ci,0.27843137254900002, 0.27843137254900002, 0.6)
+
+        if args.bcol:
+                c1.Update()
+                c1.GetFrame().SetFillColor(ci)
+                dh2.GetXaxis().SetAxisColor(ci)
+                dh2.GetYaxis().SetAxisColor(ci)
 
         if args.output:
                 ROOT.gPad.Print(args.output)
