@@ -9,7 +9,7 @@ from sys   import exit
 from array import array
 from math  import sqrt
 import ROOT
-from mctools.common import FlipTH2, ReverseYAxis
+from mctools.common import FlipTH2
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 # runs in both Python 2 and 3
@@ -68,13 +68,13 @@ def main():
         parser.add_argument("-ytitle", type=str, dest='ytitle', help='y-axis title', default=None)
         parser.add_argument("-ztitle", type=str, dest='ztitle', help='z-axis title', default=None)
         parser.add_argument("-width",  type=int, dest='width',  help='Canvas width',  default=800)
-        parser.add_argument("-height", type=int, dest='height', help='Canvas height', default=None)
+        parser.add_argument("-height", type=int, dest='height', help='Canvas height. If not specified, it is calculated from the width with the golden ratio rule.', default=None)
         parser.add_argument("-right-margin", type=float, dest='right_margin',
                             help='Right margin of the canvas in order to allocate enough space for the z-axis title. \
                             Used only if ZTITLE is set and DOPTION="colz"', default=0.17)
         parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
         parser.add_argument("-flip", action='store_true', default=False, dest='flip', help='Flip the vertical axis')
-        parser.add_argument("-bcol", action='store_true', default=False, dest='bcol', help='Set the frame background colour')
+        parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
 
 	args = parser.parse_args()
@@ -133,14 +133,10 @@ def main():
             gh2.SetContour(args.gcont)
             gh2.Draw("same %s" % args.goption)
 
-        if args.flip:
-                a = ReverseYAxis(dh2)
-                a.Draw()
-
         ci = ROOT.TColor.GetFreeColorIndex()
         color = ROOT.TColor(ci,0.27843137254900002, 0.27843137254900002, 0.6)
 
-        if args.bcol:
+        if args.bgcol:
                 c1.Update()
                 c1.GetFrame().SetFillColor(ci)
                 dh2.GetXaxis().SetAxisColor(ci)
