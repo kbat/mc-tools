@@ -15,14 +15,14 @@ def getCombLayerObject(cell):
     with open(fname) as f:
         for line in f.readlines():
             words = line.strip().split()
-            if len(words) == 8:
-                # print(words, words[6][1:], words[7][:-1])
+            l = len(words)
+            if l in [7,8]:
                 if words[0] != 'World':
-                    cmin,cmax = map(int,(words[6][1:], words[7][:-1]))
+                    cmin,cmax = map(int,(words[l-2][1:], words[l-1][:-1]))
                     if cell >= cmin and cell <= cmax:
                         print(line.strip())
                         return words[0]
-                elif cell == int(words[7]): # World
+                elif cell == int(words[l-1]): # World
                     print(line.strip())
                     return words[0]
 
