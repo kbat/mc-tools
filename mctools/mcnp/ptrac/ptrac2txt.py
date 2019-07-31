@@ -47,19 +47,24 @@ class PTRAC:
                         print("title:   ", self.title)
 
                 # Input data from the PTRAC card used in the MCNPX run
-                print("Input data:")
                 input_data = []
                 data = fortranRead(self.file)
-                while len(data) == 40:
+                while len(data) == 40: # 40=4(float size) * 10 numbers per record
                         n = struct.unpack("=10f", data)
                         input_data.append(map(int,n))
                         data = fortranRead(self.file)
 
                 # flatten the PTRAC input_data:
                 input_data = [item for sublist in input_data for item in sublist]
-                print(input_data,len(input_data))
+
+                if self.verbose:
+                        print("Input keywords array:",input_data,"; length:",len(input_data))
 
                 self.SetKeywords(input_data)
+
+                # now let's unpack the data read last in the previous while loop but the data length was not 40:
+                n = struct.unpack("=20i", data)
+                print("What it this?",n, len(n))
 
                 # Variable IDs:
                 # Number of variables expected for each line type and each event type, i.e NPS line and Event1 and Event2 lines for SRC, BNK, SUR, COL, TER
@@ -83,19 +88,21 @@ class PTRAC:
         def SetKeywords(self,data):
                 # set the input parameters keywords
                 # see pages 5-205 and I-3 of the MCNPX manual
-                self.keywords['buffer']  = data[1]
-                self.keywords['cell']    = data[2]
-                self.keywords['event']   = data[3]
-                self.keywords['file']    = data[4]
-                self.keywords['filter']  = data[5]
-                self.keywords['max']     = data[6]
-                self.keywords['menp']    = data[7]
-                self.keywords['nps']     = data[8]
-                self.keywords['surface'] = data[9]
-                self.keywords['tally']   = data[10]
-                self.keywords['type']    = data[11]
-                self.keywords['value']   = data[12]
-                self.keywords['write']   = data[13]
+                keywords = ('buffer', 'cell', 'event', 'file', 'filter', 'max', 'meph', 'nps', 'surface', 'tally', 'type', 'value', 'write')
+
+                j = 1 # position of n_i
+                n = 0 # number of entries for the i-th keyword or 0 for no entries
+                for i,k in enumerate(keywords):
+                        n = data[j]
+                        i1 = 1+j
+                        i2 = i1+n
+                        if n:
+                                self.keywords[keywords[i]] = data[i1:i2]
+                        j=i2
+
+                if self.verbose:
+                        print("Number of PTRAC keywords:", data[0])
+                        print("Input keywords dict: ",self.keywords)
                 
 
 def main():
