@@ -67,10 +67,14 @@ class PTRAC:
                 # Numbers of variables N_i:
                 N = struct.unpack("=20i", data) # record 4+K
                 N = N[0:13] # N14-N20 are not used (page I-2)
+
+                N1 = N[0] # number of variables on the NPS line (I1, I2, ...)
+
                 if self.verbose:
                         print("Numbers of variables:",N, len(N))
-
+                        print("Number of variables on the NPS line:",N1)
                 self.SetNVars(N)
+
 
                 # Variable IDs:
                 # Number of variables expected for each line type and each event type, i.e NPS line and Event1 and Event2 lines for SRC, BNK, SUR, COL, TER
