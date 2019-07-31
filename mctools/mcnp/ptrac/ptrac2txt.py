@@ -63,8 +63,11 @@ class PTRAC:
                 self.SetKeywords(input_data)
 
                 # now let's unpack the data read last in the previous while loop but the data length was not 40:
-                n = struct.unpack("=20i", data)
-                print("What it this?",n, len(n))
+                # Numbers of variables N_i:
+                N = struct.unpack("=20i", data) # record 4+K
+                N = N[0:13] # N14-N20 are not used (page I-2)
+                if self.verbose:
+                        print("Numbers of variables:",N, len(N))
 
                 # Variable IDs:
                 # Number of variables expected for each line type and each event type, i.e NPS line and Event1 and Event2 lines for SRC, BNK, SUR, COL, TER
