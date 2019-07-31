@@ -17,7 +17,9 @@ class PTRAC:
                 self.fname=fname
                 self.file = open(self.fname, 'rb')
                 self.keywords = {} # dictionary of input parameters
-                
+                self.nvars    = {} # dictionary of number of variables
+                self.event_type = ('src', 'bnk', 'sur', 'col', 'ter')
+
                 data = fortranRead(self.file)
                 (i,) =  struct.unpack("=i", data)
                 if i!=-1:
@@ -54,8 +56,7 @@ class PTRAC:
                         input_data.append(map(int,n))
                         data = fortranRead(self.file)
 
-                # flatten the PTRAC input_data:
-                input_data = [item for sublist in input_data for item in sublist]
+                input_data = [item for sublist in input_data for item in sublist] # flatten the PTRAC input_data
 
                 if self.verbose:
                         print("Input keywords array:",input_data,"; length:",len(input_data))
@@ -68,6 +69,8 @@ class PTRAC:
                 N = N[0:13] # N14-N20 are not used (page I-2)
                 if self.verbose:
                         print("Numbers of variables:",N, len(N))
+
+                self.SetNVars(N)
 
                 # Variable IDs:
                 # Number of variables expected for each line type and each event type, i.e NPS line and Event1 and Event2 lines for SRC, BNK, SUR, COL, TER
@@ -100,12 +103,22 @@ class PTRAC:
                         i1 = 1+j
                         i2 = i1+n
                         if n:
-                                self.keywords[keywords[i]] = data[i1:i2]
+                                self.keywords[k] = data[i1:i2]
                         j=i2
 
                 if self.verbose:
                         print("Number of PTRAC keywords:", data[0])
                         print("Input keywords dict: ",self.keywords)
+
+        def SetNVars(self,data):
+                """ Set number of variables on the corresponding event lines (page I-2)"""
+                i=1
+                for t in self.event_type:
+                        self.nvars[t] = data[i:i+2]
+                        i = i+2
+
+                if self.verbose:
+                        print("Number of variables on the event lines:",self.nvars)
                 
 
 def main():
