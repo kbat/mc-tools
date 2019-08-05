@@ -16,9 +16,7 @@ class PTRAC:
                 self.verbose = verbose
                 self.fname=fname
                 self.file = open(self.fname, 'rb')
-                self.keywords = {} # dictionary of input parameters
-                self.nvars    = {} # dictionary of number of variables
-                self.event_type = ('src', 'bnk', 'sur', 'col', 'ter')
+                self.event_type = ('NPS', 'src', 'bnk', 'sur', 'col', 'ter')
 
                 data = fortranRead(self.file)
                 (i,) =  struct.unpack("=i", data)
@@ -61,29 +59,34 @@ class PTRAC:
                 if self.verbose:
                         print("Input keywords array:",input_data,"; length:",len(input_data))
 
-                self.SetKeywords(input_data)
+                self.keywords = self.SetKeywords(input_data) # dictionary of input parameters
 
                 # now let's unpack the data read last in the previous while loop but the data length was not 40:
                 # Numbers of variables N_i:
+                # Number of variables expected for each line type and each event type, i.e NPS line and Event1 and Event2 lines for SRC, BNK, SUR, COL, TER
+                # The remaining two variables correspond to the transport particle type (1 for neutron etc. or 0 for multiple particle transport),
+                # and whether the output is given in real*4 or real*8
                 N = struct.unpack("=20i", data) # record 4+K
                 N = N[0:13] # N14-N20 are not used (page I-2)
 
                 N1 = N[0] # number of variables on the NPS line (I1, I2, ...)
+                output_type = N[12]
 
                 if self.verbose:
                         print("Numbers of variables:",N, len(N))
                         print("Number of variables on the NPS line:",N1)
-                self.SetNVars(N)
+                        print("Output type: real*%d" % output_type)
 
+                self.nvars = self.SetNVars(N) # dictionary of number of variables
 
-                # Variable IDs:
-                # Number of variables expected for each line type and each event type, i.e NPS line and Event1 and Event2 lines for SRC, BNK, SUR, COL, TER
-                # The remaining two variables correspond to the transport particle type (1 for neutron etc. or 0 for multiple particle transport),
-                # and whether the output is given in real*4 or real*8
-                print("Variable IDs:")
+                # total number of variable IDs:
+                Ntot = self.nvars['NPS']+sum(self.nvars['src'])+sum(self.nvars['bnk'])+sum(self.nvars['sur'])+sum(self.nvars['col'])+sum(self.nvars['ter'])
+
+                # Variable IDs (record 5+K):
                 data = fortranRead(self.file)
-                self.vars = struct.unpack("=46i", data)
-                print(self.vars, "sum:",sum(self.vars))
+                self.vars = struct.unpack("=%di" % Ntot, data)
+                self.varid = self.SetVarID(self.vars) # dictionary of variable IDs (L2, L3, etc on pages I-1 and I-2)
+                print("Variable IDs:",self.varid)
 
                 self.ReadEvent()
                 
@@ -98,31 +101,52 @@ class PTRAC:
         def SetKeywords(self,data):
                 # set the input parameters keywords
                 # see pages 5-205 and I-3 of the MCNPX manual
-                keywords = ('buffer', 'cell', 'event', 'file', 'filter', 'max', 'meph', 'nps', 'surface', 'tally', 'type', 'value', 'write')
+                kwdlist = ('buffer', 'cell', 'event', 'file', 'filter', 'max', 'meph', 'nps', 'surface', 'tally', 'type', 'value', 'write')
 
                 j = 1 # position of n_i
                 n = 0 # number of entries for the i-th keyword or 0 for no entries
-                for i,k in enumerate(keywords):
+                keywords = {}
+                for i,k in enumerate(kwdlist):
                         n = data[j]
                         i1 = 1+j
                         i2 = i1+n
                         if n:
-                                self.keywords[k] = data[i1:i2]
+                                keywords[k] = data[i1:i2]
                         j=i2
 
                 if self.verbose:
                         print("Number of PTRAC keywords:", data[0])
-                        print("Input keywords dict: ",self.keywords)
+                        print("Input keywords dict: ",keywords)
+                return keywords
 
         def SetNVars(self,data):
                 """ Set number of variables on the corresponding event lines (page I-2)"""
-                i=1
+                i=0
+                nvars = {}
                 for t in self.event_type:
-                        self.nvars[t] = data[i:i+2]
-                        i = i+2
+                        if i == 0:
+                                nvars[t] = data[i]
+                                i = i+1
+                        else:
+                                nvars[t] = data[i:i+2]
+                                i = i+2
 
                 if self.verbose:
-                        print("Number of variables on the event lines:",self.nvars)
+                        print("Number of variables on the event lines:",nvars)
+                return nvars
+
+        def SetVarID(self,data):
+                """ Set variable IDs L1, L2, L3 etc """
+                i = 0
+                L = {}
+                for t in self.event_type:
+                        if t == 'NPS':
+                                j = i+self.nvars[t]
+                        else:
+                                j = i+sum(self.nvars[t])
+                        L[t] = data[i:j]
+                        i=j
+                return L
                 
 
 def main():
