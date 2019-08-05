@@ -69,12 +69,11 @@ class PTRAC:
                 N = struct.unpack("=20i", data) # record 4+K
                 N = N[0:13] # N14-N20 are not used (page I-2)
 
-                N1 = N[0] # number of variables on the NPS line (I1, I2, ...)
                 output_type = N[12]
 
                 if self.verbose:
                         print("Numbers of variables:",N, len(N))
-                        print("Number of variables on the NPS line:",N1)
+                        print("Number of variables on the NPS line:",N[0])  # N1=number of variables on the NPS line (I1, I2, ...)
                         print("Output type: real*%d" % output_type)
 
                 self.nvars = self.SetNVars(N) # dictionary of number of variables
@@ -95,8 +94,27 @@ class PTRAC:
                 # first NPS line
                 print("Event:")
                 data = fortranRead(self.file)
-                x = struct.unpack("=2i", data) 
+                x = struct.unpack("=%di" % self.nvars['NPS'], data)
+                print("NPS:",x[0], "Event type: %d (%s)" % (x[1],self.GetEventType(x[1])))
+                
+                data = fortranRead(self.file)
+                x = struct.unpack("=4d", data)
                 print(x)
+
+        def GetEventType(self,I2):
+                """ Return event type for the given event
+                    See table I-5 on page I-6
+                """
+                if I2 == 1000:
+                        return 'src'
+                elif I2 == 3000:
+                        return 'sur'
+                elif I2 == 4000:
+                        return 'col'
+                elif I2 == 5000:
+                        return 'ter'
+                elif I2 == 9000:
+                        return 'Flag'
 
         def SetKeywords(self,data):
                 # set the input parameters keywords
