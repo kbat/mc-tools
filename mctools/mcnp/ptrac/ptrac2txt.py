@@ -76,6 +76,10 @@ class PTRAC:
                         print("Number of variables on the NPS line:",N[0])  # N1=number of variables on the NPS line (I1, I2, ...)
                         print("Output type: real*%d" % output_type)
 
+                if output_type != 4:
+                        print("Output type: real*%d not supported" % output_type)
+                        sys.exit(1)
+
                 self.nvars = self.SetNVars(N) # dictionary of number of variables
 
                 # total number of variable IDs:
@@ -94,11 +98,20 @@ class PTRAC:
                 # first NPS line
                 print("Event:")
                 data = fortranRead(self.file)
-                x = struct.unpack("=%di" % self.nvars['NPS'], data)
-                print("NPS:",x[0], "Event type: %d (%s)" % (x[1],self.GetEventType(x[1])))
+                I1 = struct.unpack("=%di" % self.nvars['NPS'], data)
+                print(I1)
+                print("NPS:",I1[0], "Event type: %d (%s)" % (I1[1],self.GetEventType(I1[1])))
+
+                data = fortranRead(self.file)
+                J1 = struct.unpack("=%df%df" % self.nvars['src'], data)
+                print(J1)
+
+                data = fortranRead(self.file)
+                x = struct.unpack("=%df%df" % self.nvars['bnk'], data)
+                print(x)
                 
                 data = fortranRead(self.file)
-                x = struct.unpack("=4d", data)
+                x = struct.unpack("=%df%df" % self.nvars['sur'], data)
                 print(x)
 
         def GetEventType(self,I2):
