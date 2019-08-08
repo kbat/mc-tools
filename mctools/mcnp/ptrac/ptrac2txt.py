@@ -69,15 +69,16 @@ class PTRAC:
                 N = struct.unpack("=20i", data) # record 4+K
                 N = N[0:13] # N14-N20 are not used (page I-2)
 
-                output_type = N[12]
+                self.single_particle_transport = N[11]
+                self.output_type = N[12]
 
                 if self.verbose:
                         print("Numbers of variables:",N, len(N))
                         print("Number of variables on the NPS line:",N[0])  # N1=number of variables on the NPS line (I1, I2, ...)
-                        print("Output type: real*%d" % output_type)
+                        print("Output type: real*%d" % self.output_type)
 
-                if output_type != 4:
-                        print("Output type: real*%d not supported" % output_type)
+                if self.output_type != 4:
+                        print("Output type: real*%d not supported" % self.output_type)
                         sys.exit(1)
 
                 self.nvars = self.SetNVars(N) # dictionary of number of variables
@@ -91,28 +92,51 @@ class PTRAC:
                 self.varid = self.SetVarID(self.vars) # dictionary of variable IDs (L2, L3, etc on pages I-1 and I-2)
                 print("Variable IDs:",self.varid)
 
-                self.ReadEvent()
-                
-                
         def ReadEvent(self):
                 # first NPS line
+                data = fortranRead(self.file)
+                if data is None:
+                        return False
+
                 print("Event:")
-                data = fortranRead(self.file)
                 I1 = struct.unpack("=%di" % self.nvars['NPS'], data)
-                print(I1)
-                print("NPS:",I1[0], "Event type: %d (%s)" % (I1[1],self.GetEventType(I1[1])))
+                etype = self.GetEventType(I1[1])
+                print("NPS:",I1[0], "Event type: %d (%s)" % (I1[1],etype))
 
-                data = fortranRead(self.file)
-                J1 = struct.unpack("=%df%df" % self.nvars['src'], data)
-                print(J1)
+                while True: # reading event lines
+                        data = fortranRead(self.file)
+                        next_etype=self.GetNextEventType(data)
+#                        print("next:",next_etype)
+                        # Event line:
+                        JP = struct.unpack("=%df%df" % self.nvars[etype], data) # table I-1: J and P values are explained in table I-3
+                        print(etype,JP)
+                        
+                        self.PrintEventLine(etype,JP)
 
-                data = fortranRead(self.file)
-                x = struct.unpack("=%df%df" % self.nvars['bnk'], data)
-                print(x)
+                        etype=next_etype
+                        if next_etype is 'Flag':
+                                return True
+
+                print("self.ReadEvent: problems with reading event (the code should not reach this line)")
+                sys.exit(1)
+
+        def PrintEventLine(self,etype,JP):
+                """ Print event line """
+                print(" Event type of next event:",JP[0]);
+                print(" NODE:",JP[1]);
                 
-                data = fortranRead(self.file)
-                x = struct.unpack("=%df%df" % self.nvars['sur'], data)
-                print(x)
+                if self.GetEventLineType() == 1:
+                        if etype=='src':
+                                print(" NSR:",JP[2]);
+                                print(" NCL(ICL):",JP[3]);
+                                print(" MAT(ICL):",JP[4]);
+                        elif etype=='sur':
+                                print(" NXS(2,IEX):",JP[2]);
+                                print(" Recation type (see table I-7):",JP[3]);
+                                print(" NCL(ICL):",JP[4]);
+                                print(" MAT(ICL):",JP[5]);
+                        else:
+                                pass
 
         def GetEventType(self,I2):
                 """ Return event type for the given event
@@ -129,6 +153,26 @@ class PTRAC:
                 elif I2 == 9000:
                         return 'Flag'
 
+        def GetNextEventType(self, data):
+                """ Guess the data type based on its int (table I-5 on page I-6) """
+                length = len(data)
+                if not length%2: # even
+                        d = struct.unpack("=%df" % (length/self.output_type), data)
+                        return self.GetEventType(int(d[0]))
+                else:            # odd
+                        print("[self.NextEventType] odd: not implemented yet")
+                        sys.exit(1)
+
+        def GetEventLineType(self):
+                """ Return event line type according to Table I-3 """
+                if self.keywords['write'] == [1]:
+                        return 1 if self.single_particle_transport else 0
+                else:
+                        print("Not implemented yet")
+                        sys.exit(1)
+                        # if self.nvars['src'] == (5,3):
+                        #         print("event line type :1");
+                
         def SetKeywords(self,data):
                 # set the input parameters keywords
                 # see pages 5-205 and I-3 of the MCNPX manual
@@ -198,6 +242,8 @@ def main():
 		return 1
         
 	p = PTRAC(args.ptrac,args.verbose)
+        while p.ReadEvent():
+                pass
         p.file.close()
 
 if __name__ == "__main__":
