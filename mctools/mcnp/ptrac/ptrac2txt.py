@@ -17,6 +17,7 @@ class PTRAC:
                 self.fname=fname
                 self.file = open(self.fname, 'rb')
                 self.event_type = ('NPS', 'src', 'bnk', 'sur', 'col', 'ter')
+                self.varid_descr = {1: "NPS", 2: "Event type of 1st event", 3: "NCL(ICL)", 4: "NSF(JSU)", 5: "JPTAL(1,ITAL)", 6: "TAL(JPTAL(7,ITAL))", 7: "Event type of next event", 8: "NODE", 9: "NSR", 10: "NXS(2,IEX)", 11: "Reaction type", 12: "Surface number", 13: "Angle with surface normal [deg]", 14: "Termination type", 15: "Branch number for this history", 16: "IPT", 17: "NCL(ICL)", 18: "MAT(ICL)", 19: "NCP", 20: "XXX", 21: "YYY", 22: "ZZZ", 23: "UUU", 24: "VVV", 25: "WWW", 26: "ERG", 27: "WGT", 28: "TME"}
 
                 data = fortranRead(self.file)
                 (i,) =  struct.unpack("=i", data)
@@ -122,21 +123,25 @@ class PTRAC:
 
         def PrintEventLine(self,etype,JP):
                 """ Print event line """
-                print(" Event type of next event:",JP[0]);
-                print(" NODE:",JP[1]);
+                print(" J1:",self.varid_descr[7],JP[0]);
+                print(" J2:",self.varid_descr[8],JP[1]);
                 
                 if self.GetEventLineType() == 1:
                         if etype=='src':
-                                print(" NSR:",JP[2]);
-                                print(" NCL(ICL):",JP[3]);
-                                print(" MAT(ICL):",JP[4]);
-                        elif etype=='sur':
-                                print(" NXS(2,IEX):",JP[2]);
-                                print(" Recation type (see table I-7):",JP[3]);
-                                print(" NCL(ICL):",JP[4]);
-                                print(" MAT(ICL):",JP[5]);
+                                print(" J3:",self.varid_descr[9],JP[2]);
+                                print(" J4:",self.varid_descr[17],JP[3]);
+                                print(" J5:",self.varid_descr[18],JP[4]);
+                                print(" P1:",self.varid_descr[20],JP[5]);
+                                print(" P2:",self.varid_descr[21],JP[6]);
+                                print(" P3:",self.varid_descr[22],JP[7]);
                         else:
-                                pass
+                                print(" J3: NXS(2,IEX):",JP[2]);
+                                print(" J4: Recation type (see table I-7):",JP[3]);
+                                print(" J5: NCL(ICL):",JP[4]);
+                                print(" J6: MAT(ICL):",JP[5]);
+                                print(" P1:",self.varid_descr[20],JP[6]);
+                                print(" P2:",self.varid_descr[21],JP[7]);
+                                print(" P3:",self.varid_descr[22],JP[8]);
 
         def GetEventType(self,I2):
                 """ Return event type for the given event
