@@ -123,25 +123,32 @@ class PTRAC:
 
         def PrintEventLine(self,etype,JP):
                 """ Print event line """
-                print(" J1:",self.varid_descr[7],JP[0]);
-                print(" J2:",self.varid_descr[8],JP[1]);
+                # Table I-3:
+                #   N2 and N3
+                type_src = {1: [7,8,9,17,18,20,21,22],
+                            2: (7,8,9,16,17,18,20,21,22),
+                            3: [7,8,9] + range(17,29),
+                            4: [7,8,9] + range(16,29)}
+                #  N4 and N5
+                type_bnk = {1: [7,8,10,11,17,18,20,21,22],
+                            2: [7,8,10,11,16,17,18,20,21,22],
+                            3: [7,8,10,11] + range(17,29),
+                            4: [7,8,10,11] + range(16,29)}
+                print(type_bnk)
                 
-                if self.GetEventLineType() == 1:
-                        if etype=='src':
-                                print(" J3:",self.varid_descr[9],JP[2]);
-                                print(" J4:",self.varid_descr[17],JP[3]);
-                                print(" J5:",self.varid_descr[18],JP[4]);
-                                print(" P1:",self.varid_descr[20],JP[5]);
-                                print(" P2:",self.varid_descr[21],JP[6]);
-                                print(" P3:",self.varid_descr[22],JP[7]);
-                        else:
-                                print(" J3: NXS(2,IEX):",JP[2]);
-                                print(" J4: Recation type (see table I-7):",JP[3]);
-                                print(" J5: NCL(ICL):",JP[4]);
-                                print(" J6: MAT(ICL):",JP[5]);
-                                print(" P1:",self.varid_descr[20],JP[6]);
-                                print(" P2:",self.varid_descr[21],JP[7]);
-                                print(" P3:",self.varid_descr[22],JP[8]);
+                event_line_type = self.GetEventLineType()
+
+                if etype=='src':
+                        for (i,j) in enumerate(type_src[event_line_type]):
+                                print(" J%d:" % (i+1),self.varid_descr[j],JP[i]);
+                else:
+                        print(" J3: NXS(2,IEX):",JP[2]);
+                        print(" J4: Recation type (see table I-7):",JP[3]);
+                        print(" J5: NCL(ICL):",JP[4]);
+                        print(" J6: MAT(ICL):",JP[5]);
+                        print(" P1:",self.varid_descr[20],JP[6]);
+                        print(" P2:",self.varid_descr[21],JP[7]);
+                        print(" P3:",self.varid_descr[22],JP[8]);
 
         def GetEventType(self,I2):
                 """ Return event type for the given event
