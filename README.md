@@ -89,10 +89,12 @@ You will probably have to add the ```~/.local/bin``` folder into ```$PATH```. Re
 
 Uninstall: ```pip uninstall mc-tools```.
 
-### Developer installation with git ###
+### Developer installation ###
 
-1. Get the source code:  
+1. Get the source code: 
+    - either
 ```git clone https://github.com/kbat/mc-tools.git```
+    - or download and uncompress ```wget https://github.com/kbat/mc-tools/archive/master.zip```
 2. Set the variable MCTOOLS to the folder where you have installed the
    code:   
 ```export MCTOOLS=/path/to/mc-tools```
