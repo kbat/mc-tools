@@ -94,7 +94,7 @@ Uninstall: ```pip uninstall mc-tools```.
 1. Get the source code: 
     - either
 ```git clone https://github.com/kbat/mc-tools.git```
-    - or download and uncompress ```wget https://github.com/kbat/mc-tools/archive/master.zip```
+    - or download and uncompress ```https://github.com/kbat/mc-tools/archive/master.zip```
 2. Set the variable MCTOOLS to the folder where you have installed the
    code:   
 ```export MCTOOLS=/path/to/mc-tools```
