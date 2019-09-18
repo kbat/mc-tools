@@ -31,3 +31,5 @@ grep ^\#include "$fname" | tac | while read -r line; do
 	/bin/cp -f $tmp $fname
     fi
 done
+
+rm -f "$tmp"
