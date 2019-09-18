@@ -56,23 +56,25 @@ def main():
 	parser.add_argument('gfile', type=str, help='Geometry file name', nargs='?')
 	parser.add_argument('ghist', type=str, help='Geometry histogram name', nargs='?', default='h3')
         parser.add_argument("-plane",type=str, dest='plane', help='Plane', default="xy", choices=['xy','xz','yx','yz','xz','zy'])
-        parser.add_argument("-scale", type=float, dest='scale', help='Scale', default=1.0)
+        parser.add_argument("-scale",   type=float, dest='scale', help='Scale', default=1.0)
         parser.add_argument("-doption", type=str, dest='doption', help='Data draw option', default="colz")
         parser.add_argument("-goption", type=str, dest='goption', help='Geometry draw option', default="cont3")
         parser.add_argument("-dcont", type=int, dest='dcont', help='Set the number of contour levels for data', default=200)
         parser.add_argument("-gcont", type=int, dest='gcont', help='Set the number of contour levels for geometry', default=25)
         parser.add_argument("-glwidth", type=int, dest='glwidth', help='Geometry line width', default=2)
         parser.add_argument("-glcolor", type=str, dest='glcolor', help='Geometry line color (ROOT names)', default="kBlack")
-        parser.add_argument("-title", type=str, dest='title',   help='Plot title',   default=None)
+        parser.add_argument("-title",  type=str, dest='title',   help='Plot title',   default=None)
         parser.add_argument("-xtitle", type=str, dest='xtitle', help='x-axis title', default=None)
         parser.add_argument("-ytitle", type=str, dest='ytitle', help='y-axis title', default=None)
         parser.add_argument("-ztitle", type=str, dest='ztitle', help='z-axis title', default=None)
+        parser.add_argument("-zmin",   type=float, dest='zmin', help='z-axis min value', default=None, required=False)
+        parser.add_argument("-zmax",   type=float, dest='zmax', help='z-axis max value', default=None, required=False)
+        parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
         parser.add_argument("-width",  type=int, dest='width',  help='Canvas width',  default=800)
         parser.add_argument("-height", type=int, dest='height', help='Canvas height. If not specified, it is calculated from the width with the golden ratio rule.', default=None)
         parser.add_argument("-right-margin", type=float, dest='right_margin',
                             help='Right margin of the canvas in order to allocate enough space for the z-axis title. \
-                            Used only if ZTITLE is set and DOPTION="colz"', default=0.17)
-        parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
+                            Used only if ZTITLE is set and DOPTION="colz"', default=0.12)
         parser.add_argument("-flip", action='store_true', default=False, dest='flip', help='Flip the vertical axis')
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
@@ -102,9 +104,9 @@ def main():
         if args.flip:
                 dh2 = FlipTH2(dh2)
 
-        if args.title:
-            dh2.SetTitle(args.title)
-
+        if args.title is not None:
+                dh2.SetTitle(args.title)
+            
         if args.xtitle:
             dh2.SetXTitle(args.xtitle)
             
@@ -120,7 +122,13 @@ def main():
         dh2.SetContour(args.dcont)
 
         if args.logz:
-            ROOT.gPad.SetLogz()
+                ROOT.gPad.SetLogz()
+
+        if args.zmin:
+                dh2.SetMinimum(args.zmin)
+
+        if args.zmax:
+                dh2.SetMinimum(args.zmax)
 
         if args.gfile is not None:
             gf = ROOT.TFile(args.gfile)
