@@ -12,6 +12,10 @@ def getCombLayerObject(cell):
     if not path.isfile(fname):
         fname = path.join("case001", fname);
 
+    if not path.isfile(fname):
+        print("ObjectRegister not found")
+        return
+
     with open(fname) as f:
         for line in f.readlines():
             words = line.strip().split()
@@ -33,7 +37,7 @@ def getCombLayerObject(cell):
             #         print(line.strip())
             #         return words[0]
 
-    return "Not found"
+    print("Object not found")
     
                 
 def main():
