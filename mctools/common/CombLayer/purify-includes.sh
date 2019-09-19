@@ -2,7 +2,7 @@
 # Comments out unneded #include directives
 
 if [ ! $# -eq 2 ]; then
-    echo "Usage: $0 make-target /path/to/file.cxx"
+    echo "Usage: $(basename $0) make-target /path/to/file.cxx"
     exit 1
 fi
 
