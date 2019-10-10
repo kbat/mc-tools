@@ -12,9 +12,11 @@ Project homepage: https://github.com/kbat/mc-tools
     object. This API allows to convert **mctal** files into any
     format.  It should work with any tallies except of the kcode data
     and tallies with perturbation records. 
-  * The [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
-    script shows an example how to save a mctal file in the
-    [ROOT](http://root.cern.ch)  format.
+  * [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
+    script converts a mctal file into the [ROOT](http://root.cern.ch) format. The tallies are saved
+    as [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html) histograms.
+  * [mctal2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2txt.py)
+    script shows an example how to convert a mctal file into an easily parsable ASCII file.
   * WSSA file converters **(MCNP6 is not fully supported)**
     * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
       converter: it converts WSSA files produced by MCNP(X) into plain
