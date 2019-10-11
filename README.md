@@ -71,8 +71,7 @@ Project homepage: https://github.com/kbat/mc-tools
 * If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern.ch) to be compiled with Python support. In order to check whether the Python
    support in ROOT is set up correctly, say   
    ```import ROOT```  
-   in the Python shell. You should not see any error messages.
-  The ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:  
+   in the Python shell. You should not see any error messages. Python 3 can be used, but the ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:  
 ```cmake  -DPYTHON_EXECUTABLE="/usr/bin/python" -Dpython="ON" -Dpython3="OFF" /path/to/root/source```
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
 * If the [GNU parallel](https://www.gnu.org/software/parallel) tool is installed then the FLUKA merge and ROOT converter tools called by the ```fluka2root``` script will be executed in parallel which makes it run faster.
