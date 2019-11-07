@@ -2,15 +2,24 @@
 
 from __future__ import print_function
 from sys import argv, exit
-from ROOT import ROOT, TFile, TH1, TH2, TH3
-
+import argparse
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def main():
     """ Converts TH[12] and TGraphErrors into ASCII format"""
-    fname = argv[1]
-    hname = argv[2]
 
-    f = TFile(fname)
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                    epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser.add_argument('fname', type=str, help='ROOT file name')
+    parser.add_argument('hname', type=str, help='Object name')
+
+    args = parser.parse_args()
+
+    fname = args.fname
+    hname = args.hname
+
+    f = ROOT.TFile(fname)
     h = f.Get(hname)
     print("#", h.GetName(), h.GetTitle())
     print("#", h.GetXaxis().GetTitle())
@@ -30,7 +39,7 @@ def main():
                 val = h.GetBinContent(xbin, ybin)
                 if val != 0:  error = h.GetBinError(xbin, ybin) / val
                 print(h.GetXaxis().GetBinLowEdge(xbin), h.GetXaxis().GetBinLowEdge(xbin+1), h.GetYaxis().GetBinLowEdge(ybin), h.GetYaxis().GetBinLowEdge(ybin+1), val, error)
-            
+
     elif h.InheritsFrom("TH1"):
         nbins = h.GetNbinsX()
         error = 0.0
