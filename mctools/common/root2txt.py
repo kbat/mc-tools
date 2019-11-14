@@ -8,6 +8,8 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def h12ascii(h):
     """ Convert TH1 into text """
+    print("#", obj.GetXaxis().GetTitle())
+    print("#", obj.GetYaxis().GetTitle())
     print("#", h.GetZaxis().GetTitle())
     print("# xmin xmax val err")
     nbins = h.GetNbinsX()
@@ -17,6 +19,8 @@ def h12ascii(h):
 
 def h22ascii(h):
     """ Convert TH2 into text """
+    print("#", obj.GetXaxis().GetTitle())
+    print("#", obj.GetYaxis().GetTitle())
     print("#", h.GetZaxis().GetTitle())
     print("# xmin xmax ymin ymax val err")
     nbinsx, nbinsy = h.GetNbinsX(), h.GetNbinsY()
@@ -28,13 +32,15 @@ def h22ascii(h):
 
 def g2ascii(g):
     """ Convert TGraph and TGraphErrors into text """
+    print("#", obj.GetXaxis().GetTitle())
+    print("#", obj.GetYaxis().GetTitle())
     print("# x errx y erry")
     n = g.GetN()
     for i in range(n):
         print(g.GetX()[i], g.GetEX()[i], g.GetY()[i], g.GetEY()[i])
 
 def main():
-    """ Converts TH[12] and TGraphErrors into ASCII format"""
+    """ Converts ROOT objects into ASCII format """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                     epilog="Homepage: https://github.com/kbat/mc-tools")
@@ -46,9 +52,11 @@ def main():
     f = ROOT.TFile(args.fname)
     obj = f.Get(args.objname)
 
+    if not obj:
+        print("%s not found in %s" % (args.objname, args.fname))
+        return 0
+
     print("#", obj.GetName(), obj.GetTitle())
-    print("#", obj.GetXaxis().GetTitle())
-    print("#", obj.GetYaxis().GetTitle())
 
     if obj.InheritsFrom("TH2"):
         h22ascii(obj)
@@ -56,6 +64,8 @@ def main():
         h12ascii(obj)
     elif obj.InheritsFrom("TGraph"):
         g2ascii(obj)
+    else:
+        print("%s: class %s not supported" % (args.objname, obj.ClassName()))
 
 if __name__ == "__main__":
     exit(main())
