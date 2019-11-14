@@ -8,8 +8,8 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def h12ascii(h):
     """ Convert TH1 into text """
-    print("#", obj.GetXaxis().GetTitle())
-    print("#", obj.GetYaxis().GetTitle())
+    print("#", h.GetXaxis().GetTitle())
+    print("#", h.GetYaxis().GetTitle())
     print("#", h.GetZaxis().GetTitle())
     print("# xmin xmax val err")
     nbins = h.GetNbinsX()
@@ -19,8 +19,8 @@ def h12ascii(h):
 
 def h22ascii(h):
     """ Convert TH2 into text """
-    print("#", obj.GetXaxis().GetTitle())
-    print("#", obj.GetYaxis().GetTitle())
+    print("#", h.GetXaxis().GetTitle())
+    print("#", h.GetYaxis().GetTitle())
     print("#", h.GetZaxis().GetTitle())
     print("# xmin xmax ymin ymax val err")
     nbinsx, nbinsy = h.GetNbinsX(), h.GetNbinsY()
@@ -32,8 +32,8 @@ def h22ascii(h):
 
 def g2ascii(g):
     """ Convert TGraph and TGraphErrors into text """
-    print("#", obj.GetXaxis().GetTitle())
-    print("#", obj.GetYaxis().GetTitle())
+    print("#", h.GetXaxis().GetTitle())
+    print("#", h.GetYaxis().GetTitle())
     print("# x errx y erry")
     n = g.GetN()
     for i in range(n):
@@ -61,7 +61,7 @@ def main():
 
     if not obj:
         print("%s not found in %s" % (args.objname, args.fname))
-        return 0
+        return 1
 
     print("#", obj.GetName(), obj.GetTitle())
 
