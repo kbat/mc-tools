@@ -7,10 +7,13 @@
 # https://github.com/kbat/mc-tools
 #
 
-if [ $# != 1 -a $# != 2 ]; then
-    echo "Usage: geocheck inp N"
+x=0
+y=0
+z=0
+if [ $# != 1 -a $# != 4 ]; then
+    echo "Usage: geocheck inp x y z"
     echo "       inp - MCNP(X) geometry to check"
-    echo "       N   - number of incident particles (default is 1E+6)."
+    echo "       x y z - sdef coordinates"
     exit 2
 fi
 
@@ -21,8 +24,10 @@ if [ ! -r $inp ]; then
 fi
 
 N=1E+6
-if [ $# == 2 ]; then
-    N=$2
+if [ $# == 4 ]; then
+    x=$2
+    y=$3
+    z=$4
 fi
 
 /bin/cp -f $inp /tmp
@@ -40,7 +45,7 @@ sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' $inp
 grep -i "^void *$" $inp || echo void >> $inp
 
 sed -i -n '/^[sS][dD][eE][fF]/{p;:a;N;/c ++++/!ba;s/.*\n//};p' $inp
-sed -i "s/^sdef.*/sdef/i" $inp
+sed -i "s/^sdef.*/sdef x=$x y=$y z=$z/i" $inp
 
 sed -i "s/^mt/c mt/i" $inp
 sed -i "s/^rand/c rand/i" $inp
