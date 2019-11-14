@@ -40,7 +40,7 @@ def g2ascii(g):
         print(g.GetX()[i], g.GetEX()[i], g.GetY()[i], g.GetEY()[i])
 
 def sparse2ascii(h):
-    """ Convert THnSparseT<> into text """
+    """ Convert THnSparse into text """
     nbins = h.GetNbins()
     print("# bin val err")
     for b in range(1,nbins+1):
@@ -71,7 +71,7 @@ def main():
         h12ascii(obj)
     elif obj.InheritsFrom("TGraph"):
         g2ascii(obj)
-    elif obj.InheritsFrom("THnSparseT<TArrayF>"):
+    elif obj.InheritsFrom("THnSparse"):
         sparse2ascii(obj)
     else:
         print("%s: class %s not supported" % (args.objname, obj.ClassName()))
