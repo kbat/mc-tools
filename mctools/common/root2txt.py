@@ -39,6 +39,13 @@ def g2ascii(g):
     for i in range(n):
         print(g.GetX()[i], g.GetEX()[i], g.GetY()[i], g.GetEY()[i])
 
+def sparse2ascii(h):
+    """ Convert THnSparseT<> into text """
+    nbins = h.GetNbins()
+    print("# bin val err")
+    for b in range(1,nbins+1):
+        print(b,h.GetBinContent(b),h.GetBinError(b))
+
 def main():
     """ Converts ROOT objects into ASCII format """
 
@@ -64,6 +71,8 @@ def main():
         h12ascii(obj)
     elif obj.InheritsFrom("TGraph"):
         g2ascii(obj)
+    elif obj.InheritsFrom("THnSparseT<TArrayF>"):
+        sparse2ascii(obj)
     else:
         print("%s: class %s not supported" % (args.objname, obj.ClassName()))
 
