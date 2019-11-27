@@ -1,19 +1,19 @@
-;; Generic mode for highlighting syntax for LANL's 
+;; Generic mode for highlighting syntax for LANL's
 ;; FLUKA Monte Carlo transport code input file.
 ;;
 ;; Latest version is available here:
 ;; https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el
 ;;
 ;; How to use:
-;; Put -*-fluka-*- on the first line of your 
+;; Put -*-fluka-*- on the first line of your
 ;; input file to autoload this mode (often this is the title card).
 ;;
 ;; Your .emacs file should contain something like:
 ;; (setq load-path (cons (expand-file-name "/path/to/your/lispdirectory") load-path))
 ;; (global-font-lock-mode t)
 ;; (load "fluka-mode")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'font-lock)
 (require 'generic)
 
@@ -51,13 +51,13 @@
   nil
   ;; keyword-list (do below also)
   nil
-  ;; font-lock-list (additional expressions to highlight) 
+  ;; font-lock-list (additional expressions to highlight)
   '(
     ("^*.*" . 'font-lock-comment-face)         ;; star sign comment indicator
     ("\\<\\(BME\\|DPMJET\\|MYRQMD\\|OPEN\\|RQMD\\|SOURCE\\|ERDUMP\\|USRGCALL\\|USRICALL\\|USROCALL\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(COMBNAME\\|DEFAULTS\\|DELTARAY\\|END\\|FREE\\|GLOBAL\\|GEOBEGIN\\|GEOEND\\|PLOTGEOM\\|RANDOMIZE\\|ROT-DEFI\\|START\\|STOP\\|TITLE\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(BIASING\\|DISCARD\\|DPMJET\\|EMF-BIAS\\|EMFF-OFF\\|EMFCUT\\|EMFFIX\\|EMFFLUO\\|EMFRAY\\|EMXPTRANS\\|FLUKAFIX\\|HI-PROPE\\|IONFLUCT\\|LAM-BIAS\\|LOW-BIAS\\|LOW-DOWN\\|MCSTHRES\\|MULSOPT\\|MUPHOTON\\|OPT-PROD\\|PAIRBREM\\|PHOTONUC\\|WW-FACTO\\|WW-PROFI\\|WW-THRES\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(BEAMAXES\\|BEAMPART\\|BEAMPOS\\|BEAM\\|DCYTIMES\\|ELCFIELD\\|EMF\\|EVENTYPE\\|IRRPROFI\\|LAMBBREM\\|LOW-NEUT\\|MGNFIELD\\|PART-THR\\|PHYSICS\\|POLARIZA\\|RADDECAY\\|PROD-CUT\\|STEPSIZE\\|THRESHOL\\|TIME-CUT\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(COMBNAME\\|DEFAULTS\\|DELTARAY\\|ELECTNUC\\|ELPO-THR\\|END\\|FREE\\|GLOBAL\\|GEOBEGIN\\|GEOEND\\|PLOTGEOM\\|RANDOMIZE\\|ROT-DEFI\\|START\\|STOP\\|TITLE\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(BIASING\\|DISCARD\\|DPMJET\\|EMF-BIAS\\|EMFF-OFF\\|EMFCUT\\|EMFFIX\\|EMFFLUO\\|EMFRAY\\|EMXPTRANS\\|FLUKAFIX\\|HI-PROPE\\|IONFLUCT\\|LAM-BIAS\\|LOW-BIAS\\|LOW-DOWN\\|MCSTHRES\\|MULSOPT\\|MUMUPAIR\\|MUPHOTON\\|OPT-PROD\\|PAIRBREM\\|PHOTONUC\\|WW-FACTO\\|WW-PROFI\\|WW-THRES\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(BEAMAXES\\|BEAMPART\\|BEAMPOS\\|BEAM\\|DCYTIMES\\|ELCFIELD\\|EMF\\|EVENTYPE\\|IRRPROFI\\|LAMBBREM\\|LOW-NEUT\\|MGNFIELD\\|PART-THR\\|PHO2-THR\\|PHOT-THR\\|PHYSICS\\|POLARIZA\\|PROD-CUT\\|RADDECAY\\|STEPSIZE\\|THRESHOL\\|TIME-CUT\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^\\(ARB\\|BOX\\|ELL\\|PLA\\|R\\(AW\\|CC\\|EC\\|PP\\)\\|SPH\\|TRC\\|WED\\|X\\(CC\\|EC\\|YP\\|ZP\\)\\|Y\\(CC\\|EC\\|ZP\\)\\|Z\\(CC\\|EC\\)\\|QUA\\)\\)\\>" . 'font-lock-surface-face)
     ("\\<\\(AUXSCORE\\|DCYSCORE\\|DETECT\\|EVENTBIN\\|EVENTDAT\\|RESNUCLE\\|ROTPRBIN\\|SCORE\\|TCQUENCH\\|USERWEIG\\|USRBDX\\|USRBIN\\|USRCOLL\\|USRTRACK\\|USRYIELD\\)\\>" . 'font-lock-tally-face)
@@ -68,7 +68,7 @@
     ("\\<\\(ALL-PART\\|DOSE-EQ\\|ELECTRON\\|ENERGY\\|NEUTRON\\|PHOTON\\|PROTON\\)\\>" . 'font-lock-particle-face)
     ("\\<\\(EAP74\\|ERT74\\|EWT74\\|EAPMP\\|ERTMP\\|EWTMP\\|AMB74\\|AMBGS\\)\\>" . 'font-lock-flux2dose-face)
 
-    ("\\<\\(CALORIME\\|EET\/TRANS\\|EM-CASCA\\|ICARUS\\|HADRONTHE\\|NEW-DEFA\\|PRECISIO\\|SHIELDIN\\)\\>" . 'font-lock-defaults-face)
+    ("\\<\\(CALORIME\\|EET\/TRANS\\|EM-CASCA\\|ICARUS\\|HADRONTHE\\|NEW-DEFA\\|PRECISION\\|SHIELDING\\)\\>" . 'font-lock-defaults-face)
     )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '(".inp\\'")
