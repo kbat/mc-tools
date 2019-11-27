@@ -78,6 +78,7 @@ def main():
         parser.add_argument("-flip", action='store_true', default=False, dest='flip', help='Flip the vertical axis')
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
+        parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
 	args = parser.parse_args()
 
@@ -98,28 +99,34 @@ def main():
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
 
+        if args.verbose: print("Projecting 3D data onto 2D histogram")
+
         dh2 = dh.Project3D(args.plane)
         dh2.Scale(args.scale)
 
         if args.flip:
+                if args.verbose: print("Flipping the data histogram")
                 dh2 = FlipTH2(dh2)
 
         if args.title is not None:
                 dh2.SetTitle(args.title)
-            
+
         if args.xtitle:
             dh2.SetXTitle(args.xtitle)
-            
+
         if args.ytitle:
             dh2.SetYTitle(args.ytitle)
-            
+
         if args.ztitle:
             if args.doption == 'colz':
                 c1.SetRightMargin(args.right_margin);
             dh2.SetZTitle(args.ztitle)
-        
+
+        if args.verbose: print("Drawing data")
+
         dh2.Draw(args.doption)
         dh2.SetContour(args.dcont)
+        c1.Update()
 
         if args.logz:
                 ROOT.gPad.SetLogz()
@@ -133,8 +140,10 @@ def main():
         if args.gfile is not None:
             gf = ROOT.TFile(args.gfile)
             gh = gf.Get(args.ghist)
+            if args.verbose: print("Projecting 3D geometry onto 2D histogram")
             gh2 = gh.Project3D(args.plane)
             if args.flip:
+                    if args.verbose: print("Flipping the geometry histogram")
                     gh2 = FlipTH2(gh2)
             gh2.SetLineWidth(args.glwidth)
             gh2.SetLineColor(eval("ROOT.%s" % args.glcolor))
@@ -145,11 +154,13 @@ def main():
         color = ROOT.TColor(ci,0.27843137254900002, 0.27843137254900002, 0.6)
 
         if args.bgcol:
+                if args.verbose: print("Setting the background color")
                 c1.Update()
                 c1.GetFrame().SetFillColor(ci)
                 dh2.GetXaxis().SetAxisColor(ci)
                 dh2.GetYaxis().SetAxisColor(ci)
 
+        if args.verbose: print("Done")
         if args.output:
                 ROOT.gPad.Print(args.output)
         else:
