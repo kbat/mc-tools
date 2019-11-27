@@ -6,6 +6,7 @@ from __future__ import print_function
 import sys,time,os,re
 from array import array
 import ROOT, argparse
+import pandas as pd
 
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -32,7 +33,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
             if 'mcnp' not in opt:
                 x = float(words[colxmin])
                 vx.append(x)
-            if 'center' in opt: 
+            if 'center' in opt:
                 line_number = line_number + 1
                 continue
             elif 'mcnp' in opt:
@@ -67,52 +68,68 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
 
     return h
 
+def mcnp(fin, fout, hname, htitle, x,y):
+    df = pd.read_csv(fin, header=None, sep=' ', names=["x", "y"]) # data frame
+##    df.info()
+    nrow,ncol = df.shape
+    nbins = nrow-1 # number of bins in the histogram
+
+#    print(df['x'][1])
+
+    vx = []
+    for i in range(nrow):
+        x = df['x'][i]
+        vx.append(x)
+
+    h = ROOT.TH1F(hname, htitle, nbins, array('f', vx))
+
+    for i in range(nbins):
+        h.SetBinContent(i+1, df['y'][i])
+
+    h.Print('a')
+
+    return h
+
+
 def main():
     """
-    Converts ASCII table to TH1
-    Usage: ascii2th1 colxmin coly opt fname
-           coly - number of column with data
-                  relative data errors are assumed to be in coly+1
-                  xbins are assumed to be in the columns 0 and 1
-           opt - comma separated list of options. set it to 'width' if you need to divide y by the bin width
-                otherwise use 'no'
-                 if opt == 'center' then instead of lower/upper bin boundary only bin center is given (=>skip the 1st record and do things wrong... -> check required).
-           Lines starting with '#' are ignored.
-
-           EXAMPLE: assume you have a file with the following structure:
-                     x1   x2    y1 ey1
-                     x2   x3    y2 ey2
-                     x3   x4    y3 ey3
-                    so, in order to convert it in ROOT you write: ascii2th1 0 2 width file.txt
+    Converts ASCII table to TH1.
+    Column numbering starts from ONE.
     """
-    supported_options = ['no', 'width', 'center', 'mcnp', 'abserr']
+    supported_options = ['root', 'mcnp', 'center']
 
     parser = argparse.ArgumentParser(description=main.__doc__, epilog='epilog')
     parser.add_argument('-xmin',  dest='colxmin',  type=int, help='xmin column', required=True)
-    parser.add_argument('-xmax',  dest='colxmax',  type=int, help='xmax column', required=True)
-    parser.add_argument('-ex',  dest='colex',  type=int, help='x-err column', required=True)
+    parser.add_argument('-xmax',  dest='colxmax',  type=int, help='xmax column', default=-1)
+    parser.add_argument('-ex',  dest='colex',  type=int, help='x-err column', default=-1)
     parser.add_argument('-y',  dest='coly',  type=int, help='y column', required=True)
-    parser.add_argument('-ey',  dest='coley',  type=int, help='y-err column', required=True)
+    parser.add_argument('-ey',  dest='coley',  type=int, help='y-err column', default=-1)
     parser.add_argument('-hname',  dest='hname',  type=str, help='histogram name', required=False, default='h')
     parser.add_argument('-htitle',  dest='htitle',  type=str, help='histogram title', required=False, default="")
-    parser.add_argument('option', type=str, help='option', choices=supported_options) #, metavar='(e-the|e-phi)')
+    parser.add_argument('option', type=str, help='option', choices=supported_options)
     parser.add_argument('inname', type=str, help='input file')
-    results = parser.parse_args()
+
+    args = parser.parse_args()
 
     if len(sys.argv) == 1:
         print(main.__doc__)
         sys.exit(1)
 
 
-    fname_in = results.inname
+    fname_in = args.inname
     fname_out = fname_in.replace(".dat", ".root")
     if fname_in == fname_out: fname_out = fname_in + ".root"
     print(fname_in, '=>',fname_out)
 
     fout = ROOT.TFile(fname_out, "recreate")
-    GetHistogram(results.colxmin, results.colxmax, results.coly, results.coley, results.option, results.hname, results.htitle, fname_in).Write()
+    if args.option == "mcnp":
+        h = mcnp(fname_in, fname_out, args.hname, args.htitle, args.colxmin, args.coly)
+        h.Write()
+    else:
+        GetHistogram(args.colxmin, args.colxmax, args.coly, args.coley, args.option, args.hname, args.htitle, fname_in).Write()
+
     fout.Close()
-    
+
 
 
 if __name__ == "__main__":
