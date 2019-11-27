@@ -32,8 +32,8 @@ def h22ascii(h):
 
 def g2ascii(g):
     """ Convert TGraph and TGraphErrors into text """
-    print("#", h.GetXaxis().GetTitle())
-    print("#", h.GetYaxis().GetTitle())
+    print("#", g.GetXaxis().GetTitle())
+    print("#", g.GetYaxis().GetTitle())
     print("# x errx y erry")
     n = g.GetN()
     for i in range(n):
