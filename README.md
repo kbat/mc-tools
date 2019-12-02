@@ -48,7 +48,7 @@ Project homepage: https://github.com/kbat/mc-tools
     which allows to animate the output of the **t-3dshow** tally. It
     runs PHITS to generate many images, so one can get a rotating
     video of geometry setup. Example:
-    [rotate3dshow.gif](http://mc-tools.googlecode.com/files/rotate3dshow.gif)
+    [snowman.gif](https://phits.jaea.go.jp/image/snowman.gif)
     (should be viewed with an image viewer which supports GIF
     animation).  A simplified version of this script with a detailed
     manual can be downloaded from the PHITS website:
