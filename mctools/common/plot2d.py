@@ -135,7 +135,7 @@ def main():
                 dh2.SetMinimum(args.zmin)
 
         if args.zmax:
-                dh2.SetMinimum(args.zmax)
+                dh2.SetMaximum(args.zmax)
 
         if args.gfile is not None:
             gf = ROOT.TFile(args.gfile)
