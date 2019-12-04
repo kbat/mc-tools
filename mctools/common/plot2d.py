@@ -18,6 +18,15 @@ try:
 except NameError:
         pass
 
+def checkMinMax(parser,vmin,vmax,title):
+        """ Checks min/max values """
+        if vmin != None and vmax is None:
+                parser.error("Both %smin and %smax must be set." % (title,title))
+        elif vmax != None and vmin is None:
+                parser.error("Both %smin and %smax must be set." % (title,title))
+        elif vmin != None and vmax !=None and vmin >= vmax:
+                parser.error("%smin must be < %smax" % (title,title))
+
 def setColourMap():
         """ Sets the colour map used at MAX IV """
 
@@ -64,11 +73,15 @@ def main():
         parser.add_argument("-glwidth", type=int, dest='glwidth', help='Geometry line width', default=2)
         parser.add_argument("-glcolor", type=str, dest='glcolor', help='Geometry line color (ROOT names)', default="kBlack")
         parser.add_argument("-title",  type=str, dest='title',   help='Plot title',   default=None)
-        parser.add_argument("-xtitle", type=str, dest='xtitle', help='x-axis title', default=None)
-        parser.add_argument("-ytitle", type=str, dest='ytitle', help='y-axis title', default=None)
-        parser.add_argument("-ztitle", type=str, dest='ztitle', help='z-axis title', default=None)
-        parser.add_argument("-zmin",   type=float, dest='zmin', help='z-axis min value', default=None, required=False)
-        parser.add_argument("-zmax",   type=float, dest='zmax', help='z-axis max value', default=None, required=False)
+        parser.add_argument("-xtitle", type=str, dest='xtitle', help='horizontal axis title', default=None)
+        parser.add_argument("-ytitle", type=str, dest='ytitle', help='vertical axis title', default=None)
+        parser.add_argument("-ztitle", type=str, dest='ztitle', help='colour axis title', default=None)
+        parser.add_argument("-xmin",   type=float, dest='xmin', help='horizontal axis min value', default=None, required=False)
+        parser.add_argument("-xmax",   type=float, dest='xmax', help='horizontal axis max value', default=None, required=False)
+        parser.add_argument("-ymin",   type=float, dest='ymin', help='vertical axis min value', default=None, required=False)
+        parser.add_argument("-ymax",   type=float, dest='ymax', help='vertical axis max value', default=None, required=False)
+        parser.add_argument("-zmin",   type=float, dest='zmin', help='colour axis min value', default=None, required=False)
+        parser.add_argument("-zmax",   type=float, dest='zmax', help='colour axis max value', default=None, required=False)
         parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
         parser.add_argument("-width",  type=int, dest='width',  help='Canvas width',  default=800)
         parser.add_argument("-height", type=int, dest='height', help='Canvas height. If not specified, it is calculated from the width with the golden ratio rule.', default=None)
@@ -81,6 +94,9 @@ def main():
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
 	args = parser.parse_args()
+
+        checkMinMax(parser, args.xmin, args.xmax, 'x')
+        checkMinMax(parser, args.ymin, args.ymax, 'y')
 
         ROOT.gStyle.SetOptStat(False)
         ROOT.gStyle.SetPalette(ROOT.kTemperatureMap)
@@ -128,13 +144,19 @@ def main():
         dh2.SetContour(args.dcont)
         c1.Update()
 
+        if args.xmin is not None:
+                dh2.GetXaxis().SetRangeUser(args.xmin, args.xmax)
+
+        if args.ymin is not None:
+                dh2.GetYaxis().SetRangeUser(args.ymin, args.ymax)
+
         if args.logz:
                 ROOT.gPad.SetLogz()
 
-        if args.zmin:
+        if args.zmin is not None:
                 dh2.SetMinimum(args.zmin)
 
-        if args.zmax:
+        if args.zmax is not None:
                 dh2.SetMaximum(args.zmax)
 
         if args.gfile is not None:
