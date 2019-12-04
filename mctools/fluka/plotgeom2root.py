@@ -102,8 +102,8 @@ def main():
                     coord = struct.unpack("=%df" % (wlength*2),data) # pairs of x,y
                     if args.verbose:
                         print(coord[:10])
-                    x = coord[::2]
-                    y = coord[1::2]
+                    x = map(lambda x:x+Y0, coord[::2]) #[x+Y0 for x in coord[::2]]
+                    y = map(lambda y:y+X0, coord[1::2])
                     g = ROOT.TGraph(len(x), array('f', x), array('f', y))
                     g.SetName("g%d" % i)
                     mg.Add(g)
