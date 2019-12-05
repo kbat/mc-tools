@@ -56,11 +56,12 @@ class Converter:
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
+        self.datafiles = [] # list of data files (to delete)
 
         # Generate the output root file name:
         self.root  = self.getROOTFileName()
         self.basename = os.path.splitext(self.root)[0]
-        
+
         if not self.overwrite and os.path.isfile(self.root):
             sys.exit("Can't overwrite %s. Remove it or use the '-f' argument." % self.root)
 
@@ -98,7 +99,7 @@ class Converter:
                 if re.search(r"\AFREE", line):
                     print("Error:\tFree-format input is not supported.", file=sys.stderr)
                     return 2
-                    
+
         return 0
 
     def getSuwFileName(self, e, u):
@@ -112,7 +113,7 @@ class Converter:
     def getOpenedUnits(self):
         """Get the list of opened (named) units
         """
-    
+
         inp = open(self.inp[0], "r")
         isname = False
         opened = []
@@ -129,7 +130,7 @@ class Converter:
             if len(opened):
                 print("Opened (named) units: ", opened)
         inp.close()
-    
+
         return opened
 
     def assignUnits(self):
@@ -172,7 +173,7 @@ class Converter:
                 for inp in self.inp:
                     for f in glob.glob("%s*_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
                         e.addFile(u,f)
-                    
+
     def Merge(self):
         """ Merge all data with standard FLUKA tools
         """
@@ -229,7 +230,7 @@ class Converter:
             print("Converting...")
 
         v = "-v" if self.verbose else ""
-            
+
         for e in self.estimators:
             if not len(e.units):
                 continue
@@ -258,6 +259,7 @@ class Converter:
                     return_value = os.system(command)
                     if return_value:
                         sys.exit(2)
+            self.datafiles.append(datafiles)
 
         if self.verbose:
             print("ROOT files produced: ", self.out_root_files)
@@ -268,7 +270,7 @@ class Converter:
             printincolor(command)
         return_value = os.system(command)
         if return_value is 0:
-            command = "rm -f %s %s" % (v, ' '.join(self.out_root_files + datafiles))
+            command = "rm -f %s %s" % (v, ' '.join(self.out_root_files + [item for sublist in self.datafiles for item in sublist]))
             if self.verbose:
                 printincolor(command)
             return_value = os.system(command)
