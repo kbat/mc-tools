@@ -172,7 +172,8 @@ class Converter:
             for u in e.units:
                 for inp in self.inp:
                     for f in glob.glob("%s*_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
-                        e.addFile(u,f)
+                        if f not in e.units[u]: # TODO: this can be done smarter
+                            e.addFile(u,f)
 
     def Merge(self):
         """ Merge all data with standard FLUKA tools
