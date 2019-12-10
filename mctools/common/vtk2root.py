@@ -23,7 +23,7 @@ class VTK:
         title = f.readline().strip()
         form = f.readline().strip()
         dataset = f.readline().strip().split()[1]
-        
+
         if dataset != 'RECTILINEAR_GRID':
             sys.exit("Error: Unsupported format")
         self.nx,self.ny,self.nz = list(map(int, f.readline().strip().split()[1:]))
@@ -80,9 +80,9 @@ class VTK:
 
         return val
 
-    def getTH3(self):
+    def getTH3(self,htype):
         title = os.path.splitext(os.path.basename(self.fname))[0]
-        h = ROOT.TH3S("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
+        h = eval("ROOT."+htype)("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
         ii = 0
         for k in range(self.nz):
             for j in range(self.ny):
@@ -95,21 +95,23 @@ def main():
     """
     VTK -> ROOT converter
     """
-    parser = argparse.ArgumentParser(description=main.__doc__,epilog="Homepage: https://github.com/kbat/mc-tools")
+    allowed_types = ("TH3C", "TH3D", "TH3F", "TH3I", "TH3S");
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('vtk', type=str, help='VTK input file name')
-    parser.add_argument('root', type=str, nargs='?', help="ROOT output file name",default="")
+    parser.add_argument("-type", type=str, dest='htype',   help='TH3 type', default="TH3I", choices=allowed_types)
+    parser.add_argument('root', type=str, nargs='?', help="ROOT output file name",default=None)
     args = parser.parse_args()
 
-    if args.root == "":
+    if args.root is None:
         args.root = os.path.splitext(os.path.basename(args.vtk))[0] + ".root"
 
-    print("vtk2root: short integer values are assumed")
     fin = VTK(args.vtk)
-    h = fin.getTH3()
+    h = fin.getTH3(args.htype)
     h.SaveAs(args.root)
 
-    
+
 
 if __name__=="__main__":
     sys.exit(main())
-
