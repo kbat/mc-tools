@@ -30,14 +30,23 @@ def h22ascii(h):
             y = h.GetYaxis()
             print(x.GetBinLowEdge(xbin), x.GetBinLowEdge(xbin+1), y.GetBinLowEdge(ybin), y.GetBinLowEdge(ybin+1), h.GetBinContent(xbin, ybin), h.GetBinError(xbin, ybin))
 
-def g2ascii(g):
-    """ Convert TGraph and TGraphErrors into text """
+def ge2ascii(g):
+    """ Convert TGraphErrors into text """
     print("#", g.GetXaxis().GetTitle())
     print("#", g.GetYaxis().GetTitle())
     print("# x errx y erry")
     n = g.GetN()
     for i in range(n):
         print(g.GetX()[i], g.GetEX()[i], g.GetY()[i], g.GetEY()[i])
+
+def g2ascii(g):
+    """ Convert TGraph into text """
+    print("#", g.GetXaxis().GetTitle())
+    print("#", g.GetYaxis().GetTitle())
+    print("# x y")
+    n = g.GetN()
+    for i in range(n):
+        print(g.GetX()[i], g.GetY()[i])
 
 def sparse2ascii(h):
     """ Convert THnSparse into text """
@@ -69,6 +78,8 @@ def main():
         h22ascii(obj)
     elif obj.InheritsFrom("TH1"):
         h12ascii(obj)
+    elif obj.InheritsFrom("TGraphError"):
+        ge2ascii(obj)
     elif obj.InheritsFrom("TGraph"):
         g2ascii(obj)
     elif obj.InheritsFrom("THnSparse"):
