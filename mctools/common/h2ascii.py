@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python2 -W all
 
 from __future__ import print_function
 from sys import argv, exit
@@ -9,8 +9,9 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 def main():
     """ Converts TH[12] and TGraphErrors into ASCII format"""
 
-    parser = argparse.ArgumentParser(description=main.__doc__,
-                                    epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser = argparse.ArgumentParser
+       (description=main.__doc__,epilog="Homepage: https://github.com/kbat/mc-tools")
+       
     parser.add_argument('fname', type=str, help='ROOT file name')
     parser.add_argument('hname', type=str, help='Object name')
 
@@ -26,7 +27,7 @@ def main():
     print("#", h.GetYaxis().GetTitle())
     if h.InheritsFrom("TH1") or h.InheritsFrom("TH2"):
         print("#", h.GetZaxis().GetTitle())
-        print("# xmin xmax y y_rel_error")
+        print("# xmin xmax y y_abs_error")
     elif h.InheritsFrom("TGraph"):
         print("# x x_abs_err y y_abs_err")
 
@@ -37,7 +38,7 @@ def main():
             for ybin in range(1, nbinsy+1):
                 error = 0.0
                 val = h.GetBinContent(xbin, ybin)
-                if val != 0:  error = h.GetBinError(xbin, ybin) / val
+                if val != 0:  error = h.GetBinError(xbin, ybin) 
                 print(h.GetXaxis().GetBinLowEdge(xbin), h.GetXaxis().GetBinLowEdge(xbin+1), h.GetYaxis().GetBinLowEdge(ybin), h.GetYaxis().GetBinLowEdge(ybin+1), val, error)
 
     elif h.InheritsFrom("TH1"):

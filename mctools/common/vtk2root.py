@@ -1,7 +1,8 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python3 -W all
 #
 # https://github.com/kbat/mc-tools
 #
+
 
 from __future__ import print_function
 import os,sys,re,numpy,argparse
@@ -26,7 +27,8 @@ class VTK:
         
         if dataset != 'RECTILINEAR_GRID':
             sys.exit("Error: Unsupported format")
-        self.nx,self.ny,self.nz = list(map(int, f.readline().strip().split()[1:]))
+        self.nx,self.ny,self.nz =     \
+           list(map(int, f.readline().strip().split()[1:]))
         f.close()
 
 #        print(title,form, dataset)
@@ -46,7 +48,7 @@ class VTK:
         f = open(self.fname)
         for line in f:
             l = line.strip()
-            if re.search("\A%s_COORDINATES" % c,l):
+            if re.search("^%s_COORDINATES" % c,l):
                 n = l.split()[1]
                 found = True
                 continue
@@ -58,11 +60,13 @@ class VTK:
                         dx = 1 # arbitrary
                     val.append(val[-1]+dx)
                     d[n] = val
-                    return val
+                    break
+#                    return val
                 else:
                     for v in l.split():
                         val.append(float(v))
         f.close()
+        return val
 
     def readTable(self):
         "Read LOOKUP_TABLE"
@@ -71,7 +75,7 @@ class VTK:
         with open(self.fname) as f:
             for line in f:
                 l = line.strip()
-                if re.search("\ALOOKUP_TABLE", l):
+                if re.search("^LOOKUP_TABLE", l):
                     found = True
                     continue
                 if found:
@@ -82,7 +86,10 @@ class VTK:
 
     def getTH3(self):
         title = os.path.splitext(os.path.basename(self.fname))[0]
-        h = ROOT.TH3S("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
+        h = ROOT.TH3I("h3", "%s;x;y;z" % title,
+                      self.nx, numpy.array(self.x),
+                      self.ny, numpy.array(self.y),
+                      self.nz, numpy.array(self.z))
         ii = 0
         for k in range(self.nz):
             for j in range(self.ny):
@@ -103,7 +110,7 @@ def main():
     if args.root == "":
         args.root = os.path.splitext(os.path.basename(args.vtk))[0] + ".root"
 
-    print("vtk2root: short integer values are assumed")
+    print("vtk2root: 32bit integer values are assumed")
     fin = VTK(args.vtk)
     h = fin.getTH3()
     h.SaveAs(args.root)
