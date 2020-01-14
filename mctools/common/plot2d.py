@@ -9,7 +9,7 @@ from sys   import exit
 from array import array
 from math  import sqrt
 import ROOT
-from mctools.common import FlipTH2
+from mctools.common import FlipTH2, DynamicSlice
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 # runs in both Python 2 and 3
@@ -92,6 +92,7 @@ def main():
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
+        parser.add_argument('-p', '--project', type=int, dest='project', help='Show live projections', default=0)
 
 	args = parser.parse_args()
 
@@ -111,6 +112,11 @@ def main():
         c1title = args.dfile+" "+args.dhist+" "+args.plane
         c1 = ROOT.TCanvas("c1", c1title, args.width, height)
         setColourMap()
+
+        if args.project:
+                c1.Divide(2,2)
+        c1.cd(1)
+        pad1 = ROOT.gPad
 
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
@@ -134,15 +140,15 @@ def main():
             dh2.SetYTitle(args.ytitle)
 
         if args.ztitle:
-            if args.doption == 'colz':
-                c1.SetRightMargin(args.right_margin);
-            dh2.SetZTitle(args.ztitle)
+                if args.doption == 'colz':
+                        pad1.SetRightMargin(args.right_margin);
+                dh2.SetZTitle(args.ztitle)
 
         if args.verbose: print("Drawing data")
 
         dh2.Draw(args.doption)
         dh2.SetContour(args.dcont)
-        c1.Update()
+        pad1.Update()
 
         if args.xmin is not None:
                 dh2.GetXaxis().SetRangeUser(args.xmin, args.xmax)
@@ -177,10 +183,15 @@ def main():
 
         if args.bgcol:
                 if args.verbose: print("Setting the background color")
-                c1.Update()
-                c1.GetFrame().SetFillColor(ci)
+                pad1.Update()
+                pad1.GetFrame().SetFillColor(ci)
                 dh2.GetXaxis().SetAxisColor(ci)
                 dh2.GetYaxis().SetAxisColor(ci)
+
+        if args.project:
+                import __main__
+                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.project)
+                pad1.AddExec('dynamic', 'TPython::Exec( "slicer()" );')
 
         if args.verbose: print("Done")
         if args.output:
