@@ -76,8 +76,8 @@ def mcnp(fin, fout, hname, htitle, x,y):
 
 #    print(df['x'][1])
 
-    vx = []
-    for i in range(nrow):
+    vx = [0]
+    for i in range(nbins):
         x = df['x'][i]
         vx.append(x)
 
