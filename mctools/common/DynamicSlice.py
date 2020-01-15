@@ -17,6 +17,8 @@ class DynamicSlice:
       self._old  = None
       self.hname = hname
       self.nbins = nbins
+      self.projection = 1
+      self.logy = 0
 
    def __call__( self ):
 
@@ -28,6 +30,12 @@ class DynamicSlice:
          return
 
       gPad.GetCanvas().FeedbackMode( kTRUE )
+
+      event = gPad.GetEvent()
+      if (event==1): # left mouse click
+         self.projection = 1 - self.projection
+      elif (event==12): # middle mouse click
+         self.logy = 1 - self.logy
 
     # erase old position and draw a line at current position
       px = gPad.GetEventX()
@@ -60,12 +68,14 @@ class DynamicSlice:
          self._DestroyPrimitive( 'X' )
 
       if not self._cY:
-         self._cY = gPad.GetCanvas().GetPad(3)
+         self._cY = gPad.GetCanvas().GetPad(2)
       else:
          self._DestroyPrimitive( 'Y' )
 
-      self.DrawSlice( h, y, 'Y' )
-#      self.DrawSlice( h, x, 'X' )
+      if self.projection:
+         self.DrawSlice( h, y, 'Y' )
+      else:
+         self.DrawSlice( h, x, 'X' )
 
       padsav.cd()
 
@@ -97,4 +107,5 @@ class DynamicSlice:
       yaxis = hp.GetYaxis()
       yaxis.SetMaxDigits(2)
       yaxis.SetTitle(histo.GetZaxis().GetTitle())
+      canvas.SetLogy(self.logy)
       canvas.Update()

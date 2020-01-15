@@ -9,8 +9,8 @@ from sys   import exit
 from array import array
 from math  import sqrt
 import ROOT
-from mctools.common import FlipTH2, DynamicSlice
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+from mctools.common import FlipTH2, DynamicSlice
 
 # runs in both Python 2 and 3
 try:
@@ -92,7 +92,7 @@ def main():
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
-        parser.add_argument('-slice', type=int, dest='slice', help='Show live projections', default=0)
+        parser.add_argument('-slice', type=int, dest='slice', help='Show live projection. Left mouse click swaps axes, middle button click swaps logy.', default=None)
 
 	args = parser.parse_args()
 
@@ -114,7 +114,7 @@ def main():
         setColourMap()
 
         if args.slice:
-                c1.Divide(2,2)
+                c1.Divide(1,2)
         c1.cd(1)
         pad1 = ROOT.gPad
 
