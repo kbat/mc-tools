@@ -92,7 +92,7 @@ def main():
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
-        parser.add_argument('-p', '--project', type=int, dest='project', help='Show live projections', default=0)
+        parser.add_argument('-slice', type=int, dest='slice', help='Show live projections', default=0)
 
 	args = parser.parse_args()
 
@@ -113,7 +113,7 @@ def main():
         c1 = ROOT.TCanvas("c1", c1title, args.width, height)
         setColourMap()
 
-        if args.project:
+        if args.slice:
                 c1.Divide(2,2)
         c1.cd(1)
         pad1 = ROOT.gPad
@@ -188,9 +188,9 @@ def main():
                 dh2.GetXaxis().SetAxisColor(ci)
                 dh2.GetYaxis().SetAxisColor(ci)
 
-        if args.project:
+        if args.slice:
                 import __main__
-                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.project)
+                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.slice)
                 pad1.AddExec('dynamic', 'TPython::Exec( "slicer()" );')
 
         if args.verbose: print("Done")
