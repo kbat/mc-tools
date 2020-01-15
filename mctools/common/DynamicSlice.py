@@ -33,9 +33,9 @@ class DynamicSlice:
 
       event = gPad.GetEvent()
       if (event==1): # left mouse click
-         self.projection = 1 - self.projection
+         self.projection = not self.projection
       elif (event==12): # middle mouse click
-         self.logy = 1 - self.logy
+         self.logy = not self.logy
 
     # erase old position and draw a line at current position
       px = gPad.GetEventX()

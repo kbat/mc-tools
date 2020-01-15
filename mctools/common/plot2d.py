@@ -10,7 +10,7 @@ from array import array
 from math  import sqrt
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from mctools.common import FlipTH2, DynamicSlice
+from mctools.common import FlipTH2, DynamicSlice, ErrorHist
 
 # runs in both Python 2 and 3
 try:
@@ -93,6 +93,7 @@ def main():
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
         parser.add_argument('-slice', type=int, dest='slice', help='Show live projection. Left mouse click swaps axes, middle button click swaps logy.', default=None)
+        parser.add_argument('-errors', action='store_true', default=False, dest='errors', help='Plot the histogram with relative errors instead of data')
 
 	args = parser.parse_args()
 
@@ -125,6 +126,19 @@ def main():
 
         dh2 = dh.Project3D(args.plane)
         dh2.Scale(args.scale)
+
+        if args.errors:
+                if args.verbose:
+                        print("Showing the histogram with errors")
+                dh2 = ErrorHist(dh2)
+                args.ztitle = "Relative error"
+                if args.zmin:
+                        args.zmin = 0
+                        if args.verbose: print("zmin set to 0")
+                if args.zmax>1:
+                        args.zmax = 1
+                        if args.verbose: print("zmax set to 1")
+                args.logz = False
 
         if args.flip:
                 if args.verbose: print("Flipping the data histogram")
