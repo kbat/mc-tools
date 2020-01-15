@@ -76,19 +76,25 @@ class DynamicSlice:
 
    def DrawSlice( self, histo, value, xy ):
       yx = xy == 'X' and 'Y' or 'X'
+      vert_axis = xy == 'X' and 'Y' or 'X'
 
     # draw slice corresponding to mouse position
       canvas = getattr( self, '_c'+xy )
       canvas.SetGrid()
       canvas.cd()
 
-      bin = getattr( histo, 'Get%saxis' % xy )().FindBin( value )
-      hp = getattr( histo, 'Projection' + yx )( '', bin, bin+self.nbins-1 )
+      axis = getattr( histo, 'Get%saxis' % xy )()
+      bin1 = axis.FindBin( value )
+      bin2 = bin1+self.nbins-1
+      vmin = axis.GetBinLowEdge(bin1)
+      vmax = axis.GetBinLowEdge(bin2+1)
+      hp = getattr( histo, 'Projection' + yx )( 'Projection ' + xy, bin1, bin2 )
       hp.SetFillColor( 38 )
-      hp.SetName( 'Projection ' + xy )
-      hp.SetTitle( xy + 'Projection of bin=%d' % bin )
+      hp.SetTitle( xy + 'Projection of %d bins: %g < %s < %g' % (self.nbins, vmin, vert_axis, vmax) )
       hp.Scale(1.0/self.nbins)
       hp.Smooth(self.nbins)
       hp.Draw("hist");
-      hp.GetYaxis().SetMaxDigits(2)
+      yaxis = hp.GetYaxis()
+      yaxis.SetMaxDigits(2)
+      yaxis.SetTitle(histo.GetZaxis().GetTitle())
       canvas.Update()
