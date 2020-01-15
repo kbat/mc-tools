@@ -2,11 +2,9 @@
 #
 # Adopted from $ROOTSYS/tutorials/pyroot/DynamicSlice.py
 
-import sys
-
-from ROOT import gRandom, gPad, gROOT, gVirtualX
-from ROOT import kTRUE, kRed
-from ROOT import TCanvas, TH2, TH2F, Double
+from ROOT import gPad, gVirtualX
+from ROOT import kTRUE
+from ROOT import TCanvas, TH2
 
 
 class DynamicSlice:
@@ -100,7 +98,7 @@ class DynamicSlice:
       vmax = axis.GetBinLowEdge(bin2+1)
       hp = getattr( histo, 'Projection' + yx )( 'Projection ' + xy, bin1, bin2 )
       hp.SetFillColor( 38 )
-      hp.SetTitle( xy + 'Projection of %d bins: %g < %s < %g' % (self.nbins, vmin, vert_axis, vmax) )
+      hp.SetTitle( xy + 'Projection of %d bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
       hp.Scale(1.0/self.nbins)
       hp.Smooth(self.nbins)
       hp.Draw("hist");
