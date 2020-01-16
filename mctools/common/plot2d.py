@@ -55,15 +55,15 @@ def setColourMap():
         ROOT.gStyle.SetNumberContours(NCont)
 
 def main():
-	"""A simple TH2 plotter with optional geometry overlay
-	"""
-	parser = argparse.ArgumentParser(description=main.__doc__,
+        """A simple TH2 plotter with optional geometry overlay
+        """
+        parser = argparse.ArgumentParser(description=main.__doc__,
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-					 epilog="Homepage: https://github.com/kbat/mc-tools")
-	parser.add_argument('dfile', type=str, help='Data file name')
-	parser.add_argument('dhist', type=str, help='Data histogram name')
-	parser.add_argument('gfile', type=str, help='Geometry file name', nargs='?')
-	parser.add_argument('ghist', type=str, help='Geometry histogram name', nargs='?', default='h3')
+                                         epilog="Homepage: https://github.com/kbat/mc-tools")
+        parser.add_argument('dfile', type=str, help='Data file name')
+        parser.add_argument('dhist', type=str, help='Data histogram name')
+        parser.add_argument('gfile', type=str, help='Geometry file name', nargs='?')
+        parser.add_argument('ghist', type=str, help='Geometry histogram name', nargs='?', default='h3')
         parser.add_argument("-plane",type=str, dest='plane', help='Plane', default="xy", choices=['xy','xz','yx','yz','xz','zy'])
         parser.add_argument("-scale",   type=float, dest='scale', help='Scale', default=1.0)
         parser.add_argument("-doption", type=str, dest='doption', help='Data draw option', default="colz")
@@ -95,7 +95,7 @@ def main():
         parser.add_argument('-slice', type=int, dest='slice', help='Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy.', default=None)
         parser.add_argument('-errors', action='store_true', default=False, dest='errors', help='Plot the histogram with relative errors instead of data')
 
-	args = parser.parse_args()
+        args = parser.parse_args()
 
         checkMinMax(parser, args.xmin, args.xmax, 'x')
         checkMinMax(parser, args.ymin, args.ymax, 'y')
