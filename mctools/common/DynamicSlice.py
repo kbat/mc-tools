@@ -100,15 +100,12 @@ class DynamicSlice:
       hp = getattr( histo, 'Projection' + yx )( 'Projection ' + xy, bin1, bin2 )
       hp.SetFillColor( 38 )
 
-      if self.smooth <= 1:
-         hp.SetTitle( xy + 'Projection of %d %s bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vert_axis, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
-      else:
-         hp.SetTitle( xy + 'Projection of %d %s bins smoothed over %d %s bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vert_axis, self.smooth, xy, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
+      hp.SetTitle( xy + 'Projection of %d %s bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vert_axis, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
 
       if self.nbins > 1:
          hp.Scale(1.0/self.nbins)
 
-      if self.smooth > 1:
+      if self.smooth >= 1:
          hp.Smooth(self.smooth)
 
       hp.Draw("hist");
