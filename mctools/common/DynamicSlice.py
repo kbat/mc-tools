@@ -9,12 +9,13 @@ from ROOT import TCanvas, TH2
 
 class DynamicSlice:
 
-   def __init__( self, hname, nbins ):
+   def __init__( self, hname, nbins, smooth ):
       self._cX   = None
       self._cY   = None
       self._old  = None
       self.hname = hname
       self.nbins = nbins
+      self.smooth = smooth
       self.projection = 1
       self.logy = 0
 
@@ -98,9 +99,18 @@ class DynamicSlice:
       vmax = axis.GetBinLowEdge(bin2+1)
       hp = getattr( histo, 'Projection' + yx )( 'Projection ' + xy, bin1, bin2 )
       hp.SetFillColor( 38 )
-      hp.SetTitle( xy + 'Projection of %d bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
-      hp.Scale(1.0/self.nbins)
-      hp.Smooth(self.nbins)
+
+      if self.smooth <= 1:
+         hp.SetTitle( xy + 'Projection of %d %s bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vert_axis, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
+      else:
+         hp.SetTitle( xy + 'Projection of %d %s bins smoothed over %d %s bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vert_axis, self.smooth, xy, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
+
+      if self.nbins > 1:
+         hp.Scale(1.0/self.nbins)
+
+      if self.smooth > 1:
+         hp.Smooth(self.smooth)
+
       hp.Draw("hist");
       yaxis = hp.GetYaxis()
       yaxis.SetMaxDigits(2)

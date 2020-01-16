@@ -93,12 +93,18 @@ def main():
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
         parser.add_argument('-slice', type=int, dest='slice', help='Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy.', default=None)
+        parser.add_argument('-smooth', type=int, dest='smooth', help='Smooth the live slice obtained with the -slice argument by the given number of bins.', default=0)
         parser.add_argument('-errors', action='store_true', default=False, dest='errors', help='Plot the histogram with relative errors instead of data')
 
         args = parser.parse_args()
 
         checkMinMax(parser, args.xmin, args.xmax, 'x')
         checkMinMax(parser, args.ymin, args.ymax, 'y')
+
+        if args.slice < 1:
+                parser.error("slice value must be >= 1")
+        if args.smooth < 1:
+                args.smooth = args.slice
 
         ROOT.gStyle.SetOptStat(False)
         ROOT.gStyle.SetPalette(ROOT.kTemperatureMap)
@@ -204,7 +210,7 @@ def main():
 
         if args.slice:
                 import __main__
-                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.slice)
+                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.slice, args.smooth)
                 pad1.AddExec('dynamic', 'TPython::Exec( "slicer()" );')
 
         if args.verbose: print("Done")
