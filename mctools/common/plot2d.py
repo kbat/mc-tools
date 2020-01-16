@@ -92,7 +92,7 @@ def main():
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
-        parser.add_argument('-slice', type=int, dest='slice', help='Show live projection. Left mouse click swaps axes, middle button click swaps logy.', default=None)
+        parser.add_argument('-slice', type=int, dest='slice', help='Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy.', default=None)
         parser.add_argument('-errors', action='store_true', default=False, dest='errors', help='Plot the histogram with relative errors instead of data')
 
 	args = parser.parse_args()
