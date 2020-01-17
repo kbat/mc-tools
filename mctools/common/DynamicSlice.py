@@ -46,10 +46,14 @@ class DynamicSlice:
       pymin, pymax = gPad.YtoAbsPixel( uymin ), gPad.YtoAbsPixel( uymax )
 
       if self._old != None:
-         gVirtualX.DrawLine( pxmin, self._old[1], pxmax, self._old[1] )
-         gVirtualX.DrawLine( self._old[0], pymin, self._old[0], pymax )
-      gVirtualX.DrawLine( pxmin, py, pxmax, py )
-      gVirtualX.DrawLine( px, pymin, px, pymax )
+         if self.projection:
+            gVirtualX.DrawLine( pxmin, self._old[1], pxmax, self._old[1] )
+         else:
+            gVirtualX.DrawLine( self._old[0], pymin, self._old[0], pymax )
+      if self.projection:
+         gVirtualX.DrawLine( pxmin, py, pxmax, py )
+      else:
+         gVirtualX.DrawLine( px, pymin, px, pymax )
 
       self._old = px, py
 
