@@ -9,13 +9,13 @@ from ROOT import TCanvas, TH2
 
 class DynamicSlice:
 
-   def __init__( self, hname, nbins, smooth ):
+   def __init__( self, hname, nbins):
       self._cX   = None
       self._cY   = None
       self._old  = None
       self.hname = hname
-      self.nbins = nbins
-      self.smooth = smooth
+      self.nbins = nbins[0]
+      self.ngroup = nbins[1]
       self.projection = 1
       self.logy = 0
 
@@ -102,11 +102,11 @@ class DynamicSlice:
 
       hp.SetTitle( xy + 'Projection of %d %s bins: %g < %s < %g (#Delta %s = %g)' % (self.nbins, vert_axis, vmin, vert_axis, vmax, vert_axis, vmax-vmin) )
 
-      if self.nbins > 1:
-         hp.Scale(1.0/self.nbins)
+      if self.ngroup >= 1:
+         hp.Rebin(self.ngroup)
 
-      if self.smooth >= 1:
-         hp.Smooth(self.smooth)
+      if self.nbins > 1 or self.ngroup >=1:
+         hp.Scale(1.0/(self.nbins*self.ngroup))
 
       hp.Draw("hist");
       yaxis = hp.GetYaxis()

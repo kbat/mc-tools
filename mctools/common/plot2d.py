@@ -92,8 +92,7 @@ def main():
         parser.add_argument("-bgcol", action='store_true', default=False, dest='bgcol', help='Set the frame background colour to some hard-coded value')
         parser.add_argument("-o", type=str, dest='output', help='Output file name. If given then the canvas is not shown.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
-        parser.add_argument('-slice', type=int, dest='slice', help='Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy.', default=None)
-        parser.add_argument('-smooth', type=int, dest='smooth', help='Smooth the live slice obtained with the -slice argument given number of times', default=0)
+        parser.add_argument('-slice', type=int, dest='slice', nargs=2, help='Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram', default=None)
         parser.add_argument('-errors', action='store_true', default=False, dest='errors', help='Plot the histogram with relative errors instead of data')
 
         args = parser.parse_args()
@@ -101,7 +100,7 @@ def main():
         checkMinMax(parser, args.xmin, args.xmax, 'x')
         checkMinMax(parser, args.ymin, args.ymax, 'y')
 
-        if args.slice < 1:
+        if args.slice != None and args.slice[0] < 1:
                 parser.error("slice value must be >= 1")
 
         ROOT.gStyle.SetOptStat(False)
@@ -208,7 +207,7 @@ def main():
 
         if args.slice:
                 import __main__
-                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.slice, args.smooth)
+                __main__.slicer = DynamicSlice.DynamicSlice(dh2, args.slice)
                 pad1.AddExec('dynamic', 'TPython::Exec( "slicer()" );')
 
         if args.verbose: print("Done")
