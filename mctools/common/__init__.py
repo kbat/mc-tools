@@ -34,10 +34,10 @@ def ErrorHist(h):
         for j in range(1,ny+1):
             val = h.GetBinContent(i,j)
             if val != 0:
-                err = h.GetBinError(i,j) / h.GetBinContent(i,j)
+                err = 100*h.GetBinError(i,j) / h.GetBinContent(i,j)
             else:
-                err = 0.0
-            herr.SetBinContent(i,ny+1-j,err)
+                err = 100.0
+            herr.SetBinContent(i,j,err)
 
-    herr.GetZaxis().SetTitle("Relative error");
+    herr.GetZaxis().SetTitle("Relative error [%]");
     return herr

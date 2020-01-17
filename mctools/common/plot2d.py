@@ -134,7 +134,7 @@ def main():
                 if args.verbose:
                         print("Showing the histogram with errors")
                 dh2 = ErrorHist(dh2)
-                args.ztitle = "Relative error"
+                args.ztitle = "Relative error [%]"
                 if args.zmin:
                         args.zmin = 0
                         if args.verbose: print("zmin set to 0")
