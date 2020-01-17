@@ -100,8 +100,8 @@ def main():
         checkMinMax(parser, args.xmin, args.xmax, 'x')
         checkMinMax(parser, args.ymin, args.ymax, 'y')
 
-        if args.slice != None and args.slice[0] < 1:
-                parser.error("slice value must be >= 1")
+        if args.slice != None and (args.slice[0] < 1 or args.slice[1]<1):
+                parser.error("slice values must be >= 1")
 
         ROOT.gStyle.SetOptStat(False)
         ROOT.gStyle.SetPalette(ROOT.kTemperatureMap)
