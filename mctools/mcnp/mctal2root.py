@@ -29,11 +29,11 @@ def main():
 		print("mctal2root: File %s does not exist." % arguments.mctal, file=sys.stderr)
 		return 1
 
-	m = MCTAL(arguments.mctal,arguments.verbose)
+	mctal = MCTAL(arguments.mctal,arguments.verbose)
 
-	T = m.Read()
+	T = mctal.Read()
 
-	if m.thereAreNaNs:
+	if mctal.thereAreNaNs:
 		print(" \033[1;30mOne or more tallies contain NaN values. Conversion will succeed anyway.\033[0m", file=sys.stderr)
 
 	if arguments.root == "":
@@ -158,7 +158,11 @@ def main():
 		if arguments.verbose:
 			print(" \033[33mTally %5d saved\033[0m" % (tally.tallyNumber))
 
-
+        n = len(mctal.kcode.data)
+        if n > 1: # kcode record exists
+                kcode = ROOT.TGraph(n, np.array([i for i in range(n)],dtype=np.dtype('f')), np.array(mctal.kcode.data,dtype=np.dtype('f')))
+                kcode.SetNameTitle("kcode", " ".join(mctal.kcode.header))
+                kcode.Write()
 	rootFile.Close()
 	print("\n\033[1;34mROOT file saved to:\033[1;32m %s\033[0m\n" % (rootFileName))
 

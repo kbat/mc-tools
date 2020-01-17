@@ -111,7 +111,7 @@ class Tally:
                                            # See the function getDetectorType to see how this information is used
                                            6 : "pi"                   ,  7 : "tir"                                            ,  8 : "tic" }
 
-                self.particleListShort = { 1 : "Neutron"                     , 2 : "Photon"             , 3 : "Neutron + Photon"  , 
+                self.particleListShort = { 1 : "Neutron"                     , 2 : "Photon"             , 3 : "Neutron + Photon"  ,
                                            4 : "Electron"                    , 5 : "Neutron + Electron" , 6 : "Photon + Electron" ,
                                            7 : "Neutron + Photon + Electron"  }
 
@@ -149,12 +149,12 @@ class Tally:
 
                 self.valsErrors = np.empty( ( nCells , nDir , nUsr , nSeg , nMul , nCos , nErg , nTim , nCora , nCorb , nCorc , 2 ) , dtype=float)
 
-                #self.valsErrors = [[[[[[[[[[[[[] for _ in xrange(2)]    for _ in xrange(nCorc)] for _ in xrange(nCorb)] for _ in xrange(nCora)] for _ in xrange(nTim)] 
-                #                                for _ in xrange(nErg)] for _ in xrange(nCos)]  for _ in xrange(nMul)]  for _ in xrange(nSeg)]  for _ in xrange(nUsr)] 
+                #self.valsErrors = [[[[[[[[[[[[[] for _ in xrange(2)]    for _ in xrange(nCorc)] for _ in xrange(nCorb)] for _ in xrange(nCora)] for _ in xrange(nTim)]
+                #                                for _ in xrange(nErg)] for _ in xrange(nCos)]  for _ in xrange(nMul)]  for _ in xrange(nSeg)]  for _ in xrange(nUsr)]
                 #                                for _ in xrange(nDir)] for _ in xrange(nCells)]
 
                 self.isInitialized = True
-                
+
 
         def Print(self, option=[]):
                 """Tally printer. Options: title. Verbose flag on class initialization must be set to True."""
@@ -192,7 +192,7 @@ class Tally:
 
                         print ("Total values in the tally: %8d" % self.getTotNumber(False))
 
-        
+
 
         def getDetectorType(self,short=False):
                 """Returns the type of the detector type used in the tally."""
@@ -210,7 +210,7 @@ class Tally:
                 particleNames = []
 
                 if self.typeNumber > 0:
-                        particleNames.append(particleListShort[self.typeNumber]) 
+                        particleNames.append(particleListShort[self.typeNumber])
                 else:
                         for i,name in enumerate(self.particleList):
                                 try:
@@ -219,7 +219,7 @@ class Tally:
                                 except:
                                         pass # For some reasons there can be less than 35 particles listed. Skip in case.
                 return particleNames
-                                
+
 
         def getTotNumber(self,includeTotalBin=True):
                 """Return the total number of bins."""
@@ -235,7 +235,7 @@ class Tally:
                 nCos   = self.getNbins("c",includeTotalBin)
                 nErg   = self.getNbins("e",includeTotalBin)
                 nTim   = self.getNbins("t",includeTotalBin)
-                
+
                 tot = nCells * nDir * nUsr * nSeg * nMul * nCos * nErg * nTim * nCora * nCorb * nCorc
 
                 return tot
@@ -245,7 +245,7 @@ class Tally:
 
                 if len(self.cells) <= self.nCells:
                         self.cells = np.append(self.cells, cN)
-                        return True 
+                        return True
                 else:
                         return False
 
@@ -461,6 +461,14 @@ class Tally:
 
 #############################################################################################################################
 
+class KCODE:
+        """ Class to keep KCODE data """
+        def __init__(self):
+                self.header = []
+                self.data = []
+
+#############################################################################################################################
+
 class MCTAL:
         """This class parses the whole MCTAL file."""
 
@@ -475,6 +483,7 @@ class MCTAL:
                                  # important to keep it global because the last value from getHeaders()
                                  # must be already available as first value for parseTally(). This will
                                  # also apply to successive calls to parseTally().
+                self.kcode = KCODE()  # array with kcode data
 
         def Read(self):
                 """This function calls the functions getHeaders and parseTally in order to read the entier MCTAL file."""
@@ -510,7 +519,7 @@ class MCTAL:
                         self.header.knod = int(self.line[0])
                         self.header.nps = int(self.line[1])
                         self.header.rnr = int(self.line[2])
-                        
+
 
                 self.header.title = self.mctalFile.readline().strip()
 
@@ -563,7 +572,7 @@ class MCTAL:
 
                 self.line = self.mctalFile.readline()
                 line = self.line.split() # I must use this trick because some MCTAL files seem to omit
-                                         # the particle list and the code must be compatible with the 
+                                         # the particle list and the code must be compatible with the
                                          # following part even if this line is missing, but I don't have
                                          # the possibility to know in advance, so I must duplicate the
                                          # read line.
@@ -595,7 +604,7 @@ class MCTAL:
                 i = 0
                 axisNumber = 0
                 axisName = ('a','b','c')
-                corsVals = (tally.meshInfo[1], tally.meshInfo[2], tally.meshInfo[3]) 
+                corsVals = (tally.meshInfo[1], tally.meshInfo[2], tally.meshInfo[3])
 
                 while self.line[0].lower() != "d": # CELLS
                         if tally.mesh:
@@ -779,11 +788,18 @@ class MCTAL:
                         self.line = self.mctalFile.readline().strip()
                         while "tally" not in self.line and len(self.line) != 0:
                                 if "kcode" in self.line:
-                                        print("\n \033[1;31m Tally with KCODE card. Not supported. Exiting.\033[0m\n", file=sys.stderr)
-                                        sys.exit(1)
+                                        print("\n \033[1;31m KCODE card found in %s. Tallies below the KCODE records are not read.\033[0m\n" % self.mctalFileName, file=sys.stderr)
+                                        self.tallies.append(tally) # append the current tally (anyway it's finished)
+
+                                        self.kcode.header = self.line.split()[1:]
+                                        for self.line in self.mctalFile.readlines(): # just read mctal until the end
+                                                self.kcode.data += map(float, self.line.split())
+
+                                        return True
+                                        # sys.exit(1)
 
                                 self.line = self.line.split()
-                        
+
                                 tfcDat = []
 
                                 tfcDat.append(int(self.line[0]))
@@ -795,7 +811,7 @@ class MCTAL:
                                         if math.isnan(float(self.line[1])):
                                                 self.thereAreNaNs = True
                                         tfcDat.append(float(self.line[3]))
-                                        
+
                                 if not tally.insertTfcDat(tfcDat):
                                         raise IOError("Wrong number of elements in TFC data line in the tally n. %d of %s" % (tally.tallyNumber, self.mctalFileName))
 
