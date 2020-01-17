@@ -3,7 +3,7 @@
 # Adopted from $ROOTSYS/tutorials/pyroot/DynamicSlice.py
 
 from ROOT import gPad, gVirtualX
-from ROOT import kTRUE
+from ROOT import kTRUE, kSolid
 from ROOT import TCanvas, TH2
 
 
@@ -37,6 +37,7 @@ class DynamicSlice:
          self.logy = not self.logy
 
     # erase old position and draw a line at current position
+    #(gPad coordinate system)
       px = gPad.GetEventX()
       py = gPad.GetEventY()
 
@@ -45,15 +46,22 @@ class DynamicSlice:
       pxmin, pxmax = gPad.XtoAbsPixel( uxmin ), gPad.XtoAbsPixel( uxmax )
       pymin, pymax = gPad.YtoAbsPixel( uymin ), gPad.YtoAbsPixel( uymax )
 
+      # if self.projection:
+      #    axis = h.GetYaxis()
+      # else:
+      #    axis = h.GetXaxis()
+
+      width = 1
+
       if self._old != None:
          if self.projection:
-            gVirtualX.DrawLine( pxmin, self._old[1], pxmax, self._old[1] )
+            gVirtualX.DrawBox( pxmin, self._old[1]-width, pxmax, self._old[1], kSolid)
          else:
-            gVirtualX.DrawLine( self._old[0], pymin, self._old[0], pymax )
+            gVirtualX.DrawBox( self._old[0], pymin, self._old[0]+width, pymax, kSolid )
       if self.projection:
-         gVirtualX.DrawLine( pxmin, py, pxmax, py )
+         gVirtualX.DrawBox( pxmin, py, pxmax, py+width, kSolid )
       else:
-         gVirtualX.DrawLine( px, pymin, px, pymax )
+         gVirtualX.DrawBox( px, pymin, px, pymax+width, kSolid )
 
       self._old = px, py
 
