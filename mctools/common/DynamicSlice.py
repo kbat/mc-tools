@@ -122,7 +122,7 @@ class DynamicSlice:
 
       hp.Draw("hist");
       yaxis = hp.GetYaxis()
-      yaxis.SetMaxDigits(2)
+      yaxis.SetMaxDigits(3)
       yaxis.SetTitle(histo.GetZaxis().GetTitle())
       canvas.SetLogy(self.logy)
       canvas.Update()
