@@ -10,8 +10,8 @@ Project homepage: https://github.com/kbat/mc-tools
     read tallies from **mctal** files into a
     [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
     object. This API allows to convert **mctal** files into any
-    format.  It should work with any tallies except of the kcode data
-    and tallies with perturbation records. 
+    format.  It should work with any tallies and kcode records. Tallies with perturbation records are not supported.
+[//]: # (and tallies after the first kcode record are not read)
   * [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
     script converts a mctal file into the [ROOT](http://root.cern.ch) format. The tallies are saved
     as [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html) histograms.
@@ -31,18 +31,18 @@ Project homepage: https://github.com/kbat/mc-tools
       method. In particular, this list shows how to get particle type and surface number.
       [This macro](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/examples/ssw2root/example.C)
       shows several very simple examples how to analyse SSW files with
-      ROOT.  
+      ROOT.
     The WSSA file format depends on the MCNPX version, and currently
     the script has been tested with versions 2.6.0, 26b and 2.7.0.
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
-    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
+    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
 * PHITS
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
   * ANGEL to [ROOT](http://root.cern.ch) converter (converts the PHITS
     output to ROOT) - most of the tallies are supported, but there are
-    known bugs and limitations, should be used with care. 
+    known bugs and limitations, should be used with care.
   * A script
     [rotate3dshow.py](https://github.com/kbat/mc-tools/blob/master/mctools/phits/rotate3dshow.py)
     which allows to animate the output of the **t-3dshow** tally. It
@@ -52,7 +52,7 @@ Project homepage: https://github.com/kbat/mc-tools
     (should be viewed with an image viewer which supports GIF
     animation).  A simplified version of this script with a detailed
     manual can be downloaded from the PHITS website:
-    <http://phits.jaea.go.jp/examples.html> 
+    <http://phits.jaea.go.jp/examples.html>
 * FLUKA
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org).
   * [usbsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usbsuw2root.py) converter: it converts the USRBIN results into a TH3F histogram. Note that this tool does not directly convert the files produced by the USRBIN card, but these files must first be averaged by the $FLUTIL/usbsuw program. The resulting avereged file can be converted into ROOT by usbsuw2root. The $FLUTIL/usbsuw call is done automatically if the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) general converter is used.
@@ -65,14 +65,14 @@ Project homepage: https://github.com/kbat/mc-tools
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
-    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py). 
+    [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
    * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ```a compact ENDF``` to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
 * If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern.ch) to be compiled with Python support. In order to check whether the Python
-   support in ROOT is set up correctly, say   
-   ```import ROOT```  
-   in the Python shell. You should not see any error messages. Python 3 can be used, but the ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:  
+   support in ROOT is set up correctly, say
+   ```import ROOT```
+   in the Python shell. You should not see any error messages. Python 3 can be used, but the ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:
 ```cmake  -DPYTHON_EXECUTABLE="/usr/bin/python" -Dpython="ON" -Dpython3="OFF" /path/to/root/source```
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
 * If the [GNU parallel](https://www.gnu.org/software/parallel) tool is installed then the FLUKA merge and ROOT converter tools called by the ```fluka2root``` script will be executed in parallel which makes it run faster.
@@ -93,16 +93,16 @@ Uninstall: ```pip uninstall mc-tools```.
 
 ### Developer installation ###
 
-1. Get the source code: 
+1. Get the source code:
     - either
 ```git clone https://github.com/kbat/mc-tools.git```
     - or download and uncompress ```https://github.com/kbat/mc-tools/archive/master.zip```
 2. Set the variable MCTOOLS to the folder where you have installed the
-   code:   
+   code:
 ```export MCTOOLS=/path/to/mc-tools```
-3. Add the ```$MCTOOLS``` folder into ```$PYTHONPATH```:  
+3. Add the ```$MCTOOLS``` folder into ```$PYTHONPATH```:
 ```export PYTHONPATH=$MCTOOLS:$PYTHONPATH```
-4. Add the ```$MCTOOLS/bin``` folder into your ```$PATH```:  
+4. Add the ```$MCTOOLS/bin``` folder into your ```$PATH```:
 ``` export PATH=$MCTOOLS/bin:$PATH ```
 
 
