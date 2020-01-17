@@ -10,8 +10,7 @@ Project homepage: https://github.com/kbat/mc-tools
     read tallies from **mctal** files into a
     [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
     object. This API allows to convert **mctal** files into any
-    format.  It should work with any tallies and kcode records. Tallies with perturbation records are not supported.
-[//]: # (and tallies after the first kcode record are not read)
+    format.  It should work with any tallies and kcode records. Known bugs: Tallies with perturbation records are not supported and tallies after the first kcode record are not read.
   * [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
     script converts a mctal file into the [ROOT](http://root.cern.ch) format. The tallies are saved
     as [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html) histograms.
