@@ -124,6 +124,9 @@ def main():
 
         df = ROOT.TFile(args.dfile)
         dh = df.Get(args.dhist)
+        if not dh:
+                print("ERROR: Can't find object '%s' in %s" % (args.dhist, args.dfile))
+                exit(1)
 
         if args.verbose: print("Projecting 3D data onto 2D histogram")
 
@@ -185,6 +188,10 @@ def main():
         if args.gfile is not None:
             gf = ROOT.TFile(args.gfile)
             gh = gf.Get(args.ghist)
+            if not gh:
+                print("ERROR: Can't find object '%s' in %s" % (args.ghist, args.gfile))
+                exit(1)
+
             if args.verbose: print("Projecting 3D geometry onto 2D histogram")
             gh2 = gh.Project3D(args.plane)
             if args.flip:
