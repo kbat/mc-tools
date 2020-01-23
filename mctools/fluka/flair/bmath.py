@@ -39,7 +39,7 @@ __email__  = "Vasilis.Vlachoudis@cern.ch"
 import math
 import cmath
 from math import *
-import mctools.fluka.flair.rexx
+import mctools.fluka.flair.rexx as rexx
 import random
 
 # Accuracy for comparison operators
