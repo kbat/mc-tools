@@ -29,12 +29,9 @@ setup(
     description = "Some Monte Carlo tools",
 
     packages = find_packages(),
-    # The 'install_requires' line commented because
-    # 'installing numpy with easy_install fails for some reasons:
-    #   Install numpy as a linux package or by using a windoze
-    #   installer, or via pip, in advance to the installation of
-    #    mc-tools.
-    # install_requires = [ "numpy" ],
+    install_requires = [ "numpy",
+                         "pandas"
+    ],
     data_files = [
         # MCNP
         ("mcnp", [ "mctools/mcnp/AUTHORS",      "mctools/mcnp/ChangeLog",
