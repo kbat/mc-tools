@@ -32,7 +32,7 @@ setup(
     # The 'install_requires' line commented because
     # 'installing numpy with easy_install fails for some reasons:
     #   Install numpy as a linux package or by using a windoze
-    #   installer, or via pip, in advance to the installation of 
+    #   installer, or via pip, in advance to the installation of
     #    mc-tools.
     # install_requires = [ "numpy" ],
     data_files = [
@@ -69,9 +69,12 @@ setup(
             "h2ascii      = mctools.common.h2ascii:main",
             "vtk2root     = mctools.common.vtk2root:main",
             "lsroot       = mctools.common.lsroot:main",
+            "plot2d       = mctools.common.plot2d:main",
+            "root2txt     = mctools.common.root2txt:main",
             # FLUKA
             "fluka2root    = mctools.fluka.fluka2root:main",
             "eventdat2root = mctools.fluka.eventdat2root:main",
+            "plotgeom2root = mctools.fluka.plotgeom2root:main",
             "usbsuw2root   = mctools.fluka.usbsuw2root:main",
             "ustsuw2root   = mctools.fluka.ustsuw2root:main",
             "usxsuw2root   = mctools.fluka.usxsuw2root:main",
@@ -86,15 +89,9 @@ setup(
             "rotate3dshow = mctools.phits.rotate3dshow:main",
         ]
     },
-    # # other executable scripts
-    # scripts = [
-    #     # COMMON
-    #     "mctools/common/ll-self-submit.sh",
-    #     # MCNP
-    #     "mctools/mcnp/conversiontest.sh", "mctools/mcnp/loop_convert.sh",
-    #     "mctools/mcnp/loop_test.sh",
-    #     # PHITS
-    #     "mctools/phits/epsout.sh", "mctools/phits/phits-set-n.sh",
-    #     "mctools/phits/submit.py"
-    # ],
+    scripts = [
+        "bin/mc-tools-fluka-merge",
+        "bin/fluka.stop",
+        "bin/rfluka.stop",
+    ]
 )
