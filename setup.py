@@ -34,11 +34,7 @@ setup(
     ],
     data_files = [
         # MCNP
-        ("mcnp", [ "mctools/mcnp/AUTHORS",      "mctools/mcnp/ChangeLog",
-                   "mctools/mcnp/configure.ac", "mctools/mcnp/Doxyfile",
-                   "mctools/mcnp/Makefile.am",  "mctools/mcnp/mctal2root.ctl",
-                   "mctools/mcnp/NEWS",         "mctools/mcnp/README",
-                   "mctools/mcnp/reference_guide.pdf" ]
+        ("mcnp", [ "mctools/mcnp/reference_guide.pdf" ]
         ),
         ("mctools/mcnp/examples",
          [ "mctools/mcnp/examples/ssw2root/example.C" ]
