@@ -26,7 +26,7 @@ setup(
     author_email = "batkov@gmail.com",
     url = "https://github.com/kbat/mc-tools/",
     license = "BSD License",
-    description = "Some Monte Carlo tools",
+    description = "Some Monte Carlo tools for MCNPX, PHITS and FLUKA",
 
     packages = find_packages(),
     install_requires = [ "numpy",
