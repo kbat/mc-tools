@@ -14,7 +14,7 @@ def getCombLayerObject(cell):
 
     if not path.isfile(fname):
         print("ObjectRegister not found")
-        return
+        return None
 
     with open(fname) as f:
         for line in f.readlines():
@@ -38,6 +38,7 @@ def getCombLayerObject(cell):
             #         return words[0]
 
     print("Object not found")
+    return None
     
                 
 def main():
@@ -52,8 +53,9 @@ def main():
     args = parser.parse_args()
 
     obj = getCombLayerObject(args.cell)
-#    print(obj)
-                
+
+    if obj is None:
+        exit(1)
 
 if __name__ == "__main__":
     exit(main())
