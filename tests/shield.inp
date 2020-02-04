@@ -1,65 +1,76 @@
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 TITLE
-Charged pion fluence inside and around a proton-irradiated Be target
+Simple box-shaped target
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
-#define Beampart PROTON
-#define Ebeam -50.0
-#define Zbeam -50.0
-#define Ztargt +5.0
-#define Htargt +2.5
+#define Beampart ELECTRON
+#define Ebeam  -3.0
+#define thick   5.0
+#define width   20.0
+#define height  20.0
+#define mat     BERYLLIU
+* auxillary variables
+#define xmin  -10.0
+#define xmax   10.0
+#define ymin  -10.0
+#define ymax   10.0
+* why arithmetics does not work ???
+*#define area   thick*width
+*#define volume area*height
+*
 BEAM          $Ebeam                                                  $Beampart
-BEAMPOS          0.0       0.0    $Zbeam
+BEAMPOS          0.0       0.0       -10.0
 *
 GEOBEGIN                                                              COMBNAME
   0 0                       A simple Be target inside vacuum
 RPP body1 -5000000.0 +5000000.0 -5000000.0 +5000000.0 -5000000.0 +5000000.0
-RPP body2 -1000000.0 +1000000.0 -1000000.0 +1000000.0    -100.0  +1000000.0
-RPP body3     -10.0      +10.0      -10.0      +10.0        0.0     $Ztargt
+RPP body2 -1000000.0 +1000000.0 -1000000.0 +1000000.0     -100.0 +1000000.0
+RPP body3      $xmin      $xmax      $ymin      $ymax        0.0     $thick
 * plane to separate the upstream and downstream part of the target
-XYP body4   $Htargt
 END
 * black hole
 regBH1    5     +body1 -body2
 * vacuum around
 regVA2    5     +body2 -body3
-* Be target 1st half
-regBE3    5     +body3 +body4
-* Be target 2nd half
-regBE4    5     +body3 -body4
+* target
+regTRG    5     +body3
 END
 GEOEND
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 MATERIAL         4.0               1.848       5.0                    BERYLLIU
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 *  Be target, 1st and 2nd half
-ASSIGNMAT  BERYLLIU   regBE3    regBE4
+ASSIGNMAT  $mat       regTRG
 *  External Black Hole
 ASSIGNMAT  BLCKHOLE   regBH1
 *  Vacuum
 ASSIGNMAT   VACUUM    regVA2
+*
+PLOTGEOM
+  Vertical section of the target geometry at z = 2.5 cm
+  -20.0     -20.0       2.5      20.0      20.0       2.5
+   1.0       0.0       0.0       0.0       1.0       0.0
+   1.0       1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 * e+e- and gamma production threshold set at 10 MeV
-EMFCUT        -0.010     0.010       1.0  BERYLLIU                    PROD-CUT
+EMFCUT        -0.010     0.010       1.0  $mat                        PROD-CUT
 * score in each region energy deposition and stars produced by primaries
 SCORE       ENERGY    BEAMPART
-* Boundary crossing fluence in the middle of the target (log intervals, one-way)
-USRBDX          99.0   PIONS+-     -47.0   regBE3  regBE4        400. piFluenUD
+* fluence entering the target linear energy and solid angle of $area
+USRBDX         101.0  BEAMPART     -47.0   regVA2  regTRG        400. inFluLL
 USRBDX         +50.0               +50.0                 0.0      10.0 &
-* Boundary crossing current in the middle of the target (log intervals, one-way)
-USRBDX          -1.0   PIONS+-     -47.0   regBE3  regBE4        400. piCurrUD
+* fluence entering the target linear energy and solid angle
+USRBDX         101.0  BEAMPART     -47.0   regTRG  regVA2        400. outFluLL
 USRBDX         +50.0               +50.0                 0.0      10.0 &
 * Tracklength fluence inside the target, Upstream part and Downstream part
 * Logarithmic energy intervals
-USRTRACK        -1.0   PIONS+-     -48.0   regBE3     1000.0      20. piFluenU
-USRTRACK        50.0     0.001                                           &
-USRTRACK        -1.0   PIONS+-     -49.0   regBE4     1000.0      20. piFluenD
-USRTRACK        50.0     0.001                                           &
-* Cartesian binning of the pion fluence inside and around the target
-USRBIN          10.0   PIONS+-     -50.0      50.0      50.0      50. piFluBin
-USRBIN         -50.0     -50.0     -10.0     100.0     100.0      60.0   &
-* Cartesian binning of the deposited energy inside the target
-USRBIN          10.0    ENERGY     -51.0      10.0      10.0       5. Edeposit
-USRBIN         -10.0     -10.0       0.0      20.0      20.0       5.0   &
+USRTRACK        -1.0  BEAMPART     -48.0   regTRG     1000.0      20. track
+USRTRACK        10.0     0.001                                           &
+* Cartesian binning of the beam particle fluence inside and around the target
+USRBIN          10.0  BEAMPART     -50.0      50.0      50.0      20. mesh1
+USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
+* Cartesian binning of the dose rate inside and around the target
+USRBIN          10.0   DOSE-EQ     -51.0      10.0      10.0      20. dose
+USRBIN         -10.0     -10.0     -10.0     200.0     200.0     300.  &
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 RANDOMIZE        1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
