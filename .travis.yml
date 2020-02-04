@@ -8,4 +8,4 @@ install:
   - pip install .
 # command to run tests
 script:
-  - pytest
+  - pytest -k "not root and not fluka"
