@@ -3,20 +3,22 @@ TITLE
 Simple box-shaped target
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 #define Beampart ELECTRON
-#define Ebeam  -3.0
+#define Ebeam  -0.018
 #define thick   5.0
 #define width   20.0
 #define height  20.0
-#define mat     BERYLLIU
+#define mat     TUNGSTEN
 * auxillary variables
-#define xmin  -10.0
-#define xmax   10.0
-#define ymin  -10.0
-#define ymax   10.0
+#define xmin  -1*width/2.0
+#define xmax   width/2.0
+#define ymin  -1*height/2.0
+#define ymax   height/2.0
+#define emax   Ebeam*1.1
 * why arithmetics does not work ???
-*#define area   thick*width
-*#define volume area*height
+#define area   height*width
+#define volume area*thick
 *
+DEFAULTS                                                              PRECISION
 BEAM          $Ebeam                                                  $Beampart
 BEAMPOS          0.0       0.0       -10.0
 *
@@ -56,15 +58,15 @@ EMFCUT        -0.010     0.010       1.0  $mat                        PROD-CUT
 * score in each region energy deposition and stars produced by primaries
 SCORE       ENERGY    BEAMPART
 * fluence entering the target linear energy and solid angle of $area
-USRBDX         101.0  BEAMPART     -47.0   regVA2  regTRG        400. inFluLL
-USRBDX        $Ebeam               +50.0                 0.0      10.0 &
+USRBDX         101.0  BEAMPART     -47.0   regVA2  regTRG       $area inFluLL
+USRBDX         $emax               +50.0                 0.0      10.0 &
 * fluence entering the target linear energy and solid angle
-USRBDX         101.0  BEAMPART     -47.0   regTRG  regVA2        400. outFluLL
-USRBDX        $Ebeam               +50.0                 0.0      10.0 &
+USRBDX         101.0  BEAMPART     -47.0   regTRG  regVA2       $area outFluLL
+USRBDX         $emax               +50.0                 0.0      10.0 &
 * Tracklength fluence inside the target, Upstream part and Downstream part
 * Logarithmic energy intervals
-USRTRACK        -1.0  BEAMPART     -48.0   regTRG     1000.0      20. track
-USRTRACK      $Ebeam     0.001                                           &
+USRTRACK        -1.0  BEAMPART     -48.0   regTRG    $volume      20. track
+USRTRACK       $emax     0.001                                           &
 * Cartesian binning of the beam particle fluence inside and around the target
 USRBIN          10.0  BEAMPART     -50.0      50.0      50.0      20. mesh1
 USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &

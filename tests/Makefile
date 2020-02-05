@@ -13,4 +13,4 @@ convert: shield.root
 run: shield005.log
 
 clean:
-	@rm -frv fluka_* ranshi* *_fort* *_tab.* *_lis.* *_sum.* *.err *.log *.out shield-echo.inp shield.root
+	@rm -frv fluka_* ranshi* *_fort* *_tab.* *_lis.* *_sum.* *.err *.log *.out shield-echo.inp shield.root *.STORE *.root
