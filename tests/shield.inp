@@ -24,8 +24,8 @@ BEAMPOS          0.0       0.0       -10.0
 *
 GEOBEGIN                                                              COMBNAME
   0 0                       A simple Be target inside vacuum
-RPP body1 -5000000.0 +5000000.0 -5000000.0 +5000000.0 -5000000.0 +5000000.0
-RPP body2 -1000000.0 +1000000.0 -1000000.0 +1000000.0     -100.0 +1000000.0
+SPH body1        0.0        0.0        0.0     1000.0
+SPH body2        0.0        0.0        0.0      100.0
 RPP body3      $xmin      $xmax      $ymin      $ymax        0.0     $thick
 * plane to separate the upstream and downstream part of the target
 END
