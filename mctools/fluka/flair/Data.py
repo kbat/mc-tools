@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bin/env python3
 #
 # Copyright and User License
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -202,13 +202,13 @@ class Resnuclei(Usrxxx):
                         self.irrdt = None
 
                         # Statistics are present?
-                        if size == 14 and data[:8] ==   "ISOMERS:":
+                        if size == 14 and data.decode('utf8')[:8] ==   "ISOMERS:":
                                 self.nisomers = struct.unpack("=10xi",data)[0]
                                 data = fortran.read(f)
                                 data = fortran.read(f)
                                 size = len(data)
 
-                        if size == 14 and data[:10] == "STATISTICS":
+                        if size == 14 and data.decode('utf8')[:10] == "STATISTICS":
                                 self.statpos = f.tell()
                                 break
 
@@ -220,7 +220,7 @@ class Resnuclei(Usrxxx):
 
                         det = Detector()
                         det.nb     = header[ 0]
-                        det.name   = header[ 1].strip()
+                        det.name   = header[ 1].decode('utf8').strip()
                         det.type   = header[ 2]
                         det.region = header[ 3]
                         det.volume = header[ 4]
@@ -390,7 +390,7 @@ class Usrbdx(Usrxxx):
 
                         det = Detector()
                         det.nb      = header[ 0]                # mx
-                        det.name    = header[ 1].strip()        # titusx
+                        det.name    = header[ 1].decode('utf8').strip()        # titusx
                         det.type    = header[ 2]                # itusbx
                         det.dist    = header[ 3]                # idusbx
                         det.reg1    = header[ 4]                # nr1usx
@@ -501,7 +501,7 @@ class Usrbin(Usrxxx):
                         size = len(data)
 
                         # Statistics are present?
-                        if size == 14 and data[:10] == "STATISTICS":
+                        if size == 14 and data.decode('utf8')[:10] == "STATISTICS":
                                 self.statpos = f.tell()
                                 break
                         if size != 86: raise IOError("Invalid USRBIN file")
@@ -511,7 +511,7 @@ class Usrbin(Usrxxx):
 
                         bin = Detector()
                         bin.nb    = header[ 0]
-                        bin.name  = header[ 1].strip()
+                        bin.name  = header[ 1].decode('utf8').strip()
                         bin.type  = header[ 2]
                         bin.score = header[ 3]
 

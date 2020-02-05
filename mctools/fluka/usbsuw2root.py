@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python3 -W all
 
 from __future__ import print_function
 import sys, argparse
@@ -16,7 +16,7 @@ def main():
     parser.add_argument('usrbin', type=str, help='usrxxx binary output (produced by usbsuw)')
     parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='Print some output')
-    
+
     args = parser.parse_args()
 
     if not path.isfile(args.usrbin):
@@ -27,12 +27,12 @@ def main():
         rootFileName = "%s%s" % (args.usrbin,".root")
     else:
         rootFileName = args.root
-    
+
     b = Data.Usrbin()
     b.readHeader(args.usrbin)
 
     ND = len(b.detector)
-    
+
     if args.verbose:
         b.sayHeader()
         print("\n%d tallies found:" % ND)
@@ -44,17 +44,18 @@ def main():
     for i in range(ND):
         val = Data.unpackArray(b.readData(i))
         err = Data.unpackArray(b.readStat(i))
-        bin = b.detector[i]
+        det = b.detector[i]
 
-        title = fluka.particle.get(bin.score, "unknown")
-        if bin.type % 10 in (0, 3, 4, 5, 6):  # Fluka Manual, pages 250-251
+        title = fluka.particle.get(det.score, "unknown")
+        if det.type % 10 in (0, 3, 4, 5, 6):  # Fluka Manual, pages 250-251
             title = title +  ";x [cm];y [cm];z [cm]"
-        h = ROOT.TH3F(bin.name, title, bin.nx, bin.xlow, bin.xhigh, bin.ny, bin.ylow, bin.yhigh, bin.nz, bin.zlow, bin.zhigh)
-        
-        for i in range(bin.nx):
-            for j in range(bin.ny):
-                for k in range(bin.nz):
-                    gbin = i + j * bin.nx + k * bin.nx * bin.ny
+
+        h = ROOT.TH3F(det.name, title, det.nx, det.xlow, det.xhigh, det.ny, det.ylow, det.yhigh, det.nz, det.zlow, det.zhigh)
+
+        for i in range(det.nx):
+            for j in range(det.ny):
+                for k in range(det.nz):
+                    gbin = i + j * det.nx + k * det.nx * det.ny
                     h.SetBinContent(i+1, j+1, k+1, val[gbin])
                     h.SetBinError(i+1, j+1, k+1, err[gbin]*val[gbin])
         h.SetEntries(b.weight)

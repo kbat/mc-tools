@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python3 -W all
 
 from __future__ import print_function
 import sys, argparse
@@ -45,7 +45,7 @@ def getLogBins(nbins, low, high):
 
     x = float(low)
     dx = pow(high/low, 1.0/nbins);
-    
+
     return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
 
 def getLinBins(nbins, low, high):
@@ -87,7 +87,7 @@ def main():
     parser.add_argument('usrbdx', type=str, help='usxsuw binary output')
     parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
-    
+
     args = parser.parse_args()
 
     if not path.isfile(args.usrbdx):
@@ -98,12 +98,12 @@ def main():
         rootFileName = "%s%s" % (args.usrbdx,".root")
     else:
         rootFileName = args.root
-    
+
     b = Data.Usrbdx()
     b.readHeader(args.usrbdx)
 
     ND = len(b.detector)
-    
+
     if args.verbose:
         b.sayHeader()
         print("\n%d tallies found:" % ND)
@@ -118,7 +118,7 @@ def main():
         det = b.detector[i]
 
         h = hist(det)
-        
+
         for i in range(det.ne):
             for j in range(det.na):
                     gbin = i + j * det.ne
