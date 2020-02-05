@@ -57,14 +57,14 @@ EMFCUT        -0.010     0.010       1.0  $mat                        PROD-CUT
 SCORE       ENERGY    BEAMPART
 * fluence entering the target linear energy and solid angle of $area
 USRBDX         101.0  BEAMPART     -47.0   regVA2  regTRG        400. inFluLL
-USRBDX         +50.0               +50.0                 0.0      10.0 &
+USRBDX        $Ebeam               +50.0                 0.0      10.0 &
 * fluence entering the target linear energy and solid angle
 USRBDX         101.0  BEAMPART     -47.0   regTRG  regVA2        400. outFluLL
-USRBDX         +50.0               +50.0                 0.0      10.0 &
+USRBDX        $Ebeam               +50.0                 0.0      10.0 &
 * Tracklength fluence inside the target, Upstream part and Downstream part
 * Logarithmic energy intervals
 USRTRACK        -1.0  BEAMPART     -48.0   regTRG     1000.0      20. track
-USRTRACK        10.0     0.001                                           &
+USRTRACK      $Ebeam     0.001                                           &
 * Cartesian binning of the beam particle fluence inside and around the target
 USRBIN          10.0  BEAMPART     -50.0      50.0      50.0      20. mesh1
 USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
