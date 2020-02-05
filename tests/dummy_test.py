@@ -16,9 +16,8 @@ def test_root():
 
 def fluka2root(inp):
         tmpdir = tempfile.mkdtemp(suffix='.mc-tools')
-        inpfrom = os.path.join(os.environ["FLUPRO"], inp)
         inpto = os.path.join(tmpdir, inp)
-        shutil.copyfile(inpfrom, inpto)
+        shutil.copyfile(inp, inpto)
 
         os.chdir(tmpdir)
 
@@ -33,5 +32,11 @@ def fluka2root(inp):
         shutil.rmtree(tmpdir)
 
 def test_fluka2root():
-        for inp in ("example.inp", "exmixed.inp", "exdefi.inp", "exfixed.inp"):
+#        inpfrom = os.path.join(os.environ["FLUPRO"], inp)
+#        inputs = ("example.inp", "exmixed.inp", "exdefi.inp", "exfixed.inp")
+        inputs = ("shield.inp",)
+        for inp in inputs:
                 fluka2root(inp)
+
+
+#fluka2root()
