@@ -9,6 +9,8 @@ before_install:
   - echo $ROOTSYS
   - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev
   - root-config --features
+env:
+  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34:$PYTHONPATH
 install:
   - pip install .
 # command to run tests
