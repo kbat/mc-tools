@@ -4,8 +4,8 @@ python:
   - "3.7"
 # command to install dependencies
 before_install:
-#  - apt-cache search root|grep -i ^root
   - sudo apt-get install root-system
+  - root --version
 install:
   - pip install .
 # command to run tests
