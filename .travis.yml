@@ -8,6 +8,7 @@ before_install:
   - which root
   - echo $ROOTSYS
   - dpkg -L root-system
+  - root-config --features
 install:
   - pip install .
 # command to run tests
