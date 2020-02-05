@@ -3,20 +3,20 @@ python:
   - "2.7"
   - "3.6"      # current default Python on Travis CI
   - "3.7"
-env:
-  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
-before_install:
-  - sudo apt-get install root-system
-  - which root
-  - echo $ROOTSYS
-  - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev
-  - root-config --features
-  - echo $PYTHONPATH
-  - echo $PATH
+#env:
+#  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
+#before_install:
+#  - sudo apt-get install root-system
+#  - which root
+#  - echo $ROOTSYS
+#  - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev
+#  - root-config --features
+#  - echo $PYTHONPATH
+#  - echo $PATH
 #  - sudo updatedb
 #  - locate ROOT.pyc
 install:
   - pip install .
 # command to run tests
 script:
-  - pytest -k "not fluka"
+  - pytest -k "not fluka and not root"
