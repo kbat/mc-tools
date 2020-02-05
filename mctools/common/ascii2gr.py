@@ -2,7 +2,6 @@
 #
 # ASCII to TGraph  converter
 
-from __future__ import print_function
 import sys,time,os,re
 from array import array
 import argparse

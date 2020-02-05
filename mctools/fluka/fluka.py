@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 
-from __future__ import print_function
 import sys, math, struct
 from mctools.mcnp.ssw import fortranRead
 

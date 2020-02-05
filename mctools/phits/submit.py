@@ -7,7 +7,6 @@
 #      submit.sh inp.phits 100 llsubmit ../single.job
 # 
 
-from __future__ import print_function
 from sys import argv, exit
 from os  import system
 

@@ -1,6 +1,5 @@
 #! /usr/bin/python -W all
 
-from __future__ import print_function
 import sys, argparse
 from string import strip
 from mctools.mctools import L2E, E2L

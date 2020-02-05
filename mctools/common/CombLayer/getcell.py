@@ -1,6 +1,5 @@
 #! /usr/bin/python -W all
 
-from __future__ import print_function
 import argparse, re
 from sys import exit
 from os import path

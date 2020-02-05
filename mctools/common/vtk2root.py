@@ -3,7 +3,6 @@
 # https://github.com/kbat/mc-tools
 #
 
-from __future__ import print_function
 import os,sys,re,numpy,argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True

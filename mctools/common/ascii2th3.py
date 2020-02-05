@@ -2,7 +2,6 @@
 #
 # ASCII to TH3F converter
 
-from __future__ import print_function
 import sys,time,os,re
 from ROOT import ROOT, TH3F, TH1F, TFile
 from array import array

@@ -1,6 +1,5 @@
 #! /usr/bin/python
 
-from __future__ import print_function
 from sys import argv, exit, stderr
 from math import sqrt
 import ROOT

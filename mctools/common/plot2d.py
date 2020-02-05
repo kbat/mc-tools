@@ -3,7 +3,6 @@
 # https://github.com/kbat/mc-tools
 #
 
-from __future__ import print_function
 import argparse
 from sys   import exit
 from array import array

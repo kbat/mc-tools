@@ -1,6 +1,5 @@
 #! /usr/bin/python2 -W all
 
-from __future__ import print_function
 import sys, argparse, os, struct
 from array import array
 from mctools.fluka.flair import fortran
@@ -18,7 +17,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite', help='overwrite the output ROOT file')
 
-    
+
     args = parser.parse_args()
 
     for f in args.eventdat:
@@ -39,7 +38,7 @@ def main():
                     break
                 size = len(data)
                 print("\nsize:",size)
-                
+
                 if first:
                     first = False
 
@@ -52,7 +51,7 @@ def main():
                     print("distribution:",dist)
 
                     DATA = array('f', nsco*nregs*[0.0])
-                    
+
                     fout = ROOT.TFile(args.root, "recreate", title)
                     T = ROOT.TTree("EVENTDAT", time)
                     T.Branch("DATA", DATA, "d%d[%d]/F" % (dist,nsco*nregs))
@@ -67,10 +66,10 @@ def main():
                     for i,v in enumerate(val):
                         DATA[i] = v
                     T.Fill()
-            
+
     T.Write()
     fout.Close()
-    
+
 
 if __name__=="__main__":
     sys.exit(main())

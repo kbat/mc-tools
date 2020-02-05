@@ -1,6 +1,5 @@
 #! /usr/bin/python -W all
 
-from __future__ import print_function
 from comblayer import getOmega, getPar
 import argparse, sys
 

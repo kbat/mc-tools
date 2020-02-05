@@ -1,5 +1,5 @@
 #! /usr/bin/python3 -Wall
-from __future__ import print_function
+
 import sys, re, os, argparse
 import glob
 import tempfile

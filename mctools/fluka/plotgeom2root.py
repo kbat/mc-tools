@@ -1,6 +1,5 @@
 #! /usr/bin/python3 -Wall
 
-from __future__ import print_function
 import sys, argparse, os, struct
 from array import array
 from mctools.fluka.flair import fortran

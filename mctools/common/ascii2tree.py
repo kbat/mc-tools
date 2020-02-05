@@ -1,6 +1,5 @@
 #! /usr/bin/python -W all
 
-from __future__ import print_function
 import os, sys, argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True

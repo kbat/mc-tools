@@ -3,7 +3,6 @@
 # scales all histos in the given ROOT file by a given factor
 #
 
-from __future__ import print_function
 from sys import argv, exit
 from ROOT import TFile, TH1, TObject
 

@@ -2,7 +2,6 @@
 # Some examples of calculation of atomic fractions for the given volume fractions
 # https://github.com/kbat/mc-tools
 
-from __future__ import print_function
 from mctools import Isotope, Material, Compound
 
 H   = Isotope("01001.70c", 1.00794)

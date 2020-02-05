@@ -1,7 +1,6 @@
 #! /usr/bin/python -W all
 #
 
-from __future__ import print_function
 import argparse, os, re, sys
 import fileinput
 from mctools.mctools import checkPaths
