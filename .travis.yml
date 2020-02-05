@@ -4,6 +4,8 @@ python:
   - "3.6"      # current default Python on Travis CI
   - "3.7"
 # command to install dependencies
+before_install:
+  - apt-cache search root|grep -i ^root
 install:
   - pip install .
 # command to run tests
