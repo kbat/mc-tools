@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get install root-system
   - which root
   - echo $ROOTSYS
-  - dpkg -L root-system
+  - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev
   - root-config --features
 install:
   - pip install .
