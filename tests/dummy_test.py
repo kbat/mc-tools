@@ -1,4 +1,4 @@
-#! /bin/python
+#! /bin/python3
 
 import os
 import sys
@@ -11,8 +11,10 @@ def test_dummy():
         assert val == 1
 
 def test_root():
-        print("test root")
-        pass
+        # test whether ROOT is installed and compiled with Python support
+        import ROOT
+        print(ROOT.gROOT.GetVersion())
+
 
 def fluka2root(inp):
         tmpdir = tempfile.mkdtemp(suffix='.mc-tools')
