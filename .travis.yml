@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get install root-system
   - which root
   - echo $ROOTSYS
-  - find / -type f -name libMathCore.so
+  - dpkg -L root-system
 install:
   - pip install .
 # command to run tests
