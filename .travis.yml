@@ -5,7 +5,6 @@ python:
 # command to install dependencies
 before_install:
   - sudo apt-get install root-system
-  - root --version
 install:
   - pip install .
 # command to run tests
