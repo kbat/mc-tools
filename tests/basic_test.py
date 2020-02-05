@@ -13,8 +13,10 @@ def test_dummy():
 def test_root():
         # test whether ROOT is installed and compiled with Python support
         import ROOT
-        print(ROOT.gROOT.GetVersion())
 
+def test_import():
+        # test whether the mctools module can be imported
+        import mctools
 
 def fluka2root(inp):
         tmpdir = tempfile.mkdtemp(suffix='.mc-tools')
