@@ -2,15 +2,18 @@ language: python
 python:
   - "3.6"      # current default Python on Travis CI
   - "3.7"
-# command to install dependencies
+env:
+  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34:$PYTHONPATH
 before_install:
   - sudo apt-get install root-system
   - which root
   - echo $ROOTSYS
   - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev
   - root-config --features
-env:
-  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34:$PYTHONPATH
+  - echo $PYTHONPATH
+  - echo $PATH
+  - sudo updatedb
+  - locate ROOT.pyc
 install:
   - pip install .
 # command to run tests
