@@ -2,20 +2,20 @@
 TITLE
 Simple box-shaped target
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+*#define PLOTXY
 #define Beampart ELECTRON
 #define Ebeam  -0.018
 *#define Ebeam  -1.0
 #define thick   5.0
 #define width   20.0
 #define height  20.0
-#define mat     TUNGSTEN
+#define mat     LEAD
 * auxillary variables
 #define xmin  -1*width/2.0
 #define xmax     width/2.0
 #define ymin  -1*height/2.0
 #define ymax     height/2.0
 #define emax   Ebeam*1.1
-* why arithmetics does not work ???
 #define area   height*width
 #define volume area*thick
 *
@@ -53,14 +53,19 @@ ASSIGNMAT  BLCKHOLE   regBH1
 *  Vacuum around
 ASSIGNMAT   VACUUM    regVAF     regVAB
 *
+#if PLOTXY
 PLOTGEOM
   Vertical section of the target geometry at z = 2.5 cm
   -20.0     -20.0       2.5      20.0      20.0       2.5
    1.0       0.0       0.0       0.0       1.0       0.0
    1.0       1.0
+STOP
+#endif
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 * e+e- and gamma production threshold set at 10 MeV
 *EMFCUT        -0.010     0.010       1.0  $mat                        PROD-CUT
+PHOTONUC         1.0                       $mat
+PHOTONUC         1.0                       $mat                       ELECTNUC
 * score in each region energy deposition and stars produced by primaries
 SCORE       ENERGY    BEAMPART
 * fluence entering the target linear energy and solid angle
