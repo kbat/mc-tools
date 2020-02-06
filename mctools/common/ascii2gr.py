@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #
 # ASCII to TGraph  converter
 
@@ -80,18 +80,18 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
     if npoints>0:
 
         gr = ROOT.TGraphAsymmErrors(npoints)
-    
+
         if  name_index==0:
             gr.SetName(name)
         else:
             gr.SetName("%s%d" % (name, name_index))
 
         name_index = name_index+1
-        
+
         for i in range(npoints):
             gr.SetPoint(i, vx[i], vy[i])
             gr.SetPointError(i, vexlow[i], vexhigh[i], veylow[i], veyhigh[i])
-                    
+
         graphs.Add(gr)
 
 #    print("nlines:", nline, l2)
@@ -174,28 +174,28 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
         elif ";" in title:
             gr.SetTitle(title)
 #            gr.GetXaxis().SetTitle(xtitle)
-#            gr.GetYaxis().SetTitle(ytitle) 
+#            gr.GetYaxis().SetTitle(ytitle)
 #            title,xtitle,ytitle = title.split(";")
 #            gr.SetTitle(title)
         else:
             gr.SetTitle(title)
 
-    
+
         if  name_index==0:
             gr.SetName(name)
         else:
             gr.SetName("%s%d" % (name, name_index))
 
         name_index = name_index+1
-        
+
         for i in range(npoints):
             gr.SetPoint(i, vx[i], vy[i])
-            if colex or coley: 
+            if colex or coley:
                 if relerr:
                     gr.SetPointError(i, vex[i]*vx[i], vey[i]*vy[i])
                 else:
                     gr.SetPointError(i, vex[i], vey[i])
-                    
+
         graphs.Add(gr)
 
 #    print("nlines:", nline, l2)
@@ -210,7 +210,7 @@ def main():
 
     It is assumed that different graphs are separated by an empty line. In this case a sequental prefix is appended to the graph's names.
     """
-    
+
     parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools')
     parser.add_argument('-x',  dest='colx',  type=int, help='x-column number (columns start from ONE)', required=True)
     parser.add_argument('-ex', dest='colex', type=int, help='ex-column number')
@@ -239,7 +239,7 @@ def main():
         fname_out = results.outname
     else:
         fname_out = fname_in.replace(".dat", ".root")
-    
+
     if fname_in == fname_out: fname_out = fname_in + ".root"
     print(fname_in, '=>',fname_out)
 
@@ -257,7 +257,7 @@ def main():
                        fname_in, results.start, results.end, results.grname).Write()
     fout.ls()
     fout.Close()
-    
+
 
 
 if __name__ == "__main__":

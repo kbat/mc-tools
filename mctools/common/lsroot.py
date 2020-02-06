@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python3 -W all
 # $Id$
 # $URL$
 
