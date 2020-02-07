@@ -6,10 +6,10 @@ Simple box-shaped target
 #define Beampart ELECTRON
 #define Ebeam  -0.018
 *#define Ebeam  -1.0
-#define thick   5.0
-#define width   20.0
-#define height  20.0
-#define mat     LEAD
+#define thick   0.2
+#define width   10.0
+#define height  10.0
+#define mat     TUNGSTEN
 * auxillary variables
 #define xmin  -1*width/2.0
 #define xmax     width/2.0
@@ -68,31 +68,44 @@ PHOTONUC         1.0                       $mat
 PHOTONUC         1.0                       $mat                       ELECTNUC
 * score in each region energy deposition and stars produced by primaries
 SCORE       ENERGY    BEAMPART
-* fluence entering the target linear energy and solid angle
-USRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area inFluLL
+* incident beam
+USRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area beamIn
 USRBDX         $emax                10.0                               &
-* fluence leaving the target linear energy and solid angle
-USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAB       $area outFluLLE
+* forward
+USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAB       $area eFwd
 USRBDX         $emax                50.0                               &
-* fluence leaving the target linear energy and solid angle
-USRBDX         101.0    PHOTON     -47.0   regTRG  regVAB       $area outFluLLP
+USRBDX         101.0  PHOTON       -47.0   regTRG  regVAB       $area pFwd
 USRBDX         $emax                50.0                               &
+* backward
+USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAF       $area eBack
+USRBDX         $emax                50.0                               &
+USRBDX         101.0  PHOTON       -47.0   regTRG  regVAF       $area pBack
+USRBDX         $emax                50.0                               &
+*
 * fluence leaving the target linear energy and solid angle
 *USRBDX         101.0   NEUTRON     -47.0   regTRG  regVAB       $area outFluLLN
 *USRBDX         $emax                50.0                               &
 * Tracklength fluence inside the target
 * Logarithmic energy intervals
-USRTRACK        -1.0  BEAMPART     -48.0   regTRG    $volume      50. track
-USRTRACK       $emax                                                     &
+*USRTRACK        -1.0  BEAMPART     -48.0   regTRG    $volume      50. track
+*USRTRACK       $emax                                                     &
 * Cartesian binning of the beam particle fluence inside and around the target
-USRBIN          10.0  BEAMPART     -50.0      50.0      50.0      20. mesh1
+USRBIN          10.0  ELECTRON     -50.0      50.0      50.0      20. meshE
+USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
+USRBIN          10.0    PHOTON     -50.0      50.0      50.0      20. meshP
 USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
 * Cartesian binning of the neutron particle fluence inside and around the target
-USRBIN          10.0   NEUTRON     -50.0      50.0      50.0      20. mesh2
+USRBIN          10.0   NEUTRON     -50.0      50.0      50.0      20. meshN
 USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
 * Cartesian binning of the dose rate inside and around the target
-USRBIN          10.0   DOSE-EQ     -51.0      10.0      10.0      20. dose
+USRBIN          10.0   DOSE-EQ     -51.0      10.0      10.0      20. meshH
 USRBIN         -10.0     -10.0     -10.0     100.0     100.0     200.  &
+* print the step size table
+*EMFFIX          $mat                                                  PRINT
+* turn on multiple scattering
+*MULSOPT                              3.0      $mat
+* bias bremsstrahlung production
+*EMF-BIAS       0.005                 1.0      $mat                    LAMBBREM
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 RANDOMIZE        1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
