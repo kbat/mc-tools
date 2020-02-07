@@ -7,9 +7,16 @@ Simple box-shaped target
 #define Ebeam  -0.018
 *#define Ebeam  -1.0
 #define thick   0.2
+#define wallThick  200.0
+* target-wall distance
+#define dist 300.0
 #define width   10.0
 #define height  10.0
 #define mat     TUNGSTEN
+*
+#define wallWidth   600.0
+#define wallHeight  600.0
+#define wallMat     CONCRETE
 * auxillary variables
 #define xmin  -1*width/2.0
 #define xmax     width/2.0
@@ -19,6 +26,13 @@ Simple box-shaped target
 #define area   height*width
 #define volume area*thick
 *
+#define wallXmin  -1*wallWidth/2.0
+#define wallXmax     wallWidth/2.0
+#define wallYmin  -1*wallHeight/2.0
+#define wallYmax     wallHeight/2.0
+#define wallZmin   thick+dist
+#define wallZmax   wallZmin+wallThick
+*
 DEFAULTS                                                              PRECISION
 BEAM          $Ebeam                                                  $Beampart
 BEAMPOS          0.0       0.0       -10.0
@@ -26,8 +40,9 @@ BEAMPOS          0.0       0.0       -10.0
 GEOBEGIN                                                              COMBNAME
   0 0                       A simple Be target inside vacuum
 SPH body1        0.0        0.0        0.0     1000.0
-SPH body2        0.0        0.0        0.0      100.0
+SPH body2        0.0        0.0        0.0      900.0
 RPP target      $xmin      $xmax      $ymin      $ymax        0.0     $thick
+RPP wall        $wallXmin  $wallXmax  $wallYmin  $wallYmax   $wallZmin  $wallZmax
 XYP front        0.0
 XYP back      $thick
 * plane to separate the upstream and downstream part of the target
@@ -38,13 +53,21 @@ regBH1    5     +body1 -body2
 * front
 regVAF    5     +body2 +front
 regVAM    5     +body2 -target -front +back
-regVAB    5     +body2 -back
+regVAB    5     +body2 -back -wall
 * target
 regTRG    5     +target
+* wall
+regWALL   5     +wall
 END
 GEOEND
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
-MATERIAL         4.0               1.848       5.0                    BERYLLIU
+*SRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area beamIn
+MATERIAL        19.0   39.0983     0.862      26.0       0.0      0.0 POTASSIU
+MATERIAL         0.0       0.0      2.35      27.0       0.0       0. CONCRETE
+COMPOUND       -0.01  HYDROGEN    -0.001    CARBON -0.529107   OXYGEN CONCRETE
+COMPOUND      -0.016    SODIUM    -0.002  MAGNESIU -0.033872 ALUMINUM CONCRETE
+COMPOUND   -0.337021   SILICON    -0.013  POTASSIU    -0.044  CALCIUM CONCRETE
+COMPOUND      -0.014      IRON                                        CONCRETE
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 *  Target
 ASSIGNMAT  $mat       regTRG
@@ -52,6 +75,7 @@ ASSIGNMAT  $mat       regTRG
 ASSIGNMAT  BLCKHOLE   regBH1
 *  Vacuum around
 ASSIGNMAT   VACUUM    regVAF     regVAB
+ASSIGNMAT $wallMat    regWALL
 *
 #if PLOTXY
 PLOTGEOM
@@ -90,16 +114,16 @@ USRBDX         $emax                50.0                               &
 *USRTRACK        -1.0  BEAMPART     -48.0   regTRG    $volume      50. track
 *USRTRACK       $emax                                                     &
 * Cartesian binning of the beam particle fluence inside and around the target
-USRBIN          10.0  ELECTRON     -50.0      50.0      50.0      20. meshE
-USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
-USRBIN          10.0    PHOTON     -50.0      50.0      50.0      20. meshP
-USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
+USRBIN          10.0  ELECTRON     -50.0 $wallXmax $wallYmax $wallZmax meshE
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
+USRBIN          10.0    PHOTON     -50.0 $wallXmax $wallYmax $wallZmax meshP
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
 * Cartesian binning of the neutron particle fluence inside and around the target
-USRBIN          10.0   NEUTRON     -50.0      50.0      50.0      20. meshN
-USRBIN         -50.0     -50.0     -10.0     100.0     100.0      30.0   &
+USRBIN          10.0   NEUTRON     -50.0 $wallXmax $wallYmax $wallZmax meshN
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
 * Cartesian binning of the dose rate inside and around the target
-USRBIN          10.0   DOSE-EQ     -51.0      10.0      10.0      20. meshH
-USRBIN         -10.0     -10.0     -10.0     100.0     100.0     200.  &
+USRBIN          10.0   DOSE-EQ     -50.0 $wallXmax $wallYmax $wallZmax meshH
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
 * print the step size table
 *EMFFIX          $mat                                                  PRINT
 * turn on multiple scattering
