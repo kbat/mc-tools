@@ -22,7 +22,7 @@ Simple box-shaped target
 #define xmax     width/2.0
 #define ymin  -1*height/2.0
 #define ymax     height/2.0
-#define emax   Ebeam*1.1
+#define emax   Abs(Ebeam*1.1)
 #define area   height*width
 #define volume area*thick
 *
@@ -101,10 +101,12 @@ USRBDX         $emax                50.0                               &
 USRBDX         101.0  PHOTON       -47.0   regTRG  regVAB       $area pFwd
 USRBDX         $emax                50.0                               &
 * backward
-USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAF       $area eBack
+USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAF       $area eBackE
 USRBDX         $emax                50.0                               &
-USRBDX         101.0  PHOTON       -47.0   regTRG  regVAF       $area pBack
+USRBDX         101.0  PHOTON       -47.0   regTRG  regVAF       $area pBackP
 USRBDX         $emax                50.0                               &
+USRBDX         101.0  NEUTRON      -48.0   regTRG  regVAF       $area pBackN
+USRBDX          10.0                50.0                               &
 *
 * fluence leaving the target linear energy and solid angle
 *USRBDX         101.0   NEUTRON     -47.0   regTRG  regVAB       $area outFluLLN
@@ -133,5 +135,5 @@ USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 RANDOMIZE        1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
-START         1000.0
+START          1.0e3
 STOP
