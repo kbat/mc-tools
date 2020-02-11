@@ -129,8 +129,8 @@ class Usrxxx:
                 if over1b>0:
                         self.ncase = long(self.ncase) + long(over1b)*1000000000
 
-                self.title = title.strip()
-                self.time  = time.strip()
+                self.title = title.strip().decode()
+                self.time  = time.strip().decode()
 
                 return f
 
