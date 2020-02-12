@@ -1,16 +1,13 @@
 # mc-tools
-Some Monte Carlo tools for MCNPX, PHITS and FLUKA
+Some Monte Carlo tools for MCNP, MCNPX, PHITS and FLUKA
 
 Project homepage: https://github.com/kbat/mc-tools
 
 * MСNРХ
-  * **Note:** These tools are for MCNPX. MCNP6 is not fully supported since we do not use it for several reasons.
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for MCNP
-  * An implementation of application programming interface (API) to
-    read tallies from **mctal** files into a
+  * An implementation of application programming interface (API) to read tallies from **mctal** files into a
     [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
-    object. This API allows to convert **mctal** files into any
-    format.  It should work with any tallies and kcode records. Known bugs: Tallies with perturbation records are not supported and tallies after the first kcode record are not read.
+    object. This API allows to convert **mctal** files into any format. It should work with any tallies and kcode records. Known bugs: Tallies with perturbation records are not supported.
   * [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
     script converts a mctal file into the [ROOT](http://root.cern.ch) format. The tallies are saved
     as [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html) histograms.
@@ -31,8 +28,7 @@ Project homepage: https://github.com/kbat/mc-tools
       [This macro](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/examples/ssw2root/example.C)
       shows several very simple examples how to analyse SSW files with
       ROOT.
-    The WSSA file format depends on the MCNPX version, and currently
-    the script has been tested with versions 2.6.0, 26b and 2.7.0.
+    The WSSA file format depends on the MCNPX version, and currently the script has been tested with versions 2.6.0, 26b and 2.7.0.
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
