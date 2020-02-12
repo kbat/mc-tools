@@ -70,13 +70,29 @@ def getAbins(det, i):
     else:
         return getLinBins(det.na, det.alow, det.ahigh)
 
+def getHistTitle(det,w1):
+    """ Return histogram title """
+    title = "%s %s #diamond reg %d %s %d #diamond %g cm^{2}" % (fluka.particle.get(det.dist, "undefined"), "fluence" if det.fluence else "current", det.reg1, "#leftrightarrow" if det.twoway else "#rightarrow", det.reg2, det.area)
+    title += getAxesTitle(det,w1)
+    return title
+
 def hist(det):
     """ Create histogram for the given detector """
 
-    w1 = getType(det.type) # decrypted what(1)
-    title = "%s %s #diamond reg %d %s %d #diamond %g cm^{2}" % (fluka.particle.get(det.dist, "undefined"), "fluence" if det.fluence else "current", det.reg1, "#leftrightarrow" if det.twoway else "#rightarrow", det.reg2, det.area)
-    title += getAxesTitle(det,w1[0])
-    return ROOT.TH2F(det.name, title, det.ne, getEbins(det, w1[0]), det.na, getAbins(det, w1[0]))
+    w1 = getType(det.type)[0] # decrypted what(1)
+    title = getHistTitle(det,w1)
+    return ROOT.TH2F(det.name, title, det.ne, getEbins(det, w1), det.na, getAbins(det, w1))
+
+def histN(det):
+    """ Create histogram for the given detector with low energy neutrons """
+    w1 = getType(det.type)[0]
+    if det.lowneu:
+        name = det.name + "_lowneu"
+        title = "Low energy " + getHistTitle(det,w1)
+        return ROOT.TH2F(name, title, det.ngroup, np.array(det.egroup[::-1]), det.na, getAbins(det, w1))
+    else:
+        return 0
+
 
 def main():
     """ Converts usxsuw output into a ROOT TH2F histogram """
@@ -99,13 +115,13 @@ def main():
         rootFileName = args.root
 
     b = Data.Usrbdx()
-    b.readHeader(args.usrbdx)
+    b.readHeader(args.usrbdx) # data file closed here
 
     ND = len(b.detector)
 
     if args.verbose:
         b.sayHeader()
-        print("\n%d tallies found:" % ND)
+        print("\n%s %d %s found:" % ('*'*20, ND, "estimator" if ND==1 else "estimators"))
         for i in range(ND):
             b.say(i)
             print("")
@@ -117,14 +133,18 @@ def main():
         det = b.detector[i]
 
         h = hist(det)
+        hn = histN(det)
 
         for i in range(det.ne):
             for j in range(det.na):
                     gbin = i + j * det.ne
+#                    print(val[gbin])
                     h.SetBinContent(i+1, j+1, val[gbin])
                     h.SetBinError(i+1, j+1, err[gbin]*val[gbin])
         h.SetEntries(b.weight)
         h.Write()
+        if det.lowneu:
+            hn.Write()
 
     fout.Close()
 
