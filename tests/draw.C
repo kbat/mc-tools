@@ -33,7 +33,7 @@ void plot1D(TFile *f, const char *hname1, const char *hname2=0)
 
 void draw(const char *fname="shield.root")
 {
-  gStyle->SetOptStat(0);
+  gStyle->SetOptStat(1);
   const Int_t current(500); // mA
   // single charged particles per second
   const Double_t persec(current/1000.0/TMath::Qe());
@@ -56,10 +56,16 @@ void draw(const char *fname="shield.root")
   plot2D(f, "meshN");
 
   c1->cd(5);
-  plot1D(f, "eFwd", "eBack");
+  plot1D(f, "eFwd", "eBackE");
   gPad->SetLogy();
 
   c1->cd(6);
-  plot1D(f, "pFwd", "pBack");
+  plot1D(f, "pFwd", "pBackP");
   gPad->SetLogy();
+
+  c1->cd(7);
+  plot1D(f, "pBackN");
+  gPad->SetLogy();
+
+  c1->Print("draw.pdf");
 }
