@@ -81,7 +81,14 @@ def hist(det):
 
     w1 = getType(det.type)[0] # decrypted what(1)
     title = getHistTitle(det,w1)
-    return ROOT.TH2F(det.name, title, det.ne, getEbins(det, w1), det.na, getAbins(det, w1))
+
+    nebins = det.ne
+    ebins = getEbins(det,w1)
+    if det.lowneu:
+        nebins += det.ngroup
+        ebins = np.concatenate((np.array(det.egroup[::-1]), getEbins(det,w1)[1:]))
+
+    return ROOT.TH2F(det.name, title, nebins, ebins, det.na, getAbins(det, w1))
 
 def histN(det):
     """ Create histogram for the given detector with low energy neutrons """
