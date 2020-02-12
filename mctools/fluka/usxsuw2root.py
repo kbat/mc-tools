@@ -54,6 +54,13 @@ def getLinBins(nbins, low, high):
 
     return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
+def getNEbins(det):
+    """ Return number of energy bins """
+    nebins = det.ne
+    if det.lowneu:
+        nebins += det.ngroup
+    return nebins
+
 def getEbins(det, i):
     """ Return lin or log energy bins depending on the value of i """
 
@@ -82,23 +89,22 @@ def hist(det):
     w1 = getType(det.type)[0] # decrypted what(1)
     title = getHistTitle(det,w1)
 
-    nebins = det.ne
+    nebins = getNEbins(det)
     ebins = getEbins(det,w1)
     if det.lowneu:
-        nebins += det.ngroup
         ebins = np.concatenate((np.array(det.egroup[::-1]), getEbins(det,w1)[1:]))
 
     return ROOT.TH2F(det.name, title, nebins, ebins, det.na, getAbins(det, w1))
 
-def histN(det):
-    """ Create histogram for the given detector with low energy neutrons """
-    w1 = getType(det.type)[0]
-    if det.lowneu:
-        name = det.name + "_lowneu"
-        title = "Low energy " + getHistTitle(det,w1)
-        return ROOT.TH2F(name, title, det.ngroup, np.array(det.egroup[::-1]), det.na, getAbins(det, w1))
-    else:
-        return 0
+# def histN(det):
+#     """ Create histogram for the given detector with low energy neutrons """
+#     w1 = getType(det.type)[0]
+#     if det.lowneu:
+#         name = det.name + "_lowneu"
+#         title = "Low energy " + getHistTitle(det,w1)
+#         return ROOT.TH2F(name, title, det.ngroup, np.array(det.egroup[::-1]), det.na, getAbins(det, w1))
+#     else:
+#         return 0
 
 
 def main():
@@ -140,18 +146,23 @@ def main():
         det = b.detector[i]
 
         h = hist(det)
-        hn = histN(det)
+#        hn = histN(det)
 
-        for i in range(det.ne):
+        val = val[::-1]
+        print([x*2*3.1415 for x in val])
+
+
+        nebins = getNEbins(det)
+        for i in range(nebins):
             for j in range(det.na):
-                    gbin = i + j * det.ne
+                    gbin = i + j * nebins
 #                    print(val[gbin])
                     h.SetBinContent(i+1, j+1, val[gbin])
                     h.SetBinError(i+1, j+1, err[gbin]*val[gbin])
         h.SetEntries(b.weight)
         h.Write()
-        if det.lowneu:
-            hn.Write()
+        # if det.lowneu:
+        #     hn.Write()
 
     fout.Close()
 
