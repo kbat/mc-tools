@@ -54,6 +54,7 @@ def convert(inpname, tally, unit, hname):
 
         f = ROOT.TFile(rootfname)
         h2 = f.Get(hname)
+        h2.Print()
 
         nbins = h2.GetNbinsY()
         dOmega = h2.GetYaxis().GetBinLowEdge(nbins+1)-h2.GetYaxis().GetBinLowEdge(1)
@@ -79,7 +80,7 @@ def convert(inpname, tally, unit, hname):
                 femax = _format % df['emax'][i]
                 fval  = _format % df['val'][i]
                 ferr  = _format % df['err'][i]
-                print(i+1,femin,femax,fval,ferr,"\t",hval,herr)
+                print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
 #                print(df.ix[i])
                 compare(hemin, femin, "emin")
                 compare(hemax, femax, "emax")
@@ -95,4 +96,9 @@ def test_fluka2root():
         for inp in inputs:
                 fluka2root(inp)
 
-convert('shield.inp', 'usrbdx', 48, 'pBackN')
+convert('shield.inp', 'usrbdx', 47, 'beamIn') # fails emin, otherwise OK
+#convert('shield.inp', 'usrbdx', 48, 'eFwd') # OK
+#convert('shield.inp', 'usrbdx', 49, 'pFwd') # OK
+#convert('shield.inp', 'usrbdx', 50, 'eBackE')
+#convert('shield.inp', 'usrbdx', 51, 'pBackP') # OK
+#convert('shield.inp', 'usrbdx', 52, 'pBackN') # OK
