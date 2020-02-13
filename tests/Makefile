@@ -6,7 +6,7 @@ shield005.log: shield.inp
 	$(FLUTIL)/rfluka -N0 -M5 shield.inp
 
 shield.root: shield005.log
-	fluka2root -f shield.inp
+	fluka2root -f -keep shield.inp
 
 convert: shield.root
 

@@ -45,10 +45,11 @@ class Estimator:
         return self.name+" "+self.converter+" "+str(self.units)
 
 class Converter:
-    def __init__(self, inp, overwrite, verbose):
-        self.inp        = inp # all input files
-        self.overwrite  = overwrite
-        self.verbose    = verbose
+    def __init__(self, args):
+        self.inp        = args.inp # all input files
+        self.overwrite  = args.overwrite
+        self.verbose    = args.verbose
+        self.keep       = args.keep
         self.parallel   = find_executable("parallel") is not None
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw"),
@@ -220,7 +221,7 @@ class Converter:
                 if return_value:
                     sys.exit(printincolor("Coult not convert an estimator"));
 
-        if not self.verbose:
+        if not self.keep:
             for f in tmpfiles:
                 os.unlink(f)
 
@@ -287,10 +288,11 @@ def main():
     parser.add_argument('inp', type=str, nargs="+", help='FLUKA input file(s). If multiple files are given, the script will assume the input files differ only in the random seed and average all corresponding data files.')
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite', help='overwrite the output ROOT files produced by hadd')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
+    parser.add_argument('-keep', '--keep-files', action='store_true', default=False, dest='keep', help='do not delete temporary files')
 
     args = parser.parse_args()
 
-    c = Converter(args.inp, args.overwrite, args.verbose)
+    c = Converter(args)
     c.Merge()
     val = c.Convert()
 
