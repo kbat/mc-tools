@@ -57,7 +57,7 @@ def getLinBins(nbins, low, high):
 def getNEbins(det):
     """ Return number of energy bins """
     nebins = det.ne
-    if det.lowneu:
+    if det.lowneu and det.dist==8:
         nebins += det.ngroup
     return nebins
 
@@ -91,20 +91,19 @@ def hist(det):
 
     nebins = getNEbins(det)
     ebins = getEbins(det,w1)
-    if det.lowneu:
+    if det.lowneu and det.dist==8:
         ebins = np.concatenate((np.array(det.egroup[::-1]), getEbins(det,w1)[1:]))
 
     return ROOT.TH2F(det.name, title, nebins, ebins, det.na, getAbins(det, w1))
 
-# def histN(det):
-#     """ Create histogram for the given detector with low energy neutrons """
-#     w1 = getType(det.type)[0]
-#     if det.lowneu:
-#         name = det.name + "_lowneu"
-#         title = "Low energy " + getHistTitle(det,w1)
-#         return ROOT.TH2F(name, title, det.ngroup, np.array(det.egroup[::-1]), det.na, getAbins(det, w1))
-#     else:
-#         return 0
+def histN(det):
+    """ Create histogram for the given detector with low energy neutrons """
+    w1 = getType(det.type)[0]
+
+    name = det.name + "_lowneu"
+    title = "Contribution from low energy neutrons to " + getHistTitle(det,w1)
+    # print(det.ngroup, det.egroup[::-1])
+    return ROOT.TH2F(name, title, det.ngroup, np.array(det.egroup[::-1]), det.na, getAbins(det, w1))
 
 
 def main():
@@ -146,14 +145,14 @@ def main():
         det = b.detector[i]
 
         h = hist(det)
+        if det.lowneu and det.dist!=8:
+            hn = histN(det)
 
         print(det.name,det.lowneu,det.dist,"val:",len(val), det.ngroup, det.ne)
-        if det.lowneu: # and det.dist==8: # 8 is NEUTRON
+        if det.lowneu and det.dist==8: # 8 is NEUTRON
             val = val[-det.ngroup:][::-1] + val[0:det.ne]
-#            assert len(val1) == len(val)
-
             err = err[-det.ngroup:][::-1] + err[0:det.ne]
-#            assert len(err1) == len(err)
+
 
         nebins = getNEbins(det)
         for i in range(nebins):
@@ -163,6 +162,9 @@ def main():
                     h.SetBinError(i+1, j+1, err[gbin]*15.91549)
         h.SetEntries(b.weight)
         h.Write()
+
+        if det.lowneu and det.dist!=8:
+            hn.Write()
 
     fout.Close()
 
