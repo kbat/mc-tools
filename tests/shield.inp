@@ -94,19 +94,19 @@ PHOTONUC         1.0                       $mat                       ELECTNUC
 SCORE       ENERGY    BEAMPART
 * incident beam
 USRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area beamIn
-USRBDX         $emax                10.0                               &
+USRBDX         $emax                10.0                          3.0  &
 * forward
 USRBDX         101.0  ELECTRON     -48.0   regTRG  regVAB       $area eFwd
-USRBDX         $emax                50.0                               &
+USRBDX         $emax                50.0                          3.0  &
 USRBDX         101.0  PHOTON       -49.0   regTRG  regVAB       $area pFwd
-USRBDX         $emax                50.0                               &
+USRBDX         $emax                50.0                          3.0  &
 * backward
 USRBDX         101.0  ELECTRON     -50.0   regTRG  regVAF       $area eBackE
-USRBDX         $emax                50.0                               &
+USRBDX         $emax                50.0                          3.0  &
 USRBDX         101.0  PHOTON       -51.0   regTRG  regVAF       $area pBackP
-USRBDX         $emax                50.0                               &
+USRBDX         $emax                50.0                          3.0  &
 USRBDX         101.0  NEUTRON      -52.0   regTRG  regVAF       $area pBackN
-USRBDX          10.0                50.0                               &
+USRBDX          10.0                50.0                          3.0  &
 *
 * fluence leaving the target linear energy and solid angle
 *USRBDX         101.0   NEUTRON     -47.0   regTRG  regVAB       $area outFluLLN

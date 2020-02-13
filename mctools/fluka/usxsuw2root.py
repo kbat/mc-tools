@@ -143,6 +143,9 @@ def main():
         val = Data.unpackArray(b.readData(i))
         err = Data.unpackArray(b.readStat(i))
         det = b.detector[i]
+        lenval = len(val)
+
+        assert lenval == len(err)
 
         h = hist(det)
         if det.lowneu and det.dist!=8:
@@ -150,16 +153,18 @@ def main():
 
         print(det.name,det.lowneu,det.dist,"val:",len(val), det.ngroup, det.ne)
         if det.lowneu and det.dist==8: # 8 is NEUTRON
-            val = val[-det.ngroup:][::-1] + val[0:det.ne]
-            err = err[-det.ngroup:][::-1] + err[0:det.ne]
+            val = val[-det.ngroup*det.na:][::-1] + val[0:det.ne*det.na]
+            err = err[-det.ngroup*det.na:][::-1] + err[0:det.ne*det.na]
 
+        assert lenval == len(val), "%d != %d" % (lenval, len(val))
+        assert lenval == len(err), "%d != %d" % (lenval, len(err))
 
         nebins = getNEbins(det)
         for i in range(nebins):
             for j in range(det.na):
-                    gbin = i + j * nebins
-                    h.SetBinContent(i+1, j+1, val[gbin])
-                    h.SetBinError(i+1, j+1, err[gbin]*15.91549)
+                gbin = i + j * nebins
+                h.SetBinContent(i+1, j+1, val[gbin])
+                h.SetBinError(i+1, j+1, err[gbin]*15.91549)
         h.SetEntries(b.weight)
         h.Write()
 
