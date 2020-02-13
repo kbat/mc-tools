@@ -141,17 +141,19 @@ def main():
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
-        val1 = Data.unpackArray(b.readData(i))
-        err1 = Data.unpackArray(b.readStat(i))
+        val = Data.unpackArray(b.readData(i))
+        err = Data.unpackArray(b.readStat(i))
         det = b.detector[i]
 
         h = hist(det)
 
-        val = val1[-det.ngroup:][::-1] + val1[0:det.ne]
-        assert len(val1) == len(val)
+        print(det.name,det.lowneu,det.dist,"val:",len(val), det.ngroup, det.ne)
+        if det.lowneu: # and det.dist==8: # 8 is NEUTRON
+            val = val[-det.ngroup:][::-1] + val[0:det.ne]
+#            assert len(val1) == len(val)
 
-        err = err1[-det.ngroup:][::-1] + err1[0:det.ne]
-        assert len(err1) == len(err)
+            err = err[-det.ngroup:][::-1] + err[0:det.ne]
+#            assert len(err1) == len(err)
 
         nebins = getNEbins(det)
         for i in range(nebins):
