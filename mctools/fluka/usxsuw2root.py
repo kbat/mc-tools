@@ -141,28 +141,26 @@ def main():
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
-        val = Data.unpackArray(b.readData(i))
-        err = Data.unpackArray(b.readStat(i))
+        val1 = Data.unpackArray(b.readData(i))
+        err1 = Data.unpackArray(b.readStat(i))
         det = b.detector[i]
 
         h = hist(det)
-#        hn = histN(det)
 
-        val = val[::-1]
-        print([x*2*3.1415 for x in val])
+        val = val1[-det.ngroup:][::-1] + val1[0:det.ne]
+        assert len(val1) == len(val)
 
+        err = err1[-det.ngroup:][::-1] + err1[0:det.ne]
+        assert len(err1) == len(err)
 
         nebins = getNEbins(det)
         for i in range(nebins):
             for j in range(det.na):
                     gbin = i + j * nebins
-#                    print(val[gbin])
                     h.SetBinContent(i+1, j+1, val[gbin])
-                    h.SetBinError(i+1, j+1, err[gbin]*val[gbin])
+                    h.SetBinError(i+1, j+1, err[gbin]*15.91549)
         h.SetEntries(b.weight)
         h.Write()
-        # if det.lowneu:
-        #     hn.Write()
 
     fout.Close()
 
