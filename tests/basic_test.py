@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+import re
 import os
 import sys
 import shutil
@@ -41,6 +42,17 @@ def compare(hist, tab, name):
         """
         assert hist == tab, "problem with %s:\ttab: %s\thist: %s" % (name, tab, hist)
 
+def getNskip(fname, hname):
+        """ Return number of rows to skip in the _tab.lis file before the current estimator data
+        """
+        i = 1
+        with open(fname) as f:
+                for line in f.readlines():
+                        i += 1
+                        if re.search(hname, line):
+                                break
+        return i
+
 def convert(inpname, tally, unit, hname):
         """ tets histograms converted by fluka2root """
         import ROOT
@@ -72,7 +84,10 @@ def convert(inpname, tally, unit, hname):
         nrows = h.GetNbinsX()
         if h2_lowneu:
                 nrows += h2_lowneu.GetNbinsX()
-        df = pd.read_csv(tabfname, sep='\s+', names=["emin", "emax", "val", "err"], skiprows=2, nrows=nrows) # data frame
+
+        df = pd.read_csv(tabfname, sep='\s+', names=["emin", "emax", "val", "err"],
+                         skiprows=getNskip(tabfname, hname),
+                         nrows=nrows) # data frame
         print("shape:",df.shape)
 #        print(df.head())
 
@@ -126,8 +141,8 @@ def test_fluka2root():
         for inp in inputs:
                 fluka2root(inp)
 
-# convert('shield.inp', 'usrbdx', 47, 'beamIn') # fails emin, otherwise OK
-# convert('shield.inp', 'usrbdx', 48, 'eFwd') # OK
+#convert('shield.inp', 'usrbdx', 47, 'beamIn') # fails emin, otherwise OK
+#convert('shield.inp', 'usrbdx', 48, 'eFwd') # OK
 # convert('shield.inp', 'usrbdx', 49, 'pFwd') # OK
 # convert('shield.inp', 'usrbdx', 50, 'eBackE')
 # convert('shield.inp', 'usrbdx', 51, 'pBackP') # OK
