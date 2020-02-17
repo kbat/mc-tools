@@ -153,11 +153,27 @@ def main():
 
         print(det.name,det.lowneu,det.dist,"val:",len(val), det.ngroup, det.ne)
         if det.lowneu and det.dist==8: # 8 is NEUTRON
-            val = val[-det.ngroup*det.na:][::-1] + val[0:det.ne*det.na]
-            err = err[-det.ngroup*det.na:][::-1] + err[0:det.ne*det.na]
+            lnval = val[-det.ngroup*det.na:][::-1]
+            lnerr = err[-det.ngroup*det.na:][::-1]
+            v = ()
+            e = ()
+            for a in range(det.na,0,-1):
+                i = det.ngroup*(a-1)
+                j = det.ngroup*(a)
+                print("a=",a,i,j,j-i,det.ngroup)
+                v += lnval[i:j]
+                i=(det.na-a)*det.ne
+                j=(det.na-a+1)*det.ne
+                print(a,v[-3:],val[0:3],"diff:",i,j)
+                v += val[i:j]
+
+            val = v
+            err = lnerr + err[0:det.ne*det.na] # todo: put inside the loop as 'val'
+
 
         assert lenval == len(val), "%d != %d" % (lenval, len(val))
         assert lenval == len(err), "%d != %d" % (lenval, len(err))
+
 
         nebins = getNEbins(det)
         for i in range(nebins):
@@ -165,6 +181,14 @@ def main():
                 gbin = i + j * nebins
                 h.SetBinContent(i+1, j+1, val[gbin])
                 h.SetBinError(i+1, j+1, err[gbin]*15.91549)
+
+        # if (det.name=="pBackN"):
+        #     for j in range(det.na):
+        #         print(j)
+        #         for i in range(nebins):
+        #             print("%.3E %.3E %.3E" % (h.GetXaxis().GetBinLowEdge(i+1),
+        #                                       h.GetXaxis().GetBinLowEdge(i+2), h.GetBinContent(i+1,j+1)))
+
         h.SetEntries(b.weight)
         h.Write()
 
