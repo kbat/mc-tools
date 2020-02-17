@@ -60,7 +60,8 @@ def convert(inpname, tally, unit, hname):
 
         base = os.path.splitext(inpname)[0]
 
-        rootfname = "%s.%d.%s.root" % (base, unit, tally)
+#        rootfname = "%s.%d.%s.root" % (base, unit, tally)
+        rootfname = "shield.root"
         tabfname  = "%s.%d_tab.lis" % (base, unit)
         print(base, unit, rootfname, tabfname)
 
@@ -70,6 +71,17 @@ def convert(inpname, tally, unit, hname):
 
         # here we assume all bin width is the same:
         dOmega = h2.GetYaxis().GetBinLowEdge(2)-h2.GetYaxis().GetBinLowEdge(1)
+
+        # nomega = h2.GetNbinsY()
+        # nenergy = h2.GetNbinsX()
+
+        # for a in range(1,nomega+1):
+        #         dOmega = h2.GetYaxis().GetBinWidth(a)
+        #         for e in range(1,nenergy+1):
+        #                 val = h2.GetBinContent(e,a)
+        #                 err = h2.GetBinError(e,a)
+        #                 h2.SetBinContent(e, a, val*dOmega)
+        #                 err.SetBinContent(e, a, err*dOmega)
 
         h = h2.ProjectionX()
         h.Scale(dOmega)
@@ -125,8 +137,8 @@ def convert(inpname, tally, unit, hname):
                 femax = _format % df['emax'][i+j]
                 fval  = _format % df['val'][i+j]
                 ferr  = _format % df['err'][i+j]
-                print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
-#                print(df.ix[i])
+#                print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
+
                 compare(hemin, femin, "emin")
                 compare(hemax, femax, "emax")
                 compare(hval, fval, "val")
@@ -141,9 +153,9 @@ def test_fluka2root():
         for inp in inputs:
                 fluka2root(inp)
 
-#convert('shield.inp', 'usrbdx', 47, 'beamIn') # fails emin, otherwise OK
-#convert('shield.inp', 'usrbdx', 48, 'eFwd') # OK
-# convert('shield.inp', 'usrbdx', 49, 'pFwd') # OK
-# convert('shield.inp', 'usrbdx', 50, 'eBackE')
-# convert('shield.inp', 'usrbdx', 51, 'pBackP') # OK
-convert('shield.inp', 'usrbdx', 52, 'pBackN') # OK
+convert('shield.inp', 'usrbdx', 47, 'beamIn') # fails emin, otherwise OK
+convert('shield.inp', 'usrbdx', 47, 'eFwd') # OK
+convert('shield.inp', 'usrbdx', 47, 'pFwd') # OK
+convert('shield.inp', 'usrbdx', 47, 'eBackE')
+convert('shield.inp', 'usrbdx', 47, 'pBackP') # OK
+convert('shield.inp', 'usrbdx', 47, 'pBackN') # OK

@@ -151,7 +151,7 @@ def main():
         if det.lowneu and det.dist!=8:
             hn = histN(det)
 
-        print(det.name,det.lowneu,det.dist,"val:",len(val), det.ngroup, det.ne)
+#        print(det.name,det.lowneu,det.dist,"val:",len(val), det.ngroup, det.ne)
         if det.lowneu and det.dist==8: # 8 is NEUTRON
             lnval = val[-det.ngroup*det.na:][::-1]
             lnerr = err[-det.ngroup*det.na:][::-1]
@@ -160,15 +160,16 @@ def main():
             for a in range(det.na,0,-1):
                 i = det.ngroup*(a-1)
                 j = det.ngroup*(a)
-                print("a=",a,i,j,j-i,det.ngroup)
                 v += lnval[i:j]
+                e += lnerr[i:j]
+
                 i=(det.na-a)*det.ne
                 j=(det.na-a+1)*det.ne
-                print(a,v[-3:],val[0:3],"diff:",i,j)
                 v += val[i:j]
+                e += err[i:j]
 
             val = v
-            err = lnerr + err[0:det.ne*det.na] # todo: put inside the loop as 'val'
+            err = e
 
 
         assert lenval == len(val), "%d != %d" % (lenval, len(val))
@@ -180,7 +181,7 @@ def main():
             for j in range(det.na):
                 gbin = i + j * nebins
                 h.SetBinContent(i+1, j+1, val[gbin])
-                h.SetBinError(i+1, j+1, err[gbin]*15.91549)
+                h.SetBinError(i+1, j+1, err[gbin]*15.91549*det.na) # still wrong if det.na>1
 
         # if (det.name=="pBackN"):
         #     for j in range(det.na):
