@@ -7,11 +7,6 @@ if [ $# != 2 ]; then
     exit 1
 fi
 
-if ! command -v pandoc >/dev/null; then
-    echo "ERROR: pandoc is not installed"
-    exit 1
-fi
-
 N=$1
 fff=$2
 
@@ -26,7 +21,8 @@ else
     OUTPUT=$(basename $fff .tex).gitlog
 fi
 
-tmp=$(mktemp --suffix .gitlog2latex)
+#tmp=$(mktemp --suffix .gitlog2latex)
+tmp="/tmp/a.gitlog2latex"
 
 echo "\begin{center}
 \begin{longtable}{ccp{0.7\textwidth}}
@@ -34,9 +30,25 @@ echo "\begin{center}
     Date & Hash & Commit message \\\\ \midrule " > $OUTPUT
 
 #git log --pretty=format:"%ad & %h & %s" --date=short $fff
-git log --pretty=format:"%ad & %h & %B" --date=short -$N $fff | pandoc -f markdown -t latex -o $tmp
-# \& -> &
-sed -i -e 's;\\&;\&;g' $tmp
+git log --pretty=format:"%ad & %h & %B" --date=short -$N $fff > $tmp
+
+sed -i -e 's; ->; $\\to$;g' $tmp
+
+# [ -> {[} and ] -> {]}
+#sed -i -e 's;\([]\[]\);{\1};g' $tmp
+
+# \begin{document} -> \verb|\begin{document}|
+sed -i -e 's;\(\\[^}]*}\);\\verb\|\1\|;g' $tmp
+
+# \command -> \verb|\command\|
+sed -i -e 's;\(\\[a-z]* \);\\verb\|\1\|;g' $tmp
+
+sed -i -e 's;>;\\textgreater{};g' $tmp
+
+# % -> \%
+sed -i -e 's;%;\\%;g' $tmp
+
+# Now we need to add \\ after each line, but instead we do it in the beginning the next one:
 # add \\ before the lines starting with date assuming year > 2000
 sed -i -e 's;^\(20[0-9][0-9]-[01][0-9]-[0-3][0-9].*\);\\\\ \1;' $tmp
 # remove first \\ to prevent adding an empty line after the header in the LaTeX table
@@ -48,15 +60,13 @@ echo "\\\\ \bottomrule" >> $OUTPUT
 echo "\end{longtable}
 \end{center}" >> $OUTPUT
 
-#sed -i -e 's/ \\\([A-Za-z]\)/ \\\\\1/' $OUTPUT
+##sed -i -e 's/ \\\([A-Za-z]\)/ \\\\\1/' $OUTPUT
 
-#sed -i -e 's/\\setcounter/\\verb\|\\setcounter\|/g' $OUTPUT
-sed -i -e 's;\(\\setcounter[^}]*}\);\\verb\|\1\|;' $OUTPUT
-sed -i -e 's;\(\\gridlines\);\\verb\|\1\|;' $OUTPUT
+#sed -i -e 's;\(\\setcounter[^}]*}\);\\verb\|\1\|;' $OUTPUT
+#sed -i -e 's;\(\\gridlines\);\\verb\|\1\|;' $OUTPUT
 # verbatim -> quote
-#sed -i -e 's;\(\\begin\|\\end\){verbatim};\1{quote};' $OUTPUT
-sed -i -e 's;\(\\begin\|\\end\){verbatim};;' $OUTPUT
-sed -i -e 's; \-\\textgreater{}; $\\to$;' $OUTPUT
+##sed -i -e 's;\(\\begin\|\\end\){verbatim};\1{quote};' $OUTPUT
+#sed -i -e 's;\(\\begin\|\\end\){verbatim};;' $OUTPUT
 
 gawk -i inplace NF $OUTPUT
 
