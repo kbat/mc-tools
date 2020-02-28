@@ -63,10 +63,12 @@ def convert(inpname, tally, unit, hname):
 #        rootfname = "%s.%d.%s.root" % (base, unit, tally)
         rootfname = "shield.root"
         tabfname  = "%s.%d_tab.lis" % (base, unit)
-        print(base, unit, rootfname, tabfname)
+        print(base, unit, rootfname, tabfname, hname)
 
         f = ROOT.TFile(rootfname)
         h2 = f.Get(hname)
+        assert h2, f"{hname} not found in {rootfname}"
+
         h2_lowneu = f.Get(hname+"_lowneu")
 
         # here we assume all bin width is the same:
@@ -91,7 +93,7 @@ def convert(inpname, tally, unit, hname):
 
         _format="%.3E"
 
-        print(_format%h.GetBinLowEdge(1), _format%h.GetBinLowEdge(2))
+#        print(_format%h.GetBinLowEdge(1), _format%h.GetBinLowEdge(2))
 
         nrows = h.GetNbinsX()
         if h2_lowneu:
@@ -100,11 +102,11 @@ def convert(inpname, tally, unit, hname):
         df = pd.read_csv(tabfname, sep='\s+', names=["emin", "emax", "val", "err"],
                          skiprows=getNskip(tabfname, hname),
                          nrows=nrows) # data frame
-        print("shape:",df.shape)
+#        print("shape:",df.shape)
 #        print(df.head())
 
         j=0
-        print("Low-energy part")
+#        print("Low-energy part")
         if h2_lowneu: # compare the low energy part
                 nbins = h2_lowneu.GetNbinsX()
                 print("nbins:",nbins)
@@ -125,7 +127,7 @@ def convert(inpname, tally, unit, hname):
                         compare(hval, fval, "val")
                         compare(herr, ferr, "err")
 
-        print("Above 20 MeV")
+#        print("Above 20 MeV")
 
         nbins = h.GetNbinsX();
         for i in range(nbins):
@@ -156,6 +158,10 @@ def test_fluka2root():
 convert('shield.inp', 'usrbdx', 47, 'beamIn') # fails emin, otherwise OK
 convert('shield.inp', 'usrbdx', 47, 'eFwd') # OK
 convert('shield.inp', 'usrbdx', 47, 'pFwd') # OK
-convert('shield.inp', 'usrbdx', 47, 'eBackE')
+convert('shield.inp', 'usrbdx', 47, 'eBackE') # OK
 convert('shield.inp', 'usrbdx', 47, 'pBackP') # OK
 convert('shield.inp', 'usrbdx', 47, 'pBackN') # OK
+convert('shield.inp', 'usrbdx', 47, 'pBackN1') # OK
+convert('shield.inp', 'usrbdx', 47, 'pBackN2') # OK
+convert('shield.inp', 'usrbdx', 47, 'pBackN3') # OK
+convert('shield.inp', 'usrbdx', 47, 'pBackN4') # OK

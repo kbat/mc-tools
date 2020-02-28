@@ -94,19 +94,31 @@ PHOTONUC         1.0                       $mat                       ELECTNUC
 SCORE       ENERGY    BEAMPART
 * incident beam
 USRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area beamIn
-USRBDX         $emax                10.0                          3.0  &
+USRBDX         $emax                10.0                          1.0  &
 * forward
 USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAB       $area eFwd
-USRBDX         $emax                50.0                          3.0  &
+USRBDX         $emax                50.0                          2.0  &
 USRBDX         101.0  PHOTON       -47.0   regTRG  regVAB       $area pFwd
 USRBDX         $emax                50.0                          3.0  &
 * backward
 USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAF       $area eBackE
-USRBDX         $emax                50.0                          3.0  &
+USRBDX         $emax                50.0                          4.0  &
 USRBDX         101.0  PHOTON       -47.0   regTRG  regVAF       $area pBackP
-USRBDX         $emax                50.0                          3.0  &
+USRBDX         $emax                50.0                          5.0  &
 USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN
-USRBDX          10.0                50.0                          3.0  &
+USRBDX          10.0                50.0                          6.0  &
+* emin < 20 Mev, emax > 20 MeV, single angular bin
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN1
+USRBDX          10.0     0.01       50.0                          1.0  &
+* emin < 20 Mev, emax > 20 MeV, multiple angular bins => no data > 20 MeV (FLUKA BUG???)
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN2
+USRBDX          10.0     0.01       50.0                          7.0  &
+* both emin and emax < 20 MeV, single angular bin => not converted by $FLUTIL/usxsuw (FLUKA BUG???)
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN3
+USRBDX         0.015     0.01       50.0                          1.0  &
+* both emin and emax < 20 MeV, multiple angular bins => not converted by $FLUTIL/usxsuw (FLUKA BUG???)
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN4
+USRBDX         0.015     0.01       50.0                          8.0  &
 *
 * fluence leaving the target linear energy and solid angle
 *USRBDX         101.0   NEUTRON     -47.0   regTRG  regVAB       $area outFluLLN
