@@ -10,7 +10,6 @@
 ### SOURCE GAUS SIGMAX SIGMAY NX NY TH ### - not yet implemented
 #
 
-from __future__ import print_function
 import fileinput
 import sys
 

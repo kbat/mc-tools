@@ -1,5 +1,4 @@
 #! /usr/bin/python -W all
-from __future__ import print_function
 import time
 import subprocess
 import tempfile

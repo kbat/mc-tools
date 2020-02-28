@@ -1,5 +1,4 @@
 #! /usr/bin/python
-from __future__ import print_function
 import re
 
 def getPar(masterfile, parname, pos=3):

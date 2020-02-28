@@ -1,7 +1,6 @@
 # An example of getfom-analysis.py used by getfom.py
 # Calculates change (first derivative) of TGraphErrors fitted with pol2
 #
-from __future__ import print_function
 gr.Sort()
 
 N = gr.GetN()

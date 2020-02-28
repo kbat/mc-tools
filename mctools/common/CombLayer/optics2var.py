@@ -1,5 +1,4 @@
 #! /usr/bin/python3 -W all
-from __future__ import print_function
 import sys, argparse, re
 from os import path
 

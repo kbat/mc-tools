@@ -1,6 +1,5 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python3 -Wall
 
-from __future__ import print_function
 import sys, argparse, os, struct
 from array import array
 from mctools.fluka.flair import fortran
@@ -41,7 +40,7 @@ def main():
             size = len(data)
             if size != 80:
                 sys.exit("Format error [title]")
-            title = struct.unpack("=80s", data)[0].strip()
+            title = struct.unpack("=80s", data)[0].decode('utf-8').strip()
             if args.verbose:
                 print(title)
 
@@ -102,8 +101,8 @@ def main():
                     coord = struct.unpack("=%df" % (wlength*2),data) # pairs of x,y
                     if args.verbose:
                         print(coord[:10])
-                    x = map(lambda x:x+Y0, coord[::2]) #[x+Y0 for x in coord[::2]]
-                    y = map(lambda y:y+X0, coord[1::2])
+                    x = list(map(lambda x:x+Y0, coord[::2])) #[x+Y0 for x in coord[::2]]
+                    y = list(map(lambda y:y+X0, coord[1::2]))
                     g = ROOT.TGraph(len(x), array('f', x), array('f', y))
                     g.SetName("g%d" % i)
                     mg.Add(g)

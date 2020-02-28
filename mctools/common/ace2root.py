@@ -1,7 +1,6 @@
 #! /usr/bin/python
 
 #%matplotlib inline
-from __future__ import print_function
 from pylab import savefig
 import matplotlib.pyplot as plt
 from pyne import ace

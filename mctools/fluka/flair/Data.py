@@ -1,60 +1,32 @@
-#!/bin/env python
+# -*- coding: utf-8 -*-
 #
-# Copyright and User License
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Copyright Vasilis.Vlachoudis@cern.ch for the
-# European Organization for Nuclear Research (CERN)
+# Copyright European Organization for Nuclear Research (CERN)
+# All rights reserved
 #
-# Please consult the flair documentation for the license
+# Please look at the supplied documentation for the user's
+# license
 #
-# DISCLAIMER
-# ~~~~~~~~~~
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
-# NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, OF
-# SATISFACTORY QUALITY, AND FITNESS FOR A PARTICULAR PURPOSE
-# OR USE ARE DISCLAIMED. THE COPYRIGHT HOLDERS AND THE
-# AUTHORS MAKE NO REPRESENTATION THAT THE SOFTWARE AND
-# MODIFICATIONS THEREOF, WILL NOT INFRINGE ANY PATENT,
-# COPYRIGHT, TRADE SECRET OR OTHER PROPRIETARY RIGHT.
-#
-# LIMITATION OF LIABILITY
-# ~~~~~~~~~~~~~~~~~~~~~~~
-# THE COPYRIGHT HOLDERS AND THE AUTHORS SHALL HAVE NO
-# LIABILITY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL,
-# CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES OF ANY
-# CHARACTER INCLUDING, WITHOUT LIMITATION, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, DATA OR PROFITS,
-# OR BUSINESS INTERRUPTION, HOWEVER CAUSED AND ON ANY THEORY
-# OF CONTRACT, WARRANTY, TORT (INCLUDING NEGLIGENCE), PRODUCT
-# LIABILITY OR OTHERWISE, ARISING IN ANY WAY OUT OF THE USE OF
-# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGES.
-#
-# Author:	Vasilis.Vlachoudis@cern.ch
-# Date:	24-Oct-2006
+# Author: Vasilis.Vlachoudis@cern.ch
+# Date:   24-Oct-2006
 
 __author__ = "Vasilis Vlachoudis"
 __email__  = "Vasilis.Vlachoudis@cern.ch"
 
+import io
 import re
 import math
-import mctools.fluka.flair.bmath as bmath
 import struct
+
+import mctools.fluka.flair.bmath as bmath
 import mctools.fluka.flair.fortran as fortran
 from mctools.fluka.flair.log import say
-
-try:
-	from cStringIO import StringIO
-except ImportError:
-	from io import StringIO
 try:
 	import numpy
 except ImportError:
 	numpy = None
 
 _detectorPattern = re.compile(r"^ ?# ?Detector ?n?:\s*\d*\s*(.*)\s*", re.MULTILINE)
-_blockPattern	 = re.compile(r"^ ?# ?Block ?n?:\s*\d*\s*(.*)\s*",    re.MULTILINE)
+_blockPattern    = re.compile(r"^ ?# ?Block ?n?:\s*\d*\s*(.*)\s*",    re.MULTILINE)
 
 #-------------------------------------------------------------------------------
 # Unpack an array of floating point numbers
@@ -127,21 +99,21 @@ class Usrxxx:
 			raise IOError("Invalid USRxxx file")
 
 		if over1b>0:
-			self.ncase = long(self.ncase) + long(over1b)*1000000000
+			self.ncase = self.ncase + over1b*1000000000
 
-		self.title = title.strip()
-		self.time  = time.strip()
+		self.title = title.strip().decode()
+		self.time  = time.strip().decode()
 
 		return f
 
 	# ----------------------------------------------------------------------
 	# Read detector data
 	# ----------------------------------------------------------------------
-	def readData(self, det):
-		"""Read detector det data structure"""
-		f = open(self.file,"rb")
+	def readData(self, n):
+		"""Read n(th) detector data structure"""
+		f = open(self.file, "rb")
 		fortran.skip(f)	# Skip header
-		for i in range(2*det):
+		for _ in range(2*n):
 			fortran.skip(f)	# Detector Header & Data
 		fortran.skip(f)		# Detector Header
 		data = fortran.read(f)
@@ -151,12 +123,12 @@ class Usrxxx:
 	# ----------------------------------------------------------------------
 	# Read detector statistical data
 	# ----------------------------------------------------------------------
-	def readStat(self, det):
-		"""Read detector det statistical data"""
+	def readStat(self, n):
+		"""Read n(th) detector statistical data"""
 		if self.statpos < 0: return None
-		f = open(self.file,"rb")
+		f = open(self.file, "rb")
 		f.seek(self.statpos)
-		for i in range(det):
+		for _ in range(n):
 			fortran.skip(f)	# Detector Data
 		data = fortran.read(f)
 		f.close()
@@ -181,7 +153,7 @@ class Resnuclei(Usrxxx):
 	# ----------------------------------------------------------------------
 	def readHeader(self, filename):
 		"""Read residual nuclei detector information"""
-		f = Usrxxx.readHeader(self, filename)
+		f = super().readHeader(filename)
 		self.nisomers = 0
 		if self.ncase <= 0:
 			self.evol = True
@@ -194,7 +166,7 @@ class Resnuclei(Usrxxx):
 			self.evol  = False
 			self.irrdt = None
 
-		for i in range(1000):
+		for _ in range(1000):
 			# Header
 			data = fortran.read(f)
 			if data is None: break
@@ -202,31 +174,30 @@ class Resnuclei(Usrxxx):
 			self.irrdt = None
 
 			# Statistics are present?
-			if size == 14 and data[:8] ==	"ISOMERS:":
-				self.nisomers = struct.unpack("=10xi",data)[0]
-				data = fortran.read(f)
-				data = fortran.read(f)
-				size = len(data)
-
-			if size == 14 and data[:10] == "STATISTICS":
-				self.statpos = f.tell()
-				break
-
-			if size != 38:
+			if size == 14:
+				if data[:8] == b"ISOMERS:":
+					self.nisomers = struct.unpack("=10xi",data)[0]
+					data = fortran.read(f)
+					data = fortran.read(f)
+					size = len(data)
+				if data[:10] == b"STATISTICS":
+					self.statpos = f.tell()
+					break
+			elif size != 38:
 				raise IOError("Invalid RESNUCLEi file header size=%d"%(size))
 
 			# Parse header
 			header = struct.unpack("=i10siif3i", data)
 
 			det = Detector()
-			det.nb	   = header[ 0]
-			det.name   = header[ 1].strip()
-			det.type   = header[ 2]
-			det.region = header[ 3]
-			det.volume = header[ 4]
-			det.mhigh  = header[ 5]
-			det.zhigh  = header[ 6]
-			det.nmzmin = header[ 7]
+			det.nb     = header[0]
+			det.name   = header[1].strip().decode()
+			det.type   = header[2]
+			det.region = header[3]
+			det.volume = header[4]
+			det.mhigh  = header[5]
+			det.zhigh  = header[6]
+			det.nmzmin = header[7]
 
 			self.detector.append(det)
 
@@ -246,13 +217,13 @@ class Resnuclei(Usrxxx):
 	# Read detector data
 	# ----------------------------------------------------------------------
 	def readData(self, n):
-		"""Read detector det data structure"""
+		"""Read n(th) detector data structure"""
 		f = open(self.file, "rb")
 		fortran.skip(f)
 		if self.evol:
 			fortran.skip(f)
 
-		for i in range(n):
+		for _ in range(n):
 			fortran.skip(f)		# Detector Header & Data
 			if self.evol:
 				fortran.skip(f)	# TDecay
@@ -281,7 +252,7 @@ class Resnuclei(Usrxxx):
 		if self.evol:
 			fortran.skip(f)
 
-		for i in range(n):
+		for _ in range(n):
 			fortran.skip(f)		# Detector Header & Data
 			if self.evol:
 				fortran.skip(f) # TDecay
@@ -296,7 +267,7 @@ class Resnuclei(Usrxxx):
 		isohead = fortran.read(f) # Isomers header
 		data = fortran.read(f)	  # Isomers data
 		#print "isohead:",len(isohead)
-		header = struct.unpack("=10xi", isohead)
+		#header = struct.unpack("=10xi", isohead)
 		#print "isohead:",header[0]
 		f.close()
 		return (isohead, data)
@@ -305,9 +276,9 @@ class Resnuclei(Usrxxx):
 	# Read detector statistical data
 	# ----------------------------------------------------------------------
 	def readStat(self, n):
-		"""Read detector det statistical data"""
+		"""Read n(th) detector statistical data"""
 		if self.statpos < 0: return None
-		f = open(self.file,"rb")
+		f = open(self.file, "rb")
 		f.seek(self.statpos)
 
 		f.seek(self.statpos)
@@ -315,7 +286,7 @@ class Resnuclei(Usrxxx):
 			nskip = 7*n
 		else:
 			nskip = 6*n
-		for i in range(nskip):
+		for _ in range(nskip):
 			fortran.skip(f)	# Detector Data
 
 		total = fortran.read(f)
@@ -337,15 +308,15 @@ class Resnuclei(Usrxxx):
 		if det is None:
 			self.sayHeader()
 		else:
-			bin = self.detector[det]
-			say("Bin    : ", bin.nb)
-			say("Title  : ", bin.name)
-			say("Type   : ", bin.type)
-			say("Region : ", bin.region)
-			say("Volume : ", bin.volume)
-			say("Mhigh  : ", bin.mhigh)
-			say("Zhigh  : ", bin.zhigh)
-			say("NMZmin : ", bin.nmzmin)
+			binning = self.detector[det]
+			say("Bin    : ", binning.nb)
+			say("Title  : ", binning.name)
+			say("Type   : ", binning.type)
+			say("Region : ", binning.region)
+			say("Volume : ", binning.volume)
+			say("Mhigh  : ", binning.mhigh)
+			say("Zhigh  : ", binning.zhigh)
+			say("NMZmin : ", binning.nmzmin)
 
 #===============================================================================
 # Usrbdx Boundary Crossing detector
@@ -357,9 +328,9 @@ class Usrbdx(Usrxxx):
 	# ----------------------------------------------------------------------
 	def readHeader(self, filename):
 		"""Read boundary crossing detector information"""
-		f = Usrxxx.readHeader(self, filename)
+		f = super().readHeader(filename)
 
-		for i in range(1000):
+		for _ in range(1000):
 			# Header
 			data = fortran.read(f)
 			if data is None: break
@@ -383,14 +354,14 @@ class Usrbdx(Usrxxx):
 					for j in range(6):
 						fortran.skip(f)
 				break
-			if size != 78: raise IOError("Invalid USRBDX file")
+			elif size != 78: raise IOError("Invalid USRBDX file")
 
 			# Parse header
 			header = struct.unpack("=i10siiiifiiiffifffif", data)
 
 			det = Detector()
-			det.nb	    = header[ 0]		# mx
-			det.name    = header[ 1].strip()	# titusx
+			det.nb      = header[ 0]		# mx
+			det.name    = header[ 1].strip().decode()	# titusx
 			det.type    = header[ 2]		# itusbx
 			det.dist    = header[ 3]		# idusbx
 			det.reg1    = header[ 4]		# nr1usx
@@ -400,13 +371,13 @@ class Usrbdx(Usrxxx):
 			det.fluence = header[ 8]		# lfusbx
 			det.lowneu  = header[ 9]		# llnusx
 			det.elow    = header[10]		# ebxlow
-			det.ehigh   = header[11]		# ebxhgh 
-			det.ne	    = header[12]		# nebxbn
-			det.de	    = header[13]		# debxbn
+			det.ehigh   = header[11]		# ebxhgh
+			det.ne      = header[12]		# nebxbn
+			det.de      = header[13]		# debxbn
 			det.alow    = header[14]		# abxlow
 			det.ahigh   = header[15]		# abxhgh
-			det.na	    = header[16]		# nabxbn
-			det.da	    = header[17]		# dabxbn
+			det.na      = header[16]		# nabxbn
+			det.da      = header[17]		# dabxbn
 
 			self.detector.append(det)
 
@@ -427,7 +398,7 @@ class Usrbdx(Usrxxx):
 	# Read detector data
 	# ----------------------------------------------------------------------
 	def readData(self, n):
-		"""Read detector n data structure"""
+		"""Read n(th) detector data structure"""
 		f = open(self.file, "rb")
 		fortran.skip(f)
 		for i in range(n):
@@ -445,15 +416,15 @@ class Usrbdx(Usrxxx):
 	# Read detector statistical data
 	# ----------------------------------------------------------------------
 	def readStat(self, n):
-		"""Read detector n statistical data"""
+		"""Read n(th) detector statistical data"""
 		if self.statpos < 0: return None
-		f = open(self.file,"rb")
+		f = open(self.file, "rb")
 		f.seek(self.statpos)
-		for i in range(n):
+		for _ in range(n):
 			for j in range(7):
 				fortran.skip(f)	# Detector Data
 
-		for j in range(6):
+		for _ in range(6):
 			fortran.skip(f)	# Detector Data
 		data = fortran.read(f)
 		f.close()
@@ -492,65 +463,69 @@ class Usrbin(Usrxxx):
 	# ----------------------------------------------------------------------
 	def readHeader(self, filename):
 		"""Read USRBIN detector information"""
-		f = Usrxxx.readHeader(self, filename)
+		f = super().readHeader(filename)
 
-		for i in range(1000):
+		for _ in range(1000):
 			# Header
 			data = fortran.read(f)
 			if data is None: break
 			size = len(data)
 
 			# Statistics are present?
-			if size == 14 and data[:10] == "STATISTICS":
+			if size == 14 and data[:10] == b"STATISTICS":
 				self.statpos = f.tell()
 				break
-			if size != 86: raise IOError("Invalid USRBIN file")
+			elif size != 86: raise IOError("Invalid USRBIN file")
 
 			# Parse header
 			header = struct.unpack("=i10siiffifffifffififff", data)
 
-			bin = Detector()
-			bin.nb	  = header[ 0]
-			bin.name  = header[ 1].strip()
-			bin.type  = header[ 2]
-			bin.score = header[ 3]
+			usrbin = Detector()
+			usrbin.nb    = header[0]
+			usrbin.name  = header[1].strip().decode()
+			usrbin.type  = header[2]
+			usrbin.score = header[3]
 
-			bin.xlow  = float(bmath.format(header[ 4],9,useD=False))
-			bin.xhigh = float(bmath.format(header[ 5],9,useD=False))
-			bin.nx	  = header[ 6]
-			if bin.nx > 0 and bin.type not in (2,12,8,18):
-				bin.dx = (bin.xhigh-bin.xlow) / float(bin.nx)
+			usrbin.xlow  = float(bmath.format(header[ 4],9))
+			usrbin.xhigh = float(bmath.format(header[ 5],9))
+			usrbin.nx    = header[ 6]
+			if usrbin.nx > 0 and usrbin.type not in (2,12,8,18):
+				usrbin.dx = (usrbin.xhigh-usrbin.xlow) / float(usrbin.nx)
 			else:
-				bin.dx = float(bmath.format(header[ 7],9,useD=False))
+				usrbin.dx = float(bmath.format(header[ 7],9))
 
-			if bin.type in (1,11):
-				bin.ylow  = -math.pi
-				bin.yhigh =  math.pi
+			usrbin.ylow  = float(bmath.format(header[ 8],9))
+			usrbin.yhigh = float(bmath.format(header[ 9],9))
+			if usrbin.type in (1,11):
+				# Round to pi if needed
+				if abs(usrbin.ylow+math.pi) < 1e-6:
+					usrbin.ylow = -math.pi
+				if abs(usrbin.yhigh-math.pi) < 1e-6:
+					usrbin.yhigh = math.pi
+				elif abs(usrbin.yhigh-math.pi*2) < 1e-6:
+					usrbin.yhigh = 2*math.pi
+			usrbin.ny = header[10]
+			if usrbin.ny > 0 and usrbin.type not in (2,12,8,18):
+				usrbin.dy = (usrbin.yhigh-usrbin.ylow) / float(usrbin.ny)
 			else:
-				bin.ylow  = float(bmath.format(header[ 8],9,useD=False))
-				bin.yhigh = float(bmath.format(header[ 9],9,useD=False))
-			bin.ny	  = header[10]
-			if bin.ny > 0 and bin.type not in (2,12,8,18):
-				bin.dy = (bin.yhigh-bin.ylow) / float(bin.ny)
+				usrbin.dy = float(bmath.format(header[11],9))
+
+			usrbin.zlow  = float(bmath.format(header[12],9))
+			usrbin.zhigh = float(bmath.format(header[13],9))
+			usrbin.nz    = header[14]
+			if usrbin.nz > 0 and usrbin.type not in (2,12):	# 8=special with z=real
+				usrbin.dz = (usrbin.zhigh-usrbin.zlow) / float(usrbin.nz)
 			else:
-				bin.dy = float(bmath.format(header[11],9,useD=False))
+				usrbin.dz = float(bmath.format(header[15],9))
 
-			bin.zlow  = float(bmath.format(header[12],9,useD=False))
-			bin.zhigh = float(bmath.format(header[13],9,useD=False))
-			bin.nz	  = header[14]
-			if bin.nz > 0 and bin.type not in (2,12):	# 8=special with z=real
-				bin.dz = (bin.zhigh-bin.zlow) / float(bin.nz)
-			else:
-				bin.dz = float(bmath.format(header[15],9,useD=False))
+			usrbin.lntzer = header[16]
+			usrbin.bk     = header[17]
+			usrbin.b2     = header[18]
+			usrbin.tc     = header[19]
 
-			bin.lntzer= header[16]
-			bin.bk	  = header[17]
-			bin.b2	  = header[18]
-			bin.tc	  = header[19]
+			self.detector.append(usrbin)
 
-			self.detector.append(bin)
-
-			size  = bin.nx * bin.ny * bin.nz * 4
+			size  = usrbin.nx * usrbin.ny * usrbin.nz * 4
 			if fortran.skip(f) != size:
 				raise IOError("Invalid USRBIN file")
 		f.close()
@@ -559,27 +534,35 @@ class Usrbin(Usrxxx):
 	# Read detector data
 	# ----------------------------------------------------------------------
 	def readData(self, n):
-		"""Read detector det data structure"""
+		"""Read n(th) detector data structure"""
 		f = open(self.file, "rb")
 		fortran.skip(f)
-		for i in range(n):
+		for _ in range(n):
 			fortran.skip(f)		# Detector Header
 			fortran.skip(f)		# Detector data
-		fortran.skip(f)		# Detector Header
-		data = fortran.read(f)	# Detector data
+		fortran.skip(f)			# Detector Header
+		data = fortran.read(f)		# Detector data
 		f.close()
 		return data
+
+	# ----------------------------------------------------------------------
+	# Read data and return a numpy array
+	# ----------------------------------------------------------------------
+	def readArray(self, n):
+		data = unpackArray(self.readData(n))
+		dim  = [self.detector[n].nx, self.detector[n].ny, self.detector[n].nz]
+		return numpy.reshape(data, dim, order="F")
 
 	# ----------------------------------------------------------------------
 	# Read detector statistical data
 	# ----------------------------------------------------------------------
 	def readStat(self, n):
-		"""Read detector n statistical data"""
+		"""Read n(th) detector statistical data"""
 		if self.statpos < 0: return None
-		f = open(self.file,"rb")
+		f = open(self.file, "rb")
 		f.seek(self.statpos)
-		for i in range(n):
-			fortran.skip(f)	# Detector Data
+		for _ in range(n):
+			fortran.skip(f)		# Detector Data
 		data = fortran.read(f)
 		f.close()
 		return data
@@ -590,18 +573,18 @@ class Usrbin(Usrxxx):
 		if det is None:
 			self.sayHeader()
 		else:
-			bin = self.detector[det]
-			say("Bin    : ", bin.nb)
-			say("Title  : ", bin.name)
-			say("Type   : ", bin.type)
-			say("Score  : ", bin.score)
-			say("X	    : [", bin.xlow,"-",bin.xhigh,"] x", bin.nx, "dx=",bin.dx)
-			say("Y	    : [", bin.ylow,"-",bin.yhigh,"] x", bin.ny, "dy=",bin.dy)
-			say("Z	    : [", bin.zlow,"-",bin.zhigh,"] x", bin.nz, "dz=",bin.dz)
-			say("L	    : ", bin.lntzer)
-			say("bk     : ", bin.bk)
-			say("b2     : ", bin.b2)
-			say("tc     : ", bin.tc)
+			binning = self.detector[det]
+			say("Bin    : ", binning.nb)
+			say("Title  : ", binning.name)
+			say("Type   : ", binning.type)
+			say("Score  : ", binning.score)
+			say("X      : [", binning.xlow,"-",binning.xhigh,"] x", binning.nx, "dx=",binning.dx)
+			say("Y      : [", binning.ylow,"-",binning.yhigh,"] x", binning.ny, "dy=",binning.dy)
+			say("Z      : [", binning.zlow,"-",binning.zhigh,"] x", binning.nz, "dz=",binning.dz)
+			say("L      : ", binning.lntzer)
+			say("bk     : ", binning.bk)
+			say("b2     : ", binning.b2)
+			say("tc     : ", binning.tc)
 
 #===============================================================================
 # MGDRAW output
@@ -641,7 +624,7 @@ class Mgdraw:
 	# ----------------------------------------------------------------------
 	# Read or skip next event from mgread structure
 	# ----------------------------------------------------------------------
-	def readEvent(self, type=None):
+	def readEvent(self, typeid=None):
 		# Read header
 		data = fortran.read(self.hnd)
 		if data is None: return None
@@ -654,19 +637,19 @@ class Mgdraw:
 		self.nevent += 1
 
 		if ndum > 0:
-			if type is None or type == 0:
+			if typeid is None or typeid == 0:
 				self.readTracking(ndum, mdum, jdum, edum, wdum)
 			else:
 				fortran.skip(self.hnd)
 			return 0
 		elif ndum == 0:
-			if type is None or type == 1:
+			if typeid is None or typeid == 1:
 				self.readEnergy(mdum, jdum, edum, wdum)
 			else:
 				fortran.skip(self.hnd)
 			return 1
 		else:
-			if type is None or type == 2:
+			if typeid is None or typeid == 2:
 				self.readSource(-ndum, mdum, jdum, edum, wdum)
 			else:
 				fortran.skip(self.hnd)
@@ -711,18 +694,6 @@ class Mgdraw:
 		return ncase
 
 #===============================================================================
-# 1D data from tab.lis format
-#===============================================================================
-class Data1D:
-	def __init__(self, n, name=None):
-		self.idx   = n
-		self.name  = name
-		self.xlow  = []
-		self.xhigh = []
-		self.value = []
-		self.error = []
-
-#===============================================================================
 # Tablis format
 #===============================================================================
 def tabLis(filename, detector, block=-1):
@@ -738,9 +709,9 @@ def tabLis(filename, detector, block=-1):
 
 	if block != -1:
 		datablock = dataset[detector].split('\n\n')
-		part = StringIO(datablock[block])
+		part = io.StringIO(datablock[block])
 	else:
-		part = StringIO(dataset[detector])
+		part = io.StringIO(dataset[detector])
 
 	name = part.readline().split()[1]
 
@@ -748,6 +719,20 @@ def tabLis(filename, detector, block=-1):
 	x_bin_min, x_bin_max, x_vals, x_err = numpy.loadtxt(part, unpack=True)
 	return name, x_bin_min, x_bin_max, x_vals, x_err  # return the columns and detector name
 
+#===============================================================================
+# 1D data from tab.lis format
+#===============================================================================
+#class Data1D:
+#	def __init__(self, n, name=None):
+#		self.idx   = n
+#		self.name  = name
+#		self.xlow  = []
+#		self.xhigh = []
+#		self.value = []
+#		self.error = []
+
+#===============================================================================
+# Read data from a _tab.lis file
 #===============================================================================
 class TabLis:
 	def __init__(self, filename):
@@ -762,15 +747,11 @@ class TabLis:
 		try: f = open(self.filename,"r")
 		except IOError: return None
 
-		det	= 0
-		ind	= 1
-		half	= 0
-		block	= 1
+		ind     = 1
+		half    = 0
+		block   = 1
 		lastind = 0
-
-		name  = "Detector"
-		blockname = ""
-		blockspresent = False
+		name    = "Detector"
 
 		first = None
 		for line in f:
@@ -780,7 +761,6 @@ class TabLis:
 				if half == 2:
 					half = 0
 					ind += 1
-
 			elif line.find("#")>=0:
 				m = _detectorPattern.match(line)
 				if m:
@@ -789,133 +769,20 @@ class TabLis:
 					if p>0: name = name[:p]
 					name = name.strip()
 					entry = "%d %s"%(ind, name)
-					self.det.insert(END, entry)
 					lastind = ind
 					if not first:
 						first = entry
 					half  = 0
 					block = 0
-					blockspresent = False
 					continue
-
-
 				m = _blockPattern.match(line)
 				if m:
-					blockname = m.group(1)
-					blockspresent = True
 					half = 1
 					continue
-
 				if lastind != ind:
-					self.det.insert(END, "%d %s"%(ind,line[1:].strip()))
 					lastind = ind
-
 			else:
 				if half == 1:
 					block += 1
-#					if blockname != "":
-#						self.det.insert(END, "%d-%d %s %s"%(ind,block,name,blockname))
-#						lastind = ind
-#					elif not blockspresent:
-##						self.det.insert(END, "%d-%d %s ?"%(ind,block,name))
-#						lastind = ind
-#					blockname = ""
 				half = 0
 		f.close()
-#		if first:
-#			self.det.set(first)
-
-#===============================================================================
-if __name__ == "__main__":
-	import sys
-#	say("="*80)
-#	mgdraw = Mgdraw("examples/source001_source")
-#	while mgdraw.readEvent():
-#		say(mgdraw.data)
-
-	say("="*80)
-	usr = Usrbdx(sys.argv[1])
-	usr.say()
-	for i in range(len(usr.detector)):
-		say("-"*50)
-		usr.say(i)
-		data = unpackArray(usr.readData(i))
-		stat = unpackArray(usr.readStat(i))
-		#say( len(data), len(stat))
-		#for j,(d,e) in enumerate(zip(data,stat)):
-		#	say(j,d,e)
-		#say()
-
-	#usr = Resnuclei(sys.argv[1])
-	#usr.say()
-	#for i in range(len(usr.detector)):
-	#	say("-"*50)
-	#	usr.say(i)
-	#say("="*80)
-	#file = "examples/ex_final001_fort.64"
-	#file = "examples/ex_final_resnuclei_64"
-	#f = open(file,"rb")
-	#while True:
-	#	data=fortran.read(f)
-	#	size = len(data)
-	#	if size==14:
-	#		say("Size=",size,data)
-	#	else:
-	#		say("Size=",size)
-	#	if size<0: break
-	#f.close()
-	#res = Resnuclei(file)
-	#res.say()
-	#for i in range(len(res.detector)):
-	#	say("-"*50)
-	#	res.say(i)
-#
-#	data = res.readData(0)
-#	(btotal,bA,beA,bZ,beZ,berr) = res.readStat(0)
-#
-#	say(len(data))
-#	fdata = unpackArray(data)
-#	total = unpackArray(btotal)
-#	A     = unpackArray(bA)
-#	eA    = unpackArray(beA)
-#	Z     = unpackArray(bZ)
-#	eZ    = unpackArray(beZ)
-#	edata = unpackArray(berr)
-#
-#	del data
-#	del btotal, bA, beA, bZ, beZ, berr
-#
-#	fmin = min([x for x in fdata if x>0.0])
-#	fmax = max(fdata)
-#	say("Min=",fmin)
-#	say("Max=",fmax)
-#	say("Tot=",total[0],total[1])
-#
-#	det = res.detector[0]
-#	for z in range(det.zhigh):
-#		sum  = 0.0
-#		sum2 = 0.0
-#		for m in range(det.mhigh):
-#			pos = z + m * det.zhigh
-#			val = fdata[pos]
-#			err = edata[pos]
-#			sum  += val
-#			sum2 += (val*err)**2
-#
-#		say("Z=",z+1,"SUM=",sum,math.sqrt(sum2)/sum,"Z=",Z[z],eZ[z])
-#
-#	say()
-#	amax = 2*det.zhigh + det.mhigh + det.nmzmin
-#	length = len(fdata)
-#	for a in range(1,amax+1):
-#		sum = 0.0
-#		for z in range(det.zhigh):
-#			m = a - 2*z - det.nmzmin - 3
-#			pos = z + m * det.zhigh
-#			if 0 <= pos < length:
-#				sum += fdata[pos]
-#
-#		say("A=",a,"SUM=",sum,"A=",A[a-1],eA[a-1])
-#
-#	#for f in fdata:
-#	#	say(f)

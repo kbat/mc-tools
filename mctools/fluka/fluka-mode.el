@@ -45,6 +45,9 @@
 (make-face 'font-lock-flux2dose-face)
 (set-face-foreground 'font-lock-flux2dose-face "yellow")
 
+(make-face 'font-lock-preprocessor-face)
+(set-face-foreground 'font-lock-preprocessor-face "green")
+
 
 (define-generic-mode 'fluka-mode
   ;; comment-list (2 ways to comment in FLUKA so do below)
@@ -69,6 +72,9 @@
     ("\\<\\(EAP74\\|ERT74\\|EWT74\\|EAPMP\\|ERTMP\\|EWTMP\\|AMB74\\|AMBGS\\)\\>" . 'font-lock-flux2dose-face)
 
     ("\\<\\(CALORIME\\|EET\/TRANS\\|EM-CASCA\\|ICARUS\\|HADRONTHE\\|NEW-DEFA\\|PRECISION\\|SHIELDING\\)\\>" . 'font-lock-defaults-face)
+
+    ("\\<\\(if\\|elif\\|else\\|endif\\|define\\)\\>" . 'font-lock-preprocessor-face)
+
     )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '(".inp\\'")

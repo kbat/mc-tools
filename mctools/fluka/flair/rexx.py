@@ -1,36 +1,9 @@
 #
-# Copyright and User License
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Copyright Vasilis.Vlachoudis@cern.ch for the
-# European Organization for Nuclear Research (CERN)
+# Copyright European Organization for Nuclear Research (CERN)
+# All rights reserved
 #
-# Please consult the flair documentation for the license
-#
-# DISCLAIMER
-# ~~~~~~~~~~
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
-# NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, OF
-# SATISFACTORY QUALITY, AND FITNESS FOR A PARTICULAR PURPOSE
-# OR USE ARE DISCLAIMED. THE COPYRIGHT HOLDERS AND THE
-# AUTHORS MAKE NO REPRESENTATION THAT THE SOFTWARE AND
-# MODIFICATIONS THEREOF, WILL NOT INFRINGE ANY PATENT,
-# COPYRIGHT, TRADE SECRET OR OTHER PROPRIETARY RIGHT.
-#
-# LIMITATION OF LIABILITY
-# ~~~~~~~~~~~~~~~~~~~~~~~
-# THE COPYRIGHT HOLDERS AND THE AUTHORS SHALL HAVE NO
-# LIABILITY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL,
-# CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES OF ANY
-# CHARACTER INCLUDING, WITHOUT LIMITATION, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, DATA OR PROFITS,
-# OR BUSINESS INTERRUPTION, HOWEVER CAUSED AND ON ANY THEORY
-# OF CONTRACT, WARRANTY, TORT (INCLUDING NEGLIGENCE), PRODUCT
-# LIABILITY OR OTHERWISE, ARISING IN ANY WAY OUT OF THE USE OF
-# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-#
-# Author:	Vasilis.Vlachoudis@cern.ch
-# Date:	14-May-2004
+# Author: Vasilis.Vlachoudis@cern.ch
+# Date:   14-May-2004
 
 __author__ = "Vasilis Vlachoudis"
 __email__  = "Vasilis.Vlachoudis@cern.ch"
@@ -40,7 +13,9 @@ import string
 _letters_digits = string.ascii_letters + string.digits
 _letters_digits_symbol = _letters_digits + "_."
 
+#-------------------------------------------------------------------------------
 # abbrev
+#-------------------------------------------------------------------------------
 def abbrev(information, info, l=0):
 	"""
 	return true if the info is an abbreviation of information
@@ -56,11 +31,12 @@ def abbrev(information, info, l=0):
 	cond3 = (information[:len(info)] == info)
 	return cond1 and cond2 and cond3
 
+#-------------------------------------------------------------------------------
 # center
+#-------------------------------------------------------------------------------
 def center(s, l, pad=' '):
 	if l<=0: return ""
-
-	i = l - len(s);
+	i = l - len(s)
 	if i==0:
 		return s
 	elif i < 0:
@@ -71,38 +47,41 @@ def center(s, l, pad=' '):
 		a = i // 2
 		return "%s%s%s"%(pad*a, s, pad*(i-a))
 
+#-------------------------------------------------------------------------------
 # datatype
-def datatype(str, check="N"):
+#-------------------------------------------------------------------------------
+def datatype(s, check="N"):
 	"""rexx datatype function"""
 
 	try:
-		if len(str)==0:
-			return check=="X" or check=="B"
+		if not s: return check=="X" or check=="B"
 	except:
 		return check=="X" or check=="B"
 
 	if check=="N":
-		return _isnum(str)
+		return _isnum(s)
 
 	if check=="A":
-		return verify(str, _letters_digits)==-1
+		return verify(s, _letters_digits)==-1
 	elif check=="L":
-		return verify(str, string.ascii_lowercase)==-1
+		return verify(s, string.ascii_lowercase)==-1
 	elif check=="M":
-		return verify(str, string.ascii_letters)==-1
+		return verify(s, string.ascii_letters)==-1
 	elif check=="U":
-		return verify(str, string.ascii_uppercase)==-1
+		return verify(s, string.ascii_uppercase)==-1
 	elif check=="O":
-		return verify(str, string.octdigits)==-1
+		return verify(s, string.octdigits)==-1
 	elif check=="X":
-		return verify(str, string.hexdigits)==-1
+		return verify(s, string.hexdigits)==-1
 	elif check=="S":
-		return (str[0] in string.ascii_letters) and \
-			(verify(str[1:], _letters_digits_symbol)==-1)
+		return (s[0] in string.ascii_letters) and \
+			(verify(s[1:], _letters_digits_symbol)==-1)
 	else:
-		return _isnum(str)
+		return _isnum(s)
 
+#-------------------------------------------------------------------------------
 # insert
+#-------------------------------------------------------------------------------
 def insert(new, target, n, pad=" "):
 	"""
 	insert new string to target as position n padded with pad characters
@@ -114,26 +93,47 @@ def insert(new, target, n, pad=" "):
 
 	return target[0:n] + new + target[n:]
 
-# left
-def left(str, length, pad=" "):
-	"""return left of string str of length padded with pad chars"""
-	if length<len(str):
-		return str[0:length]
-	else:
-		return str + (pad*(length-len(str)))
+#-------------------------------------------------------------------------------
+# string hash function to return always the same
+# not depending on the python version
+#-------------------------------------------------------------------------------
+def hash(s):
+	h = 0
+	for ch in s:
+		h += ord(ch)
+		h += h<<10
+		h &= 0xFFFFFFFF
+		h ^= h>>6
+		h &= 0xFFFFFFFF
+	h += h<<3
+	h &= 0xFFFFFFFF
+	h ^= h>>11
+	h &= 0xFFFFFFFF
+	h += h<<15
+	h &= 0xFFFFFFFF
+	return h
 
+#-------------------------------------------------------------------------------
+# left
+#-------------------------------------------------------------------------------
+def left(s, length, pad=" "):
+	"""return left of string s of length padded with pad chars"""
+	if length<len(s):
+		return s[0:length]
+	else:
+		return s + (pad*(length-len(s)))
+
+#-------------------------------------------------------------------------------
 # translate
-def translate(str, tableo=None, tablei=None, pad=" "):
+#-------------------------------------------------------------------------------
+def translate(s, tableo=None, tablei=None, pad=" "):
 	"""translate string"""
 	# If neither input nor output tables, uppercase.
-	if tableo==None and tablei==None:
-		return str.upper()
+	if tableo is None and tablei is None:
+		return s.upper()
 
-	if tableo==None:
-		tableo = xrange(0,255)
-
-	if tablei==None:
-		tablei = xrange(0,255)
+	if tableo is None: tableo = xrange(0,255)
+	if tablei is None: tablei = xrange(0,255)
 
 	# The input table defaults to all characters.
 	dl = len(tablei)-len(tableo)
@@ -142,16 +142,27 @@ def translate(str, tableo=None, tablei=None, pad=" "):
 	else:
 		tablei += pad*(-dl)
 
-	tbl = string.maketrans(tablei,tableo)
-	return str.translate(tbl)
+	tbl = str.maketrans(tablei,tableo)
+	return s.translate(tbl)
 
+#-------------------------------------------------------------------------------
 # reverse
-def reverse(str):
+#-------------------------------------------------------------------------------
+def reverse(s):
 	"""reverse string"""
-	return str[::-1]
+	return s[::-1]
 
+#-------------------------------------------------------------------------------
+def search(s, needle):
+	"""Search all matching words of needle in the string s"""
+	for w in needle:
+		if s.find(w) < 0: return False
+	return True
+
+#-------------------------------------------------------------------------------
 # verify
-def verify(str,ref,match=0,start=0):
+#-------------------------------------------------------------------------------
+def verify(s,ref,match=0,start=0):
 	"""
 	return the index of the first character in string that
 	is not also in reference. if "Match" is given, then return
@@ -159,69 +170,68 @@ def verify(str,ref,match=0,start=0):
 	"""
 
 	if start<0: start = 0
-	if start>=len(str): return -1
+	if start>=len(s): return -1
 
-	for i in range(start,len(str)):
-		found = ref.find(str[i])==-1
+	for i in range(start,len(s)):
+		found = ref.find(s[i])==-1
 		if found ^ match:
 			return i
 	return -1
 
+#-------------------------------------------------------------------------------
 # xrange
+#-------------------------------------------------------------------------------
 def xrange(start,stop):
-	return string.join([chr(x) for x in range(start, stop+1)],"")
+	return "".join([chr(x) for x in range(start, stop+1)])
 
+#-------------------------------------------------------------------------------
 # isnum - return true if string is number
-def _isnum(str):
-	str = str.strip()
-
+#-------------------------------------------------------------------------------
+def _isnum(s):
+	s = s.strip()
 	# accept one sign
 	i = 0
-	l = len(str)
-
+	l = len(s)
 	if l==0: return False
-
-	if str[i]=='-' or str[i]=='+': i += 1
+	if s[i]=='-' or s[i]=='+': i += 1
 
 	# skip spaces after sign
-	while i<l and str[i].isspace(): i += 1
+	while i<l and s[i].isspace(): i += 1
 
 	# accept many digits
-	if i<l and '0'<=str[i]<='9':
+	if i<l and '0'<=s[i]<='9':
 		i += 1
 		F  = 1
-		while i<l and '0'<=str[i]<='9': i += 1
+		while i<l and '0'<=s[i]<='9': i += 1
 	else:
 		F = 0
 
 	# accept one dot
-	if i<l and str[i]=='.':
+	if i<l and s[i]=='.':
 		i+=1
-
 		# accept many digits
-		if i<l and '0'<=str[i]<='9':
-			while i<l and '0'<=str[i]<='9': i += 1
+		if i<l and '0'<=s[i]<='9':
+			while i<l and '0'<=s[i]<='9': i += 1
 		else:
 			if not F: return False
 	else:
 		if not F: return False
 
 	# accept one e/E/d/D
-	if i<l and (str[i]=='e' or str[i]=='E' or str[i]=='d' or str[i]=='D'):
+	if i<l and (s[i]=='e' or s[i]=='E' or s[i]=='d' or s[i]=='D'):
 		i+=1
 		# accept one sign
-		if i<l and (str[i]=='-' or str[i]=='+'): i += 1
-
+		if i<l and (s[i]=='-' or s[i]=='+'): i += 1
 		# accept many digits
-		if i<l and '0'<=str[i]<='9':
-			while i<l and '0'<=str[i]<='9': i += 1
+		if i<l and '0'<=s[i]<='9':
+			while i<l and '0'<=s[i]<='9': i += 1
 		else:
 			return False
 
 	if i != l: return False
-
 	return True
 
+#-------------------------------------------------------------------------------
 if __name__=="__main__":
 	from log import say
 

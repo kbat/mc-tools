@@ -1,8 +1,5 @@
-#! /usr/bin/python2 -W all
-# $Id$
-# $URL$
+#! /usr/bin/python3
 
-from __future__ import print_function
 import sys, math, struct
 from mctools.mcnp.ssw import fortranRead
 
@@ -38,7 +35,7 @@ class USRBDXCARD:
         self.abxhgh = 0
         self.nabxbn = 0
         self.dabxbn = 0.0
-        
+
         self.igmusx = 0   # number of low energy neutron groups
         self.engmax = []  # low-energy upper boundaries
         self.gbstor = []  # errors
@@ -46,7 +43,7 @@ class USRBDXCARD:
 
         self.epgmax = []  # high-energy upper boundaries
         self.flux   = []  # why different from gdstor???
-        self.fluxerr= []  # 
+        self.fluxerr= []  #
         self.cumulflux = [] # cumulative flux
         self.cumulfluxerr = [] # cumulative flux
 
@@ -86,7 +83,7 @@ class USRBDXCARD:
 
     def getData(self, ie, ia, unit, lowneut=False):
         """
-        Return a list of 
+        Return a list of
         data (above low energy neutrons) in energy bin ie and angular bin ia
         unit == sr:  [Part/sr/GeV/cmq/pr]
         unit == deg: [Part/deg/GeV/cmq/pr]
@@ -96,13 +93,13 @@ class USRBDXCARD:
         """
 
         if lowneut:
-            y = ie + ia*self.igmusx 
+            y = ie + ia*self.igmusx
             val = self.gdstor[y]  # !!! FIX THIS !!!
             err = self.gbstor[y]
 #            print("ie,ia,y, val,err", ie, ia, y, val, err)
             val /= self.engmax[y-1]-self.engmax[y]
         else:
-            y = ie + ia*self.nebxbn 
+            y = ie + ia*self.nebxbn
             val = self.gdstor[y]
             err = self.gbstor[y]
 
@@ -120,7 +117,7 @@ class USRBDXCARD:
             """Prints value"""
             print("%e" % val, end='')
             if not sameline: print("\n\t", end='')
-        
+
         def PrintVE(val, err, sameline):
             """Prints value and error"""
             print("%e +/- %g %%\t" % (val, err), end='')
@@ -133,12 +130,12 @@ class USRBDXCARD:
 
         if self.isOneWay(): print("\t one way scoring,")
         else: print("\t this is a two ways estimator")
-        
+
         if self.isFluence(): print("\t fluence scoring scoring)")
         else: print("\t current scoring)")
-        
+
         print("")
-        
+
         print("\tTot. resp. (Part/cmq/pr) %e +/- %e %%" % (self.totresp, 100*self.totresperr))
         print("\t( -->      (Part/pr)     %e +/- %e %% )"  % (self.totresp*self.ausbdx, 100*self.totresperr))
 
@@ -169,7 +166,7 @@ class USRBDXCARD:
                 for ia in range(self.nabxbn):
                     val = self.getData(ie+1, ia, 'deg', True)
                     PrintVE(val[0], 100*val[1], (ie+1)%2)
-                
+
 
         print("\n\t**** Cumulative Fluxes as a function of energy ****", end='')
         print("\t****      (integrated over solid angle)        ****")
@@ -194,7 +191,7 @@ class USRBDXCARD:
 
             for i in range(self.igmusx):
                 PrintVE(self.cumulflux[i+self.nebxbn], 100*self.cumulfluxerr[i+self.nebxbn], (i+1)%2) # this is OK
-        
+
         if self.nabxbn>1: # if more than one angle required
             print("\n\t**** Double diff. Fluxes as a function of energy ****")
             alowedges = self.getALowEdge()
@@ -224,7 +221,7 @@ class USRBDXCARD:
 
         # low-energy part
 #        for ie in range(self.nebxbn):
-            
+
 
 
         # print(self.itusbx, self.idusbx, self.nr1usx, self.nr2usx, self.ausbdx, self.lwusbx, self.lfusbx, self.llnusx)
@@ -259,7 +256,7 @@ class USXSUW:
 
     def reset(self):
         """Reset method"""
-        
+
 
     def checkStatFlag(self, data):
         """Checks whether data == 'STATISTICS'"""
@@ -331,7 +328,7 @@ class USXSUW:
             if ubs.nabxbn:
                 data = fortranRead(self.file)
                 ubs.gbstor = struct.unpack("=%df" % ubs.getNbinsTotal(), data)
-                
+
 
 
         print("")

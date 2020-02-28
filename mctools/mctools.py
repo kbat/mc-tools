@@ -1,6 +1,5 @@
 #! /usr/bin/python -W all
 
-from __future__ import print_function
 # from scipy import constants
 import subprocess, os, sys
 from math import sqrt

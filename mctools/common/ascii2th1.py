@@ -2,7 +2,6 @@
 #
 # ASCII to TH1F converter
 
-from __future__ import print_function
 import sys,time,os,re
 from array import array
 import ROOT, argparse

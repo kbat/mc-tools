@@ -1,8 +1,6 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python3 -W all
 
-from __future__ import print_function
 import sys, argparse
-from string import strip
 from mctools.mctools import L2E, E2L
 import textwrap
 
@@ -14,7 +12,7 @@ def LambdaBins(nbins, lmin, lmax, edgesE):
     l = [] # lambda bins
     e = [] # energy bins
     dl = (lmax-lmin)/nbins  # lambda bin width
-    
+
     for i in range(nbins+1): l.append(lmin+i*dl)
 
     for i in range(nbins+1):
@@ -29,7 +27,7 @@ def LambdaBins(nbins, lmin, lmax, edgesE):
                 e[i] = edge
             elif e[i]<edge and e[i+1]>edge:
                 e[i] = edge
-        
+
     return e
 
 def main():
@@ -47,7 +45,8 @@ def main():
     args = parser.parse_args()
 
     if args.edgesE:
-        edgesE = list(map(float, list(map(strip, args.edgesE.split(',')))))
+#        edgesE = list(map(float, list(map(strip, args.edgesE.split(',')))))
+        edgesE = list(map(float, list(args.edgesE.split(','))))
     else:
         edgesE = []
 

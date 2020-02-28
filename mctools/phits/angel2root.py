@@ -7,7 +7,6 @@
 #  Usage: angel2root.py file.dat
 #
 
-from __future__ import print_function
 import sys, re, argparse
 from array import array
 from mctools.phits.phits import TallyOutputParser

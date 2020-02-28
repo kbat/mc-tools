@@ -1,6 +1,5 @@
-#! /usr/bin/python2 -W all
+#! /usr/bin/python3 -W all
 
-from __future__ import print_function
 import sys, argparse, struct
 from os import path
 import numpy as np
@@ -20,7 +19,7 @@ def getLogBins(nbins, low, high):
 
     x = float(low)
     dx = pow(high/low, 1.0/nbins);
-    
+
     return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
 
 def getLinBins(nbins, low, high):
@@ -66,19 +65,19 @@ class Usrtrack(Data.Usrxxx):
         (USRTRACK / USRCOLL estimators)
     """
     def readHeader(self, filename):
-        """ Reads the file header info 
+        """ Reads the file header info
             Based on Data.Usrbdx
         """
         f = Data.Usrxxx.readHeader(self, filename)
 #        self.sayHeader()
-        
+
         while True:
             data = fortran.read(f)
             if data is None: break
             size = len(data)
 #            print("size: ", size)
 
-            if size == 14 and data[:10] == "STATISTICS":
+            if size == 14 and data.decode('utf8')[:10] == "STATISTICS":
                 self.statpos = f.tell()
                 for det in self.detector:
                     data = Data.unpackArray(fortran.read(f))
@@ -88,13 +87,13 @@ class Usrtrack(Data.Usrxxx):
 #                        fortran.skip(f)
                 break
 
-            if size != 50: raise IOError("Invalid USRTRACK/USRCOLL file")
+            if size != 50: raise IOError("Invalid USRTRACK/USRCOLL file %d " % size)
 
             header = struct.unpack("=i10siiififfif", data)
 
             det = Data.Detector()
             det.nb = header[0]
-            det.name = header[1].strip() # titutc - track/coll name
+            det.name = header[1].decode('utf8').strip() # titutc - track/coll name
             det.type = header[2] # itustc - type of binning: 1 - linear energy etc
             det.dist = header[3] # idustc = distribution to be scored
             det.reg  = header[4] # nrustc = region
@@ -113,12 +112,12 @@ class Usrtrack(Data.Usrxxx):
                 det.egroup = struct.unpack("=%df"%(det.ngroup+1), data[4:])
                 print("Low energy neutrons scored with %d groups" % det.ngroup)
             else:
-		det.ngroup = 0
-		det.egroup = []
+                det.ngroup = 0
+                det.egroup = []
 
-	    size  = (det.ngroup+det.ne) * 4
-	    if size != fortran.skip(f):
-		raise IOError("Invalid USRTRACK file")
+            size  = (det.ngroup+det.ne) * 4
+            if size != fortran.skip(f):
+                raise IOError("Invalid USRTRACK file")
         f.close()
 
     def printHeader(self, i):
@@ -131,32 +130,32 @@ class Usrtrack(Data.Usrxxx):
         print(" volume:", det.volume)
         print(" low energy neutrons:", det.lowneu)
         print(" %g < E < %g GeV / %d bins; bin width: %g" % (det.elow, det.ehigh, det.ne, det.de))
-        
+
     def readStat(self, det,lowneu):
-	""" Read detector # det statistical data """
-	if self.statpos < 0: return None
-	with open(self.file,"rb") as f:
-	    f.seek(self.statpos)
-	    for i in range(det+3): # check that 3 gives correct errors with 1 USRTRACK detector
-	        fortran.skip(f)	# skip previous detectors
-	    data = fortran.read(f)
-	return data
+        """ Read detector # det statistical data """
+        if self.statpos < 0: return None
+        with open(self.file,"rb") as f:
+            f.seek(self.statpos)
+            for i in range(det+3): # check that 3 gives correct errors with 1 USRTRACK detector
+                fortran.skip(f) # skip previous detectors
+            data = fortran.read(f)
+        return data
 
     def readData(self, det,lowneu):
-	"""Read detector det data structure"""
-	f = open(self.file,"rb")
-	fortran.skip(f)	# Skip header
-	for i in range(2*det):
-	    fortran.skip(f)	# Detector Header & Data
-	fortran.skip(f)		# Detector Header
+        """Read detector det data structure"""
+        f = open(self.file,"rb")
+        fortran.skip(f) # Skip header
+        for i in range(2*det):
+            fortran.skip(f)     # Detector Header & Data
+        fortran.skip(f)         # Detector Header
         if lowneu:
             fortran.skip(f) # skip low enery neutron data
-	data = fortran.read(f)
-	f.close()
-	return data
+        data = fortran.read(f)
+        f.close()
+        return data
 
-            
-                
+
+
 
 def main():
     """ Converts ustsuw output into a ROOT TH1F histogram """
@@ -166,7 +165,7 @@ def main():
     parser.add_argument('usrtrack', type=str, help='ustsuw binary output')
     parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
-    
+
     args = parser.parse_args()
 
     if not path.isfile(args.usrtrack):
@@ -177,12 +176,12 @@ def main():
         rootFileName = "%s%s" % (args.usrtrack,".root")
     else:
         rootFileName = args.root
-    
+
     b = Usrtrack()
     b.readHeader(args.usrtrack)
 
     ND = len(b.detector)
-    
+
     if args.verbose:
         #b.sayHeader()
         for i in range(ND):
@@ -198,7 +197,7 @@ def main():
 
         h = hist(det)
         hn = histN(det) # filled only if det.lowneu
-            
+
         n = h.GetNbinsX()
         print(n, len(val), det.ne, val)
 

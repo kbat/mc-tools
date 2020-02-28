@@ -4,7 +4,6 @@
 #
 #
 
-from __future__ import print_function
 import re, sys
 from mctools.phits.phits import mcnp_phits_particles as particle
 

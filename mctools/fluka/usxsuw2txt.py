@@ -1,6 +1,5 @@
 #! /usr/bin/python2 -W all
 
-from __future__ import print_function
 import sys
 from mctools.fluka.fluka import USXSUW
 

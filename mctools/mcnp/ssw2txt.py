@@ -1,6 +1,5 @@
 #! /usr/bin/python -W all
 
-from __future__ import print_function
 import sys, argparse
 from mctools.mcnp.ssw import SSW
 

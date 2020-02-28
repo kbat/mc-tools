@@ -1,57 +1,34 @@
 #
-# Copyright and User License
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Copyright Vasilis.Vlachoudis@cern.ch for the
-# European Organization for Nuclear Research (CERN)
+# Copyright European Organization for Nuclear Research (CERN)
+# All rights reserved
 #
-# Please consult the flair documentation for the license
-#
-# DISCLAIMER
-# ~~~~~~~~~~
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
-# NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, OF
-# SATISFACTORY QUALITY, AND FITNESS FOR A PARTICULAR PURPOSE
-# OR USE ARE DISCLAIMED. THE COPYRIGHT HOLDERS AND THE
-# AUTHORS MAKE NO REPRESENTATION THAT THE SOFTWARE AND
-# MODIFICATIONS THEREOF, WILL NOT INFRINGE ANY PATENT,
-# COPYRIGHT, TRADE SECRET OR OTHER PROPRIETARY RIGHT.
-#
-# LIMITATION OF LIABILITY
-# ~~~~~~~~~~~~~~~~~~~~~~~
-# THE COPYRIGHT HOLDERS AND THE AUTHORS SHALL HAVE NO
-# LIABILITY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL,
-# CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES OF ANY
-# CHARACTER INCLUDING, WITHOUT LIMITATION, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, DATA OR PROFITS,
-# OR BUSINESS INTERRUPTION, HOWEVER CAUSED AND ON ANY THEORY
-# OF CONTRACT, WARRANTY, TORT (INCLUDING NEGLIGENCE), PRODUCT
-# LIABILITY OR OTHERWISE, ARISING IN ANY WAY OUT OF THE USE OF
-# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGES.
-#
-# Author:	Vasilis.Vlachoudis@cern.ch
-# Date:	10-Oct-2014
+# Author: Vasilis.Vlachoudis@cern.ch
+# Date:   10-Oct-2014
 
 __author__ = "Vasilis Vlachoudis"
 __email__  = "Vasilis.Vlachoudis@cern.ch"
 
-import sys
-import string
+#-------------------------------------------------------------------------------
+# FIXME convert to class with static members
+#-------------------------------------------------------------------------------
+_outunit = None		# log unit
+_repeat  = set()	# avoid repeated errors
+_buffer  = None		# buffered output
 
 #-------------------------------------------------------------------------------
-_log = None
-def set(l):
-	global _log
-	_log = l
-
-def say(*kw):
-	global _log
-	txt = " ".join(map(str,kw))
-	if _log:
-		_log(txt)
+def _output(txt, repeat=True):
+	global _outunit
+	if not repeat and txt in _repeat: return
+	if _outunit is not None:
+		_outunit(txt)
 	else:
-		sys.stdout.write("%s\n"%(txt))
+		if _buffer is not None:
+			_buffer.append(txt)
+		print(txt)
 
-def null(*kw):
-	pass
+#-------------------------------------------------------------------------------
+# Print out something in the log unit
+#-------------------------------------------------------------------------------
+def say(*args):
+	"""say/print a message"""
+	_output(" ".join(map(str,args)))

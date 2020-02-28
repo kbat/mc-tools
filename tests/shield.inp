@@ -1,0 +1,151 @@
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+TITLE
+Simple box-shaped target
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+*#define PLOTXY
+#define Beampart PROTON
+*#define Ebeam  -0.018
+#define Ebeam  -1.0
+#define thick   0.2
+#define wallThick  200.0
+* target-wall distance
+#define dist 300.0
+#define width   10.0
+#define height  10.0
+#define mat     TUNGSTEN
+*
+#define wallWidth   600.0
+#define wallHeight  600.0
+#define wallMat     CONCRETE
+* auxillary variables
+#define xmin  -1*width/2.0
+#define xmax     width/2.0
+#define ymin  -1*height/2.0
+#define ymax     height/2.0
+#define emax   Abs(Ebeam*1.1)
+#define area   height*width
+#define volume area*thick
+*
+#define wallXmin  -1*wallWidth/2.0
+#define wallXmax     wallWidth/2.0
+#define wallYmin  -1*wallHeight/2.0
+#define wallYmax     wallHeight/2.0
+#define wallZmin   thick+dist
+#define wallZmax   wallZmin+wallThick
+*
+DEFAULTS                                                              PRECISION
+BEAM          $Ebeam                                                  $Beampart
+BEAMPOS          0.0       0.0       -10.0
+*
+GEOBEGIN                                                              COMBNAME
+  0 0                       A simple Be target inside vacuum
+SPH body1        0.0        0.0        0.0     1000.0
+SPH body2        0.0        0.0        0.0      900.0
+RPP target      $xmin      $xmax      $ymin      $ymax        0.0     $thick
+RPP wall        $wallXmin  $wallXmax  $wallYmin  $wallYmax   $wallZmin  $wallZmax
+XYP front        0.0
+XYP back      $thick
+* plane to separate the upstream and downstream part of the target
+END
+* black hole
+regBH1    5     +body1 -body2
+* vacuum around
+* front
+regVAF    5     +body2 +front
+regVAM    5     +body2 -target -front +back
+regVAB    5     +body2 -back -wall
+* target
+regTRG    5     +target
+* wall
+regWALL   5     +wall
+END
+GEOEND
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+*SRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area beamIn
+MATERIAL        19.0   39.0983     0.862      26.0       0.0      0.0 POTASSIU
+MATERIAL         0.0       0.0      2.35      27.0       0.0       0. CONCRETE
+COMPOUND       -0.01  HYDROGEN    -0.001    CARBON -0.529107   OXYGEN CONCRETE
+COMPOUND      -0.016    SODIUM    -0.002  MAGNESIU -0.033872 ALUMINUM CONCRETE
+COMPOUND   -0.337021   SILICON    -0.013  POTASSIU    -0.044  CALCIUM CONCRETE
+COMPOUND      -0.014      IRON                                        CONCRETE
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+*  Target
+ASSIGNMAT  $mat       regTRG
+*  External black hole
+ASSIGNMAT  BLCKHOLE   regBH1
+*  Vacuum around
+ASSIGNMAT   VACUUM    regVAF     regVAB
+ASSIGNMAT $wallMat    regWALL
+*
+#if PLOTXY
+PLOTGEOM
+  Vertical section of the target geometry at z = 2.5 cm
+  -20.0     -20.0       2.5      20.0      20.0       2.5
+   1.0       0.0       0.0       0.0       1.0       0.0
+   1.0       1.0
+STOP
+#endif
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+* e+e- and gamma production threshold set at 10 MeV
+*EMFCUT        -0.010     0.010       1.0  $mat                        PROD-CUT
+PHOTONUC         1.0                       $mat
+PHOTONUC         1.0                       $mat                       ELECTNUC
+* score in each region energy deposition and stars produced by primaries
+SCORE       ENERGY    BEAMPART
+* incident beam
+USRBDX         101.0  BEAMPART     -47.0   regVAF  regTRG       $area beamIn
+USRBDX         $emax                10.0                          1.0  &
+* forward
+USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAB       $area eFwd
+USRBDX         $emax                50.0                          2.0  &
+USRBDX         101.0  PHOTON       -47.0   regTRG  regVAB       $area pFwd
+USRBDX         $emax                50.0                          3.0  &
+* backward
+USRBDX         101.0  ELECTRON     -47.0   regTRG  regVAF       $area eBackE
+USRBDX         $emax                50.0                          4.0  &
+USRBDX         101.0  PHOTON       -47.0   regTRG  regVAF       $area pBackP
+USRBDX         $emax                50.0                          5.0  &
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN
+USRBDX          10.0                50.0                          6.0  &
+* emin < 20 Mev, emax > 20 MeV, single angular bin
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN1
+USRBDX          10.0     0.01       50.0                          1.0  &
+* emin < 20 Mev, emax > 20 MeV, multiple angular bins => no data > 20 MeV (FLUKA BUG???)
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN2
+USRBDX          10.0     0.01       50.0                          7.0  &
+* both emin and emax < 20 MeV, single angular bin => not converted by $FLUTIL/usxsuw (FLUKA BUG???)
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN3
+USRBDX         0.015     0.01       50.0                          1.0  &
+* both emin and emax < 20 MeV, multiple angular bins => not converted by $FLUTIL/usxsuw (FLUKA BUG???)
+USRBDX         101.0  NEUTRON      -47.0   regTRG  regVAF       $area pBackN4
+USRBDX         0.015     0.01       50.0                          8.0  &
+*
+* fluence leaving the target linear energy and solid angle
+*USRBDX         101.0   NEUTRON     -47.0   regTRG  regVAB       $area outFluLLN
+*USRBDX         $emax                50.0                               &
+* Tracklength fluence inside the target
+* Logarithmic energy intervals
+*USRTRACK        -1.0  BEAMPART     -48.0   regTRG    $volume      50. track
+*USRTRACK       $emax                                                     &
+* Cartesian binning of the beam particle fluence inside and around the target
+USRBIN          10.0  ELECTRON     -53.0 $wallXmax $wallYmax $wallZmax meshE
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
+USRBIN          10.0    PHOTON     -54.0 $wallXmax $wallYmax $wallZmax meshP
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
+* Cartesian binning of the neutron particle fluence inside and around the target
+USRBIN          10.0   NEUTRON     -55.0 $wallXmax $wallYmax $wallZmax meshN
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
+* Cartesian binning of the dose rate inside and around the target
+USRBIN          10.0   DOSE-EQ     -56.0 $wallXmax $wallYmax $wallZmax meshH
+USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
+* print the step size table
+*EMFFIX          $mat                                                  PRINT
+* turn on multiple scattering
+*MULSOPT                              3.0      $mat
+* bias bremsstrahlung production
+*EMF-BIAS       0.005                 1.0      $mat                    LAMBBREM
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+RANDOMIZE        1.0
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
+START          1.0e4
+STOP

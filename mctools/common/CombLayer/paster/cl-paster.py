@@ -1,9 +1,8 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python3 -W all
 #
 # https://github.com/kbat/mc-tools
 #
 
-from __future__ import print_function
 from sys import exit,stderr
 import argparse, re
 import os
@@ -37,7 +36,7 @@ class Paster:
     def processHeader(self, header):
         dest = os.path.join(self.hDir, self.className + ".h")
         self.process(header, dest)
-    
+
     def process(self, source, dest):
         """
         Processes file from source to dest
@@ -47,7 +46,7 @@ class Paster:
             print("File %s exists -> aborting" % dest)
             exit(1)
         print(dest)
-    
+
         fin = open(source)
         fout = open(dest, 'w')
         for l in fin.readlines():
@@ -70,7 +69,7 @@ def main():
 
     # get default author name from /etc/passwd:
     defauthor = pwd.getpwuid(os.getuid())[4].split(',')[0]
-    
+
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
@@ -91,6 +90,6 @@ def main():
     p.setDescription(args.description)
     p.processSource(cxxOrig)
     p.processHeader(hOrig)
-    
+
 if __name__ == "__main__":
     exit(main())
