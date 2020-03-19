@@ -45,9 +45,6 @@
 (make-face 'font-lock-pstudy-face)
 (set-face-foreground 'font-lock-pstudy-face "yellow")
 
-(make-face 'font-lock-variance-face)
-(set-face-foreground 'font-lock-variance-face "yellow")
-
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -65,20 +62,20 @@
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
     ("^    [Cc] .*" . 'font-lock-comment-face)
     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|geom\\|hlib\\|iints\\|imesh\\|imp\\|jints\\|jmesh\\|kcode\\|kints\\|kmesh\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|origin\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|re[cfs]\\|rdum\\|print\\|psc\\|ptrac\\|rad\\|rand\\|seed\\|sdef\\|stop\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|FLUX\\|GEOM\\|HLIB\\|IINTS\\|IMESH\\|IMP\\|JINTS\\|JMESH\\|KCODE\\|KINTS\\|KMESH\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|ORIGIN\\|PAR\\|PHYS\\|PNLIB\\|POS\\|PRDMP\\|RE[CFS]\\|RDUM\\|PRINT\\|PSC\\|PTRAC\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|FLUX\\|HLIB\\|ICD\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|PAR\\|PHYS\\|PNLIB\\|POS\\|PRDMP\\|RES\\|RDUM\\|PRINT\\|PTRAC\\|PSC=[0-9]\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|SSR\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
 
-    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|icd\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
-    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE [0-9]\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|ICD\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE [0-9]\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
 
     ("[:=][|/hHnNpPzZ#]" . 'font-lock-particle-face) ;; particles
 
-    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EF][0-9]+\\|^F[QSTU][0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SS[RW]\\|TMESH\\)\\>" . 'font-lock-tally-face)
-    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[ef][0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ss[rw]\\|tmesh\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EFT][0-9]+\\|^F[QSTU][0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|TMESH\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[eft][0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|tmesh\\)\\>" . 'font-lock-tally-face)
     ("^+?[fF]m?[0-9]+" . 'font-lock-tally-face) ;; +tallies
     ("^*?[cC][0-9]+" . 'font-lock-tally-face) ;; *tallies
 
@@ -94,10 +91,6 @@
     (" TRANS [0-9]+" . 'font-lock-transformation-face) ;; transformations
 
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
-
-    ;; variance reduction:
-    ("\\<\\(mesh\\|wwg\\|wwge\\|wwp\\)\\>" . 'font-lock-variance-face)
-    ("\\<\\(MESH\\|WWG\\|WWGE\\|WWP\\)\\>" . 'font-lock-variance-face)
 
     ;; surfaces:
     ("\\<\\([CKPST][XYZ]\\|C/[XYZ]\\|SQ\\|SUR\\|SO\\|P\\)\\>" . 'font-lock-surface-face)
