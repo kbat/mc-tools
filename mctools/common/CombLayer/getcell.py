@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#! /usr/bin/python3 -W all
 
 import argparse, re
 from sys import exit
@@ -21,10 +21,14 @@ def getCombLayerObject(cell):
             pos = words.index('::')
             cells = words[pos+1:]
             if words[0] != 'World':
-                if len(cells) == 2: # min/max range is given
+                if len(cells) == 1:
+                    if int(cells[0]) == cell:
+#                        print(words[0])
+                        return words[0]
+                elif len(cells) == 2: # min/max range is given
                     cmin,cmax = map(int,(cells[0][1:], cells[1][:-1]))
                     if cell >= cmin and cell <= cmax:
-                        print(line.strip())
+#                        print(words[0])
                         return words[0]
             # if l in [7,8]:
             #     if words[0] != 'World':
@@ -38,8 +42,8 @@ def getCombLayerObject(cell):
 
     print("Object not found")
     return None
-    
-                
+
+
 def main():
     """
     Finds the CombLayer object name for the given MCNP(X) cell number
@@ -52,10 +56,10 @@ def main():
     args = parser.parse_args()
 
     obj = getCombLayerObject(args.cell)
+    print(obj+" "*100+".") # for MCNPX to add space if the previous object name was longer
 
     if obj is None:
         exit(1)
 
 if __name__ == "__main__":
     exit(main())
-
