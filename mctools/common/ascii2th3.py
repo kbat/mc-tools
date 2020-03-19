@@ -1,4 +1,4 @@
-#! /usr/bin/env python -W all
+#!/usr/bin/env python3
 #
 # ASCII to TH3F converter
 

@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 import sys, argparse
 from mctools.mcnp.mctal import MCTAL
 from mctools.mcnp.testsuite import TestSuite

@@ -1,4 +1,4 @@
-#! /usr/bin/python3 -W all
+#!/usr/bin/env python3
 
 import sys, argparse
 from mctools.mctools import L2E, E2L

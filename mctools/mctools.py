@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 
 # from scipy import constants
 import subprocess, os, sys

@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 
 from sys import argv, exit
 from string import ascii_lowercase, digits

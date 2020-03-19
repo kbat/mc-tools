@@ -1,4 +1,4 @@
-#! /usr/bin/python3 -Wall
+#!/usr/bin/env python3
 
 import sys, argparse, os, struct
 from array import array

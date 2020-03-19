@@ -1,4 +1,4 @@
-#! /usr/bin/python3 -W all
+#!/usr/bin/env python3
 #
 # https://github.com/kbat/mc-tools
 #

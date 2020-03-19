@@ -1,4 +1,4 @@
-#! /usr/bin/python2 -W all
+#!/usr/bin/env python3
 
 import sys
 from mctools.fluka.fluka import USXSUW

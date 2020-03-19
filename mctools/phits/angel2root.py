@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 #
 #  A script to convert ANGEL (PHITS) output into the ROOT format
 #  Author: Konstantin Batkov

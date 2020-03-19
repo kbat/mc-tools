@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 # $Id: rotate3dshow.py 100 2012-06-27 10:19:30Z batkov $
 # $URL$
 #

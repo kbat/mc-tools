@@ -1,4 +1,4 @@
-#!/usr/bin/python -W all
+#!/usr/bin/env python3
 #
 # Adopted from $ROOTSYS/tutorials/pyroot/DynamicSlice.py
 

@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 #
 # Syntaxis:
 ### SOURCE 2D PARABOLIC AA BB NX NY ###

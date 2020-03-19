@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 #
 # scales all histos in the given ROOT file by a given factor
 #

@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 #
 # A helper script to submit PHITS jobs to a cluster
 # Usage: submit.sh inputfile njobs command [arguments]

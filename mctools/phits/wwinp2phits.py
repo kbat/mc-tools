@@ -1,4 +1,4 @@
-#! /usr/bin/python -W all
+#!/usr/bin/env python3
 #
 # Converts wwinp file to the Wheight Window format of PHITS
 #

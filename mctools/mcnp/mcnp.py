@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python3
 import re
 
 def getPar(masterfile, parname, pos=3):
