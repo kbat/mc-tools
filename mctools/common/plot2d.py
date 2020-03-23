@@ -63,7 +63,7 @@ def main():
         parser.add_argument('dhist', type=str, help='Data histogram name')
         parser.add_argument('gfile', type=str, help='Geometry file name', nargs='?')
         parser.add_argument('ghist', type=str, help='Geometry histogram name', nargs='?', default='h3')
-        parser.add_argument("-plane",type=str, dest='plane', help='Plane', default="xy", choices=['xy','xz','yx','yz','xz','zy'])
+        parser.add_argument("-plane",type=str, dest='plane', help='Plane', default="xy", choices=['xy','xz','yx','yz','zx','zy'])
         parser.add_argument("-scale",   type=float, dest='scale', help='Scale', default=1.0)
         parser.add_argument("-doption", type=str, dest='doption', help='Data draw option', default="colz")
         parser.add_argument("-goption", type=str, dest='goption', help='Geometry draw option', default="cont3")
