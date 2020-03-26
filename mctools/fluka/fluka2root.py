@@ -295,6 +295,7 @@ def main():
     c = Converter(args)
     c.Merge()
     val = c.Convert()
+    print(c.root)
 
     return val
 
