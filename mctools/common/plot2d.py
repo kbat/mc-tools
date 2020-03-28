@@ -140,9 +140,9 @@ def main():
                 if args.zmin:
                         args.zmin = 0
                         if args.verbose: print("zmin set to 0")
-                if args.zmax>1:
-                        args.zmax = 1
-                        if args.verbose: print("zmax set to 1")
+                if args.zmax>100:
+                        args.zmax = 100
+                        if args.verbose: print("zmax set to 100")
                 args.logz = False
 
         if args.flip:
