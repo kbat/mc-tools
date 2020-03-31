@@ -199,7 +199,7 @@ def main():
         hn = histN(det) # filled only if det.lowneu
 
         n = h.GetNbinsX()
-        print(n, len(val), det.ne, val)
+#        print(n, len(val), det.ne, val)
 
         for i in range(det.ne):
             h.SetBinContent(i+1, val[i])

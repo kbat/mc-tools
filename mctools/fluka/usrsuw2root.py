@@ -93,14 +93,10 @@ def main():
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
         val = Data.unpackArray(b.readData(i))
-        total, A, errA, Z, errZ, err, iso = b.readStat(i)
-        err = Data.unpackArray(err)
-        total = Data.unpackArray(total)
-        A = Data.unpackArray(A)
-        errA = Data.unpackArray(errA)
-        Z = Data.unpackArray(Z)
-        errZ = Data.unpackArray(errZ)
+        stat = b.readStat(i)
+        total, A, errA, Z, errZ, err = map(Data.unpackArray, stat[:-1])
 
+        iso = stat[-1]
         if iso:
             print("isomeric:",iso)
 
@@ -111,17 +107,17 @@ def main():
 
         grA = graphA(det, A, errA)
         grZ = graphZ(det, Z, errZ)
-        s = 0.0
+#        s = 0.0
 
         for z in range(1,det.zhigh+1):
             for j in range(1,det.mhigh+1):
                 gbin = z-1+(j-1)*(det.zhigh)
-                if val[gbin]>0:
+                if val[gbin]>0.0:
                     a = j+det.nmzmin+2*z
                     h.SetBinContent(z,a,val[gbin])
                     h.SetBinError(z,a,err[gbin]*val[gbin])
 
-                    s += val[gbin]
+#                    s += val[gbin]
 
 #        print("test of total sum:",s-total[0]>1e-8)
 
