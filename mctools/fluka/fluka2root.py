@@ -53,7 +53,8 @@ class Converter:
         self.parallel   = find_executable("parallel") is not None
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw"),
-                           Estimator("USRTRACK", "ustsuw")]
+                           Estimator("USRTRACK", "ustsuw"),
+                           Estimator("RESNUCLEI","usrsuw")]
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
@@ -152,8 +153,8 @@ class Converter:
                             if not unit in self.estimators[e]:
                                 self.estimators[e].addUnit("%s" % unit)
                 else:
-                    if re.search(r"\A%s" % e.name, line) and not re.search(r"\&", line[70:80]):
-                        if e.name == "RESNUCLE":
+                    if re.search(r"\A%s" % e.name[:8], line) and not re.search(r"\&", line[70:80]):
+                        if e.name[:8] == "RESNUCLE":
                             unit = line[20:30]
                         else:
                             unit = line[30:40]
