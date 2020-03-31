@@ -8,6 +8,17 @@ from mctools.fluka.flair import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
+def getType(det):
+    """ Return printable type of products to be scored """
+    if int(det.type) == 1:
+        return "Spallation products"
+    elif int(det.type) == 2:
+        return "Low-energy neutron products"
+    elif int(det.type) == 3:
+        return "All residual nuclei"
+    else:
+        return "unknown RESNUCLEI detector type"
+
 def graph(name, title, val, err):
     N = len(val)
     assert N == len(err), "graph: length of val and err differ"
@@ -16,7 +27,7 @@ def graph(name, title, val, err):
     y = []
     ey = []
     for i in range(N):
-        if val[i] != 0.0 or err[i] != 0.0:
+        if val[i] > 0.0 or err[i] > 0.0:
             x.append(i+1)
             y.append(val[i])
             ey.append(err[i]*val[i])
@@ -27,15 +38,22 @@ def graph(name, title, val, err):
     return ge
 
 def graphA(det, A, errA):
-    return graph(det.name+"A", "Isotope yield as a function of mass number;A;Isotope yield [nuclei/cm^{3}/primary]", A, errA)
+    return graph(det.name+"A", getType(det)+": Isotope yield as a function of mass number;A;Isotope yield [nuclei/cm^{3}/primary]", A, errA)
 
 def graphZ(det, Z, errZ):
-    return graph(det.name+"Z", "Isotope yield as a function of atomic number;Z;Isotope yield [nuclei/cm^{2}/primary]", Z, errZ)
+    return graph(det.name+"Z", getType(det)+": Isotope yield as a function of atomic number;Z;Isotope yield [nuclei/cm^{2}/primary]", Z, errZ)
+
+def getRegion(det):
+    """ Return printable scoring region number or name """
+    if det.region == -1:
+        return "all regions"
+    else:
+        return "region = %d" % det.region
 
 def hist(det):
     """ Create histogram for the given detector """
 
-    title = "Region: %d, Volume: %g cm^{3};Z;A" % (det.region, det.volume)
+    title = "%s: %s, volume = %g cm^{3};Z;A" % (getType(det), getRegion(det), det.volume)
 
     return ROOT.TH2F(det.name, title, det.zhigh-1, 1, det.zhigh, det.mhigh-1, 1, det.mhigh)
 
@@ -61,7 +79,7 @@ def main():
         rootFileName = args.root
 
     b = Data.Resnuclei()
-    b.readHeader(args.usrsuw) # data file closed here
+    b.readHeader(args.usrsuw) # data file is closed here
 
     ND = len(b.detector)
 
@@ -82,20 +100,12 @@ def main():
         errA = Data.unpackArray(errA)
         Z = Data.unpackArray(Z)
         errZ = Data.unpackArray(errZ)
-        # print("val:",val, len(val))
-        # print("err:",err, len(err))
-        # print("\ntotal:  ",total) # total response [n/cmc/pr]
-        # print("sum(val):",sum(val))
-        # print("\nIsotope Yield as a function of Mass Number")
-        # print("A:", A, len(A), sum(A))
-        # print("errA:", errA, len(errA))
-        # print("\nIsotope Yield as a function of Atomic Number")
-        # print("Z:", Z, len(Z), sum(Z))
-        # print("errZ:", errZ, len(errZ))
-        # print("iso:",iso)
+
+        if iso:
+            print("isomeric:",iso)
 
         det = b.detector[i]
-        print(det.nb, det.name, det.type, det.region, det.mhigh, det.zhigh, det.nmzmin)
+#        print(det.nb, det.name, det.type, det.region, det.mhigh, det.zhigh, det.nmzmin)
 
         h = hist(det)
 
