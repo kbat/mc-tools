@@ -15,12 +15,12 @@ Project homepage: https://github.com/kbat/mc-tools
     script shows an example how to convert a mctal file into an easily parsable ASCII file.
   * WSSA file converters **(MCNP6 is not fully supported)**
     * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
-      converter: it converts WSSA files produced by MCNP(X) into plain
+      converter: it converts WSSA phase space files produced by MCNP(X) into plain
       text. The comments in the script explain how to derive additional
       information (like particle type and surface crossed) from the
       WSSA records.
     * [ssw2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2root.py)
-      converter: it converts WSSA files produced by MСNР(X) into a ROOT
+      converter: it converts WSSA phase space files produced by MСNР(X) into a ROOT
       ntuple.
       The list of aliases defined in the tree can be printed
       by the TTree::GetListOfAliases()::Print()
@@ -52,7 +52,9 @@ Project homepage: https://github.com/kbat/mc-tools
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org).
   * [usbsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usbsuw2root.py) converter: it converts the USRBIN results into a TH3F histogram. Note that this tool does not directly convert the files produced by the USRBIN card, but these files must first be averaged by the $FLUTIL/usbsuw program. The resulting averaged file can be converted into ROOT by usbsuw2root. The $FLUTIL/usbsuw call is done automatically if the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) general converter is used.
   * [usxsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usxsuw2root.py) converter: it converts the USRBDX results into a TH2F histogram. + see the comments for the previous item.
-  * [ustsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/ustsuw2root.py) converter: it converts the USRTRACK results into a TH1F histogram. + see the comments for ```usbsuw2root```.
+  * [usrsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usrsuw2root.py) converter: it converts the
+RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for ```usbsuw2root``` above.
+  * [ustsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/ustsuw2root.py) converter: it converts the USRTRACK results into a TH1F histogram. + see the comments for ```usbsuw2root``` above.
   * [eventdat2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/eventdat2root.py) converter: it converts the EVENTDAT results into a TTree object.
   * [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) converter. We believe it's convenient to call all the previous converters from the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) script. In order to understand how it works, run ```$FLUTIL/rfluka -N0 -M3 $FLUPRO/exmixed.inp``` and then execute ```fluka2root exmixed.inp```. It creates a single ROOT file out of all FLUKA-produced data files converted into the ROOT histograms or trees.
   * [plotgeom2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/plotgeom2root.py) converter. It convertes the [PLOTGEOM](http://www.fluka.org/fluka.php?id=man_onl&sub=63) binary output into a [TMultiGraph](https://root.cern/root/html606/classTMultiGraph.html) object.
