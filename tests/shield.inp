@@ -140,7 +140,7 @@ USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
 USRBIN          10.0   DOSE-EQ     -56.0 $wallXmax $wallYmax $wallZmax meshH
 USRBIN     $wallXmin $wallYmin     -10.0     100.0     100.0      30.0   &
 *
-RESNUCLE         3.0     -57.0                                         resn
+RESNUCLEI        3.0     -57.0                                         resn
 * print the step size table
 *EMFFIX          $mat                                                  PRINT
 * turn on multiple scattering

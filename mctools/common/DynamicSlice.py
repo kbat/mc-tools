@@ -18,6 +18,9 @@ class DynamicSlice:
       self.ngroup = nbins[1]
       self.projection = 1
       self.logy = 0
+      # min/max coordinates of the slice on the 2D histogram
+      # (x or y depends of self.projection)
+      self.range = (0.0, 0.0)
 
    def __call__( self ):
 
@@ -41,8 +44,10 @@ class DynamicSlice:
       px = gPad.GetEventX()
       py = gPad.GetEventY()
 
+      # min/max x values visible on the pad (xmin and xmax of the x-axis)
       uxmin, uxmax = gPad.GetUxmin(), gPad.GetUxmax()
       uymin, uymax = gPad.GetUymin(), gPad.GetUymax()
+      # same in pixels
       pxmin, pxmax = gPad.XtoAbsPixel( uxmin ), gPad.XtoAbsPixel( uxmax )
       pymin, pymax = gPad.YtoAbsPixel( uymin ), gPad.YtoAbsPixel( uymax )
 
@@ -51,17 +56,40 @@ class DynamicSlice:
       # else:
       #    axis = h.GetXaxis()
 
-      width = 1
+      scaleY = abs((pymax-pymin) / (uymax-uymin))
+      scaleX = abs((pxmax-pxmin) / (uxmax-uxmin))
+
+      width = 0.0 # arbitrary default value [cm]
+
+      if self._old:
+         width = self.range[1] - self.range[0]
+
+      ywidth = int(width * scaleY)
+      xwidth = int(width * scaleX)
 
       if self._old != None:
          if self.projection:
-            gVirtualX.DrawBox( pxmin, self._old[1]-width, pxmax, self._old[1], kSolid)
+#            gVirtualX.DrawBox( pxmin, self._old[1]-ywidth, pxmax, self._old[1], kSolid)
+            gVirtualX.DrawLine( pxmin, self._old[1], pxmax, self._old[1])
+            gVirtualX.DrawLine( pxmin, self._old[1]-ywidth, pxmax, self._old[1]-ywidth)
          else:
-            gVirtualX.DrawBox( self._old[0], pymin, self._old[0]+width, pymax, kSolid )
+#            gVirtualX.DrawBox( self._old[0], pymin, self._old[0]+ywidth, pymax, kSolid )
+            gVirtualX.DrawLine( self._old[0], pymin, self._old[0], pymax)
+            gVirtualX.DrawLine( self._old[0]+xwidth, pymin, self._old[0]+xwidth, pymax)
+
+      # Normally these calls remove old lines, but we do not need them since we update the pad in the end of DrawSlice
+      # BUG: the lines disappear when the mouse does not move. This happens if this gPad.Update() is called. TODO: How to fix it?
+      # if self.projection:
+      #    gVirtualX.DrawLine( pxmin, py, pxmax, py )
+      #    gVirtualX.DrawLine( pxmin, py-ywidth, pxmax, py-ywidth )
+      # else:
+      #    gVirtualX.DrawLine( px, pymin, px, pymax)
+      #    gVirtualX.DrawLine( px+xwidth, pymin, px+xwidth, pymax)
+
       if self.projection:
-         gVirtualX.DrawBox( pxmin, py, pxmax, py+width, kSolid )
+         gPad.SetUniqueID(py)
       else:
-         gVirtualX.DrawBox( px, pymin, px, pymax+width, kSolid )
+         gPad.SetUniqueID(px)
 
       self._old = px, py
 
@@ -84,13 +112,14 @@ class DynamicSlice:
          self._DestroyPrimitive( 'Y' )
 
       if self.projection:
-         self.DrawSlice( h, y, 'Y' )
+         self.range = self.DrawSlice( h, y, 'Y' )
       else:
-         self.DrawSlice( h, x, 'X' )
+         self.range = self.DrawSlice( h, x, 'X' )
 
       padsav.cd()
 
    def _DestroyPrimitive( self, xy ):
+      # Delete the projected histogram
       proj = getattr( self, '_c'+xy ).GetPrimitive( 'Projection '+xy )
       if proj:
          proj.IsA().Destructor( proj )
@@ -128,4 +157,7 @@ class DynamicSlice:
       yaxis.SetMaxDigits(3)
       yaxis.SetTitle(histo.GetZaxis().GetTitle())
       canvas.SetLogy(self.logy)
-      canvas.Update()
+
+      canvas.Update() # removes the lines
+
+      return (vmin,vmax)
