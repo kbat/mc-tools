@@ -28,16 +28,17 @@ def isLogA(x):
         return True
     return False
 
-def getAxesTitle(det,x):
+def getAxesTitle(det):
     ztitle = "1/cm^{2}/GeV/sr"
     if int(det.dist) in (208,211): # differential energy fluence/current
         ztitle = "GeV/cm^{2}/GeV/sr"   # FLUKA manual page 247
-    return {
-        -2 : ";log10(Energy/GeV);log10(#Omega/rad);" + ztitle,
-        -1 : ";log10(Energy/GeV);#Omega [rad];" + ztitle,
-         1 : ";Energy [GeV];#Omega [rad];" + ztitle,
-         2 : ";Energy [GeV];log10(#Omega/rad);" + ztitle,
-        }[x]
+    return ";Energy [GeV];#Omega [rad];" + ztitle
+    # return {
+    #     -2 : ";log10(Energy/GeV);log10(#Omega/rad);" + ztitle,
+    #     -1 : ";log10(Energy/GeV);#Omega [rad];" + ztitle,
+    #      1 : ";Energy [GeV];#Omega [rad];" + ztitle,
+    #      2 : ";Energy [GeV];log10(#Omega/rad);" + ztitle,
+    #     }[x]
 
 def getLogBins(nbins, low, high):
     """ Return array of bins with log10 equal widths """
@@ -80,7 +81,7 @@ def getAbins(det, i):
 def getHistTitle(det,w1):
     """ Return histogram title """
     title = "%s %s #diamond reg %d %s %d #diamond %g cm^{2}" % (fluka.particle.get(det.dist, "undefined"), "fluence" if det.fluence else "current", det.reg1, "#leftrightarrow" if det.twoway else "#rightarrow", det.reg2, det.area)
-    title += getAxesTitle(det,w1)
+    title += getAxesTitle(det)
     return title
 
 def hist(det):
