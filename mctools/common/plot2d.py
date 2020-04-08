@@ -81,7 +81,7 @@ def main():
         parser.add_argument("-ymax",   type=float, dest='ymax', help='vertical axis max value', default=None, required=False)
         parser.add_argument("-zmin",   type=float, dest='zmin', help='colour axis min value', default=None, required=False)
         parser.add_argument("-zmax",   type=float, dest='zmax', help='colour axis max value', default=None, required=False)
-        parser.add_argument("-logz", action='store_true', default=True, dest='logz', help='Set log scale for the data colour axis')
+        parser.add_argument("--no-logz", action='store_true', default=False, dest='nologz', help='Remove log scale for the data colour axis')
         parser.add_argument("-width",  type=int, dest='width',  help='Canvas width',  default=800)
         parser.add_argument("-height", type=int, dest='height', help='Canvas height. If not specified, it is calculated from the width with the golden ratio rule.', default=None)
         parser.add_argument("-right-margin", type=float, dest='right_margin',
@@ -143,7 +143,7 @@ def main():
                 if args.zmax and args.zmax>100:
                         args.zmax = 100
                         if args.verbose: print("zmax set to 100")
-                args.logz = False
+                args.nologz = True
 
         if args.flip:
                 if args.verbose: print("Flipping the data histogram")
@@ -175,7 +175,7 @@ def main():
         if args.ymin is not None:
                 dh2.GetYaxis().SetRangeUser(args.ymin, args.ymax)
 
-        if args.logz:
+        if not args.nologz:
                 ROOT.gPad.SetLogz()
 
         if args.zmin is not None:
