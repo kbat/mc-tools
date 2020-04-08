@@ -182,7 +182,7 @@ def main():
             for j in range(det.na):
                 gbin = i + j * nebins
                 h.SetBinContent(i+1, j+1, val[gbin])
-                h.SetBinError(i+1, j+1, err[gbin]*15.91549*det.na) # still wrong if det.na>1
+                h.SetBinError(i+1, j+1, val[gbin]*err[gbin]*15.91549*det.na) # still wrong if det.na>1
 
         # if (det.name=="pBackN"):
         #     for j in range(det.na):
