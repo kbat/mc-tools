@@ -56,7 +56,8 @@ def main():
     args = parser.parse_args()
 
     obj = getCombLayerObject(args.cell)
-    print(obj+" "*100+".") # for MCNPX to add space if the previous object name was longer
+    if obj:
+        print(obj+" "*100+".") # for MCNPX to add space if the previous object name was longer
 
     if obj is None:
         exit(1)
