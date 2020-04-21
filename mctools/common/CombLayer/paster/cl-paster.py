@@ -3,7 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
-from sys import exit,stderr
+from sys import exit, stderr
 import argparse, re
 import os
 import pwd
@@ -17,6 +17,10 @@ class Paster:
         self.className = c
         self.cxxDir = self.model
         self.hDir   = self.cxxDir+'Inc'
+        # generator for variables
+        self.cxxGenDir = os.path.join('/'.join(self.cxxDir.split('/')[:-1]), "commonGenerator")
+        self.hGenDir = self.cxxGenDir + 'Inc'
+        print(self.cxxGenDir, self.hGenDir)
 
         self.now = datetime.now()
 
@@ -29,12 +33,18 @@ class Paster:
     def setDescription(self, val):
         self.description = val
 
-    def processSource(self, source):
+    def processModel(self, source, header):
         dest = os.path.join(self.cxxDir, self.className + ".cxx")
         self.process(source, dest)
 
-    def processHeader(self, header):
         dest = os.path.join(self.hDir, self.className + ".h")
+        self.process(header, dest)
+
+    def processGenerator(self, source, header):
+        dest = os.path.join(self.cxxGenDir, self.className + "Generator.cxx")
+        self.process(source, dest)
+
+        dest = os.path.join(self.hGenDir, self.className + "Generator.h")
         self.process(header, dest)
 
     def process(self, source, dest):
@@ -77,6 +87,7 @@ def main():
     parser.add_argument('-author', dest='author', type=str, help='author', required=False, default=defauthor)
     parser.add_argument('-m', dest='description', type=str, help='class description', required=True)
     parser.add_argument('-t', dest='template', type=str, help='template name', required=False, default="Default", choices=['Default','FrontBackCut'])
+    parser.add_argument('--disable-generator', dest='noGenerator', action='store_false', default=True, help='do not create generator for variables')
     parser.add_argument('className', type=str, help='class name')
     args = parser.parse_args()
 
@@ -84,12 +95,17 @@ def main():
     cxxOrig = os.path.join(path, ("MyComponent-%s.cxx" % args.template))
     hOrig   = os.path.join(path, ("MyComponent-%s.h" % args.template))
 
+    cxxGenOrig = os.path.join(path, ("Generator.cxx"))
+    hGenOrig   = os.path.join(path, ("Generator.h"))
+
     p = Paster(args.model, args.className)
     p.setAuthor(args.author)
     p.setNamespace(args.namespace)
     p.setDescription(args.description)
-    p.processSource(cxxOrig)
-    p.processHeader(hOrig)
+    p.processModel(cxxOrig, hOrig)
+    if args.noGenerator:
+        p.processGenerator(cxxGenOrig, hGenOrig)
+
 
 if __name__ == "__main__":
     exit(main())
