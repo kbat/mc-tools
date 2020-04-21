@@ -15,55 +15,42 @@ def checkName(n, t):
             print("Argument '-name' must be specified for type '%s'" % t, file=sys.stderr)
             sys.exit(4)
 
-def main():
+
+def gen(cxx, args):
+    """ Fixes the generator implementation (the .cxx file).
+    Return True if fixed.
     """
-    Add variable in the CL component class
-    """
-
-    parser = argparse.ArgumentParser(description=main.__doc__,
-                                     epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('-var', dest='var', type=str, help='variable name', required=True)
-    parser.add_argument('-name', dest='name', type=str, help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
-    parser.add_argument('-type', dest='type', type=str, help='variable type', required=True)
-    parser.add_argument('-comment', dest='comment', type=str, help='variable description', required=True)
-    parser.add_argument('-after', dest='after', type=str, help='the variable will be put after the given one', required=True)
-    parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
-    parser.add_argument('-class', dest='className', type=str, help='class name', required=True)
-
-    args = parser.parse_args()
-
-    checkName(args.name, args.type)
-
-    cxxDir = args.model
-    hDir   = cxxDir+'Inc'
-    
-    cxx = os.path.join(cxxDir, args.className + ".cxx")
-    h   = os.path.join(hDir,   args.className + ".h")
-    
-    if checkPaths([hDir, cxxDir], [h,cxx]) > 0:
-        sys.exit(1)
-
-    print(h)
-    print(cxx)
-    mat = False
     hFixed = False
-    ccFixed = False
-    equalFixed = False
-    evalFixed = False
+    for line in fileinput.input(cxx, inplace=True, backup='.bak'):
+        print(line.rstrip())
+        if re.search(",%s\);" % args.after, line):
+            hFixed = True
+            print(f"  Control.addVariable(keyName+\"{args.name}\",{args.var});")
+    return hFixed
 
-    if args.type == "int" and args.name[-3:] == "Mat":
-        mat = True
 
-    isPointer = re.search("shared_ptr", args.type)
-
-# fix the header
+def header(h, args):
+    """ Fix the header. Return True if fixed """
+    hFixed = False
     for line in fileinput.input(h, inplace=True, backup='.bak'):
        print(line.rstrip())
        if re.search(" %s;" % args.after, line):
            hFixed = True
            print("  %s %s; ///< %s" % (args.type, args.var, args.comment))
+    return hFixed
 
-# fix implementation
+def source(cxx, args):
+    """ Fix implementation. Return list of fixed/non fixed flags. """
+    ccFixed = False
+    equalFixed = False
+    evalFixed = False
+
+    isPointer = re.search("shared_ptr", args.type)
+
+    mat = False
+    if args.type == "int" and args.name[-3:] == "Mat":
+        mat = True
+
     for line in fileinput.input(cxx, inplace=True, backup='.bak'):
 #    for line in fileinput.input(cxx):
         l = ""
@@ -107,6 +94,61 @@ def main():
         print(line)
         if l:
             print(l)
+    return (ccFixed, equalFixed, evalFixed)
+
+def main():
+    """
+    Add variable in the CL component class
+    """
+
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                     epilog="Homepage: https://github.com/kbat/mc-tools")
+    parser.add_argument('-var', dest='var', type=str, help='variable name', required=True)
+    parser.add_argument('-name', dest='name', type=str, help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
+    parser.add_argument('-type', dest='type', type=str, help='variable type', required=True)
+    parser.add_argument('-comment', dest='comment', type=str, help='variable description', required=True)
+    parser.add_argument('-after', dest='after', type=str, help='the variable will be put after the given one', required=True)
+    parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
+    parser.add_argument('-class', dest='className', type=str, help='class name', required=True)
+
+    args = parser.parse_args()
+
+    checkName(args.name, args.type)
+
+    cxxDir = args.model
+    hDir   = cxxDir+'Inc'
+
+    cxxGenDir = os.path.join('/'.join(cxxDir.split('/')[:-1]), "commonGenerator")
+    hGenDir = cxxGenDir + 'Inc'
+
+    cxx = os.path.join(cxxDir, args.className + ".cxx")
+    h   = os.path.join(hDir,   args.className + ".h")
+
+    cxxGen = os.path.join(cxxGenDir, args.className + "Generator.cxx")
+    hGen   = os.path.join(hGenDir,   args.className + "Generator.h")
+
+    if checkPaths([hDir, cxxDir], [h,cxx]) > 0:
+        sys.exit(1)
+
+
+    print(h)
+    print(cxx)
+
+    generator = not checkPaths([hGenDir, cxxGenDir], [hGen, cxxGen])
+    if generator:
+        print(hGen)
+        print(cxxGen)
+    else:
+        print("Warning: no variable generator found")
+
+    mat = False
+    hFixed = False
+    ccFixed = False
+    equalFixed = False
+    evalFixed = False
+
+    hFixed = header(h, args)
+    ccFixed, equalFixed, evalFixed = source(cxx, args)
 
     if not hFixed:
         print("!!! No record added in the header", file=sys.stderr)
@@ -116,7 +158,14 @@ def main():
         print("!!! No record added in the operator=", file=sys.stderr)
     if not evalFixed:
         print("!!! No record added in the %s::populate() method." % args.className, file=sys.stderr)
-                
+
+    hFixed = header(hGen, args)
+    if not hFixed:
+        print("!!!: No record added in the generator header", file=sys.stderr)
+
+    hFixed = gen(cxxGen, args)
+    if not hFixed:
+        print("!!!: No record added in the generator implementation", file=sys.stderr)
+
 if __name__ == "__main__":
     sys.exit(main())
-    
