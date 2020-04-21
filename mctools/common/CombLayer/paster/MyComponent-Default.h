@@ -3,7 +3,7 @@
 
  * File:   INCDIR/MyComponent.h
  *
- * Copyright (c) YEAR by AUTHOR
+ * Copyright (c) 2004-YEAR by AUTHOR
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,5 +70,3 @@ class MyComponent : public attachSystem::ContainedComp,
 }
 
 #endif
-
-
