@@ -5,19 +5,19 @@ import argparse, os, re, sys
 import fileinput
 from mctools.mctools import checkPaths
 
-def checkName(n, t):
-    """ Check if name can be omitted for the given type.
-    Normally, name can be omitted for the variables which are not populated in the *Variables.cxx file
+def checkTitle(n, t):
+    """ Check if title can be omitted for the given type.
+    Normally, title can be omitted for the variables which are not populated in the *Variables.cxx file
     (like vectors or pointers)
     """
     if len(n) == 0:
         if not re.search("vector",t) and not re.search("shared_ptr", t):
-            print("Argument '-name' must be specified for type '%s'" % t, file=sys.stderr)
+            print("Argument '-title' must be specified for type '%s'" % t, file=sys.stderr)
             sys.exit(4)
 
 def isMaterial(args):
     """ Return True if variable is material """
-    return args.type == "int" and args.name[-3:] == "Mat"
+    return args.type == "int" and args.title[-3:] == "Mat"
 
 def genSource(cxx, args):
     """ Fixes the generator implementation (the .cxx file).
@@ -30,14 +30,14 @@ def genSource(cxx, args):
         line = line.rstrip()
         if re.search(f"{args.after}\(", line):
             ccFixed = True
-            l = f"  {args.var}(1.0)"
+            l = f"  {args.name}(1.0)"
             if line[-1:] == ',':
                 l = l + ','
             else:
                 line = line + ','
         elif re.search("Control\.addVariable\(keyName\+.*,%s\);" % args.after, line):
             hFixed = True
-            l = f"  Control.addVariable(keyName+\"{args.name}\",{args.var});"
+            l = f"  Control.addVariable(keyName+\"{args.name}\",{args.name});"
         print(line)
         if l:
             print(l)
@@ -53,7 +53,7 @@ def genHeader(h, args):
        print(line.rstrip())
        if re.search(" %s;" % args.after, line):
            hFixed = True
-           print("  %s %s; ///< %s" % (t, args.var, args.comment))
+           print("  %s %s; ///< %s" % (t, args.name, args.comment))
     return hFixed
 
 
@@ -64,7 +64,7 @@ def header(h, args):
        print(line.rstrip())
        if re.search(" %s;" % args.after, line):
            hFixed = True
-           print("  %s %s; ///< %s" % (args.type, args.var, args.comment))
+           print("  %s %s; ///< %s" % (args.type, args.name, args.comment))
     return hFixed
 
 def source(cxx, args):
@@ -90,9 +90,9 @@ def source(cxx, args):
                     cls = re.search("shared_ptr<(.*?)>", args.type).group(1)
                 except AttributeError:
                     cls = 'XXX'
-                l = "  %s(new %s(*A.%s))" % (args.var, cls, args.var)
+                l = "  %s(new %s(*A.%s))" % (args.name, cls, args.name)
             else:
-                l = "  %s(A.%s)" % (args.var, args.var)
+                l = "  %s(A.%s)" % (args.name, args.name)
 
             if line[-1:] == ",": # comma after
                 l = l + ","
@@ -105,17 +105,17 @@ def source(cxx, args):
             star=""
             if isPointer:
                 star="*"
-            l = "      %s%s=%sA.%s;" % (star, args.var, star, args.var)
+            l = "      %s%s=%sA.%s;" % (star, args.name, star, args.name)
 
 # populate
-        if len(args.name) and not isPointer and (re.search("%s=Control.EvalVar" % args.after, line) or re.search("%s=ModelSupport::EvalMat" % args.after, line)):
+        if len(args.title) and not isPointer and (re.search("%s=Control.EvalVar" % args.after, line) or re.search("%s=ModelSupport::EvalMat" % args.after, line)):
             evalFixed = True
             if mat:
-                l = "  %s=ModelSupport::EvalMat<%s>(Control,keyName+\"%s\");" % (args.var, args.type, args.name)
-            elif args.var == "engActive":
-                l = "  %s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (args.var)
+                l = "  %s=ModelSupport::EvalMat<%s>(Control,keyName+\"%s\");" % (args.name, args.type, args.title)
+            elif args.name == "engActive":
+                l = "  %s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (args.title)
             else:
-                l = "  %s=Control.EvalVar<%s>(keyName+\"%s\");" % (args.var, args.type, args.name)
+                l = "  %s=Control.EvalVar<%s>(keyName+\"%s\");" % (args.name, args.type, args.title)
 
         print(line)
         if l:
@@ -129,8 +129,8 @@ def main():
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('-var', dest='var', type=str, help='variable name', required=True)
-    parser.add_argument('-name', dest='name', type=str, help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
+    parser.add_argument('-name', dest='name', type=str, help='variable name', required=True)
+    parser.add_argument('-title', dest='title', type=str, help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
     parser.add_argument('-type', dest='type', type=str, help='variable type', required=True)
     parser.add_argument('-comment', dest='comment', type=str, help='variable description', required=True)
     parser.add_argument('-after', dest='after', type=str, help='the variable will be put after the given one', required=True)
@@ -139,7 +139,7 @@ def main():
 
     args = parser.parse_args()
 
-    checkName(args.name, args.type)
+    checkTitle(args.title, args.type)
 
     cxxDir = args.model
     hDir   = cxxDir+'Inc'
