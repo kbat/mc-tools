@@ -43,7 +43,7 @@ def genSource(cxx, args):
                 line = line + ','
         elif re.search("Control\.addVariable\(keyName\+.*,%s\);" % args.after, line):
             hFixed = True
-            l = f"  Control.addVariable(keyName+\"{args.name}\",{args.name});"
+            l = f"  Control.addVariable(keyName+\"{args.title}\",{args.name});"
         print(line)
         if l:
             print(l)
