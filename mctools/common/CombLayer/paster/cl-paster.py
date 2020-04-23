@@ -67,7 +67,7 @@ class Paster:
             l = l.replace("INCDIR", self.hDir)
             l = l.replace("CXXDIR", self.cxxDir)
             l = l.replace("YEAR", str(self.now.year))
-            l = l.replace("DATE", "%d %s %d" % (self.now.day, self.now.strftime("%b"), self.now.year))
+            l = l.replace("DATE", "%s %d" % (self.now.strftime("%B"), self.now.year))
             fout.write(l)
         fout.close()
         fin.close()
