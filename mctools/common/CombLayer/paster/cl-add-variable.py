@@ -19,6 +19,12 @@ def isMaterial(args):
     """ Return True if variable is material """
     return args.type == "int" and args.title[-3:] == "Mat"
 
+def printDeclaration(args, t, offset=32):
+    """ Prints variable declaration in the header file
+    offset: column number where the comment should start
+    """
+    print(("  {t} {name}; {cc:>%d} {comment}" % abs(offset-1-len(t)-len(args.name))).format(t=t, name=args.name, cc="///<", comment=args.comment))
+
 def genSource(cxx, args):
     """ Fixes the generator implementation (the .cxx file).
     Return True if succeeded.
@@ -30,7 +36,7 @@ def genSource(cxx, args):
         line = line.rstrip()
         if re.search(f"{args.after}\(", line):
             ccFixed = True
-            l = f"  {args.name}(1.0)"
+            l = f"  {args.name}({args.value})"
             if line[-1:] == ',':
                 l = l + ','
             else:
@@ -42,7 +48,7 @@ def genSource(cxx, args):
         if l:
             print(l)
 
-    return hFixed
+    return (ccFixed, hFixed)
 
 def genHeader(h, args):
     """ Fix the generator header. Return True if succeeded """
@@ -53,7 +59,7 @@ def genHeader(h, args):
        print(line.rstrip())
        if re.search(" %s;" % args.after, line):
            hFixed = True
-           print("  %s %s; ///< %s" % (t, args.name, args.comment))
+           printDeclaration(args,t)
     return hFixed
 
 
@@ -64,7 +70,7 @@ def header(h, args):
        print(line.rstrip())
        if re.search(" %s;" % args.after, line):
            hFixed = True
-           print("  %s %s; ///< %s" % (args.type, args.name, args.comment))
+           printDeclaration(args, args.type)
     return hFixed
 
 def source(cxx, args):
@@ -130,12 +136,15 @@ def main():
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-name', dest='name', type=str, help='variable name', required=True)
-    parser.add_argument('-title', dest='title', type=str, help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.', required=False, default="")
+    parser.add_argument('-title', dest='title', type=str,required=False, default="",
+                        help='variable name in *Variables.cxx. If not specified, the record in the populate method is not added.')
     parser.add_argument('-type', dest='type', type=str, help='variable type', required=True)
     parser.add_argument('-comment', dest='comment', type=str, help='variable description', required=True)
     parser.add_argument('-after', dest='after', type=str, help='the variable will be put after the given one', required=True)
     parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
     parser.add_argument('-class', dest='className', type=str, help='class name', required=True)
+    parser.add_argument('-value', dest='value', type=str,default="", required=False,
+                        help='default value (if set, the generator for variables is created and this value is set as default)')
 
     args = parser.parse_args()
 
@@ -156,16 +165,14 @@ def main():
     if checkPaths([hDir, cxxDir], [h,cxx]) > 0:
         sys.exit(1)
 
-
     print(h)
     print(cxx)
 
-    generator = not checkPaths([hGenDir, cxxGenDir], [hGen, cxxGen])
-    if generator:
+    if args.value:
+        if checkPaths([hGenDir, cxxGenDir], [hGen, cxxGen]) > 0:
+            sys.exit(2)
         print(hGen)
         print(cxxGen)
-    else:
-        print("Warning: no variable generator found")
 
     mat = False
     hFixed = False
@@ -185,13 +192,16 @@ def main():
     if not evalFixed:
         print("!!! No record added in the %s::populate() method." % args.className, file=sys.stderr)
 
-    hFixed = genHeader(hGen, args)
-    if not hFixed:
-        print("!!!: No record added in the generator header", file=sys.stderr)
+    if args.value: # generator is needed
+        hFixed = genHeader(hGen, args)
+        if not hFixed:
+            print("!!!: No record added in the generator header", file=sys.stderr)
 
-    hFixed = genSource(cxxGen, args)
-    if not hFixed:
-        print("!!!: No record added in the generator implementation", file=sys.stderr)
+        ccFixed, hFixed = genSource(cxxGen, args)
+        if not ccFixed:
+            print("!!! No record added in the generator copy constructor", file=sys.stderr)
+        if not hFixed:
+            print("!!!: No record added in the generator implementation", file=sys.stderr)
 
 if __name__ == "__main__":
     sys.exit(main())
