@@ -15,17 +15,45 @@ def checkName(n, t):
             print("Argument '-name' must be specified for type '%s'" % t, file=sys.stderr)
             sys.exit(4)
 
+def isMaterial(args):
+    """ Return True if variable is material """
+    return args.type == "int" and args.name[-3:] == "Mat"
 
-def gen(cxx, args):
+def genSource(cxx, args):
     """ Fixes the generator implementation (the .cxx file).
-    Return True if fixed.
+    Return True if succeeded.
     """
+    ccFixed = False
     hFixed = False
     for line in fileinput.input(cxx, inplace=True, backup='.bak'):
-        print(line.rstrip())
-        if re.search(",%s\);" % args.after, line):
+        l = ""
+        line = line.rstrip()
+        if re.search(f"{args.after}\(", line):
+            ccFixed = True
+            l = f"  {args.var}(1.0)"
+            if line[-1:] == ',':
+                l = l + ','
+            else:
+                line = line + ','
+        elif re.search("Control\.addVariable\(keyName\+.*,%s\);" % args.after, line):
             hFixed = True
-            print(f"  Control.addVariable(keyName+\"{args.name}\",{args.var});")
+            l = f"  Control.addVariable(keyName+\"{args.name}\",{args.var});"
+        print(line)
+        if l:
+            print(l)
+
+    return hFixed
+
+def genHeader(h, args):
+    """ Fix the generator header. Return True if succeeded """
+    hFixed = False
+    t = "std::string" if isMaterial(args) else args.type
+
+    for line in fileinput.input(h, inplace=True, backup='.bak'):
+       print(line.rstrip())
+       if re.search(" %s;" % args.after, line):
+           hFixed = True
+           print("  %s %s; ///< %s" % (t, args.var, args.comment))
     return hFixed
 
 
@@ -47,9 +75,7 @@ def source(cxx, args):
 
     isPointer = re.search("shared_ptr", args.type)
 
-    mat = False
-    if args.type == "int" and args.name[-3:] == "Mat":
-        mat = True
+    mat = isMaterial(args)
 
     for line in fileinput.input(cxx, inplace=True, backup='.bak'):
 #    for line in fileinput.input(cxx):
@@ -159,11 +185,11 @@ def main():
     if not evalFixed:
         print("!!! No record added in the %s::populate() method." % args.className, file=sys.stderr)
 
-    hFixed = header(hGen, args)
+    hFixed = genHeader(hGen, args)
     if not hFixed:
         print("!!!: No record added in the generator header", file=sys.stderr)
 
-    hFixed = gen(cxxGen, args)
+    hFixed = genSource(cxxGen, args)
     if not hFixed:
         print("!!!: No record added in the generator implementation", file=sys.stderr)
 
