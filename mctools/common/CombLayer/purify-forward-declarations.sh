@@ -24,7 +24,7 @@ tmp=$(mktemp -u)
 echo "Safe to remove in $fname:"
 grep "\ * class.*;" "$fname" | tac | while read -r line; do
     /bin/cp -f "$fname" "$tmp"
-    sed -i -e "s/$line/\/\/ $line/" "$fname"
+    sed -i -e "/$line/d" "$fname"
     if make $target >& /dev/null; then
 	echo $line
     else
