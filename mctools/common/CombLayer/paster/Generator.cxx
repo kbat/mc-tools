@@ -87,4 +87,4 @@ MyComponentGenerator::generate(FuncDataBase& Control,
 }
 
 
-}  // NAMESPACE setVariable
+}  // namespace setVariable
