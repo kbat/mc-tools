@@ -57,6 +57,7 @@ class VTK:
                         dx = 1 # arbitrary
                     val.append(val[-1]+dx)
                     d[n] = val
+                    f.close()
                     return val
                 else:
                     for v in l.split():
