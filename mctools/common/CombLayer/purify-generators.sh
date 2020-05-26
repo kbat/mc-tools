@@ -1,8 +1,8 @@
 #! /bin/bash
-# Comments out unneded #include directives
+# Comments out unneded class forward declarations directives
 
 if [ ! $# -eq 2 ]; then
-    echo "Usage: $(basename $0) make-target /path/to/file.cxx"
+    echo "Usage: $(basename $0) make-target /path/to/file.h"
     exit 1
 fi
 
@@ -24,10 +24,10 @@ make -j$(nproc) $target || exit 1
 tmp=$(mktemp -u)
 
 echo "Safe to remove in $fname:"
-grep ^\#include "$fname" |egrep -v OutputLog.h | grep \.h\" | tac | while read -r line; do
+grep "^\ *setVariable::.*Generator" "$fname" | tac | while read -r line; do
     /bin/cp -f "$fname" "$tmp"
-    sed -i -e "0,/$line/{/$line/d;}"  "$fname" # remove only first occurrence - helps removing duplicate #includes
-    if make -j$(nproc) $target >& /dev/null; then
+    sed -i -e "/$line/d" "$fname"
+    if make $target >& /dev/null; then
 	echo $line
     else
 	/bin/cp -f $tmp $fname
@@ -35,5 +35,3 @@ grep ^\#include "$fname" |egrep -v OutputLog.h | grep \.h\" | tac | while read -
 done
 
 rm -f "$tmp"
-
-grep ^#include "$fname" | sort | uniq -c | grep -v " 1 "
