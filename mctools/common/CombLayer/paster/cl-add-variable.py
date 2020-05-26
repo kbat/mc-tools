@@ -23,7 +23,8 @@ def printDeclaration(args, t, offset=32):
     """ Prints variable declaration in the header file
     offset: column number where the comment should start
     """
-    print(("  {t} {name}; {cc:>%d} {comment}" % abs(offset-1-len(t)-len(args.name))).format(t=t, name=args.name, cc="///<", comment=args.comment))
+    print(("{indent}{t} {name}; {cc:>%d} {comment}" % abs(offset-1-len(t)-len(args.name))).format(indent=" "*args.indent,
+                                                                                                  t=t, name=args.name, cc="///<", comment=args.comment))
 
 def genSource(cxx, args):
     """ Fixes the generator implementation (the .cxx file).
@@ -78,6 +79,7 @@ def source(cxx, args):
     ccFixed = False
     equalFixed = False
     evalFixed = False
+    indent = " "*args.indent
 
     isPointer = re.search("shared_ptr", args.type)
 
@@ -96,9 +98,9 @@ def source(cxx, args):
                     cls = re.search("shared_ptr<(.*?)>", args.type).group(1)
                 except AttributeError:
                     cls = 'XXX'
-                l = "  %s(new %s(*A.%s))" % (args.name, cls, args.name)
+                l = "%s%s(new %s(*A.%s))" % (indent, args.name, cls, args.name)
             else:
-                l = "  %s(A.%s)" % (args.name, args.name)
+                l = "%s%s(A.%s)" % (indent, args.name, args.name)
 
             if line[-1:] == ",": # comma after
                 l = l + ","
@@ -111,17 +113,17 @@ def source(cxx, args):
             star=""
             if isPointer:
                 star="*"
-            l = "      %s%s=%sA.%s;" % (star, args.name, star, args.name)
+            l = "    %s%s%s=%sA.%s;" % (indent, star, args.name, star, args.name)
 
 # populate
         if len(args.title) and not isPointer and (re.search("%s=Control.EvalVar" % args.after, line) or re.search("%s=ModelSupport::EvalMat" % args.after, line)):
             evalFixed = True
             if mat:
-                l = "  %s=ModelSupport::EvalMat<%s>(Control,keyName+\"%s\");" % (args.name, args.type, args.title)
+                l = "%s%s=ModelSupport::EvalMat<%s>(Control,keyName+\"%s\");" % (indent, args.name, args.type, args.title)
             elif args.name == "engActive":
-                l = "  %s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (args.title)
+                l = "%s%s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (indent, args.title)
             else:
-                l = "  %s=Control.EvalVar<%s>(keyName+\"%s\");" % (args.name, args.type, args.title)
+                l = "%s%s=Control.EvalVar<%s>(keyName+\"%s\");" % (indent, args.name, args.type, args.title)
 
         print(line)
         if l:
@@ -145,6 +147,7 @@ def main():
     parser.add_argument('-class', dest='className', type=str, help='class name', required=True)
     parser.add_argument('-value', dest='value', type=str,default="", required=False,
                         help='default value (if set, the generator for variables is created and this value is set as default)')
+    parser.add_argument('-indent', dest='indent', type=int, help='number of initial spaces', default=2, required=False)
 
     args = parser.parse_args()
 
