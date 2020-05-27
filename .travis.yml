@@ -13,8 +13,9 @@ before_install:
   - root-config --features
   - echo $PYTHONPATH
   - echo $PATH
-#  - sudo updatedb
-#  - locate ROOT.pyc
+  - sudo updatedb
+  - locate ROOT.pyc
+  - locate libCore.so
 install:
   - pip install .
 # command to run tests
