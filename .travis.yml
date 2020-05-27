@@ -3,8 +3,9 @@ python:
   - "2.7"
   - "3.6"      # current default Python on Travis CI
   - "3.7"
-#env:
-#  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
+env:
+# here we have ROOT.py:
+  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
   - apt-cache search root|grep root
   - sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev
@@ -24,8 +25,9 @@ install:
   - pip install .
 # command to run tests
 script:
-  - ls /usr/lib/x86_64-linux-gnu/root5.34/python
-  - export PYTHONPATH=$(root-config --libdir)
+  - root-config--libdir
+  - echo $PYTHONPATH
+#  - export PYTHONPATH=$(root-config --libdir)
   - ls $PYTHONPATH
   - export MCTOOLS="$HOME/kbat/mc-tools"
   - export PYTHONPATH=$MCTOOLS:$PYTHONPATH
