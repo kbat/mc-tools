@@ -3,8 +3,8 @@ python:
   - "2.7"
   - "3.6"      # current default Python on Travis CI
   - "3.7"
-#env:
-#  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
+env:
+  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
   - sudo apt-get install root-system
   - which root
@@ -13,9 +13,10 @@ before_install:
   - root-config --features
   - echo $PYTHONPATH
   - echo $PATH
+  - ls $PYTHONPATH
   - sudo updatedb
-  - locate ROOT.pyc
-  - locate libCore.so
+#  - locate ROOT.pyc
+#  - locate libCore.so
 install:
   - pip install .
 # command to run tests
