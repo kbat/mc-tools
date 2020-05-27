@@ -19,5 +19,9 @@ install:
   - pip install .
 # command to run tests
 script:
+  - export MCTOOLS="$HOME/kbat/mc-tools"
+  - export PATH=$MCTOOLS/bin:$PATH
+  - which mctal2root
+  - mctal2root -h
   - echo "tmp skipping all the tests"
 #  - pytest -k "not fluka and not root"
