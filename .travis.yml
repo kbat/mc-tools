@@ -6,6 +6,7 @@ python:
 #env:
 #  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
+  - apt-cache search root|grep root
   - sudo apt-get install root-system
   - which root
   - echo $ROOTSYS
