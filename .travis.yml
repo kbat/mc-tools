@@ -7,10 +7,10 @@ python:
 #  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
   - apt-cache search root|grep root
-  - sudo apt-get install root-system
+  - sudo apt-get install root-system libroot-bindings-python5.34
   - which root
   - echo $ROOTSYS
-  - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev libroot-bindings-python5.34
+#  - dpkg -L root-system root-system-bin root-system-common libroot-core5.34 libroot-core-dev libroot-bindings-python5.34
   - root-config --features
   - echo $PYTHONPATH
   - echo $PATH
