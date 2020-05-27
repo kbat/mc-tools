@@ -3,8 +3,8 @@ python:
   - "2.7"
   - "3.6"      # current default Python on Travis CI
   - "3.7"
-env:
-  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
+#env:
+#  - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
   - sudo apt-get install root-system
   - which root
@@ -14,15 +14,20 @@ before_install:
   - echo $PYTHONPATH
   - echo $PATH
   - ls $PYTHONPATH
-  - sudo updatedb
+#  - sudo updatedb
 #  - locate ROOT.pyc
 #  - locate libCore.so
 install:
+  - pwd
+  - ls
   - pip install .
 # command to run tests
 script:
+  - export PYTHONPATH=$(root-config --libdir)
+  - ls $PYTHONPATH
   - export MCTOOLS="$HOME/kbat/mc-tools"
   - export PATH=$MCTOOLS/bin:$PATH
+  - find / -type f -name ROOT.py
   - which mctal2root
   - mctal2root -h
   - echo "tmp skipping all the tests"
