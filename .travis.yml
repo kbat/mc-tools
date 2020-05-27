@@ -25,14 +25,13 @@ install:
   - pip install .
 # command to run tests
 script:
-  - root-config--libdir
+  - root-config --libdir
   - echo $PYTHONPATH
 #  - export PYTHONPATH=$(root-config --libdir)
-  - ls $PYTHONPATH
+#  - ls $PYTHONPATH
   - export MCTOOLS="$HOME/kbat/mc-tools"
   - export PYTHONPATH=$MCTOOLS:$PYTHONPATH
   - export PATH=$MCTOOLS/bin:$PATH
-  - find / -type f -name ROOT.py 2>/dev/null
   - which mctal2root
   - mctal2root -h
   - echo "tmp skipping all the tests"
