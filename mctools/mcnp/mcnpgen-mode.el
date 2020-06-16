@@ -45,6 +45,9 @@
 (make-face 'font-lock-pstudy-face)
 (set-face-foreground 'font-lock-pstudy-face "yellow")
 
+(make-face 'font-lock-wwg-face)
+(set-face-foreground 'font-lock-wwg-face "orange")
+
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -62,8 +65,8 @@
     ("^   [Cc] .*" . 'font-lock-comment-face) ;; seem to work here)
     ("^    [Cc] .*" . 'font-lock-comment-face)
     ("$.*" . 'font-lock-comment-face)         ;; dollar sign comment indicator
-    ("\\<\\(axs\\|cel\\|cut\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(AXS\\|CEL\\|CUT\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|FLUX\\|HLIB\\|ICD\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|PAR\\|PHYS\\|PNLIB\\|POS\\|PRDMP\\|RES\\|RDUM\\|PRINT\\|PTRAC\\|PSC=[0-9]\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|SSR\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(AXS\\|CEL\\|CUT\\|CYL\\|DBCN\\|DIR\\|EFF\\|ERG\\|EXT\\|FLUX\\|HLIB\\|ICD\\|IMP\\|KCODE\\|^LC[ABC]\\|^LE[AB]\\|LOST\\|MODE\\|MODEL\\|NPS\\|NRM\\|PAR\\|PHYS\\|PNLIB\\|POS\\|PRDMP\\|REC\\|RES\\|RDUM\\|PRINT\\|PTRAC\\|PSC=[0-9]\\|RAD\\|RAND\\|SEED\\|SDEF\\|STOP\\|SSR\\|TME\\|TR\\|VEC\\|VOID\\|VOL\\|WGT\\|[^CPKS/]X\\|[^CPKS/]Y\\|[^CPKS/]Z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
     ("\\<\\(^S[IPB][0-9]+\\|^DS[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
@@ -72,15 +75,25 @@
 
     ("\\<\\(BUFFER\\|BUT\\|CELL\\|D[0-9]+\\|DOSE [0-9]\\|EVENT\\|FCEL D[0-9]+\\|FILE\\|FILL\\|FILTER\\|FREQ\\|FTME\\|LIKE\\|MAX\\|MEPH\\|PLOT\\|SURFACE\\|TALLY\\|TRAKS\\|TRCL\\|TYPE\\|WRITE\\|ULAT\\)\\>" . 'font-lock-variable-name-face)
 
-    ("[:=][|/hHnNpPzZ#]" . 'font-lock-particle-face) ;; particles
+    ("[:= ][|/hHnNpPzZ#][\n \,]" . 'font-lock-particle-face) ;; particles
 
-    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EFT][0-9]+\\|^F[QSTU][0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|TMESH\\)\\>" . 'font-lock-tally-face)
-    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[eft][0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|tmesh\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^COR[ABC][0-9]+\\|^CMESH[0-9]+\\|^DXT\\|ENDMD\\|ERGSH[0-9]+\\|^[EFT][0-9]+\\|^F[QSTU][0-9]+\\|^HISTP\\|MSHMF[0-9]+\\|^RMESH[0-9]+\\|^SD[0-9]+\\|^SSW\\|^TF[0-9]\\|TMESH\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[eft][0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|^tf[0-9]\\|tmesh\\)\\>" . 'font-lock-tally-face)
     ("^+?[fF]m?[0-9]+" . 'font-lock-tally-face) ;; +tallies
     ("^*?[cC][0-9]+" . 'font-lock-tally-face) ;; *tallies
+    (" [fF][0-9] " . 'font-lock-tally-face) ;; e.g. " f4 "
 
     ("^FC[0-9]+ .*" . 'font-lock-comment-face) ;; +TALLY COMMENT
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
+
+    ;; Variance reduction
+    ("^mesh" . 'font-lock-wwg-face)
+    (" geom" . 'font-lock-keyword-face)
+    (" ref" . 'font-lock-keyword-face)
+    (" origin" . 'font-lock-keyword-face)
+    ("[ijk]mesh" . 'font-lock-keyword-face)
+    ("[ijk]ints" . 'font-lock-keyword-face)
+    ("^ww[gp]" . 'font-lock-wwg-face)
 
 
     ("\\<\\(^M[TX]?[0-9]+\\|^AWTAB\\)\\>" . 'font-lock-material-face) ;; MATERIALS
