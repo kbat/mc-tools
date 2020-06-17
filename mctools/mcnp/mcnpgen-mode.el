@@ -3,6 +3,7 @@
 ;;
 ;; Latest version is available here:
 ;; https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el
+;; Based on http://homepages.cae.wisc.edu/~bohm/mcnpgen-mode.el
 ;;
 ;; How to use:
 ;; Put -*-mcnpgen-*- on the first line of your
@@ -94,6 +95,7 @@
     ("[ijk]mesh" . 'font-lock-keyword-face)
     ("[ijk]ints" . 'font-lock-keyword-face)
     ("^ww[gp]" . 'font-lock-wwg-face)
+    ("^wwge" . 'font-lock-wwg-face)
 
 
     ("\\<\\(^M[TX]?[0-9]+\\|^AWTAB\\)\\>" . 'font-lock-material-face) ;; MATERIALS
