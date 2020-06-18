@@ -40,6 +40,10 @@
 (make-face 'font-lock-surface-face)
 (set-face-foreground 'font-lock-surface-face "red")
 
+(make-face 'font-lock-title-face)
+(set-face-foreground 'font-lock-title-face "red")
+(set-face-attribute  'font-lock-title-face nil :slant 'italic)
+
 (make-face 'font-lock-temperature-face)
 (set-face-foreground 'font-lock-temperature-face "yellow")
 
@@ -73,13 +77,14 @@
     ;; tally comments go before keywords so that tally comment with a keyword is highlighted correctly
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
 
-    ("\\<\\(axs\\|cel\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|tr\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
 
-    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|trcl\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
-    ("[:= ][|/hnpz#][\n \,]" . 'font-lock-particle-face) ;; particles
+    ("[:= ]\\([|/hnpz#]\\)[\n \,=]" . 'font-lock-particle-face) ;; particles
+    ;;("<h1>\\([^<]+?\\)</h1>" . 'font-lock-particle-face)
 
     ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[eft][0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|^tf[0-9]\\|tmesh\\)\\>" . 'font-lock-tally-face)
     ("^+?fm?[0-9]+" . 'font-lock-tally-face) ;; +tallies
@@ -99,7 +104,9 @@
 
     ("\\<\\(^m[tx]?[0-9]+\\|^awtab\\)\\>" . 'font-lock-material-face) ;; materials
 
-    (" trans [0-9]+" . 'font-lock-transformation-face) ;; transformations
+    (" trans [0-9]+" . 'font-lock-transformation-face)
+    ("^*?trcl[0-9]+" . 'font-lock-transformation-face)
+    ("^*?tr[0-9]+" . 'font-lock-transformation-face)
 
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
 
