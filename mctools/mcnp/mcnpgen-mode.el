@@ -79,8 +79,6 @@
 
     ("\\<\\(axs\\|cel\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mgopt +[af]\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
 
-    ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
-
     ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
     ("[:= ]\\([|/hnpz#]\\)[\n \,=]" . 'font-lock-particle-face) ;; particles
@@ -118,6 +116,8 @@
 
     ;; distribution types
     (" [lds] " . 'font-lock-distribution-type-face)
+    ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-distribution-type-face) ;; distributions
+
     )
   ;; auto-mode-list  (filename extension to autoload mode e.g.'(".mcn\\'"))
   '("inp\\'")
