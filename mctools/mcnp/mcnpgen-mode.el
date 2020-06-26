@@ -77,7 +77,7 @@
     ;; tally comments go before keywords so that tally comment with a keyword is highlighted correctly
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
 
-    ("\\<\\(axs\\|cel\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(axs\\|cel\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mgopt +[af]\\|mode\\|model\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^s[ipb][0-9]+\\|^ds[0-9]+\\)\\>" . 'font-lock-keyword-face) ;; distributions
 
@@ -86,7 +86,7 @@
     ("[:= ]\\([|/hnpz#]\\)[\n \,=]" . 'font-lock-particle-face) ;; particles
     ;;("<h1>\\([^<]+?\\)</h1>" . 'font-lock-particle-face)
 
-    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[eft][0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|^tf[0-9]\\|tmesh\\)\\>" . 'font-lock-tally-face)
+    ("\\<\\(^cor[abc][0-9]+\\|^cmesh[0-9]+\\|^dxt\\|endmd\\|ergsh[0-9]+\\|^[eft][0-9]+\\|^em[0-9]+\\|^f[qstu][0-9]+\\|^histp\\|mshmf[0-9]+\\|^rmesh[0-9]+\\|^sd[0-9]+\\|^ssw\\|^tf[0-9]\\|tmesh\\)\\>" . 'font-lock-tally-face)
     ("^+?fm?[0-9]+" . 'font-lock-tally-face) ;; +tallies
     ("^*?c[0-9]+" . 'font-lock-tally-face) ;; *tallies
     (" f[0-9]+ " . 'font-lock-tally-face) ;; e.g. " f4 "
