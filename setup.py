@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 2020-07-14    6 16 8  9 8 12
 
 import sys, os, subprocess
 
