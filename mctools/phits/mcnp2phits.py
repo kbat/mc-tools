@@ -2,7 +2,7 @@
 
 import sys, re, argparse
 
-R = re.compile("(?P<number>\d+)R")
+R = re.compile("(?P<number>\d+)\s+(?P<repeat>\d+)R")
 
 def main():
     """
@@ -21,14 +21,14 @@ def main():
     mcnp = open(args.mcnp, 'r')
 
     for line in mcnp.readlines():
-        words = line.strip().split()
-        for i,w in enumerate(words):
-            s = R.search(w)
-            if not s:
-                print(w,end=" ")
-            else:
-                print("%s "%words[i-1]*int(s.group("number")),end=" ")
-        print()
+        s = R.search(line)
+        if s:
+            print(re.sub(R,
+                lambda m: (m.group('number')+" ")*(int(m.group('repeat'))+1),
+                         line.rstrip()))
+        else:
+            print(line.rstrip())
+
 
 
 if __name__ == "__main__":
