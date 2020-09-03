@@ -2,7 +2,7 @@
 
 import sys, re, argparse
 
-R = re.compile("(?P<number>\d+)R.*")
+R = re.compile("(?P<number>\d+)R")
 
 def main():
     """
