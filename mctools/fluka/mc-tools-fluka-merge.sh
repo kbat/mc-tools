@@ -15,18 +15,18 @@ fi
 
 in="$1"
 if [ ! -e ${in} ]; then
-    echo "File ${in} does not exist"
+    >&2 echo "File ${in} does not exist"
     exit 2
 fi
 
 merge="${in##*.}"
 if [ ${merge} = ${in} ]; then
-    echo "${in} must have an extension"
+    >&2 echo "${in} must have an extension"
     exit 3
 fi
 
 if [ ! -e ${FLUTIL}/${merge} ]; then
-    echo "${FLUTIL}/${merge} does not exist"
+    >&2 echo "${FLUTIL}/${merge} does not exist"
     exit 4
 fi
 
