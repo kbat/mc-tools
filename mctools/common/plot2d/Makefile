@@ -2,9 +2,9 @@
 
 all: plot2d
 
-ROOTCONFIG :=   root-config
-ARCH       :=   $(shell $(ROOTCONFIG) --arch)
-PLATFORM   :=   $(shell $(ROOTCONFIG) --platform)
+ROOTCONFIG := root-config
+ARCH       := $(shell $(ROOTCONFIG) --arch)
+PLATFORM   := $(shell $(ROOTCONFIG) --platform)
 
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTGLIBS  := $(shell root-config --glibs)
@@ -12,15 +12,19 @@ ROOTLIBS   := $(shell root-config --libs)
 OPT         = -g -Ofast -fno-math-errno -Wall
 GCC         = clang++ -g
 
-CXXFLAGS := -Ofast -fno-math-errno -std=c++17 -Wall
+CXXFLAGS := -Ofast -fno-math-errno -Wall
 
 obj/plot2d.o: src/plot2d.cxx
 	@echo "Compiling $@"
-	$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
+	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
 
-plot2d: obj/plot2d.o
+obj/Arguments.o: src/Arguments.cxx src/Arguments.h
+	@echo "Compiling $@"
+	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
+
+plot2d: obj/plot2d.o obj/Arguments.o
 	@echo "Linking $@"
-	$(GCC) $^ $(ROOTLIBS) -lGeom -lboost_program_options -o $@
+	@$(GCC) $^ $(ROOTLIBS) -lGeom -lboost_program_options -o $@
 
 clean:
 	rm -fv plot2d obj/*.o perf.data* perf.hist*

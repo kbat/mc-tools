@@ -14,14 +14,15 @@ install:
   - ls
   - root -b -q --version
   - ls $PYTHONPATH
-  - python -c "import ROOT"
+#  - python -c "import ROOT"
 #  - pip install .
 # command to run tests
 script:
   - export MCTOOLS=$PWD
   - export PYTHONPATH=$MCTOOLS:$PYTHONPATH
   - export PATH=$MCTOOLS/bin:$PATH
-  - which mctal2root
-  - mctal2root -h
+#  - which mctal2root
+#  - mctal2root -h
   - echo "tmp skipping all the tests"
 #  - pytest -k "not fluka and not root"
+  - cd mctools/common/plot2d && make && ./plot2d -h
