@@ -25,4 +25,5 @@ script:
 #  - mctal2root -h
   - echo "tmp skipping all the tests"
 #  - pytest -k "not fluka and not root"
+  - apt-cache search boost-program-options
   - cd mctools/common/plot2d && make && ./plot2d -h
