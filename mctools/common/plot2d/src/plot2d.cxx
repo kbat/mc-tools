@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <sys/ioctl.h>
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -58,9 +59,12 @@ po::variables_map options(int argc, const char **argv)
   const size_t inan = std::numeric_limits<size_t>::quiet_NaN();
 
   po::variables_map vm;
+  struct winsize w;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
   try{
     //  options(argc, argv);
-    po::options_description generic("Generic options", 150);
+    po::options_description generic("Generic options", w.ws_col);
     generic.add_options()
       ("help,h", "Show this help message and exit")
       ("plane", po::value<Plane>()->default_value(xy, "xy"),  "Plane")
