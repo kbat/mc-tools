@@ -15,22 +15,30 @@ po::variables_map options(int argc, const char **argv)
   std::string plane;
   try{
     //  options(argc, argv);
-    po::options_description desc("Allowed options");
-    desc.add_options()
+    po::options_description generic("Generic options");
+    generic.add_options()
       ("dfile", "Data file name")
-      ("help,h", "produce help message")
+      ("dhist", "Data histogram name")
+      ("help,h", "Show this help message and exit");
+
+    po::options_description data("Data options");
+    data.add_options()
       ("plane", po::value<std::string>(&plane)->default_value("xy"),"Plane");
 
     po::positional_options_description p;
     p.add("dfile", -1);
+    //    p.add("dhist", -1);
+
+    po::options_description all_options("Allowed options");
+    all_options.add(generic).add(data);
 
       //    po::store(po::parse_command_line(argc, argv, desc), vm);
     po::store(po::command_line_parser(argc, argv).
-          options(desc).positional(p).run(), vm);
+          options(all_options).positional(p).run(), vm);
     po::notify(vm);
 
     if (vm.count("help")) {
-      std::cout << desc << "\n";
+      std::cout << all_options << "\n";
       return vm;
     }
   }
