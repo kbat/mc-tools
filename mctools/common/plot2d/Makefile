@@ -33,7 +33,7 @@ perf: plot2d
 
 # https://root-forum.cern.ch/t/valgrind-and-root/28506
 valgrind: plot2d
-	valgrind --tool=helgrind --suppressions=$(ROOTSYS)/etc/helgrind-root.supp ./plot2d
+	valgrind --tool=helgrind --suppressions=$(ROOTSYS)/etc/helgrind-root.supp ./plot2d a b c d
 
 	# valgrind --num-callers=30 --leak-check=full \
 	# 	--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \

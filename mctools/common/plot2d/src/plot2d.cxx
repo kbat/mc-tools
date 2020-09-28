@@ -1,16 +1,30 @@
 #include <iostream>
+#include <limits>
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
 namespace po=boost::program_options;
 
-struct Plane {
+class Plane {
+private:
+  std::string value;
+public:
   Plane(std::string const &val):
     value(val)
   {
   }
-  std::string value;
+
+  operator std::string() const
+  {
+    return value;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Plane& p)
+  {
+    os << p.value;
+    return os;
+  }
 };
 
 void validate(boost::any &v,
@@ -26,11 +40,12 @@ void validate(boost::any &v,
   // one string, it's an error, and exception will be thrown.
   std::string const& s = validators::get_single_string(values);
 
-  const std::vector<std::string> planes{"xy", "xz" "yx", "yz", "zx", "zy"};
+  const std::array<std::string,6> planes{"xy", "xz" "yx", "yz", "zx", "zy"};
 
   if (std::find(planes.begin(), planes.end(), s)!=planes.end()) {
     v = boost::any(Plane(s));
   } else {
+    std::cerr << "plane: " << s << std::endl;
     throw validation_error(validation_error::invalid_option_value);
   }
 }
@@ -38,21 +53,45 @@ void validate(boost::any &v,
 po::variables_map options(int argc, const char **argv)
 {
   Plane xy("xy");
+  const float fnan = std::numeric_limits<float>::quiet_NaN();
+  const std::string snan = std::numeric_limits<std::string>::quiet_NaN();
+  const size_t inan = std::numeric_limits<size_t>::quiet_NaN();
+
   po::variables_map vm;
   try{
     //  options(argc, argv);
-    po::options_description generic("Generic options");
+    po::options_description generic("Generic options", 150);
     generic.add_options()
       ("help,h", "Show this help message and exit")
-      ("plane", po::value<Plane>()->default_value(xy,"xy"), "Plane")
-      ("title", po::value<std::string>()->default_value(""),"Plot title");
+      ("plane", po::value<Plane>()->default_value(xy, "xy"),  "Plane")
+      ("title", po::value<std::string>()->default_value(snan), "Plot title")
+      ("xtile", po::value<std::string>()->default_value(snan), "Horizontal axis title")
+      ("ytile", po::value<std::string>()->default_value(snan), "Vertical axis title")
+      ("ztile", po::value<std::string>()->default_value(snan), "Colour axis title")
+      ("xmin", po::value<float>()->default_value(fnan), "Horizontal axis min value")
+      ("xmax", po::value<float>()->default_value(fnan), "Horizontal axis max value")
+      ("ymin", po::value<float>()->default_value(fnan), "Vertical axis min value")
+      ("ymax", po::value<float>()->default_value(fnan), "Vertical axis max value")
+      ("zmin", po::value<float>()->default_value(fnan), "Colour axis min value")
+      ("zmax", po::value<float>()->default_value(fnan), "Colour axis max value")
+      ("width", po::value<size_t>()->default_value(800), "Canvas width")
+      ("height", po::value<size_t>()->default_value(inan), "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
+      ("right_margin", po::value<float>()->default_value(0.12), "Right margin of the canvas in order to allocate enough space for the z-axis title. Used only if ZTITLE is set and DOPTION is \"colz\"")
+      ("flip", "Flip the vertical axis")
+      ("bgcolor", "Set the frame background colour to some hard-coded value")
+      ("o", po::value<std::string>()->default_value(snan), "Output file name. If given then the canvas is not shown.")
+      ("v", "Explain what is being done")
+      ("slice", po::value<std::vector<size_t> >()->multitoken(), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
+      ("errors", "Plot the histogram with relative errors instead of data");
+
 
     po::options_description data("Data options");
     data.add_options()
       ("dfile", "Data file name")
       ("dhist", "Data histogram name")
       ("doption", po::value<std::string>()->default_value("colz"), "Data draw option")
-      ("dcont", po::value<size_t>()->default_value(200), "Number of contour levels for data");
+      ("dcont", po::value<size_t>()->default_value(200), "Number of contour levels for data")
+      ("no-logz", po::value<bool>()->default_value(false), "Remove log scale for the data colour axis");
 
     po::options_description geom("Geometry options");
     geom.add_options()
@@ -76,7 +115,10 @@ po::variables_map options(int argc, const char **argv)
     po::store(po::command_line_parser(argc, argv).
           options(all_options)
 	      .positional(p)
-	      .style(po::command_line_style::default_style | po::command_line_style::allow_long_disguise)
+	      .style(po::command_line_style::allow_short | po::command_line_style::short_allow_adjacent | po::command_line_style::short_allow_next | \
+		     po::command_line_style::allow_long | po::command_line_style::long_allow_adjacent | po::command_line_style::long_allow_next | \
+		     po::command_line_style::allow_sticky | po::command_line_style::allow_dash_for_short | \
+		     po::command_line_style::allow_long_disguise)
 	      .run(), vm);
     po::notify(vm);
 
@@ -114,13 +156,15 @@ int main(int argc, const char **argv)
   const std::string dhist = vm["dhist"].as<std::string>();
   const std::string gfile = vm["gfile"].as<std::string>();
   const std::string ghist = vm["ghist"].as<std::string>();
-  const std::string plane = vm["plane"].as<std::string>();
+  const Plane plane = vm["plane"].as<Plane>();
+  const std::string title = vm["title"].as<std::string>();
 
   std::cout << "dfile: " << dfile << std::endl;
   std::cout << "dhist: " << dhist << std::endl;
   std::cout << "gfile: " << gfile << std::endl;
   std::cout << "ghist: " << ghist << std::endl;
   std::cout << "plane: " << plane << std::endl;
+  std::cout << "title: " << title << std::endl;
 
   return 0;
 }
