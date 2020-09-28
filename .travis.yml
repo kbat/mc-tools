@@ -6,6 +6,7 @@ env:
 #  - PYTHONPATH=$(root-config --libdir)"/root5.34"
   - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
+  - dpkg -l|grep ROOT
   - sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev
   - root-config --features
 install:
@@ -13,6 +14,7 @@ install:
   - ls
   - root -b -q --version
   - ls $PYTHONPATH
+  - python -c "import ROOT"
 #  - pip install .
 # command to run tests
 script:
