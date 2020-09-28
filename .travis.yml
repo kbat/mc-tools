@@ -12,12 +12,12 @@ before_install:
 install:
   - pwd
   - ls
-  - root --version
+  - root -b -q --version
   - ls $PYTHONPATH
 #  - pip install .
 # command to run tests
 script:
-  - export MCTOOLS="$PWD"
+  - export MCTOOLS=$PWD
   - export PYTHONPATH=$MCTOOLS:$PYTHONPATH
   - export PATH=$MCTOOLS/bin:$PATH
   - which mctal2root
