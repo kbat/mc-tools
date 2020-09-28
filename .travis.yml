@@ -12,6 +12,8 @@ before_install:
 install:
   - pwd
   - ls
+  - root --version
+  - ls $PYTHONPATH
 #  - pip install .
 # command to run tests
 script:
