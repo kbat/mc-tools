@@ -38,6 +38,7 @@ class Arguments {
   const char **argv;
   po::variables_map vm;
   bool help;
+  bool CheckMinMax(const float &vmin, const float &vmax, const std::string &title) const;
  public:
   Arguments(int ac, const char **av);
   po::variables_map GetMap() const { return &vm; }

@@ -148,6 +148,13 @@ bool Arguments::test() const
 {
   std::clog << "Arguments::test()" << std::endl;
 
+  const float xmin = vm["xmin"].as<float>();
+  const float xmax = vm["xmax"].as<float>();
+  const float ymin = vm["ymin"].as<float>();
+  const float ymax = vm["ymax"].as<float>();
+
+  bool val = CheckMinMax(xmin, xmax, "x") && CheckMinMax(ymin, ymax, "y");
+
   const std::string dfile = vm["dfile"].as<std::string>();
   const std::string dhist = vm["dhist"].as<std::string>();
   const std::string gfile = vm["gfile"].as<std::string>();
@@ -161,6 +168,19 @@ bool Arguments::test() const
   std::cout << "ghist: " << ghist << std::endl;
   std::cout << "plane: " << plane << std::endl;
   std::cout << "title: " << title << std::endl;
+
+  return val;
+}
+
+bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::string &title) const
+{
+  if (std::abs(vmin-vmax)<std::numeric_limits<float>::epsilon())
+    {
+      std::cerr << "Error: " << title << "min must be < " << title << "max" << std::endl;
+      std::cerr << "\t" << title << "min: " << vmin << std::endl;
+      std::cerr << "\t" << title << "max: " << vmax << std::endl;
+      return false;
+    }
 
   return true;
 }

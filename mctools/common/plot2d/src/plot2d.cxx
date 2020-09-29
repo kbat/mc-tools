@@ -1,5 +1,7 @@
 #include <iostream>
+#include <TROOT.h>
 #include <TApplication.h>
+//#include <TRint.h>
 #include "Arguments.h"
 #include "MainFrame.h"
 
@@ -11,9 +13,12 @@ int main(int argc, const char **argv)
   if (args.IsHelp())
     return 0;
 
-  args.test();
+  if (!args.test())
+    return 1;
 
   const po::variables_map vm = args.GetMap();
+
+  //  gROOT->SetBatch(true);
 
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 
@@ -21,7 +26,7 @@ int main(int argc, const char **argv)
 
   theApp.Run();
 
-  delete mf;
+  //  delete mf;
 
   return 0;
 }
