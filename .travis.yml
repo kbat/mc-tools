@@ -11,9 +11,10 @@ before_install:
   - sudo apt-get install libboost-program-options-dev
   - root-config --features
   - root-config --cflags
+  - root-config --bindir
+  - ls $(root-config --bindir)
   - root-config --incdir
-  - ls -l $(root-config --incdir)
-  - ls -l $(root-config --incdir)/TGFrame.h
+  - ls $(root-config --incdir)
 install:
   - pwd
   - ls
