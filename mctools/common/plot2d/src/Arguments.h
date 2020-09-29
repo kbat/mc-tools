@@ -1,3 +1,6 @@
+#ifndef Arguments_h_
+#define Arguments_h_
+
 #include <iostream>
 #include <limits>
 #include <sys/ioctl.h>
@@ -5,16 +8,17 @@
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
+
 namespace po=boost::program_options;
 
 class Plane {
-private:
+ private:
   std::string value;
-public:
-  Plane(std::string const &val):
-    value(val)
-  {
-  }
+ public:
+ Plane(std::string const &val) :
+  value(val)
+    {
+    }
 
   operator std::string() const
   {
@@ -38,3 +42,5 @@ class Arguments {
   po::variables_map GetMap() const { return &vm; }
   bool test() const;
 };
+
+#endif

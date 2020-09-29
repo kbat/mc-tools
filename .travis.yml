@@ -8,6 +8,7 @@ env:
 before_install:
   - apt-cache search ROOT |grep ROOT
   - sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev
+  - sudo apt-get install libboost-program-options-dev
   - root-config --features
 install:
   - pwd
