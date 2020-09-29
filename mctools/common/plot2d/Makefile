@@ -23,7 +23,8 @@ obj/Arguments.o: src/Arguments.cxx src/Arguments.h
 
 obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
 	@echo "Generating dictionary $@"
-	@rootcling -f obj/MainFrameDict.cxx -c $^
+# rootcint is used due to old ROOT version @ travis. Better to use rootcling
+	@rootcint -f obj/MainFrameDict.cxx -c $^
 	@$(GCC) -c $(CXXFLAGS) -I./ obj/MainFrameDict.cxx $(ROOTCFLAGS) -o $@
 
 obj/MainFrame.o: src/MainFrame.cxx src/MainFrame.h
