@@ -7,7 +7,7 @@ env:
   - PYTHONPATH=/usr/lib/x86_64-linux-gnu/root5.34
 before_install:
   - apt-cache search ROOT |grep ROOT
-  - sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev libroot-core-dev
+  - sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev libroot-core-dev libroot-gui-dev
   - sudo apt-get install libboost-program-options-dev
   - root-config --features
   - root-config --cflags
