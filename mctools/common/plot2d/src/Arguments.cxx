@@ -24,7 +24,7 @@ void validate(boost::any &v,
 }
 
 Arguments::Arguments(int ac, const char **av) :
-  argc(ac), argv(av)
+  argc(ac), argv(av), help(false)
 {
   Plane xy("xy");
   const float fnan = std::numeric_limits<float>::quiet_NaN();
@@ -88,9 +88,9 @@ Arguments::Arguments(int ac, const char **av) :
     po::options_description all_options("Allowed options");
     all_options.add(generic).add(data).add(geom);
 
-      //    po::store(po::parse_command_line(argc, argv, desc), vm);
+    //    po::store(po::parse_command_line(argc, argv, desc), vm);
     po::store(po::command_line_parser(argc, argv).
-          options(all_options)
+	      options(all_options)
 	      .positional(p)
 	      .style(po::command_line_style::allow_short | po::command_line_style::short_allow_adjacent | po::command_line_style::short_allow_next | \
 		     po::command_line_style::allow_long | po::command_line_style::long_allow_adjacent | po::command_line_style::long_allow_next | \
@@ -101,6 +101,7 @@ Arguments::Arguments(int ac, const char **av) :
 
     if (vm.count ("help"))
       {
+	help = true;
 	std::stringstream stream;
 	stream << all_options;
 	std::string helpMsg = stream.str();

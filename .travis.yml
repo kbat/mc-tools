@@ -10,6 +10,9 @@ before_install:
   - sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev
   - sudo apt-get install libboost-program-options-dev
   - root-config --features
+  - root-config --cflags
+  - root-config --incdir
+  - ls -l $(root-config --incdir)/TGFrame.h
 install:
   - pwd
   - ls

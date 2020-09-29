@@ -7,13 +7,13 @@ int main(int argc, const char **argv)
 {
 
   Arguments args(argc, argv);
-  const po::variables_map vm = args.GetMap();
 
-  if (vm.count("help"))
+  if (args.IsHelp())
     return 0;
 
   args.test();
 
+  const po::variables_map vm = args.GetMap();
 
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 

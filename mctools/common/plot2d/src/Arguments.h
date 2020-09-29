@@ -37,10 +37,12 @@ class Arguments {
   int argc;
   const char **argv;
   po::variables_map vm;
+  bool help;
  public:
   Arguments(int ac, const char **av);
   po::variables_map GetMap() const { return &vm; }
   bool test() const;
+  bool IsHelp() const { return help; }
 };
 
 #endif

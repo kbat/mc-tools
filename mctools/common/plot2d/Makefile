@@ -3,16 +3,15 @@
 all: plot2d
 
 ROOTCONFIG := root-config
-ARCH       := $(shell $(ROOTCONFIG) --arch)
-PLATFORM   := $(shell $(ROOTCONFIG) --platform)
+#ARCH       := $(shell $(ROOTCONFIG) --arch)
+#PLATFORM   := $(shell $(ROOTCONFIG) --platform)
 
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTGLIBS  := $(shell $(ROOTCONFIG) --glibs)
 ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
-OPT         = -g -Ofast -fno-math-errno -Wall
-GCC         = clang++ -g
+GCC         = clang++
 
-CXXFLAGS := -Ofast -fno-math-errno -Wall
+CXXFLAGS := -g -Ofast -fno-math-errno -Wall
 
 obj/plot2d.o: src/plot2d.cxx
 	@echo "Compiling $@"
@@ -46,7 +45,7 @@ perf: plot2d
 
 # https://root-forum.cern.ch/t/valgrind-and-root/28506
 valgrind: plot2d
-	valgrind --tool=helgrind --suppressions=$(ROOTSYS)/etc/helgrind-root.supp ./plot2d a b c d
+	valgrind --tool=helgrind --suppressions=$(shell root-config --etcdir)/helgrind-root.supp ./plot2d a b c d
 
 	# valgrind --num-callers=30 --leak-check=full \
 	# 	--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \
