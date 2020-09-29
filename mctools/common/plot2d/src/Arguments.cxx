@@ -37,6 +37,13 @@ Arguments::Arguments(int ac, const char **av) :
 
   try{
     //  options(argc, argv);
+    po::options_description hidden("Positional arguments");
+    hidden.add_options()
+      ("dfile", "Data file name")
+      ("dhist", "Data histogram name")
+      ("gfile", "Geometry file name")
+      ("ghist", po::value<std::string>()->default_value("h3"), "Geometry histogram name");
+
     po::options_description generic("Generic options", w.ws_col);
     generic.add_options()
       ("help,h", "Show this help message and exit")
@@ -62,44 +69,59 @@ Arguments::Arguments(int ac, const char **av) :
       ("errors", "Plot the histogram with relative errors instead of data");
 
 
-    po::options_description data("Data options");
+    po::options_description data("Data options", w.ws_col);
     data.add_options()
-      ("dfile", "Data file name")
-      ("dhist", "Data histogram name")
       ("doption", po::value<std::string>()->default_value("colz"), "Data draw option")
       ("dcont", po::value<size_t>()->default_value(200), "Number of contour levels for data")
       ("no-logz", po::value<bool>()->default_value(false), "Remove log scale for the data colour axis");
 
-    po::options_description geom("Geometry options");
+    po::options_description geom("Geometry options", w.ws_col);
     geom.add_options()
-      ("gfile", "Geometry file name")
-      ("ghist", po::value<std::string>()->default_value("h3"), "Geometry histogram name")
       ("goption", po::value<std::string>()->default_value("cont3"), "Geometry draw option")
       ("gcont", po::value<size_t>()->default_value(25), "Number of contour levels for geometry")
       ("glwidth", po::value<size_t>()->default_value(2), "Geometry line width")
       ("glcolor", po::value<std::string>()->default_value("kBlack"), "Geometry line color");
 
+    std::array<std::string, 4> positional_args{"dfile", "dhist", "gfile", "ghist"};
     po::positional_options_description p;
-    p.add("dfile", 1);
-    p.add("dhist", 1);
-    p.add("gfile", 1);
-    p.add("ghist", 1);
+    for (const std::string& pa : positional_args)
+      p.add(pa.c_str(), 1);
 
-    po::options_description all_options("Allowed options");
-    all_options.add(generic).add(data).add(geom);
+    po::options_description all_options("Usage: plot2d [options] dfile dhist gfile [ghist]");
+    all_options.add(generic).add(data).add(geom).add(hidden);
 
     //    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::store(po::command_line_parser(argc, argv).
-	      options(all_options)
-	      .positional(p)
-	      .style(po::command_line_style::allow_short | po::command_line_style::short_allow_adjacent | po::command_line_style::short_allow_next | \
-		     po::command_line_style::allow_long | po::command_line_style::long_allow_adjacent | po::command_line_style::long_allow_next | \
-		     po::command_line_style::allow_sticky | po::command_line_style::allow_dash_for_short | \
-		     po::command_line_style::allow_long_disguise)
-	      .run(), vm);
+    auto parsed = po::command_line_parser(argc, argv).options(all_options).positional(p)
+      .style(po::command_line_style::allow_short |
+	     po::command_line_style::short_allow_adjacent |
+	     po::command_line_style::short_allow_next |
+	     po::command_line_style::allow_long |
+	     po::command_line_style::long_allow_adjacent |
+	     po::command_line_style::long_allow_next |
+	     po::command_line_style::allow_sticky |
+	     po::command_line_style::allow_dash_for_short |
+	     po::command_line_style::allow_long_disguise)
+      .run();
+
+    for (const std::string& pa : positional_args)
+      {
+	auto it = std::find_if(parsed.options.begin(), parsed.options.end(),
+			       [&pa](po::option const& o) {
+				 return o.string_key == pa;
+			       });
+	if ((it == parsed.options.end()) && (pa!="ghist")) // ghist is optional
+	  {
+	    std::cerr << "Error: Missing positional argument \"" <<
+	      pa << "\"\n" << std::endl;
+	    help=true;
+	    break;
+	  }
+      }
+
+    po::store(parsed, vm);
     po::notify(vm);
 
-    if (vm.count ("help"))
+    if (help || vm.count ("help"))
       {
 	help = true;
 	std::stringstream stream;
