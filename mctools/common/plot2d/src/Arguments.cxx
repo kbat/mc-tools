@@ -1,3 +1,4 @@
+#include <cmath>
 #include "Arguments.h"
 
 void validate(boost::any &v,
@@ -27,9 +28,11 @@ Arguments::Arguments(int ac, const char **av) :
   argc(ac), argv(av), help(false)
 {
   Plane xy("xy");
-  const float fnan = std::numeric_limits<float>::quiet_NaN();
   const std::string snan = std::numeric_limits<std::string>::quiet_NaN();
   const size_t inan = std::numeric_limits<size_t>::quiet_NaN();
+
+  const float flowest = std::numeric_limits<float>::lowest();
+  const float fmax = std::numeric_limits<float>::max();
 
   //  po::variables_map vm;
   struct winsize w;
@@ -52,15 +55,15 @@ Arguments::Arguments(int ac, const char **av) :
       ("xtile", po::value<std::string>()->default_value(snan), "Horizontal axis title")
       ("ytile", po::value<std::string>()->default_value(snan), "Vertical axis title")
       ("ztile", po::value<std::string>()->default_value(snan), "Colour axis title")
-      ("xmin", po::value<float>()->default_value(fnan), "Horizontal axis min value")
-      ("xmax", po::value<float>()->default_value(fnan), "Horizontal axis max value")
-      ("ymin", po::value<float>()->default_value(fnan), "Vertical axis min value")
-      ("ymax", po::value<float>()->default_value(fnan), "Vertical axis max value")
-      ("zmin", po::value<float>()->default_value(fnan), "Colour axis min value")
-      ("zmax", po::value<float>()->default_value(fnan), "Colour axis max value")
+      ("xmin", po::value<float>()->default_value(flowest), "Horizontal axis min value")
+      ("xmax", po::value<float>()->default_value(fmax), "Horizontal axis max value")
+      ("ymin", po::value<float>()->default_value(flowest), "Vertical axis min value")
+      ("ymax", po::value<float>()->default_value(fmax), "Vertical axis max value")
+      ("zmin", po::value<float>()->default_value(flowest), "Colour axis min value")
+      ("zmax", po::value<float>()->default_value(fmax), "Colour axis max value")
       ("width", po::value<size_t>()->default_value(800), "Canvas width")
       ("height", po::value<size_t>()->default_value(inan), "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
-      ("right_margin", po::value<float>()->default_value(0.12), "Right margin of the canvas in order to allocate enough space for the z-axis title. Used only if ZTITLE is set and DOPTION is \"colz\"")
+      ("right_margin", po::value<float>()->default_value(0.12f), "Right margin of the canvas in order to allocate enough space for the z-axis title. Used only if ZTITLE is set and DOPTION is \"colz\"")
       ("flip", "Flip the vertical axis")
       ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(snan), "Output file name. If given then the canvas is not shown.")
@@ -155,6 +158,8 @@ bool Arguments::test() const
 
   bool val = CheckMinMax(xmin, xmax, "x") && CheckMinMax(ymin, ymax, "y");
 
+  //  val = val & CheckSlice();
+
   const std::string dfile = vm["dfile"].as<std::string>();
   const std::string dhist = vm["dhist"].as<std::string>();
   const std::string gfile = vm["gfile"].as<std::string>();
@@ -174,13 +179,37 @@ bool Arguments::test() const
 
 bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::string &title) const
 {
+  const float flowest = std::numeric_limits<float>::lowest();
+  const float fmax = std::numeric_limits<float>::max();
+  const float epsilon = std::numeric_limits<float>::epsilon();
+  bool val = true;
+
+  if ((std::abs(vmin-flowest)>epsilon) && (std::abs(vmax-fmax)<epsilon)) {
+    std::cerr << "Error: both " << title << "min and " << title << "max must be set" << std::endl;
+    val = false;
+  } else if ((std::abs(vmin-flowest)<epsilon) && (std::abs(vmax-fmax)>epsilon)) {
+    std::cerr << "Error: both " << title << "min and " << title << "max must be set" << std::endl;
+    val = false;
+  }
+
   if (std::abs(vmin-vmax)<std::numeric_limits<float>::epsilon())
     {
       std::cerr << "Error: " << title << "min must be < " << title << "max" << std::endl;
-      std::cerr << "\t" << title << "min: " << vmin << std::endl;
-      std::cerr << "\t" << title << "max: " << vmax << std::endl;
-      return false;
+      val = false;
     }
 
+  if (!val)
+    {
+      std::cerr << "\t" << title << "min: " << vmin << std::endl;
+      std::cerr << "\t" << title << "max: " << vmax << std::endl;
+    }
+
+  return val;
+}
+
+bool Arguments::CheckSlice() const
+{
+  const std::vector<size_t> slice = vm["slice"].as<std::vector<size_t> >();
+  std::cerr << slice.size() << std::endl;
   return true;
 }
