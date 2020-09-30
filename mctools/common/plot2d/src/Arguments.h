@@ -20,6 +20,8 @@ class Plane {
     {
     }
 
+  std::string GetValue() const { return value; }
+
   operator std::string() const
   {
     return value;

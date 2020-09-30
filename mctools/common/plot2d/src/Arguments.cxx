@@ -179,9 +179,9 @@ bool Arguments::test() const
 
 bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::string &title) const
 {
-  const float flowest = std::numeric_limits<float>::lowest();
-  const float fmax = std::numeric_limits<float>::max();
-  const float epsilon = std::numeric_limits<float>::epsilon();
+  constexpr float flowest = std::numeric_limits<float>::lowest();
+  constexpr float fmax = std::numeric_limits<float>::max();
+  constexpr float epsilon = std::numeric_limits<float>::epsilon();
   bool val = true;
 
   if ((std::abs(vmin-flowest)>epsilon) && (std::abs(vmax-fmax)<epsilon)) {
@@ -190,19 +190,15 @@ bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::str
   } else if ((std::abs(vmin-flowest)<epsilon) && (std::abs(vmax-fmax)>epsilon)) {
     std::cerr << "Error: both " << title << "min and " << title << "max must be set" << std::endl;
     val = false;
+  } else if (vmin>=vmax) {
+    std::cerr << "Error: " << title << "min must be < " << title << "max" << std::endl;
+    val = false;
   }
 
-  if (std::abs(vmin-vmax)<std::numeric_limits<float>::epsilon())
-    {
-      std::cerr << "Error: " << title << "min must be < " << title << "max" << std::endl;
-      val = false;
-    }
-
-  if (!val)
-    {
-      std::cerr << "\t" << title << "min: " << vmin << std::endl;
-      std::cerr << "\t" << title << "max: " << vmax << std::endl;
-    }
+  if (!val) {
+    std::cerr << "\t" << title << "min: " << vmin << std::endl;
+    std::cerr << "\t" << title << "max: " << vmax << std::endl;
+  }
 
   return val;
 }

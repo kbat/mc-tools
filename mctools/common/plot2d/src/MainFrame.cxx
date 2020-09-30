@@ -26,8 +26,6 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
 					   5,5,3,4));
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
 
-  // Sets window name and shows the main frame
-  SetWindowName("Simple Example");
   MapSubwindows();
   Resize(GetDefaultSize());
   MapWindow();
