@@ -50,6 +50,9 @@ class Arguments {
   std::string GetTitle() const;
   size_t GetWidth()  const { return vm["width"].as<size_t>(); }
   size_t GetHeight() const;
+  std::vector<short> GetSlice() const { return vm["slice"].as<std::vector<short> >(); }
+  size_t GetSlice(size_t i) const { return GetSlice()[i]; }
+  bool IsSlice() const;
 };
 
 #endif

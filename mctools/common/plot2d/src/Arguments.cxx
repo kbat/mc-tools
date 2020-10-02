@@ -68,7 +68,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(snan), "Output file name. If given then the canvas is not shown.")
       ("v", "Explain what is being done")
-      ("slice", po::value<std::vector<size_t> >()->multitoken(), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
+      ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}), "no slice"), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
       ("errors", "Plot the histogram with relative errors instead of data");
 
 
@@ -158,21 +158,21 @@ bool Arguments::test() const
 
   bool val = CheckMinMax(xmin, xmax, "x") && CheckMinMax(ymin, ymax, "y");
 
-  //  val = val & CheckSlice();
+  val = val & CheckSlice();
 
-  const std::string dfile = vm["dfile"].as<std::string>();
-  const std::string dhist = vm["dhist"].as<std::string>();
-  const std::string gfile = vm["gfile"].as<std::string>();
-  const std::string ghist = vm["ghist"].as<std::string>();
-  const Plane plane = vm["plane"].as<Plane>();
-  const std::string title = vm["title"].as<std::string>();
+  // const std::string dfile = vm["dfile"].as<std::string>();
+  // const std::string dhist = vm["dhist"].as<std::string>();
+  // const std::string gfile = vm["gfile"].as<std::string>();
+  // const std::string ghist = vm["ghist"].as<std::string>();
+  // const Plane plane = vm["plane"].as<Plane>();
+  // const std::string title = vm["title"].as<std::string>();
 
-  std::cout << "dfile: " << dfile << std::endl;
-  std::cout << "dhist: " << dhist << std::endl;
-  std::cout << "gfile: " << gfile << std::endl;
-  std::cout << "ghist: " << ghist << std::endl;
-  std::cout << "plane: " << plane << std::endl;
-  std::cout << "title: " << title << std::endl;
+  // std::cout << "dfile: " << dfile << std::endl;
+  // std::cout << "dhist: " << dhist << std::endl;
+  // std::cout << "gfile: " << gfile << std::endl;
+  // std::cout << "ghist: " << ghist << std::endl;
+  // std::cout << "plane: " << plane << std::endl;
+  // std::cout << "title: " << title << std::endl;
 
   return val;
 }
@@ -205,8 +205,21 @@ bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::str
 
 bool Arguments::CheckSlice() const
 {
-  const std::vector<size_t> slice = vm["slice"].as<std::vector<size_t> >();
-  std::cerr << slice.size() << std::endl;
+  const std::vector<short> slice = GetSlice();
+  size_t size = slice.size();
+
+  std::cout << "IsSlice: " << std::boolalpha << IsSlice() << std::endl;
+
+  if ((size == 1) && (slice[0] == 0)) // default value - slice not specified
+    return true;
+  else if (size != 2) {
+    std::cerr << "Error: -slice argument needs 2 integers" << std::endl;
+    return false;
+  } else if ((slice[0]<1) || (slice[1]<1)) {
+    std::cerr << "Error: -slice values must be positive" << std::endl;
+    return false;
+  }
+
   return true;
 }
 
@@ -230,4 +243,14 @@ size_t Arguments::GetHeight() const
   }
 
   return height;
+}
+
+bool Arguments::IsSlice() const
+{
+  /*
+    Return true if slice is needed
+   */
+  const std::vector<short> slice = GetSlice();
+
+  return (!((slice.size() == 1) && (slice[0] == 0)));
 }
