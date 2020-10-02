@@ -47,6 +47,9 @@ class Arguments {
   po::variables_map GetMap() const { return &vm; }
   bool test() const;
   bool IsHelp() const { return help; }
+  std::string GetTitle() const;
+  size_t GetWidth()  const { return vm["width"].as<size_t>(); }
+  size_t GetHeight() const;
 };
 
 #endif

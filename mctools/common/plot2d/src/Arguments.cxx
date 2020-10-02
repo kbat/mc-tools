@@ -209,3 +209,25 @@ bool Arguments::CheckSlice() const
   std::cerr << slice.size() << std::endl;
   return true;
 }
+
+std::string Arguments::GetTitle() const
+{
+  const std::string title = "plot2d: " + vm["dfile"].as<std::string>() + " " +
+    vm["dhist"].as<std::string>() + " " +
+    vm["plane"].as<Plane>().GetValue();
+
+  return title;
+}
+
+size_t Arguments::GetHeight() const
+{
+  size_t width = GetWidth();
+  size_t height = vm["height"].as<size_t>();
+
+  if (height==0) {
+    constexpr float sqrt5 = 2.236068;
+    height = round(width*2.0/(1.0+sqrt5)); // golden ratio
+  }
+
+  return height;
+}

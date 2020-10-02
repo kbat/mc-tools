@@ -27,14 +27,10 @@ int main(int argc, const char **argv)
   if (height==0)
     height = int(width*2.0/(1.0+sqrt(5.0))); // golden ratio
 
-  const std::string c1title = vm["dfile"].as<std::string>() + " " +
-    vm["dhist"].as<std::string>() + " " +
-    vm["plane"].as<Plane>().GetValue();
-
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 
   MainFrame *mf = new MainFrame(gClient->GetRoot(), 800, 600);
-  mf->SetWindowName(c1title.c_str());
+  mf->SetWindowName(args.GetTitle().c_str());
 
   theApp.Run();
 
