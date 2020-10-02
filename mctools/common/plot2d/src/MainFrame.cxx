@@ -36,7 +36,7 @@ void MainFrame::DoDraw()
   TF1 *f1 = new TF1("f1","sin(x)/x",0,gRandom->Rndm()*10);
   f1->SetLineWidth(3);
   f1->Draw();
-  TCanvas *fCanvas = fEcanvas->GetCanvas();
+  TCanvas *fCanvas = GetCanvas();
   fCanvas->cd();
   fCanvas->Update();
 }

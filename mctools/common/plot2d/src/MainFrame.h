@@ -11,6 +11,7 @@ class MainFrame : public TGMainFrame {
   MainFrame(const TGWindow *p,UInt_t w,UInt_t h);
   virtual ~MainFrame() { Cleanup();  }
   void DoDraw();
+  TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   ClassDef(MainFrame,0);
 };
 
