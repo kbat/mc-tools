@@ -122,7 +122,12 @@ Arguments::Arguments(int ac, const char **av) :
       }
 
     po::store(parsed, vm);
-    po::notify(vm);
+    try {
+      po::notify(vm);
+    } catch (boost::program_options::error& e) {
+      std::cout << "Error: " << e.what() << "\n";
+      exit(1);
+    }
 
     if (help || vm.count ("help"))
       {
@@ -149,8 +154,6 @@ Arguments::Arguments(int ac, const char **av) :
 
 bool Arguments::test() const
 {
-  std::clog << "Arguments::test()" << std::endl;
-
   const float xmin = vm["xmin"].as<float>();
   const float xmax = vm["xmax"].as<float>();
   const float ymin = vm["ymin"].as<float>();
@@ -160,7 +163,7 @@ bool Arguments::test() const
 
   val = val & CheckSlice();
 
-  // const std::string dfile = vm["dfile"].as<std::string>();
+  //  const std::string dfile = vm["dfile"].as<std::string>();
   // const std::string dhist = vm["dhist"].as<std::string>();
   // const std::string gfile = vm["gfile"].as<std::string>();
   // const std::string ghist = vm["ghist"].as<std::string>();
@@ -207,8 +210,6 @@ bool Arguments::CheckSlice() const
 {
   const std::vector<short> slice = GetSlice();
   size_t size = slice.size();
-
-  std::cout << "IsSlice: " << std::boolalpha << IsSlice() << std::endl;
 
   if ((size == 1) && (slice[0] == 0)) // default value - slice not specified
     return true;

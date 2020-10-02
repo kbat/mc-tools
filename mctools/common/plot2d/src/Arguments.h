@@ -53,6 +53,7 @@ class Arguments {
   std::vector<short> GetSlice() const { return vm["slice"].as<std::vector<short> >(); }
   size_t GetSlice(size_t i) const { return GetSlice()[i]; }
   bool IsSlice() const;
+  std::string GetPlane() const {return vm["plane"].as<Plane>().GetValue(); }
 };
 
 #endif
