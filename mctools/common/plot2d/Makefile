@@ -13,11 +13,11 @@ GCC         = clang++
 
 CXXFLAGS := -g -Ofast -fno-math-errno -Wall
 
-obj/plot2d.o: src/plot2d.cxx
+obj/%.o: src/%.cxx src/%.h
 	@echo "Compiling $@"
 	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
 
-obj/Arguments.o: src/Arguments.cxx src/Arguments.h
+obj/plot2d.o: src/plot2d.cxx
 	@echo "Compiling $@"
 	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
 
@@ -27,11 +27,7 @@ obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
 	@rootcint -f obj/MainFrameDict.cxx -c $^
 	@$(GCC) -c $(CXXFLAGS) -I./ obj/MainFrameDict.cxx $(ROOTCFLAGS) -o $@
 
-obj/MainFrame.o: src/MainFrame.cxx src/MainFrame.h
-	@echo "Compiling $@"
-	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
-
-plot2d: obj/plot2d.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o
+plot2d: obj/plot2d.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS)  $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 
@@ -45,8 +41,15 @@ perf: plot2d
 	perf report
 
 # https://root-forum.cern.ch/t/valgrind-and-root/28506
+helgrind: plot2d
+	valgrind --tool=helgrind \
+		--suppressions=$(shell root-config --etcdir)/helgrind-root.supp \
+		./plot2d a b c d
+
 valgrind: plot2d
-	valgrind --tool=helgrind --suppressions=$(shell root-config --etcdir)/helgrind-root.supp ./plot2d a b c d
+	valgrind --track-origins=yes --show-leak-kinds=all \
+		--suppressions=$(shell root-config --etcdir)/valgrind-root.supp \
+		./plot2d a b c d
 
 	# valgrind --num-callers=30 --leak-check=full \
 	# 	--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \

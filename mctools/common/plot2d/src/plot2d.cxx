@@ -1,4 +1,6 @@
 #include <iostream>
+#include<chrono>
+
 #include <TROOT.h>
 #include <TColor.h>
 #include <TStyle.h>
@@ -10,6 +12,7 @@
 //#include <TRint.h>
 #include "Arguments.h"
 #include "MainFrame.h"
+#include "Data.h"
 
 void SetColourMap()
 {
@@ -18,14 +21,15 @@ void SetColourMap()
   */
 
   // PView is exported from ParaView
-  const std::vector<Float_t> PView{0, 0.27843137254900002, 0.27843137254900002, 0.85882352941200002,
-				   0.143, 0, 0, 0.36078431372500003,
-				   0.285, 0, 1, 1,
-				   0.429, 0, 0.50196078431400004, 0,
-				   0.571, 1, 1, 0,
-				   0.714, 1, 0.38039215686299999, 0,
-				   0.857, 0.419607843137, 0, 0,
-				   1, 0.87843137254899994, 0.30196078431399997, 0.30196078431399997};
+  const std::vector<Float_t>
+    PView{0, 0.27843137254900002, 0.27843137254900002, 0.85882352941200002,
+	  0.143, 0, 0, 0.36078431372500003,
+	  0.285, 0, 1, 1,
+	  0.429, 0, 0.50196078431400004, 0,
+	  0.571, 1, 1, 0,
+	  0.714, 1, 0.38039215686299999, 0,
+	  0.857, 0.419607843137, 0, 0,
+	  1, 0.87843137254899994, 0.30196078431399997, 0.30196078431399997};
 
   constexpr UInt_t NColors = 99;
   constexpr UInt_t NRGBs = 8;
@@ -66,15 +70,20 @@ int main(int argc, const char **argv)
   if (height==0)
     height = int(width*2.0/(1.0+sqrt(5.0))); // golden ratio
 
-  const char *dfname = vm["dfile"].as<std::string>().c_str();
-  TFile *df = new TFile(dfname);
-  if (df->IsZombie())
-    return 1;
-  df->ls();
+  std::string dfname = vm["dfile"].as<std::string>();
+  // TFile *df = new TFile(dfname.c_str());
+  // if (df->IsZombie())
+  //   return 1;
+  // df->ls();
 
-  const char *dhname = vm["dhist"].as<std::string>().c_str();
-  TH3F *h3 = nullptr;
-  df->GetObject<TH3F>(dhname,h3);
+  std::string dhname = vm["dhist"].as<std::string>();
+  Data data(dfname, dhname, args.GetPlane());
+  const TH3F *h3 = data.GetH3();
+  TH2F *h2a = data.GetH2();
+
+  // TH3F *h3;
+  // df->GetObject<TH3F>(dhname.c_str(),h3);
+
 
 
   TApplication theApp("App",&argc,const_cast<char**>(argv));
@@ -91,8 +100,15 @@ int main(int argc, const char **argv)
   int nthreads = 4;
   ROOT::EnableImplicitMT(nthreads);
 
+  auto start = std::chrono::high_resolution_clock::now();
   TH1 *h2 = h3->Project3D(args.GetPlane().c_str());
-  h2->Draw("colz");
+  auto delta = std::chrono::high_resolution_clock::now()-start;
+  std::cout << " Project3D (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
+
+  h2->Draw("colz"); // 3 sec to draw
+
+  c1->cd(2);
+  h2a->Draw("colz"); // 3 sec to draw
 
   theApp.Run();
 
@@ -100,3 +116,8 @@ int main(int argc, const char **argv)
 
   return 0;
 }
+
+// Performance:
+// h2  - Project3d + draw = 8 sec (same time with Python script)
+// h2a - project + draw = 5 sec
+// project and draw both = 13 sec -> correct
