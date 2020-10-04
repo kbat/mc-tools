@@ -9,7 +9,7 @@ ROOTCONFIG := root-config
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTGLIBS  := $(shell $(ROOTCONFIG) --glibs)
 ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
-GCC         = clang++
+GCC         = g++
 
 CXXFLAGS := -g -Ofast -fno-math-errno -Wall
 
@@ -31,8 +31,16 @@ plot2d: obj/plot2d.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Dat
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS)  $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 
+minimal: src/minimal.cxx  obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o
+	$(GCC) $^ $(CXXFLAGS) $(ROOTCFLAGS) $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
+	valgrind --show-leak-kinds=all --leak-check=full --error-limit=no --gen-suppressions=all --log-file=/tmp/root-minimal.log ./minimal 3>&1 1>&2 2>&3
+	grindmerge < /tmp/root-minimal.log > root-minimal.supp
+	valgrind --show-leak-kinds=all --leak-check=full \
+	        --suppressions=root-minimal.supp \
+	        ./minimal
+
 clean:
-	@rm -fv plot2d obj/*.o perf.data* perf.hist* obj/MainFrameDict.cxx obj/MainFrameDict_rdict.pcm
+	@rm -fv plot2d obj/*.o perf.data* perf.hist* obj/MainFrameDict.cxx obj/MainFrameDict_rdict.pcm minimal
 
 perf: plot2d
 	rm -f perf.data
@@ -46,10 +54,12 @@ helgrind: plot2d
 		--suppressions=$(shell root-config --etcdir)/helgrind-root.supp \
 		./plot2d a b c d
 
-valgrind: plot2d
-	valgrind --track-origins=yes --show-leak-kinds=all \
-		--suppressions=$(shell root-config --etcdir)/valgrind-root.supp \
+valgrind: plot2d minimal
+	valgrind --show-leak-kinds=all --leak-check=full \
+		--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \
+	        --suppressions=root-minimal.supp \
 		./plot2d a b c d
+#	valgrind --tool=memcheck --track-origins=yes --show-leak-kinds=all \
 
 	# valgrind --num-callers=30 --leak-check=full \
 	# 	--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \
