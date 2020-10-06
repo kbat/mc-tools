@@ -26,11 +26,19 @@ Data::Data(const std::string& fname, const std::string& hname,
   }
   h3->SetDirectory(0);
   df.Close();
-
   auto start = std::chrono::high_resolution_clock::now();
   h2 = Project();
   auto delta = std::chrono::high_resolution_clock::now()-start;
   std::cout << " Data::Project (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
+}
+
+Data::~Data()
+{
+  std::cout << "Data: desctructor" << std::endl;
+  if (h2)
+    h2->Delete();
+  if (h3)
+    h3->Delete();
 }
 
 TAxis *Data::GetAxis() const

@@ -18,7 +18,7 @@ class Data {
   Data(const std::string& fname,
        const std::string& hname,
        const std::string& plane);
-  //  virtual ~Data();
+  virtual ~Data();
   const TH3F* GetH3() const { return h3; };
   TH2F* GetH2() const { return h2; };
 
