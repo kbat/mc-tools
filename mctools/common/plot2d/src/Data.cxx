@@ -16,8 +16,10 @@ Data::Data(const std::string& fname, const std::string& hname,
 {
   TFile df(fname.c_str());
   if (df.IsZombie()) {
+    df.Close();
     exit(1);
   }
+
   df.GetObject<TH3F>(hname.c_str(),h3);
   if (!h3) {
     std::cerr << "Error: Can't find " << hname << " in " << fname << std::endl;
