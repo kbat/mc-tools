@@ -1,5 +1,5 @@
 #include <iostream>
-#include<chrono>
+#include <chrono>
 
 #include <TROOT.h>
 #include <TColor.h>
@@ -9,6 +9,7 @@
 #include <TFile.h>
 #include <TH3F.h>
 #include <TH1.h>
+#include <TObjectTable.h>
 //#include <TRint.h>
 #include "Arguments.h"
 #include "MainFrame.h"
@@ -51,7 +52,6 @@ void SetColourMap()
 
 int main(int argc, const char **argv)
 {
-
   Arguments args(argc, argv);
 
   if (args.IsHelp())
@@ -81,14 +81,15 @@ int main(int argc, const char **argv)
   const TH3F *h3 = data.GetH3();
   TH2F *h2a = data.GetH2();
 
+
   // TH3F *h3;
   // df->GetObject<TH3F>(dhname.c_str(),h3);
 
 
-
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 
-  MainFrame *mf = new MainFrame(gClient->GetRoot(), 800, 600);
+
+  MainFrame *mf = new MainFrame(gClient->GetRoot(), width, height);
   mf->SetWindowName(args.GetTitle().c_str());
   SetColourMap();
 
@@ -110,9 +111,12 @@ int main(int argc, const char **argv)
   c1->cd(2);
   h2a->Draw("colz"); // 3 sec to draw
 
+  //    gObjectTable->Print();
+
   theApp.Run();
 
   //  delete mf;
+
 
   return 0;
 }
