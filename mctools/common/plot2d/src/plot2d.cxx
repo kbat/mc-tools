@@ -65,10 +65,10 @@ int main(int argc, const char **argv)
   //  gROOT->SetBatch(true);
   gStyle->SetOptStat(kFALSE);
 
-  const size_t width = vm["width"].as<size_t>();
-  size_t height = vm["height"].as<size_t>();
-  if (height==0)
-    height = int(width*2.0/(1.0+sqrt(5.0))); // golden ratio
+  // const size_t width = vm["width"].as<size_t>();
+  // size_t height = vm["height"].as<size_t>();
+  // if (height==0)
+  //   height = int(width*2.0/(1.0+sqrt(5.0))); // golden ratio
 
   std::string dfname = vm["dfile"].as<std::string>();
   // TFile *df = new TFile(dfname.c_str());
@@ -78,13 +78,8 @@ int main(int argc, const char **argv)
 
   std::string dhname = vm["dhist"].as<std::string>();
   Data data(dfname, dhname, args.GetPlane());
-  const TH3F *h3 = data.GetH3();
-  TH2F *h2a = data.GetH2();
-
-
-  // TH3F *h3;
-  // df->GetObject<TH3F>(dhname.c_str(),h3);
-
+  const std::shared_ptr<TH3F> h3 = data.GetH3();
+  const std::shared_ptr<TH2F> h2a = data.GetH2();
 
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 
@@ -93,35 +88,36 @@ int main(int argc, const char **argv)
   mf->SetWindowName(args.GetTitle().c_str());
   SetColourMap();
 
-  TCanvas *c1 = mf->GetCanvas();
-  if (args.IsSlice())
-    c1->Divide(1,2);
+  // TCanvas *c1 = mf->GetCanvas();
+  // if (args.IsSlice())
+  //   c1->Divide(1,2);
 
-  c1->cd(1);
-  int nthreads = 4;
-  ROOT::EnableImplicitMT(nthreads);
+  // c1->cd(1);
+  // int nthreads = 4;
+  // ROOT::EnableImplicitMT(nthreads);
 
-  auto start = std::chrono::high_resolution_clock::now();
-  TH1 *h2 = h3->Project3D(args.GetPlane().c_str());
-  auto delta = std::chrono::high_resolution_clock::now()-start;
-  std::cout << " Project3D (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
+  // auto start = std::chrono::high_resolution_clock::now();
+  // TH1 *h2 = h3->Project3D(args.GetPlane().c_str());
+  // auto delta = std::chrono::high_resolution_clock::now()-start;
+  // std::cout << " Project3D (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
 
-  h2->Draw("colz"); // 3 sec to draw
+  // h2->Draw("colz"); // 3 sec to draw
 
-  c1->cd(2);
-  h2a->Draw("colz"); // 3 sec to draw
+  // c1->cd(2);
+  // h2a->Draw("colz"); // 3 sec to draw
 
   //    gObjectTable->Print();
 
   theApp.Run();
 
-  //  delete mf;
+  // //  delete mf;
 
 
   return 0;
 }
 
 // Performance:
-// h2  - Project3d + draw = 8 sec (same time with Python script)
-// h2a - project + draw = 5 sec
+// h2  - Project3D + draw = 8 sec (same time with Python script)
+//   since it takes 8 sec to draw -> 5 sec to Project3D
+// h2a - project + draw = 5 sec (since it takes 3 sec to draw -> 2 sec to project)
 // project and draw both = 13 sec -> correct
