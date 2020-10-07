@@ -136,6 +136,10 @@ Arguments::Arguments(int ac, const char **av) :
 	stream << all_options;
 	std::string helpMsg = stream.str();
 	boost::algorithm::replace_all(helpMsg, "--", "-");
+	boost::algorithm::replace_all(helpMsg, "-dfile", " dfile");
+	boost::algorithm::replace_all(helpMsg, "-dhist", " dhist");
+	boost::algorithm::replace_all(helpMsg, "-gfile", " gfile");
+	boost::algorithm::replace_all(helpMsg, "-ghist", " ghist");
 	std::cout << helpMsg << std::endl;
 	return;
       }
