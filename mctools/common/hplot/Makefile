@@ -1,6 +1,6 @@
 .PHONY: all clean perf
 
-all: plot2d
+all: hplot
 
 ROOTCONFIG := root-config
 #ARCH       := $(shell $(ROOTCONFIG) --arch)
@@ -17,7 +17,7 @@ obj/%.o: src/%.cxx src/%.h
 	@echo "Compiling $@"
 	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
 
-obj/plot2d.o: src/plot2d.cxx
+obj/hplot.o: src/hplot.cxx
 	@echo "Compiling $@"
 	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
 
@@ -31,7 +31,7 @@ obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
 	@rootcling -f MainFrameDict.cxx -c $^
 	@$(GCC) -c $(CXXFLAGS) -I./ MainFrameDict.cxx $(ROOTCFLAGS) -o $@
 
-plot2d: obj/plot2d.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Geometry.o
+hplot: obj/hplot.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Geometry.o
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 
@@ -46,28 +46,28 @@ minimal: obj/minimal.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/D
 	        ./minimal /home/kbat/figs/TDC/runs/SpecF1.root
 
 clean:
-	@rm -fv plot2d obj/*.o perf.data* perf.hist* obj/MainFrameDict.cxx obj/MainFrameDict_rdict.pcm minimal \
+	@rm -fv hplot obj/*.o perf.data* perf.hist* obj/MainFrameDict.cxx obj/MainFrameDict_rdict.pcm minimal \
 		MainFrameDict.cxx MainFrameDict_rdict.pcm \
 		root-minimal.supp
 
-perf: plot2d
+perf: hplot
 	rm -f perf.data
-	perf record ./plot2d
+	perf record ./hplot
 	sleep 5
 	perf report
 
 # https://root-forum.cern.ch/t/valgrind-and-root/28506
-helgrind: plot2d
+helgrind: hplot
 	valgrind --tool=helgrind \
 		--suppressions=$(shell root-config --etcdir)/helgrind-root.supp \
-		./plot2d a b c d
+		./hplot a b c d
 
-valgrind: plot2d minimal
+valgrind: hplot minimal
 	valgrind --show-leak-kinds=all --leak-check=full \
 		--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \
 	        --suppressions=root-minimal.supp \
 		--track-origins=yes \
-		./plot2d /home/kbat/figs/TDC/runs/SpecF1-do-not-exist.root mesh25 c d
+		./hplot /home/kbat/figs/TDC/runs/SpecF1-do-not-exist.root mesh25 c d
 #	valgrind --tool=memcheck --track-origins=yes --show-leak-kinds=all \
 
 	# valgrind --num-callers=30 --leak-check=full \

@@ -90,7 +90,7 @@ Arguments::Arguments(int ac, const char **av) :
     for (const std::string& pa : positional_args)
       p.add(pa.c_str(), 1);
 
-    po::options_description all_options("Usage: plot2d [options] dfile dhist gfile [ghist]");
+    po::options_description all_options("Usage: hplot [options] dfile dhist gfile [ghist]");
     all_options.add(generic).add(data).add(geom).add(hidden);
 
     //    po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -230,7 +230,7 @@ bool Arguments::CheckSlice() const
 
 std::string Arguments::GetWindowTitle() const
 {
-  const std::string title = "plot2d: " + vm["dfile"].as<std::string>() + " " +
+  const std::string title = "hplot: " + vm["dfile"].as<std::string>() + " " +
     vm["dhist"].as<std::string>() + " " +
     vm["plane"].as<Plane>().GetValue();
 
