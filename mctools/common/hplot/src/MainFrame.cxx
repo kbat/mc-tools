@@ -7,9 +7,26 @@
 #include <TRootEmbeddedCanvas.h>
 #include "MainFrame.h"
 
+enum ETextEditorCommands {kM_FILE_NEW};
+
 MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   : TGMainFrame(p,w,h)
 {
+
+  // Menu bar
+  fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1);
+  fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
+
+  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
+  fMenuFile = new TGPopupMenu(fClient->GetRoot());
+  fMenuFile->AddEntry(" &New", kM_FILE_NEW, 0,
+		      gClient->GetPicture("ed_new.png"));
+
+  fMenuFile->Associate(this);
+
+  fMenuBar->AddPopup("&File", fMenuFile, fMenuBarItemLayout);
+
+  AddFrame(fMenuBar, fMenuBarLayout);
 
   // Creates widgets of the example
   fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,w,h);
@@ -25,6 +42,8 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   hframe->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
 					   5,5,3,4));
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+
+  //////////
 
   MapSubwindows();
   Resize(GetDefaultSize());
