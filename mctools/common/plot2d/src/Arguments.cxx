@@ -83,7 +83,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("goption", po::value<std::string>()->default_value("cont3"), "Geometry draw option")
       ("gcont", po::value<size_t>()->default_value(25), "Number of contour levels for geometry")
       ("glwidth", po::value<size_t>()->default_value(2), "Geometry line width")
-      ("glcolor", po::value<std::string>()->default_value("kBlack"), "Geometry line color");
+      ("glcolor", po::value<std::string>()->default_value("#000000"), "Geometry line color specified by hex color of form \"#rrggbb\"");
 
     std::array<std::string, 4> positional_args{"dfile", "dhist", "gfile", "ghist"};
     po::positional_options_description p;

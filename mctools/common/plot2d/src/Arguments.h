@@ -48,7 +48,6 @@ class Arguments {
   bool test() const;
   bool IsHelp() const { return help; }
   std::string GetWindowTitle() const;
-  size_t      GetDcont() const {return vm["dcont"].as<size_t>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
   size_t      GetHeight() const;
   std::string GetPlane() const {return vm["plane"].as<Plane>().GetValue(); }
