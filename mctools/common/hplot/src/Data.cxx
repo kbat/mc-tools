@@ -45,6 +45,8 @@ void Data::SetH2()
 {
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().c_str());
+  else
+    h2->SetTitle(Form("%s: %s plane", h3->GetTitle(), plane.c_str()));
 
   if (args->GetXTitle() != "None")
      h2->SetXTitle(args->GetXTitle().c_str());
@@ -83,9 +85,9 @@ TAxis *Data::GetAxis() const
 std::shared_ptr<TH2> Data::Project()
 {
   TAxis *a = GetAxis();
-  Double_t centre = 0.0;
+  const Double_t centre = args->GetCentre();
   Int_t bin = a->FindBin(centre); // bin of the plane
-  std::cout << bin << std::endl;
+  std::cout << "centre: " << centre << " "  << bin << std::endl;
 
   Float_t xmin = h3->GetXaxis()->GetXmin();
   Float_t xmax = h3->GetXaxis()->GetXmax();

@@ -14,7 +14,7 @@ void validate(boost::any &v,
   // one string, it's an error, and exception will be thrown.
   std::string const& s = validators::get_single_string(values);
 
-  const std::array<std::string,6> planes{"xy", "xz" "yx", "yz", "zx", "zy"};
+  const std::array<std::string,6> planes{"xy", "xz", "yx", "yz", "zx", "zy"};
 
   if (std::find(planes.begin(), planes.end(), s)!=planes.end()) {
     v = boost::any(Plane(s));
@@ -49,7 +49,9 @@ Arguments::Arguments(int ac, const char **av) :
     po::options_description generic("Generic options", w.ws_col);
     generic.add_options()
       ("help,h", "Show this help message and exit")
-      ("plane", po::value<Plane>()->default_value(xy, "xy"),  "Plane")
+      ("plane", po::value<Plane>()->default_value(xy, "xy"),
+       "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy.")
+      ("centre", po::value<float>()->default_value(0.0), "Offset of projection plane from origin")
       ("title", po::value<std::string>()->default_value("None"), "Plot title")
       ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title")
       ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title")
@@ -61,11 +63,15 @@ Arguments::Arguments(int ac, const char **av) :
       ("zmin", po::value<float>()->default_value(flowest), "Colour axis min value")
       ("zmax", po::value<float>()->default_value(fmax), "Colour axis max value")
       ("width", po::value<size_t>()->default_value(800), "Canvas width")
-      ("height", po::value<size_t>()->default_value(inan), "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
-      ("right_margin", po::value<float>()->default_value(0.12f), "Right margin of the canvas in order to allocate enough space for the z-axis title. Used only if ZTITLE is set and DOPTION is \"colz\"")
+      ("height", po::value<size_t>()->default_value(inan),
+       "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
+      ("right_margin", po::value<float>()->default_value(0.12),
+       "Right margin of the canvas in order to allocate enough space for the z-axis title. "
+       "Used only if ZTITLE is set and DOPTION is \"colz\"")
       ("flip", "Flip the vertical axis")
       ("bgcolor", "Set the frame background colour to some hard-coded value")
-      ("o", po::value<std::string>()->default_value("None"), "Output file name. If given then the canvas is not shown.")
+      ("o", po::value<std::string>()->default_value("None"),
+       "Output file name. If given then the canvas is not shown.")
       ("v", "Explain what is being done")
       ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}), "no slice"), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
       ("errors", "Plot the histogram with relative errors instead of data");
@@ -166,20 +172,6 @@ bool Arguments::test() const
   bool val = CheckMinMax(xmin, xmax, "x") && CheckMinMax(ymin, ymax, "y");
 
   val = val & CheckSlice();
-
-  //  const std::string dfile = vm["dfile"].as<std::string>();
-  // const std::string dhist = vm["dhist"].as<std::string>();
-  // const std::string gfile = vm["gfile"].as<std::string>();
-  // const std::string ghist = vm["ghist"].as<std::string>();
-  // const Plane plane = vm["plane"].as<Plane>();
-  // const std::string title = vm["title"].as<std::string>();
-
-  // std::cout << "dfile: " << dfile << std::endl;
-  // std::cout << "dhist: " << dhist << std::endl;
-  // std::cout << "gfile: " << gfile << std::endl;
-  // std::cout << "ghist: " << ghist << std::endl;
-  // std::cout << "plane: " << plane << std::endl;
-  // std::cout << "title: " << title << std::endl;
 
   return val;
 }

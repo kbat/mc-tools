@@ -48,7 +48,7 @@ class Arguments {
   bool test() const;
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
-  std::string GetWindowTitle() const;
+  float       GetCentre()  const { return vm["centre"].as<float>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
   size_t      GetHeight() const;
   std::string GetPlane() const {return vm["plane"].as<Plane>().GetValue(); }
@@ -57,6 +57,7 @@ class Arguments {
   size_t      GetSlice(size_t i) const { return GetSlice()[i]; }
   std::string GetTitle() const {return vm["title"].as<std::string>(); }
   size_t      GetWidth()  const { return vm["width"].as<size_t>(); }
+  std::string GetWindowTitle() const;
   std::string GetXTitle() const {return vm["xtitle"].as<std::string>(); }
   std::string GetYTitle() const {return vm["ytitle"].as<std::string>(); }
   std::string GetZTitle() const {return vm["ztitle"].as<std::string>(); }
