@@ -206,6 +206,7 @@ def main():
         c1title = args.dfile+" "+args.dhist+" "+args.plane
         c1 = ROOT.TCanvas("c1", c1title, args.width, height)
         setColourMap()
+        # c1.Connect("TCanvas", "Closed()", "TApplication", ROOT.gApplication, "Terminate()");
 
         if args.slice:
                 c1.Divide(1,2)

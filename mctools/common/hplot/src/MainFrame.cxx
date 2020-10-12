@@ -12,10 +12,10 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
 {
 
   // Creates widgets of the example
-  fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,200,200);
+  fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,w,h);
   AddFrame(fEcanvas, new TGLayoutHints(kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
-  TGHorizontalFrame *hframe=new TGHorizontalFrame(this, 200,40);
+  TGHorizontalFrame *hframe=new TGHorizontalFrame(this, w,40);
   TGTextButton *draw = new TGTextButton(hframe,"&Draw");
   draw->Connect("Clicked()","MainFrame",this,"DoDraw()");
   hframe->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,
@@ -29,6 +29,8 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   MapSubwindows();
   Resize(GetDefaultSize());
   MapWindow();
+
+  fEcanvas->Connect("TCanvas", "Closed()", "TApplication", gApplication, "Terminate()");
 }
 
 void MainFrame::DoDraw()
