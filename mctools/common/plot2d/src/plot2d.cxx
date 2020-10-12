@@ -19,6 +19,9 @@
 
 void RebinToScreen(std::shared_ptr<TH2F> h2)
 {
+  /*!
+    Rebin h2 so that it is not larger than the screen size in order to avoid having bin < pixel
+   */
   std::clog << "RebinToScreen" << std::endl;
 
   const Int_t nx = h2->GetNbinsX();
@@ -30,14 +33,15 @@ void RebinToScreen(std::shared_ptr<TH2F> h2)
   //  std::cout << x << " " << y << std::endl;
   std::cout << " screen size: " << w << " " << h << std::endl;
 
-  std::cout << " h2 before: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
+  std::cout << " h2 before: " << nx << " " << ny << std::endl;
 
   const Int_t scaleX =
-    TMath::Ceil(h2->GetNbinsX()/static_cast<float>(w));
+    TMath::Ceil(nx/static_cast<float>(w));
   if (scaleX>=2)
     h2->RebinX(scaleX);
+
   const Int_t scaleY =
-    TMath::Ceil(h2->GetNbinsY()/static_cast<float>(h));
+    TMath::Ceil(ny/static_cast<float>(h));
   if (scaleY>=2)
     h2->RebinY(scaleY);
 
@@ -114,12 +118,14 @@ int main(int argc, const char **argv)
 
   TCanvas *c1 = mf->GetCanvas();
   if (args.GetZTitle() != "None")
-    c1->SetRightMargin(args.GetMap()["right_margin"].as<float>());
+    if (args.GetDoption() == "colz")
+      c1->SetRightMargin(args.GetMap()["right_margin"].as<float>());
 
 
   RebinToScreen(h2);
 
-  h2->Draw("colz"); // 3 sec to draw
+  h2->Draw(args.GetDoption().c_str()); // 3 sec to draw
+  h2->SetContour(args.GetDcont());
 
   //    gObjectTable->Print();
 

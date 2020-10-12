@@ -26,5 +26,4 @@ class Data {
   std::shared_ptr <TH2F> GetH2() const { return h2; };
 };
 
-
 #endif

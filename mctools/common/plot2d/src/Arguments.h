@@ -48,17 +48,19 @@ class Arguments {
   bool test() const;
   bool IsHelp() const { return help; }
   std::string GetWindowTitle() const;
-  size_t GetWidth()  const { return vm["width"].as<size_t>(); }
-  size_t GetHeight() const;
-  std::vector<short> GetSlice() const { return vm["slice"].as<std::vector<short> >(); }
-  size_t GetSlice(size_t i) const { return GetSlice()[i]; }
-  bool IsSlice() const;
+  size_t      GetDcont() const {return vm["dcont"].as<size_t>(); }
+  std::string GetDoption() const {return vm["doption"].as<std::string>(); }
+  size_t      GetHeight() const;
   std::string GetPlane() const {return vm["plane"].as<Plane>().GetValue(); }
-  float GetScale()  const { return vm["scale"].as<float>(); }
+  float       GetScale()  const { return vm["scale"].as<float>(); }
+  std::vector<short> GetSlice() const { return vm["slice"].as<std::vector<short> >(); }
+  size_t      GetSlice(size_t i) const { return GetSlice()[i]; }
   std::string GetTitle() const {return vm["title"].as<std::string>(); }
+  size_t      GetWidth()  const { return vm["width"].as<size_t>(); }
   std::string GetXTitle() const {return vm["xtitle"].as<std::string>(); }
   std::string GetYTitle() const {return vm["ytitle"].as<std::string>(); }
   std::string GetZTitle() const {return vm["ztitle"].as<std::string>(); }
+  bool        IsSlice() const;
 };
 
 #endif
