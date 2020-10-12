@@ -28,7 +28,6 @@ Arguments::Arguments(int ac, const char **av) :
   argc(ac), argv(av), help(false)
 {
   Plane xy("xy");
-  const std::string snan = std::numeric_limits<std::string>::quiet_NaN();
   const size_t inan = std::numeric_limits<size_t>::quiet_NaN();
 
   const float flowest = std::numeric_limits<float>::lowest();
@@ -51,10 +50,10 @@ Arguments::Arguments(int ac, const char **av) :
     generic.add_options()
       ("help,h", "Show this help message and exit")
       ("plane", po::value<Plane>()->default_value(xy, "xy"),  "Plane")
-      ("title", po::value<std::string>()->default_value(snan), "Plot title")
-      ("xtile", po::value<std::string>()->default_value(snan), "Horizontal axis title")
-      ("ytile", po::value<std::string>()->default_value(snan), "Vertical axis title")
-      ("ztile", po::value<std::string>()->default_value(snan), "Colour axis title")
+      ("title", po::value<std::string>()->default_value("None"), "Plot title")
+      ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title")
+      ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title")
+      ("ztitle", po::value<std::string>()->default_value("None"), "Colour axis title")
       ("xmin", po::value<float>()->default_value(flowest), "Horizontal axis min value")
       ("xmax", po::value<float>()->default_value(fmax), "Horizontal axis max value")
       ("ymin", po::value<float>()->default_value(flowest), "Vertical axis min value")
@@ -66,7 +65,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("right_margin", po::value<float>()->default_value(0.12f), "Right margin of the canvas in order to allocate enough space for the z-axis title. Used only if ZTITLE is set and DOPTION is \"colz\"")
       ("flip", "Flip the vertical axis")
       ("bgcolor", "Set the frame background colour to some hard-coded value")
-      ("o", po::value<std::string>()->default_value(snan), "Output file name. If given then the canvas is not shown.")
+      ("o", po::value<std::string>()->default_value("None"), "Output file name. If given then the canvas is not shown.")
       ("v", "Explain what is being done")
       ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}), "no slice"), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
       ("errors", "Plot the histogram with relative errors instead of data");
@@ -229,7 +228,7 @@ bool Arguments::CheckSlice() const
   return true;
 }
 
-std::string Arguments::GetTitle() const
+std::string Arguments::GetWindowTitle() const
 {
   const std::string title = "plot2d: " + vm["dfile"].as<std::string>() + " " +
     vm["dhist"].as<std::string>() + " " +
