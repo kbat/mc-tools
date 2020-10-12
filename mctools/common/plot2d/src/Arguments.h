@@ -47,6 +47,7 @@ class Arguments {
   po::variables_map GetMap() const { return &vm; }
   bool test() const;
   bool IsHelp() const { return help; }
+  bool IsLogz() const {return !vm.count("no-logz"); }
   std::string GetWindowTitle() const;
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
   size_t      GetHeight() const;

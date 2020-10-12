@@ -127,6 +127,8 @@ int main(int argc, const char **argv)
 
   h2d->Draw(); // 3 sec to draw
 
+  c1->SetLogz(args.IsLogz());
+
 
   // GEOMETRY
   Geometry geo(gfname, ghname, &args);

@@ -76,7 +76,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("scale", po::value<float>()->default_value(1.0), "Data scaling factor")
       ("doption", po::value<std::string>()->default_value("colz"), "Data draw option")
       ("dcont", po::value<size_t>()->default_value(200), "Number of contour levels for data")
-      ("no-logz", po::value<bool>()->default_value(false), "Remove log scale for the data colour axis");
+      ("no-logz", "Remove log scale for the data colour axis");
 
     po::options_description geom("Geometry options", w.ws_col);
     geom.add_options()
