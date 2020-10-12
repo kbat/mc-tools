@@ -80,6 +80,7 @@ void SetColourMap()
   }
 
   TColor::CreateGradientColorTable(NRGBs, &stops[0], &red[0], &green[0], &blue[0], NColors);
+  gStyle->SetNumberContours(NColors);
 
   return;
 }
@@ -99,6 +100,8 @@ int main(int argc, const char **argv)
 
   //  gROOT->SetBatch(true);
   gStyle->SetOptStat(kFALSE);
+  gStyle->SetPalette(kTemperatureMap);
+  SetColourMap();
 
   std::string dfname = vm["dfile"].as<std::string>();
   std::string dhname = vm["dhist"].as<std::string>();
@@ -114,7 +117,6 @@ int main(int argc, const char **argv)
 
   MainFrame *mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
   mf->SetWindowName(args.GetWindowTitle().c_str());
-  SetColourMap();
 
 
   TCanvas *c1 = mf->GetCanvas();
