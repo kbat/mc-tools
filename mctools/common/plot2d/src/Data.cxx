@@ -11,9 +11,11 @@
 // }
 
 Data::Data(const std::string& fname, const std::string& hname,
-	   const std::string& plane) :
-  h3(nullptr), h2(nullptr), plane(plane)
+	   const Arguments *args) :
+  h3(nullptr), h2(nullptr), plane("")
 {
+  args=args;
+  plane = args->GetPlane();
   TFile df(fname.c_str());
   if (df.IsZombie()) {
     df.Close();
@@ -36,6 +38,19 @@ Data::Data(const std::string& fname, const std::string& hname,
   h2 = Project();
   auto delta = std::chrono::high_resolution_clock::now()-start;
   std::cout << " Data::Project (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
+  h2->Scale(args->GetScale());
+
+  if (args->GetTitle() != "None")
+    h2->SetTitle(args->GetTitle().c_str());
+
+  if (args->GetXTitle() != "None")
+     h2->SetXTitle(args->GetXTitle().c_str());
+
+  if (args->GetYTitle() != "None")
+    h2->SetYTitle(args->GetYTitle().c_str());
+
+  if (args->GetZTitle() != "None")
+    h2->SetZTitle(args->GetZTitle().c_str());
 }
 
 Data::~Data()
