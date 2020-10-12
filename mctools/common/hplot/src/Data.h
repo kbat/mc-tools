@@ -11,7 +11,9 @@ class Data {
  private:
   std::shared_ptr<TH3> h3;
   std::string plane;
-  TAxis *GetAxis() const;
+  TAxis *GetNormalAxis() const;
+  TAxis *GetHorizontalAxis() const;
+  TAxis *GetVerticalAxis() const;
   std::shared_ptr<TH2> Project();
  protected:
   std::shared_ptr<TH2> h2;

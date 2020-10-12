@@ -50,9 +50,13 @@ void Data::SetH2()
 
   if (args->GetXTitle() != "None")
      h2->SetXTitle(args->GetXTitle().c_str());
+  else
+    h2->SetXTitle(GetHorizontalAxis()->GetTitle());
 
   if (args->GetYTitle() != "None")
     h2->SetYTitle(args->GetYTitle().c_str());
+  else
+    h2->SetYTitle(GetVerticalAxis()->GetTitle());
 
   if (args->GetZTitle() != "None")
     h2->SetZTitle(args->GetZTitle().c_str());
@@ -68,8 +72,12 @@ Data::~Data()
 
 }
 
-TAxis *Data::GetAxis() const
+TAxis *Data::GetNormalAxis() const
 {
+  /*!
+    Return the plane normal axis
+   */
+
   if (plane.find("x")==std::string::npos)
     return h3->GetXaxis();
   else if (plane.find("y")==std::string::npos)
@@ -82,19 +90,43 @@ TAxis *Data::GetAxis() const
   }
 }
 
+TAxis *Data::GetHorizontalAxis() const
+{
+  if (plane[1] == 'x')
+    return h3->GetXaxis();
+  else if (plane[1] == 'y')
+    return h3->GetYaxis();
+  else if (plane[1] == 'z')
+    return h3->GetZaxis();
+  else
+    return 0;
+}
+
+TAxis *Data::GetVerticalAxis() const
+{
+  if (plane[0] == 'x')
+    return h3->GetXaxis();
+  else if (plane[0] == 'y')
+    return h3->GetYaxis();
+  else if (plane[0] == 'z')
+    return h3->GetZaxis();
+  else
+    return 0;
+}
+
 std::shared_ptr<TH2> Data::Project()
 {
-  TAxis *a = GetAxis();
+  TAxis *a = GetNormalAxis();
   const Double_t centre = args->GetCentre();
   Int_t bin = a->FindBin(centre); // bin of the plane
   std::cout << "centre: " << centre << " "  << bin << std::endl;
 
-  Float_t xmin = h3->GetXaxis()->GetXmin();
-  Float_t xmax = h3->GetXaxis()->GetXmax();
-  Float_t ymin = h3->GetYaxis()->GetXmin();
-  Float_t ymax = h3->GetYaxis()->GetXmax();
-  Int_t nx = h3->GetNbinsX();
-  Int_t ny = h3->GetNbinsY();
+  Float_t xmin = GetVerticalAxis()->GetXmin();
+  Float_t xmax = GetVerticalAxis()->GetXmax();
+  Float_t ymin = GetHorizontalAxis()->GetXmin();
+  Float_t ymax = GetHorizontalAxis()->GetXmax();
+  Int_t nx = GetVerticalAxis()->GetNbins();
+  Int_t ny = GetVerticalAxis()->GetNbins();
 
   const char *h2name = Form("%s_h2", h3->GetName());
 
