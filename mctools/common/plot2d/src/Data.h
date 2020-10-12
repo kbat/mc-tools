@@ -10,11 +10,12 @@
 class Data {
  private:
   std::shared_ptr<TH3> h3;
-  std::shared_ptr<TH2> h2;
   std::string plane;
-  Arguments *args;
   TAxis *GetAxis() const;
   std::shared_ptr<TH2> Project();
+ protected:
+  std::shared_ptr<TH2> h2;
+  const Arguments *args;
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */
@@ -22,6 +23,7 @@ class Data {
        const std::string& hname,
        const Arguments *args);
   virtual ~Data();
+  virtual void SetH2();
   const std::shared_ptr<TH3> GetH3() const { return h3; };
   std::shared_ptr <TH2> GetH2() const { return h2; };
 };

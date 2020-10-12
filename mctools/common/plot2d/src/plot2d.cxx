@@ -106,6 +106,7 @@ int main(int argc, const char **argv)
   std::string ghname = vm["ghist"].as<std::string>();
 
   Data data(dfname, dhname, &args);
+  data.SetH2();
 
   const std::shared_ptr<TH2> h2d = data.GetH2();
 
@@ -124,16 +125,17 @@ int main(int argc, const char **argv)
 
   RebinToScreen(h2d);
 
-  h2d->Draw(args.GetDoption().c_str()); // 3 sec to draw
-  h2d->SetContour(args.GetDcont());
+  h2d->Draw(); // 3 sec to draw
 
 
   // GEOMETRY
   Geometry geo(gfname, ghname, &args);
+  geo.SetH2();
   const std::shared_ptr<TH2> h2g = geo.GetH2();
   RebinToScreen(h2g);
 
-  h2g->Draw("same, cont3");
+  const std::string opt = "same " + args.GetMap()["goption"].as<std::string>();
+  h2g->Draw(opt.c_str());
 
   //    gObjectTable->Print();
 

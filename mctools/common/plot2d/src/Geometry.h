@@ -9,6 +9,7 @@ class Geometry : public Data {
 	   const std::string& hname,
 	   const Arguments *args);
   virtual ~Geometry();
+  virtual void SetH2();
 };
 
 #endif

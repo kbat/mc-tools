@@ -12,9 +12,8 @@
 
 Data::Data(const std::string& fname, const std::string& hname,
 	   const Arguments *args) :
-  h3(nullptr), h2(nullptr), plane("")
+  h3(nullptr), plane(""), h2(nullptr), args(args)
 {
-  args=args;
   plane = args->GetPlane();
   TFile df(fname.c_str());
   if (df.IsZombie()) {
@@ -32,8 +31,6 @@ Data::Data(const std::string& fname, const std::string& hname,
   h3->SetDirectory(0);
   df.Close();
 
-  std::cout << "h3: " << h3->GetName() << std::endl;
-
   h3tmp = nullptr;
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -42,6 +39,10 @@ Data::Data(const std::string& fname, const std::string& hname,
   std::cout << " Data::Project (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
   h2->Scale(args->GetScale());
 
+}
+
+void Data::SetH2()
+{
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().c_str());
 
@@ -53,6 +54,11 @@ Data::Data(const std::string& fname, const std::string& hname,
 
   if (args->GetZTitle() != "None")
     h2->SetZTitle(args->GetZTitle().c_str());
+
+  h2->SetContour(args->GetMap()["dcont"].as<size_t>());
+  h2->SetOption(args->GetDoption().c_str());
+
+  return;
 }
 
 Data::~Data()
