@@ -1,20 +1,20 @@
 #ifndef Data_h_
 #define Data_h_
 
-#include <TH3F.h>
-#include <TH2F.h>
+#include <TH3.h>
+#include <TH2.h>
 #include <TAxis.h>
 
 #include "Arguments.h"
 
 class Data {
  private:
-  std::shared_ptr<TH3F> h3;
-  std::shared_ptr<TH2F> h2;
+  std::shared_ptr<TH3> h3;
+  std::shared_ptr<TH2> h2;
   std::string plane;
   Arguments *args;
   TAxis *GetAxis() const;
-  std::shared_ptr<TH2F> Project();
+  std::shared_ptr<TH2> Project();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */
@@ -22,8 +22,8 @@ class Data {
        const std::string& hname,
        const Arguments *args);
   virtual ~Data();
-  const std::shared_ptr<TH3F> GetH3() const { return h3; };
-  std::shared_ptr <TH2F> GetH2() const { return h2; };
+  const std::shared_ptr<TH3> GetH3() const { return h3; };
+  std::shared_ptr <TH2> GetH2() const { return h2; };
 };
 
 #endif

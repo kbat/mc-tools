@@ -3,7 +3,7 @@
 #include <TFile.h>
 #include "Data.h"
 
-// Data::Data(const TH3F* h3, const std::string& plane) :
+// Data::Data(const TH3* h3, const std::string& plane) :
 //   h3(h3), h2(nullptr), plane(plane)
 // {
 //   // std::cout << "Data constructor" << std::endl;
@@ -21,16 +21,18 @@ Data::Data(const std::string& fname, const std::string& hname,
     df.Close();
     exit(1);
   }
-  TH3F *h3tmp(nullptr);
-  df.GetObject<TH3F>(hname.c_str(),h3tmp);
+  TH3 *h3tmp(nullptr);
+  df.GetObject<TH3>(hname.c_str(),h3tmp);
   if (!h3tmp) {
     std::cerr << "Error: Can't find " << hname << " in " << fname << std::endl;
     exit(1);
   }
 
-  h3 = std::shared_ptr<TH3F>(static_cast<TH3F*>(h3tmp));
+  h3 = std::shared_ptr<TH3>(static_cast<TH3*>(h3tmp));
   h3->SetDirectory(0);
   df.Close();
+
+  std::cout << "h3: " << h3->GetName() << std::endl;
 
   h3tmp = nullptr;
 
@@ -72,7 +74,7 @@ TAxis *Data::GetAxis() const
   }
 }
 
-std::shared_ptr<TH2F> Data::Project()
+std::shared_ptr<TH2> Data::Project()
 {
   TAxis *a = GetAxis();
   Double_t centre = 0.0;
@@ -85,7 +87,15 @@ std::shared_ptr<TH2F> Data::Project()
   Float_t ymax = h3->GetYaxis()->GetXmax();
   Int_t nx = h3->GetNbinsX();
   Int_t ny = h3->GetNbinsY();
-  h2 = std::make_shared<TH2F>("h2", "h2 title", ny, ymin, ymax, nx, xmin, xmax);
+
+  const char *h2name = Form("%s_h2", h3->GetName());
+
+  if (h3->IsA() == TH3F::Class()) // data
+    h2 = std::make_shared<TH2F>(h2name, "h2 data title",     ny, ymin, ymax, nx, xmin, xmax);
+  else if (h3->IsA() == TH3S::Class()) // geometry
+    h2 = std::make_shared<TH2S>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
+  else if (h3->IsA() == TH3I::Class()) // geometry
+    h2 = std::make_shared<TH2I>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
   Float_t val, err;
   for (Int_t i=1; i<=ny; ++i)
     for (Int_t j=1; j<=nx; ++j) {

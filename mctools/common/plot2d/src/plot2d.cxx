@@ -16,8 +16,9 @@
 #include "Arguments.h"
 #include "MainFrame.h"
 #include "Data.h"
+#include "Geometry.h"
 
-void RebinToScreen(std::shared_ptr<TH2F> h2)
+void RebinToScreen(std::shared_ptr<TH2> h2)
 {
   /*!
     Rebin h2 so that it is not larger than the screen size in order to avoid having bin < pixel
@@ -100,14 +101,13 @@ int main(int argc, const char **argv)
   gStyle->SetOptStat(kFALSE);
 
   std::string dfname = vm["dfile"].as<std::string>();
-
   std::string dhname = vm["dhist"].as<std::string>();
+  std::string gfname = vm["gfile"].as<std::string>();
+  std::string ghname = vm["ghist"].as<std::string>();
+
   Data data(dfname, dhname, &args);
 
-  const std::shared_ptr<TH3F> h3 = data.GetH3();
-  const std::shared_ptr<TH2F> h2 = data.GetH2();
-
-  std::cout << "h2 bins: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
+  const std::shared_ptr<TH2> h2d = data.GetH2();
 
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 
@@ -119,13 +119,21 @@ int main(int argc, const char **argv)
   TCanvas *c1 = mf->GetCanvas();
   if (args.GetZTitle() != "None")
     if (args.GetDoption() == "colz")
-      c1->SetRightMargin(args.GetMap()["right_margin"].as<float>());
+      c1->SetRightMargin(vm["right_margin"].as<float>());
 
 
-  RebinToScreen(h2);
+  RebinToScreen(h2d);
 
-  h2->Draw(args.GetDoption().c_str()); // 3 sec to draw
-  h2->SetContour(args.GetDcont());
+  h2d->Draw(args.GetDoption().c_str()); // 3 sec to draw
+  h2d->SetContour(args.GetDcont());
+
+
+  // GEOMETRY
+  Geometry geo(gfname, ghname, &args);
+  const std::shared_ptr<TH2> h2g = geo.GetH2();
+  RebinToScreen(h2g);
+
+  h2g->Draw("same, cont3");
 
   //    gObjectTable->Print();
 

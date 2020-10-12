@@ -31,11 +31,11 @@ obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
 	@rootcling -f MainFrameDict.cxx -c $^
 	@$(GCC) -c $(CXXFLAGS) -I./ MainFrameDict.cxx $(ROOTCFLAGS) -o $@
 
-plot2d: obj/plot2d.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o
+plot2d: obj/plot2d.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Geometry.o
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 
-minimal: obj/minimal.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o
+minimal: obj/minimal.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Geometry.o
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 	valgrind --show-leak-kinds=all --leak-check=full --error-limit=no --gen-suppressions=all \
