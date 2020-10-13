@@ -108,10 +108,10 @@ int main(int argc, const char **argv)
   std::string gfname = vm["gfile"].as<std::string>();
   std::string ghname = vm["ghist"].as<std::string>();
 
-  Data data(dfname, dhname, &args);
-  data.SetH2();
+  std::unique_ptr<Data> data = std::make_unique<Data>(dfname, dhname, &args);
+  data->SetH2();
 
-  const std::shared_ptr<TH2> h2d = data.GetH2();
+  const std::shared_ptr<TH2> h2d = data->GetH2();
 
   TApplication theApp("App",&argc,const_cast<char**>(argv));
 
@@ -131,13 +131,15 @@ int main(int argc, const char **argv)
 
   c1->SetLogz(args.IsLogz());
 
-
   // GEOMETRY
+  std::unique_ptr<Geometry> geo(nullptr);
+
   if (!gfname.empty())
     {
-      Geometry geo(gfname, ghname, &args);
-      geo.SetH2();
-      const std::shared_ptr<TH2> h2g = geo.GetH2();
+      std::cout << "here" << std::endl;
+      geo = std::make_unique<Geometry>(gfname, ghname, &args);
+      geo->SetH2();
+      const std::shared_ptr<TH2> h2g = geo->GetH2();
       RebinToScreen(h2g);
 
       const std::string opt = "same " + args.GetMap()["goption"].as<std::string>();

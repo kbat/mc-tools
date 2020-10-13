@@ -99,7 +99,10 @@ TAxis *Data::GetHorizontalAxis() const
   else if (plane[1] == 'z')
     return h3->GetZaxis();
   else
-    return 0;
+    {
+      std::cerr << "Error in Data::GetHorizontalAxis()" << std::endl;
+      return nullptr;
+    }
 }
 
 TAxis *Data::GetVerticalAxis() const
@@ -111,7 +114,10 @@ TAxis *Data::GetVerticalAxis() const
   else if (plane[0] == 'z')
     return h3->GetZaxis();
   else
-    return 0;
+    {
+      std::cerr << "Error in Data::GetVerticalAxis()" << std::endl;
+      return nullptr;
+    }
 }
 
 std::shared_ptr<TH2> Data::Project()
@@ -126,7 +132,7 @@ std::shared_ptr<TH2> Data::Project()
   Float_t ymin = GetHorizontalAxis()->GetXmin();
   Float_t ymax = GetHorizontalAxis()->GetXmax();
   Int_t nx = GetVerticalAxis()->GetNbins();
-  Int_t ny = GetVerticalAxis()->GetNbins();
+  Int_t ny = GetHorizontalAxis()->GetNbins();
 
   const char *h2name = Form("%s_h2", h3->GetName());
 
