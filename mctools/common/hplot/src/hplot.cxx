@@ -18,35 +18,27 @@
 #include "Data.h"
 #include "Geometry.h"
 
-void RebinToScreen(std::shared_ptr<TH2> h2)
+void RebinToScreen(std::shared_ptr<TH2> h2, UInt_t width, UInt_t height)
 {
   /*!
     Rebin h2 so that it is not larger than the screen size in order to avoid having bin < pixel
    */
-  std::clog << "RebinToScreen" << std::endl;
+  //  std::clog << "RebinToScreen" << std::endl;
 
   const Int_t nx = h2->GetNbinsX();
   const Int_t ny = h2->GetNbinsY();
 
-  Int_t x, y;
-  UInt_t w, h;
-  gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, w, h);
-  //  std::cout << x << " " << y << std::endl;
-  std::cout << " screen size: " << w << " " << h << std::endl;
-
-  std::cout << " h2 before: " << nx << " " << ny << std::endl;
-
   const Int_t scaleX =
-    TMath::Ceil(nx/static_cast<float>(w));
+    TMath::Ceil(nx/static_cast<float>(width));
   if (scaleX>=2)
     h2->RebinX(scaleX);
 
   const Int_t scaleY =
-    TMath::Ceil(ny/static_cast<float>(h));
+    TMath::Ceil(ny/static_cast<float>(height));
   if (scaleY>=2)
     h2->RebinY(scaleY);
 
-  std::cout << "h2 after: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
+  //  std::cout << "h2 after: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
   return;
 }
 
@@ -113,19 +105,36 @@ int main(int argc, const char **argv)
 
   const std::shared_ptr<TH2> h2d = data->GetH2();
 
-  TApplication theApp("App",&argc,const_cast<char**>(argv));
+  TCanvas      *c1(nullptr);
+  MainFrame    *mf(nullptr);
+  TApplication *theApp(nullptr);
+  UInt_t width(0), height(0); // screen/image dimensions
 
-  MainFrame *mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
-  mf->SetWindowName(args.GetWindowTitle().c_str());
+  if (args.IsBatch())
+    {
+      c1 = new TCanvas("c1", args.GetWindowTitle().c_str(), args.GetWidth(), args.GetHeight());
+      width = args.GetWidth();
+      height = args.GetHeight();
+    }
+  else
+    {
+      theApp = new TApplication("App",&argc,const_cast<char**>(argv));
 
+      mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
+      mf->SetWindowName(args.GetWindowTitle().c_str());
 
-  TCanvas *c1 = mf->GetCanvas();
+      c1 = mf->GetCanvas();
+
+      Int_t x, y;
+      gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
+    }
+
   if (args.GetZTitle() != "None")
     if (args.GetDoption() == "colz")
       c1->SetRightMargin(vm["right_margin"].as<float>());
 
-
-  RebinToScreen(h2d);
+  std::cerr << "here" << std::endl;
+  RebinToScreen(h2d, width, height);
 
   h2d->Draw(); // 3 sec to draw
 
@@ -136,18 +145,24 @@ int main(int argc, const char **argv)
 
   if (!gfname.empty())
     {
-      std::cout << "here" << std::endl;
       geo = std::make_unique<Geometry>(gfname, ghname, &args);
       geo->SetH2();
       const std::shared_ptr<TH2> h2g = geo->GetH2();
-      RebinToScreen(h2g);
+      RebinToScreen(h2g, width, height);
 
       const std::string opt = "same " + args.GetMap()["goption"].as<std::string>();
       h2g->Draw(opt.c_str());
     }
   //    gObjectTable->Print();
 
-  theApp.Run();
+  if (args.IsBatch())
+    {
+      c1->Print(vm["o"].as<std::string>().c_str());
+    }
+  else
+    {
+      theApp->Run();
+    }
 
   //  delete mf;
 
