@@ -108,21 +108,22 @@ int main(int argc, const char **argv)
   const std::shared_ptr<TH2> h2d = data->GetH2();
 
   TCanvas      *c1(nullptr);
-  MainFrame    *mf(nullptr);
-  TApplication *theApp(nullptr);
+  std::unique_ptr<MainFrame>    mf(nullptr);
+  std::unique_ptr<TApplication> theApp(nullptr);
   UInt_t width(0), height(0); // screen/image dimensions
 
   if (args.IsBatch())
     {
-      c1 = new TCanvas("c1", args.GetWindowTitle().c_str(), args.GetWidth(), args.GetHeight());
+      c1 = new TCanvas("c1", args.GetWindowTitle().c_str(),
+				     args.GetWidth(), args.GetHeight());
       width = args.GetWidth();
       height = args.GetHeight();
     }
   else
     {
-      theApp = new TApplication("App",&argc,const_cast<char**>(argv));
+      theApp = std::make_unique<TApplication>("App",&argc,const_cast<char**>(argv));
 
-      mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
+      mf = std::make_unique<MainFrame>(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
       c1 = mf->GetCanvas();
