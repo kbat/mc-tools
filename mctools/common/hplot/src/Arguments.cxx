@@ -43,7 +43,7 @@ Arguments::Arguments(int ac, const char **av) :
     hidden.add_options()
       ("dfile", "Data file name")
       ("dhist", "Data histogram name")
-      ("gfile", "Geometry file name")
+      ("gfile", po::value<std::string>()->default_value(""), "Geometry file name")
       ("ghist", po::value<std::string>()->default_value("h3"), "Geometry histogram name");
 
     po::options_description generic("Generic options", w.ws_col);
@@ -96,7 +96,7 @@ Arguments::Arguments(int ac, const char **av) :
     for (const std::string& pa : positional_args)
       p.add(pa.c_str(), 1);
 
-    po::options_description all_options("Usage: hplot [options] dfile dhist gfile [ghist]");
+    po::options_description all_options("Usage: hplot [options] dfile dhist [gfile [ghist]]");
     all_options.add(generic).add(data).add(geom).add(hidden);
 
     //    po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -118,7 +118,7 @@ Arguments::Arguments(int ac, const char **av) :
 			       [&pa](po::option const& o) {
 				 return o.string_key == pa;
 			       });
-	if ((it == parsed.options.end()) && (pa!="ghist")) // ghist is optional
+	if ((it == parsed.options.end()) && (pa!="gfile") && (pa!="ghist") ) // gfile and ghist are optional
 	  {
 	    std::cerr << "Error: Missing positional argument \"" <<
 	      pa << "\"\n" << std::endl;

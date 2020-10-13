@@ -133,14 +133,16 @@ int main(int argc, const char **argv)
 
 
   // GEOMETRY
-  Geometry geo(gfname, ghname, &args);
-  geo.SetH2();
-  const std::shared_ptr<TH2> h2g = geo.GetH2();
-  RebinToScreen(h2g);
+  if (!gfname.empty())
+    {
+      Geometry geo(gfname, ghname, &args);
+      geo.SetH2();
+      const std::shared_ptr<TH2> h2g = geo.GetH2();
+      RebinToScreen(h2g);
 
-  const std::string opt = "same " + args.GetMap()["goption"].as<std::string>();
-  h2g->Draw(opt.c_str());
-
+      const std::string opt = "same " + args.GetMap()["goption"].as<std::string>();
+      h2g->Draw(opt.c_str());
+    }
   //    gObjectTable->Print();
 
   theApp.Run();
