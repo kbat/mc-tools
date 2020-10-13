@@ -70,8 +70,7 @@ Arguments::Arguments(int ac, const char **av) :
        "Used only if ZTITLE is set and DOPTION is \"colz\"")
       ("flip", "Flip the vertical axis")
       ("bgcolor", "Set the frame background colour to some hard-coded value")
-      ("o", po::value<std::string>()->default_value("None"),
-       "Output file name. If given then the canvas is not shown.")
+      ("o", "Output file name. If given then the canvas is not shown.")
       ("v", "Explain what is being done")
       ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}), "no slice"), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
       ("errors", "Plot the histogram with relative errors instead of data");
@@ -135,7 +134,7 @@ Arguments::Arguments(int ac, const char **av) :
       exit(1);
     }
 
-    if (help || vm.count ("help"))
+    if (help || vm.count("help"))
       {
 	help = true;
 	std::stringstream stream;
@@ -160,6 +159,11 @@ Arguments::Arguments(int ac, const char **av) :
   }
 
   return;
+}
+
+bool Arguments::IsBatch() const
+{
+  return vm.count("o");
 }
 
 bool Arguments::test() const

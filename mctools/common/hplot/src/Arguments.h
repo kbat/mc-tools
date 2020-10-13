@@ -45,9 +45,10 @@ class Arguments {
  public:
   Arguments(int ac, const char **av);
   po::variables_map GetMap() const { return &vm; }
-  bool test() const;
+  bool IsBatch() const;
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
+  bool        IsSlice() const;
   float       GetCentre()  const { return vm["centre"].as<float>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
   size_t      GetHeight() const;
@@ -61,7 +62,7 @@ class Arguments {
   std::string GetXTitle() const {return vm["xtitle"].as<std::string>(); }
   std::string GetYTitle() const {return vm["ytitle"].as<std::string>(); }
   std::string GetZTitle() const {return vm["ztitle"].as<std::string>(); }
-  bool        IsSlice() const;
+  bool test() const;
 };
 
 #endif
