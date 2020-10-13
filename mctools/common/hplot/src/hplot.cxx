@@ -20,6 +20,8 @@
 
 void RebinToScreen(std::shared_ptr<TH2> h2, UInt_t width, UInt_t height)
 {
+  std::cerr << "RebinToScreen changes abs value -> do not rebin" << std::endl;
+  return;
   /*!
     Rebin h2 so that it is not larger than the screen size in order to avoid having bin < pixel
    */
@@ -38,7 +40,7 @@ void RebinToScreen(std::shared_ptr<TH2> h2, UInt_t width, UInt_t height)
   if (scaleY>=2)
     h2->RebinY(scaleY);
 
-  //  std::cout << "h2 after: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
+  std::cout << "h2 after: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
   return;
 }
 
@@ -133,7 +135,6 @@ int main(int argc, const char **argv)
     if (args.GetDoption() == "colz")
       c1->SetRightMargin(vm["right_margin"].as<float>());
 
-  std::cerr << "here" << std::endl;
   RebinToScreen(h2d, width, height);
 
   h2d->Draw(); // 3 sec to draw
