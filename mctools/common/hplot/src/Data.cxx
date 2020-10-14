@@ -39,6 +39,7 @@ Data::Data(const std::string& fname, const std::string& hname,
   std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
   h2->Scale(args->GetScale());
 
+  centre = args->GetCentre();
 }
 
 void Data::SetH2()
@@ -123,7 +124,6 @@ TAxis *Data::GetVerticalAxis() const
 std::shared_ptr<TH2> Data::Project()
 {
   TAxis *a = GetNormalAxis();
-  const Double_t centre = args->GetCentre();
   Int_t bin = a->FindBin(centre); // bin of the plane
   std::cout << "centre: " << centre << " cm,\tbin: "  << bin << std::endl;
 

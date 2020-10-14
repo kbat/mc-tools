@@ -100,10 +100,20 @@ int main(int argc, const char **argv)
   std::string gfname = vm["gfile"].as<std::string>();
   std::string ghname = vm["ghist"].as<std::string>();
 
-  std::unique_ptr<Data> data = std::make_unique<Data>(dfname, dhname, &args);
+  std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
   data->SetH2();
 
+  std::shared_ptr<Geometry> geo(nullptr);
+  if (!gfname.empty())
+    {
+      geo = std::make_shared<Geometry>(gfname, ghname, &args);
+      geo->SetH2();
+      //      RebinToScreen(h2g, width, height);
+    }
+
+
   const std::shared_ptr<TH2> h2d = data->GetH2();
+  const std::shared_ptr<TH2> h2g = geo->GetH2();
 
   // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);
@@ -121,7 +131,7 @@ int main(int argc, const char **argv)
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
-      mf = new MainFrame(gClient->GetRoot(), width, height);
+      mf = new MainFrame(gClient->GetRoot(), width, height, data, geo);
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
       c1 = mf->GetCanvas();
@@ -135,22 +145,16 @@ int main(int argc, const char **argv)
       (args.GetDoption() == "colz"))
     c1->SetRightMargin(vm["right_margin"].as<float>());
 
-  RebinToScreen(h2d, width, height);
+  // RebinToScreen(h2d, width, height);
 
   h2d->Draw(); // 3 sec to draw
 
   c1->SetLogz(args.IsLogz());
 
   // GEOMETRY
-  std::unique_ptr<Geometry> geo(nullptr);
 
   if (!gfname.empty())
     {
-      geo = std::make_unique<Geometry>(gfname, ghname, &args);
-      geo->SetH2();
-      const std::shared_ptr<TH2> h2g = geo->GetH2();
-      RebinToScreen(h2g, width, height);
-
       const std::string opt = "same " + vm["goption"].as<std::string>();
       h2g->Draw(opt.c_str());
     }
@@ -167,7 +171,7 @@ int main(int argc, const char **argv)
 
   delete mf; mf = nullptr;
 
-  gObjectTable->Print();
+  //gObjectTable->Print();
 
   return 0;
 }

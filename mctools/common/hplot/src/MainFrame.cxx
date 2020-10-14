@@ -5,6 +5,8 @@
 #include <TRandom.h>
 #include <TGButton.h>
 #include <TRootEmbeddedCanvas.h>
+#include <TAxis.h>
+
 #include "MainFrame.h"
 
 enum MainFrameMessageTypes {
@@ -12,8 +14,9 @@ enum MainFrameMessageTypes {
 			    M_FILE_EXIT
 };
 
-MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
-  : TGMainFrame(p,w,h)
+MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
+		     const std::shared_ptr<Data> data,
+		     const std::shared_ptr<Geometry> geo) : TGMainFrame(p,w,h)
 {
 
   // Menu bar
@@ -39,14 +42,24 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
 
-  fSlider = new TGDoubleVSlider(hframe,
-			  20, // slider width
-			  kDoubleScaleDownRight // slider type [1 or 2]
-			  );
-  fSlider->SetRange(-10, 10);
-  fSlider->SetPosition(-4.0,4.0);
-  fSlider->SetScale(100);
-  hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsRight | kLHintsExpandY, 10,10,10,1));
+  const TAxis *a  = data->GetNormalAxis();
+  Int_t bin = a->FindBin(data->GetCentre());
+  if (bin > a->GetNbins())
+    bin = a->GetNbins();
+  else if (bin==0)
+    bin = 1;
+
+  if (a->GetNbins()>1)
+    {
+      fSlider = new TGDoubleVSlider(hframe,
+				    20, // slider width
+				    kDoubleScaleDownRight // slider type [1 or 2]
+				    );
+      fSlider->SetRange(a->GetXmin(), a->GetXmax());
+      fSlider->SetPosition(a->GetBinLowEdge(bin), a->GetBinUpEdge(bin));
+      fSlider->SetScale(100);
+      hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsRight | kLHintsExpandY, 10,10,10,1));
+    }
 
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
 
