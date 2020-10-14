@@ -15,7 +15,7 @@ class MainFrame : public TGMainFrame {
   TGPopupMenu         *fMenuFile;
  public:
   MainFrame(const TGWindow *p,UInt_t w,UInt_t h);
-  virtual ~MainFrame() { Cleanup();  }
+  virtual ~MainFrame();
   void DoDraw();
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   ClassDef(MainFrame,0);

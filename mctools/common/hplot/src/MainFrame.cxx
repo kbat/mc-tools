@@ -61,3 +61,11 @@ void MainFrame::DoDraw()
   fCanvas->cd();
   fCanvas->Update();
 }
+
+MainFrame::~MainFrame()
+{
+  // .help TGMainFrame::Cleanup
+  // Cleanup and delete all objects contained in this composite frame.
+  // This will delete all objects added via AddFrame().
+  Cleanup();
+}

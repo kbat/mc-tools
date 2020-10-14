@@ -105,23 +105,22 @@ int main(int argc, const char **argv)
 
   const std::shared_ptr<TH2> h2d = data->GetH2();
 
-  std::unique_ptr<TCanvas>      c1(nullptr);
-  std::unique_ptr<MainFrame>    mf(nullptr);
-  std::unique_ptr<TApplication> theApp(nullptr);
+  TCanvas      *c1(nullptr);
+  MainFrame    *mf(nullptr);
+  TApplication *theApp(nullptr);
   UInt_t width(0), height(0); // screen/image dimensions
 
   if (args.IsBatch())
     {
-      c1 = std::make_unique<TCanvas>("hplot", args.GetWindowTitle().c_str(),
-				     args.GetWidth(), args.GetHeight());
       width = args.GetWidth();
       height = args.GetHeight();
+      c1 = new TCanvas("hplot", args.GetWindowTitle().c_str(), width, height);
     }
   else
     {
-      theApp = std::make_unique<TApplication>("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
+      theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
-      mf = std::make_unique<MainFrame>(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
+      mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
       c1 = std::unique_ptr<TCanvas>(mf->GetCanvas());
