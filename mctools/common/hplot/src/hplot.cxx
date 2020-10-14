@@ -123,7 +123,7 @@ int main(int argc, const char **argv)
       mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
-      c1 = std::unique_ptr<TCanvas>(mf->GetCanvas());
+      c1 = mf->GetCanvas();
 
       Int_t x, y;
       gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
@@ -153,19 +153,20 @@ int main(int argc, const char **argv)
       const std::string opt = "same " + vm["goption"].as<std::string>();
       h2g->Draw(opt.c_str());
     }
-  //    gObjectTable->Print();
 
   if (args.IsBatch())
     {
       c1->Print(vm["o"].as<std::string>().c_str());
+      delete c1; c1 = nullptr;
     }
   else
     {
-      theApp->Run();
+      theApp->Run(kTRUE);
     }
 
-  //  delete mf;
+  delete mf; mf = nullptr;
 
+  //  gObjectTable->Print();
 
   return 0;
 }
