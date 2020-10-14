@@ -14,21 +14,19 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
 {
 
   // Menu bar
-  fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1);
   fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
 
-  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
   fMenuFile = new TGPopupMenu(fClient->GetRoot());
   fMenuFile->AddEntry(" &New", kM_FILE_NEW, 0,
 		      gClient->GetPicture("ed_new.png"));
 
   fMenuFile->Associate(this);
 
-  fMenuBar->AddPopup("&File", fMenuFile, fMenuBarItemLayout);
+  fMenuBar->AddPopup("&File", fMenuFile, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
 
-  AddFrame(fMenuBar, fMenuBarLayout);
+  AddFrame(fMenuBar, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1));
 
-  // Creates widgets of the example
+  // Canvas
   fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,w,h);
   AddFrame(fEcanvas, new TGLayoutHints(kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));

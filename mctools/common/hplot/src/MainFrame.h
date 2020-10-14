@@ -9,8 +9,6 @@
 class MainFrame : public TGMainFrame {
  private:
   TRootEmbeddedCanvas *fEcanvas;
-  TGLayoutHints       *fMenuBarLayout;
-  TGLayoutHints       *fMenuBarItemLayout;
   TGMenuBar           *fMenuBar;
   TGPopupMenu         *fMenuFile;
  public:

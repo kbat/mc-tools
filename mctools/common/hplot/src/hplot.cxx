@@ -167,7 +167,7 @@ int main(int argc, const char **argv)
 
   delete mf; mf = nullptr;
 
-  //  gObjectTable->Print();
+  gObjectTable->Print();
 
   return 0;
 }
