@@ -12,7 +12,6 @@
 #include <TObjectTable.h>
 #include <TMath.h>
 #include <TVirtualX.h>
-//#include <TRint.h>
 #include "Arguments.h"
 #include "MainFrame.h"
 #include "Data.h"
@@ -92,7 +91,6 @@ int main(int argc, const char **argv)
 
   const po::variables_map vm = args.GetMap();
 
-  //  gROOT->SetBatch(true);
   gStyle->SetOptStat(kFALSE);
   gStyle->SetPalette(kTemperatureMap);
   SetColourMap();
@@ -114,7 +112,7 @@ int main(int argc, const char **argv)
 
   if (args.IsBatch())
     {
-      c1 = std::make_unique<TCanvas>("c1", args.GetWindowTitle().c_str(),
+      c1 = std::make_unique<TCanvas>("hplot", args.GetWindowTitle().c_str(),
 				     args.GetWidth(), args.GetHeight());
       width = args.GetWidth();
       height = args.GetHeight();
@@ -132,9 +130,10 @@ int main(int argc, const char **argv)
       gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
-  if (args.GetZTitle() != "None")
-    if (args.GetDoption() == "colz")
-      c1->SetRightMargin(vm["right_margin"].as<float>());
+  if ((args.GetZTitle() != "None") &&
+      (!args.GetZTitle().empty()) &&
+      (args.GetDoption() == "colz"))
+    c1->SetRightMargin(vm["right_margin"].as<float>());
 
   RebinToScreen(h2d, width, height);
 
@@ -152,7 +151,7 @@ int main(int argc, const char **argv)
       const std::shared_ptr<TH2> h2g = geo->GetH2();
       RebinToScreen(h2g, width, height);
 
-      const std::string opt = "same " + args.GetMap()["goption"].as<std::string>();
+      const std::string opt = "same " + vm["goption"].as<std::string>();
       h2g->Draw(opt.c_str());
     }
   //    gObjectTable->Print();
