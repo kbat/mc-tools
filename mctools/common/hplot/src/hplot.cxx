@@ -105,22 +105,23 @@ int main(int argc, const char **argv)
 
   const std::shared_ptr<TH2> h2d = data->GetH2();
 
+  // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);
   MainFrame    *mf(nullptr);
   TApplication *theApp(nullptr);
-  UInt_t width(0), height(0); // screen/image dimensions
+
+  UInt_t width = args.GetWidth();
+  UInt_t height = args.GetHeight();
 
   if (args.IsBatch())
     {
-      width = args.GetWidth();
-      height = args.GetHeight();
       c1 = new TCanvas("hplot", args.GetWindowTitle().c_str(), width, height);
     }
   else
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
-      mf = new MainFrame(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
+      mf = new MainFrame(gClient->GetRoot(), width, height);
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
       c1 = mf->GetCanvas();
