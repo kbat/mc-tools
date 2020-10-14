@@ -7,7 +7,10 @@
 #include <TRootEmbeddedCanvas.h>
 #include "MainFrame.h"
 
-enum ETextEditorCommands {kM_FILE_NEW};
+enum MainFrameMessageTypes {
+			    M_FILE_SAVEAS,
+			    M_FILE_EXIT
+};
 
 MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   : TGMainFrame(p,w,h)
@@ -17,14 +20,16 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
 
   fMenuFile = new TGPopupMenu(fClient->GetRoot());
-  fMenuFile->AddEntry(" &New", kM_FILE_NEW, 0,
-		      gClient->GetPicture("ed_new.png"));
-
+  fMenuFile->AddEntry("S&ave as...\tCtrl+A", M_FILE_SAVEAS);
+  fMenuFile->DisableEntry(M_FILE_SAVEAS);
+  fMenuFile->AddEntry("E&xit\tCtrl+Q", M_FILE_EXIT, 0, gClient->GetPicture("bld_exit.png"));
   fMenuFile->Associate(this);
 
-  fMenuBar->AddPopup("&File", fMenuFile, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+  fMenuBar->AddPopup("&File", fMenuFile,
+		     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
 
-  AddFrame(fMenuBar, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1));
+  AddFrame(fMenuBar,
+	   new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1));
 
   // Canvas
   fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,w,h);
@@ -66,4 +71,33 @@ MainFrame::~MainFrame()
   // Cleanup and delete all objects contained in this composite frame.
   // This will delete all objects added via AddFrame().
   Cleanup();
+}
+
+Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
+{
+  // Window_t wdummy;
+  //  int ax, ay;
+   // TRootHelpDialog *hd;
+   // TGListTreeItem *item;
+   // TGFileInfo fi;
+   // Char_t  strtmp[250];
+
+  // std::cout << "here: " << msg << " " << parm1 << " " << parm2 << "\t" << M_FILE_EXIT << std::endl;
+  // std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
+  // std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
+
+  switch (GET_MSG(msg)) {
+  case kC_COMMAND:
+    switch (GET_SUBMSG(msg)) {
+    case M_FILE_EXIT:
+      std::cout << "file -> exit" << std::endl;
+      gApplication->Terminate();
+      break;
+    default:
+      break;
+    }
+  default:
+    break;
+  }
+  return kTRUE;
 }

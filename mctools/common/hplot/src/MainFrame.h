@@ -16,6 +16,7 @@ class MainFrame : public TGMainFrame {
   virtual ~MainFrame();
   void DoDraw();
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
+  Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
   ClassDef(MainFrame,0);
 };
 
