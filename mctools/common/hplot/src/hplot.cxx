@@ -107,14 +107,14 @@ int main(int argc, const char **argv)
 
   const std::shared_ptr<TH2> h2d = data->GetH2();
 
-  TCanvas      *c1(nullptr);
+  std::unique_ptr<TCanvas>      c1(nullptr);
   std::unique_ptr<MainFrame>    mf(nullptr);
   std::unique_ptr<TApplication> theApp(nullptr);
   UInt_t width(0), height(0); // screen/image dimensions
 
   if (args.IsBatch())
     {
-      c1 = new TCanvas("c1", args.GetWindowTitle().c_str(),
+      c1 = std::make_unique<TCanvas>("c1", args.GetWindowTitle().c_str(),
 				     args.GetWidth(), args.GetHeight());
       width = args.GetWidth();
       height = args.GetHeight();
@@ -126,7 +126,7 @@ int main(int argc, const char **argv)
       mf = std::make_unique<MainFrame>(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
-      c1 = mf->GetCanvas();
+      c1 = std::unique_ptr<TCanvas>(mf->GetCanvas());
 
       Int_t x, y;
       gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
