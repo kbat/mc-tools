@@ -31,20 +31,36 @@ MainFrame::MainFrame(const TGWindow *p,UInt_t w,UInt_t h)
   AddFrame(fMenuBar,
 	   new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1));
 
+  TGHorizontalFrame *hframe=new TGHorizontalFrame(this, w,h);
+
   // Canvas
-  fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,w,h);
-  AddFrame(fEcanvas, new TGLayoutHints(kLHintsExpandX |
+  fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",hframe,w,h);
+  // AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
+  hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
-  TGHorizontalFrame *hframe=new TGHorizontalFrame(this, w,40);
-  TGTextButton *draw = new TGTextButton(hframe,"&Draw");
+
+  fSlider = new TGDoubleVSlider(hframe,
+			  20, // slider width
+			  kDoubleScaleDownRight // slider type [1 or 2]
+			  );
+  fSlider->SetRange(-10, 10);
+  fSlider->SetPosition(-4.0,4.0);
+  fSlider->SetScale(100);
+  hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsRight | kLHintsExpandY, 10,10,10,1));
+
+  AddFrame(hframe,new TGLayoutHints(kLHintsCenterX|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
+
+  TGHorizontalFrame *hframe1=new TGHorizontalFrame(this, w,40);
+  TGTextButton *draw = new TGTextButton(hframe1,"&Draw");
   draw->Connect("Clicked()","MainFrame",this,"DoDraw()");
-  hframe->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,
-					   5,5,3,4));
-  TGTextButton *exit = new TGTextButton(hframe,"&Exit ",
-					"gApplication->Terminate()");
-  hframe->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
-					   5,5,3,4));
-  AddFrame(hframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+  hframe1->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,
+  					   5,5,3,4));
+
+  TGTextButton *exit = new TGTextButton(hframe1,"&Exit ",
+  					"gApplication->Terminate()");
+  hframe1->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
+  					   5,5,3,4));
+  AddFrame(hframe1,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
 
   //////////
 
