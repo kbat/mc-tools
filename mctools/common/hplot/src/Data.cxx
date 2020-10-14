@@ -36,7 +36,7 @@ Data::Data(const std::string& fname, const std::string& hname,
   auto start = std::chrono::high_resolution_clock::now();
   h2 = Project();
   auto delta = std::chrono::high_resolution_clock::now()-start;
-  std::cout << " Data::Project (ms) " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << std::endl;
+  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
   h2->Scale(args->GetScale());
 
 }
@@ -125,7 +125,7 @@ std::shared_ptr<TH2> Data::Project()
   TAxis *a = GetNormalAxis();
   const Double_t centre = args->GetCentre();
   Int_t bin = a->FindBin(centre); // bin of the plane
-  std::cout << "centre: " << centre << " "  << bin << std::endl;
+  std::cout << "centre: " << centre << " cm,\tbin: "  << bin << std::endl;
 
   Float_t xmin = GetVerticalAxis()->GetXmin();
   Float_t xmax = GetVerticalAxis()->GetXmax();

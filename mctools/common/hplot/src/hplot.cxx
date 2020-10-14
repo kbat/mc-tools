@@ -119,7 +119,7 @@ int main(int argc, const char **argv)
     }
   else
     {
-      theApp = std::make_unique<TApplication>("hplot",&argc,const_cast<char**>(argv));
+      theApp = std::make_unique<TApplication>("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
       mf = std::make_unique<MainFrame>(gClient->GetRoot(), args.GetWidth(), args.GetHeight());
       mf->SetWindowName(args.GetWindowTitle().c_str());
