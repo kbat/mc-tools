@@ -51,6 +51,7 @@ class Arguments {
   bool        IsSlice() const;
   float       GetCentre()  const { return vm["centre"].as<float>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
+  std::string GetGoption() const {return vm["goption"].as<std::string>(); }
   size_t      GetHeight() const;
   std::string GetPlane() const {return vm["plane"].as<Plane>().GetValue(); }
   float       GetScale()  const { return vm["scale"].as<float>(); }

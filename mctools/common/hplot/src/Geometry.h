@@ -11,6 +11,8 @@ protected:
 	   const std::string& hname,
 	   const Arguments *args);
   virtual ~Geometry();
+
+  std::string GetGOption() const {return "same " + args->GetGoption(); }
 };
 
 #endif

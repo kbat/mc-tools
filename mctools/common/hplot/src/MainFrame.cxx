@@ -118,7 +118,9 @@ void MainFrame::DoSlider()
   std::cout << data->GetH2((ymax+ymin)/2.0)->GetTitle() << std::endl;;
   GetCanvas()->cd();
   data->GetH2((ymax+ymin)/2.0)->Draw("");
-  geo->GetH2((ymax+ymin)/2.0)->Draw("same, cont3");
+  if (geo)
+    geo->GetH2((ymax+ymin)/2.0)->Draw(geo->GetGOption().c_str());
+
   GetCanvas()->Update();
 }
 

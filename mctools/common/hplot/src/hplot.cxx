@@ -103,6 +103,7 @@ int main(int argc, const char **argv)
   std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
   //  data->Project();
 
+
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())
     {
@@ -112,7 +113,8 @@ int main(int argc, const char **argv)
     }
 
   const std::shared_ptr<TH2> h2d = data->GetH2(args.GetCentre());
-  const std::shared_ptr<TH2> h2g = geo->GetH2(args.GetCentre());
+  const std::shared_ptr<TH2> h2g = geo ? geo->GetH2(args.GetCentre()) : nullptr;
+
 
   // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);
@@ -152,10 +154,9 @@ int main(int argc, const char **argv)
 
   // GEOMETRY
 
-  if (!gfname.empty())
+  if (geo)
     {
-      const std::string opt = "same " + vm["goption"].as<std::string>();
-      h2g->Draw(opt.c_str());
+      h2g->Draw(geo->GetGOption().c_str());
     }
 
   if (args.IsBatch())
