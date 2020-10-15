@@ -101,19 +101,18 @@ int main(int argc, const char **argv)
   std::string ghname = vm["ghist"].as<std::string>();
 
   std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
-  data->SetH2();
+  //  data->Project();
 
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())
     {
       geo = std::make_shared<Geometry>(gfname, ghname, &args);
-      geo->SetH2();
+      //      geo->Project();
       //      RebinToScreen(h2g, width, height);
     }
 
-
-  const std::shared_ptr<TH2> h2d = data->GetH2();
-  const std::shared_ptr<TH2> h2g = geo->GetH2();
+  const std::shared_ptr<TH2> h2d = data->GetH2(0.0);
+  const std::shared_ptr<TH2> h2g = geo->GetH2(0.0);
 
   // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);

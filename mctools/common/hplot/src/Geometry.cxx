@@ -7,7 +7,7 @@ Geometry::Geometry(const std::string& fname, const std::string& hname,
 
 }
 
-void Geometry::SetH2()
+void Geometry::SetH2(std::shared_ptr<TH2> h2)
 {
   h2->SetLineWidth(args->GetMap()["glwidth"].as<size_t>());
 

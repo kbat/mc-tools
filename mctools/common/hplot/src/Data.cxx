@@ -12,7 +12,7 @@
 
 Data::Data(const std::string& fname, const std::string& hname,
 	   const Arguments *args) :
-  h3(nullptr), plane(""), h2(nullptr), args(args)
+  h3(nullptr), plane(""), args(args)
 {
   plane = args->GetPlane();
   TFile df(fname.c_str());
@@ -33,16 +33,17 @@ Data::Data(const std::string& fname, const std::string& hname,
 
   h3tmp = nullptr;
 
+  h3->Scale(args->GetScale());
+  centre = args->GetCentre();
+
   auto start = std::chrono::high_resolution_clock::now();
-  h2 = Project();
+  Project();
   auto delta = std::chrono::high_resolution_clock::now()-start;
   std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-  h2->Scale(args->GetScale());
 
-  centre = args->GetCentre();
 }
 
-void Data::SetH2()
+void Data::SetH2(std::shared_ptr<TH2> h2)
 {
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().c_str());
@@ -121,12 +122,8 @@ TAxis *Data::GetVerticalAxis() const
     }
 }
 
-std::shared_ptr<TH2> Data::Project()
+void Data::Project()
 {
-  TAxis *a = GetNormalAxis();
-  Int_t bin = a->FindBin(centre); // bin of the plane
-  std::cout << "centre: " << centre << " cm,\tbin: "  << bin << std::endl;
-
   Float_t xmin = GetVerticalAxis()->GetXmin();
   Float_t xmax = GetVerticalAxis()->GetXmax();
   Float_t ymin = GetHorizontalAxis()->GetXmin();
@@ -134,22 +131,41 @@ std::shared_ptr<TH2> Data::Project()
   Int_t nx = GetVerticalAxis()->GetNbins();
   Int_t ny = GetHorizontalAxis()->GetNbins();
 
-  const char *h2name = Form("%s_h2", h3->GetName());
+  TAxis *a = GetNormalAxis();
+  std::shared_ptr<TH2> h2(nullptr);
 
-  if (h3->IsA() == TH3F::Class()) // data
-    h2 = std::make_shared<TH2F>(h2name, "h2 data title",     ny, ymin, ymax, nx, xmin, xmax);
-  else if (h3->IsA() == TH3S::Class()) // geometry
-    h2 = std::make_shared<TH2S>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
-  else if (h3->IsA() == TH3I::Class()) // geometry
-    h2 = std::make_shared<TH2I>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
-  Float_t val, err;
-  for (Int_t i=1; i<=ny; ++i)
-    for (Int_t j=1; j<=nx; ++j) {
-      val = h3->GetBinContent(j,i,bin);
-      err = h3->GetBinError(j,i,bin);
-      h2->SetBinContent(i,j,val);
-      h2->SetBinError(i,j,err);
+  for (Int_t bin=1; bin<=a->GetNbins(); ++bin)
+    {
+      const char *h2name = Form("%s_%d", h3->GetName(), bin);
+      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
+
+      if (h3->IsA() == TH3F::Class()) // data
+	h2 = std::make_shared<TH2F>(h2name, "h2 data title",     ny, ymin, ymax, nx, xmin, xmax);
+      else if (h3->IsA() == TH3S::Class()) // geometry
+	h2 = std::make_shared<TH2S>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
+      else if (h3->IsA() == TH3I::Class()) // geometry
+	h2 = std::make_shared<TH2I>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
+
+      Float_t val, err;
+      for (Int_t i=1; i<=ny; ++i)
+	for (Int_t j=1; j<=nx; ++j) {
+	  val = h3->GetBinContent(j,i,bin);
+	  err = h3->GetBinError(j,i,bin);
+	  h2->SetBinContent(i,j,val);
+	  h2->SetBinError(i,j,err);
+	}
+
+      SetH2(h2);
+      vh2.push_back(h2);
     }
 
-  return h2;
+  return;
+}
+
+std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
+{
+  TAxis *a = GetNormalAxis();
+  Int_t bin = a->FindBin(val);
+
+  return vh2[bin];
 }

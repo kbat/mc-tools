@@ -13,11 +13,12 @@ class Data {
   std::string plane;
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;
-  std::shared_ptr<TH2> Project();
  protected:
-  std::shared_ptr<TH2> h2;
+  std::vector< std::shared_ptr<TH2> > vh2;
   const Arguments *args;
-  Float_t centre;
+  Float_t centre; // (initial) normal axis centre - can be changed with MainFrame::slider
+  virtual void SetH2(std::shared_ptr<TH2> h2);
+  void Project();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */
@@ -25,9 +26,8 @@ class Data {
        const std::string& hname,
        const Arguments *args);
   virtual ~Data();
-  virtual void SetH2();
   const std::shared_ptr<TH3> GetH3() const { return h3; };
-  std::shared_ptr <TH2> GetH2() const { return h2; };
+  std::shared_ptr <TH2> GetH2(const Float_t val) const;
   TAxis *GetNormalAxis() const;
   void SetCentre(Float_t val) { centre=val; }
   Float_t GetCentre() const { return centre; }
