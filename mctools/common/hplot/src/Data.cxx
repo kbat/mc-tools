@@ -166,6 +166,14 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
 {
   TAxis *a = GetNormalAxis();
   Int_t bin = a->FindBin(val);
+  std::cerr << "bin: " << bin << "\t val: " << val << std::endl;
 
-  return vh2[bin];
+  if (bin>a->GetNbins())
+    std::cerr << "Data::GetH2: bin>a->GetNbins() why?" << std::endl;
+  else if (bin==0) {
+    std::cerr << "Data:GetH2: bin = 0! why?" << std::endl;
+    bin = 1;
+  }
+
+  return vh2[bin-1];
 }

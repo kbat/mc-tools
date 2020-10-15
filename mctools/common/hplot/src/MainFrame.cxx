@@ -16,7 +16,8 @@ enum MainFrameMessageTypes {
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data> data,
-		     const std::shared_ptr<Geometry> geo) : TGMainFrame(p,w,h)
+		     const std::shared_ptr<Geometry> geo) :
+  TGMainFrame(p,w,h), data(data), geo(geo)
 {
 
   // Menu bar
@@ -45,7 +46,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   const TAxis *a  = data->GetNormalAxis();
   const Int_t nbins = a->GetNbins();
 
-  if (a->GetNbins()>1)
+  if (nbins>1)
     {
       Int_t bin = a->FindBin(data->GetCentre());
       if (bin > nbins)
@@ -55,12 +56,17 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
       fSlider = new TGDoubleVSlider(hframe,
 				    20, // slider width
-				    kDoubleScaleDownRight // slider type [1 or 2]
-				    );
+				    kDoubleScaleBoth, // slider type [1 or 2]
+				    -1,
+				    kVerticalFrame,
+				    GetDefaultFrameBackground(),
+				    kTRUE,kTRUE);
       fSlider->SetRange(a->GetXmin(), a->GetXmax());
       fSlider->SetPosition(a->GetBinLowEdge(bin), a->GetBinUpEdge(bin));
-      fSlider->SetScale(100);
+      fSlider->SetScale(1000.0/nbins);
       hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsRight | kLHintsExpandY, 10,10,10,1));
+      //      fSlider->Connect("PositionChanged()", "MainFrame", this, "DoSlider()");
+      fSlider->Connect("Released()", "MainFrame", this, "DoSlider()");
     }
 
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
@@ -104,6 +110,18 @@ MainFrame::~MainFrame()
   Cleanup();
 }
 
+void MainFrame::DoSlider()
+{
+  float ymin, ymax;
+  fSlider->GetPosition(ymin,ymax);
+
+  std::cout << data->GetH2((ymax+ymin)/2.0)->GetTitle() << std::endl;;
+  GetCanvas()->cd();
+  data->GetH2((ymax+ymin)/2.0)->Draw("");
+  geo->GetH2((ymax+ymin)/2.0)->Draw("same, cont3");
+  GetCanvas()->Update();
+}
+
 Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 {
   // Window_t wdummy;
@@ -113,9 +131,9 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
    // TGFileInfo fi;
    // Char_t  strtmp[250];
 
-  // std::cout << "here: " << msg << " " << parm1 << " " << parm2 << "\t" << M_FILE_EXIT << std::endl;
-  // std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
-  // std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
+  std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
+  std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
+  //  std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
 
   switch (GET_MSG(msg)) {
   case kC_COMMAND:

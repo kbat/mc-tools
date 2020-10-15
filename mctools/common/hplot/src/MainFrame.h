@@ -1,7 +1,6 @@
 #ifndef MainFrame_h_
 #define MainFrame_h_
 
-#include <TAxis.h>
 #include <TGFrame.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TGLayout.h>
@@ -28,6 +27,7 @@ class MainFrame : public TGMainFrame {
   virtual ~MainFrame();
   void DoDraw();
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
+  void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 
   ClassDef(MainFrame,0);

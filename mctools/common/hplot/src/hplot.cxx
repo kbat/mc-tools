@@ -111,8 +111,8 @@ int main(int argc, const char **argv)
       //      RebinToScreen(h2g, width, height);
     }
 
-  const std::shared_ptr<TH2> h2d = data->GetH2(0.0);
-  const std::shared_ptr<TH2> h2g = geo->GetH2(0.0);
+  const std::shared_ptr<TH2> h2d = data->GetH2(args.GetCentre());
+  const std::shared_ptr<TH2> h2g = geo->GetH2(args.GetCentre());
 
   // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);
