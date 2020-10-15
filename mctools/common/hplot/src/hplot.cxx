@@ -101,14 +101,18 @@ int main(int argc, const char **argv)
   std::string ghname = vm["ghist"].as<std::string>();
 
   std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
-  //  data->Project();
+  //  auto start = std::chrono::high_resolution_clock::now();
+  data->Project();
+  //  auto delta = std::chrono::high_resolution_clock::now()-start;
+  //  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+
 
 
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())
     {
       geo = std::make_shared<Geometry>(gfname, ghname, &args);
-      //      geo->Project();
+      geo->Project();
       //      RebinToScreen(h2g, width, height);
     }
 

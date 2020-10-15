@@ -35,12 +35,6 @@ Data::Data(const std::string& fname, const std::string& hname,
 
   h3->Scale(args->GetScale());
   centre = args->GetCentre();
-
-  auto start = std::chrono::high_resolution_clock::now();
-  Project();
-  auto delta = std::chrono::high_resolution_clock::now()-start;
-  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-
 }
 
 void Data::SetH2(std::shared_ptr<TH2> h2)

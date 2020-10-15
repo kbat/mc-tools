@@ -18,7 +18,6 @@ class Data {
   const Arguments *args;
   Float_t centre; // (initial) normal axis centre - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
-  void Project();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */
@@ -26,6 +25,7 @@ class Data {
        const std::string& hname,
        const Arguments *args);
   virtual ~Data();
+  void Project();
   const std::shared_ptr<TH3> GetH3() const { return h3; };
   std::shared_ptr <TH2> GetH2(const Float_t val) const;
   TAxis *GetNormalAxis() const;
