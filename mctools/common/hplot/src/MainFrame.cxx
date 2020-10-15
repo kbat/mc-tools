@@ -43,14 +43,16 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 				       kLHintsExpandY, 10,10,10,1));
 
   const TAxis *a  = data->GetNormalAxis();
-  Int_t bin = a->FindBin(data->GetCentre());
-  if (bin > a->GetNbins())
-    bin = a->GetNbins();
-  else if (bin==0)
-    bin = 1;
+  const Int_t nbins = a->GetNbins();
 
   if (a->GetNbins()>1)
     {
+      Int_t bin = a->FindBin(data->GetCentre());
+      if (bin > nbins)
+	bin = nbins;
+      else if (bin==0)
+	bin = 1;
+
       fSlider = new TGDoubleVSlider(hframe,
 				    20, // slider width
 				    kDoubleScaleDownRight // slider type [1 or 2]
