@@ -60,6 +60,14 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   h2->SetContour(args->GetMap()["dcont"].as<size_t>());
   h2->SetOption(args->GetDoption().c_str());
 
+  const double zmin(args->GetZMin());
+  if (zmin>std::numeric_limits<float>::lowest())
+    h2->SetMinimum(zmin);
+
+  const double zmax(args->GetZMax());
+  if (zmax<std::numeric_limits<float>::max())
+    h2->SetMaximum(zmax);
+
   return;
 }
 
@@ -150,6 +158,7 @@ void Data::Project()
 	}
 
       SetH2(h2);
+
       vh2.push_back(h2);
     }
 

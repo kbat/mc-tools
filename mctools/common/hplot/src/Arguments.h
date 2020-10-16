@@ -63,6 +63,8 @@ class Arguments {
   std::string GetXTitle() const {return vm["xtitle"].as<std::string>(); }
   std::string GetYTitle() const {return vm["ytitle"].as<std::string>(); }
   std::string GetZTitle() const {return vm["ztitle"].as<std::string>(); }
+  float GetZMax() const {return vm["zmax"].as<float>(); }
+  float GetZMin() const {return vm["zmin"].as<float>(); }
   bool test() const;
 };
 
