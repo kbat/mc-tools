@@ -180,3 +180,35 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
 
   return vh2[bin-1];
 }
+
+Bool_t Data::Check(TAxis *normal) const
+{
+  /*!
+    Checks if data and geometry histograms can be used together
+   */
+  Bool_t val = kTRUE;
+  const TAxis *myA = GetNormalAxis();
+
+  if (myA->GetNbins() != normal->GetNbins())
+    {
+      std::cerr << "Data::Check(): geometry/data normal axes nbins are different:" << std::endl;
+      std::cerr << "\t" << myA->GetNbins() << " " << normal->GetNbins() << std::endl;
+      val = kFALSE;
+    }
+
+  if (std::abs(myA->GetXmin()-normal->GetXmin())>std::numeric_limits<double>::epsilon())
+    {
+      std::cerr << "Data::Check(): geometry/data normal axes have different min values:" << std::endl;
+      std::cerr << "\t" << myA->GetXmin() << " " << normal->GetXmin() << std::endl;
+      val = kFALSE;
+    }
+
+  if (std::abs(myA->GetXmax()-normal->GetXmax())>std::numeric_limits<double>::epsilon())
+    {
+      std::cerr << "Data::Check(): geometry/data normal axes have different max values:" << std::endl;
+      std::cerr << "\t" << myA->GetXmax() << " " << normal->GetXmax() << std::endl;
+      val = kFALSE;
+    }
+
+  return val;
+}

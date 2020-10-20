@@ -113,6 +113,7 @@ int main(int argc, const char **argv)
     {
       geo = std::make_shared<Geometry>(gfname, ghname, &args);
       geo->Project();
+      data->Check(geo->GetNormalAxis());
       //      RebinToScreen(h2g, width, height);
     }
 

@@ -31,6 +31,7 @@ class Data {
   TAxis *GetNormalAxis() const;
   void SetCentre(Float_t val) { centre=val; }
   Float_t GetCentre() const { return centre; }
+  Bool_t Check(TAxis *normal) const;
 };
 
 #endif
