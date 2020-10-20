@@ -178,6 +178,17 @@ bool Arguments::test() const
 
   val = val & CheckSlice();
 
+  const std::string offset = GetOffset();
+  try {
+    std::stof(offset);
+  }
+  catch (std::invalid_argument const &e) {
+    if (offset != "centre") {
+      std::cerr << "Arguments::test(): unknown 'offset' value: " << offset << std::endl;
+      val = false;
+    }
+  }
+
   return val;
 }
 
