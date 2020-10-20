@@ -49,7 +49,7 @@ class Arguments {
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
   bool        IsSlice() const;
-  float       GetCentre()  const { return vm["centre"].as<float>(); }
+  std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
   std::string GetGoption() const {return vm["goption"].as<std::string>(); }
   size_t      GetHeight() const;

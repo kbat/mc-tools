@@ -51,7 +51,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("help,h", "Show this help message and exit")
       ("plane", po::value<Plane>()->default_value(xy, "xy"),
        "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy.")
-      ("centre", po::value<float>()->default_value(0.0), "Offset of projection plane from origin")
+      ("offset", po::value<std::string>()->default_value("centre"), "Offset of projection plane from origin. The default 'centre' value corresponds to the central bin along the axis normal to the '-plane' of the data histogram, otherwise the numeric value can be set.")
       ("title", po::value<std::string>()->default_value("None"), "Plot title")
       ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title")
       ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title")
