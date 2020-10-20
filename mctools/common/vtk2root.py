@@ -38,9 +38,9 @@ class VTK:
             sys.exit("Error: LOOKUP_TABLE size does not match number of points")
 
     def readCoordinates(self, c):
-        "Read the list of coordinates"
+        "Read the list of coordinates (bin centres)"
         found = False
-        val = []
+        centres = []
         d = {}
         f = open(self.fname)
         for line in f:
@@ -50,19 +50,31 @@ class VTK:
                 found = True
                 continue
             if found:
-                if re.search("_COORDINATES", l) or re.search("DATA", l):
-                    if len(val)>1:
-                        dx = val[-1]-val[-2]
-                    else:
-                        dx = 1 # arbitrary
-                    val.append(val[-1]+dx)
-                    d[n] = val
-                    f.close()
-                    return val
+                if re.search("_COORDINATES", l) or re.search("DATA", l): # => end reading coordinates
+                    break
                 else:
                     for v in l.split():
-                        val.append(float(v))
+                        centres.append(float(v))
         f.close()
+
+        # at this point 'centres' contains bin centres, while we need low/up edges
+        if len(centres) == 1:
+            dx = 1.0 # arbitrary fix for single bin axis
+            centres[0] = centres[0] - dx/2.0
+            centres.append(centres[0]+dx/2.0)
+            return centres
+        else:
+            edges = []
+            # if (c == "Z"):
+            #     print("centres", centres)
+            dx = centres[1] - centres[0]
+            edges.append(centres[0]-dx/2.0)
+            for i in range(len(centres)-1):
+                edges.append((centres[i]+centres[i+1])/2.0)
+            edges.append(edges[-1]+dx)
+            # if (c == "Z"):
+            #     print("edges: ",edges)
+            return edges
 
     def readTable(self):
         "Read LOOKUP_TABLE"
@@ -81,6 +93,7 @@ class VTK:
         return val
 
     def getTH3(self,htype):
+#        print(self.nz, self.z)
         title = os.path.splitext(os.path.basename(self.fname))[0]
         h = eval("ROOT."+htype)("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
         ii = 0
