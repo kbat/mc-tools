@@ -48,7 +48,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   if (nbins>1)
     {
-      Int_t bin = a->FindBin(data->GetCentre());
+      Int_t bin = a->FindBin(data->GetOffset());
       if (bin > nbins)
 	bin = nbins;
       else if (bin==0)

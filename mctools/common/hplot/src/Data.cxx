@@ -34,7 +34,7 @@ Data::Data(const std::string& fname, const std::string& hname,
   h3tmp = nullptr;
 
   h3->Scale(args->GetScale());
-  centre = args->GetCentre();
+  offset = GetOffset(args->GetOffset());
 }
 
 void Data::SetH2(std::shared_ptr<TH2> h2)
@@ -163,6 +163,28 @@ void Data::Project()
     }
 
   return;
+}
+
+Float_t Data::GetOffset(const std::string& val) const
+{
+  float v(0.0);
+  try {
+    v = std::stof(val);
+  }
+  catch (std::invalid_argument const &e) {
+    if (val != "centre")
+      std::cerr << "GetOffset: unknown val value: " << val << std::endl;
+
+    TAxis *a = GetNormalAxis();
+    v = (a->GetXmax()+a->GetXmin())/2.0;
+  }
+  std::cout << "offset: " << v << std::endl;
+  return v;
+}
+
+std::shared_ptr<TH2> Data::GetH2(const std::string val) const
+{
+  return GetH2(GetOffset(val));
 }
 
 std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
