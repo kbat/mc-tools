@@ -42,7 +42,7 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().c_str());
   else
-    h2->SetTitle(Form("%s: %s plane", h3->GetTitle(), plane.c_str()));
+    h2->SetTitle(Form("%s %s projection", h3->GetTitle(), plane.c_str()));
 
   if (args->GetXTitle() != "None")
      h2->SetXTitle(args->GetXTitle().c_str());
@@ -126,12 +126,16 @@ TAxis *Data::GetVerticalAxis() const
 
 void Data::Project()
 {
-  Float_t xmin = GetVerticalAxis()->GetXmin();
-  Float_t xmax = GetVerticalAxis()->GetXmax();
-  Float_t ymin = GetHorizontalAxis()->GetXmin();
-  Float_t ymax = GetHorizontalAxis()->GetXmax();
-  Int_t nx = GetVerticalAxis()->GetNbins();
-  Int_t ny = GetHorizontalAxis()->GetNbins();
+  const Float_t xmin = GetVerticalAxis()->GetXmin();
+  const Float_t xmax = GetVerticalAxis()->GetXmax();
+  const Float_t ymin = GetHorizontalAxis()->GetXmin();
+  const Float_t ymax = GetHorizontalAxis()->GetXmax();
+  const Int_t nx = GetVerticalAxis()->GetNbins();
+  const Int_t ny = GetHorizontalAxis()->GetNbins();
+
+  const Int_t n3x = h3->GetNbinsX();
+  const Int_t n3y = h3->GetNbinsY();
+  const Int_t n3z = h3->GetNbinsZ();
 
   TAxis *a = GetNormalAxis();
   std::shared_ptr<TH2> h2(nullptr);
@@ -139,7 +143,7 @@ void Data::Project()
   for (Int_t bin=1; bin<=a->GetNbins(); ++bin)
     {
       const char *h2name = Form("%s_%d", h3->GetName(), bin);
-      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
+      //      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
 
       if (h3->IsA() == TH3F::Class()) // data
 	h2 = std::make_shared<TH2F>(h2name, "h2 data title",     ny, ymin, ymax, nx, xmin, xmax);
@@ -149,12 +153,69 @@ void Data::Project()
 	h2 = std::make_shared<TH2I>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
 
       Float_t val, err;
-      for (Int_t i=1; i<=ny; ++i)
-	for (Int_t j=1; j<=nx; ++j) {
-	  val = h3->GetBinContent(j,i,bin);
-	  err = h3->GetBinError(j,i,bin);
-	  h2->SetBinContent(i,j,val);
-	  h2->SetBinError(i,j,err);
+      if (plane == "xy")
+	{
+	  for (Int_t i=1; i<=n3y; ++i)
+	    for (Int_t j=1; j<=n3x; ++j) {
+	      val = h3->GetBinContent(j,i,bin);
+	      err = h3->GetBinError(j,i,bin);
+	      h2->SetBinContent(i,j,val);
+	      h2->SetBinError(i,j,err);
+	    }
+	}
+      else if (plane == "yx")
+	{
+	  for (Int_t i=1; i<=n3y; ++i)
+	    for (Int_t j=1; j<=n3x; ++j) {
+	      val = h3->GetBinContent(j,i,bin);
+	      err = h3->GetBinError(j,i,bin);
+	      h2->SetBinContent(j,i,val);
+	      h2->SetBinError(j,i,err);
+	    }
+	}
+      else if (plane == "yz")
+	{
+	  std::cout << a->GetTitle() << std::endl;
+	  for (Int_t i=1; i<=n3y; ++i)
+	    for (Int_t j=1; j<=n3z; ++j) {
+	      val = h3->GetBinContent(bin,i,j);
+	      err = h3->GetBinError(bin,i,j);
+	      h2->SetBinContent(j,i,val);
+	      h2->SetBinError(j,i,err);
+	    }
+	}
+      else if (plane == "zy")
+	{
+	  std::cout << a->GetTitle() << std::endl;
+	  for (Int_t i=1; i<=n3y; ++i)
+	    for (Int_t j=1; j<=n3z; ++j) {
+	      val = h3->GetBinContent(bin,i,j);
+	      err = h3->GetBinError(bin,i,j);
+	      h2->SetBinContent(i,j,val);
+	      h2->SetBinError(i,j,err);
+	    }
+	}
+      else if (plane == "xz")
+	{
+	  std::cout << a->GetTitle() << std::endl;
+	  for (Int_t i=1; i<=n3z; ++i)
+	    for (Int_t j=1; j<=n3x; ++j) {
+	      val = h3->GetBinContent(j,bin,i);
+	      err = h3->GetBinError(j,bin,i);
+	      h2->SetBinContent(i,j,val);
+	      h2->SetBinError(i,j,err);
+	    }
+	}
+      else if (plane == "zx")
+	{
+	  std::cout << a->GetTitle() << std::endl;
+	  for (Int_t i=1; i<=n3z; ++i)
+	    for (Int_t j=1; j<=n3x; ++j) {
+	      val = h3->GetBinContent(j,bin,i);
+	      err = h3->GetBinError(j,bin,i);
+	      h2->SetBinContent(j,i,val);
+	      h2->SetBinError(j,i,err);
+	    }
 	}
 
       SetH2(h2);
@@ -178,7 +239,6 @@ Float_t Data::GetOffset(const std::string& val) const
     TAxis *a = GetNormalAxis();
     v = (a->GetXmax()+a->GetXmin())/2.0;
   }
-  std::cout << "offset: " << v << std::endl;
   return v;
 }
 
