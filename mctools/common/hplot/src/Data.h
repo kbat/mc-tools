@@ -13,6 +13,7 @@ class Data {
   std::string plane;
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;
+  char GetNormalAxisName() const;
   Float_t GetOffset(const std::string&) const;
  protected:
   std::vector< std::shared_ptr<TH2> > vh2;

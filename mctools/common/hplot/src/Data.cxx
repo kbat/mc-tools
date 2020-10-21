@@ -42,7 +42,7 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().c_str());
   else
-    h2->SetTitle(Form("%s %s projection", h3->GetTitle(), plane.c_str()));
+    h2->SetTitle(Form("%s %s projection: %s", h3->GetTitle(), plane.c_str(), h2->GetTitle()));
 
   if (args->GetXTitle() != "None")
      h2->SetXTitle(args->GetXTitle().c_str());
@@ -91,6 +91,24 @@ TAxis *Data::GetNormalAxis() const
   else {
     std::cerr << "Error: wrong plane " << plane << std::endl;
     return nullptr;
+  }
+}
+
+char Data::GetNormalAxisName() const
+{
+  /*!
+    Return the plane normal axis
+   */
+
+  if (plane.find("x")==std::string::npos)
+    return 'x';
+  else if (plane.find("y")==std::string::npos)
+    return 'y';
+  else if (plane.find("z")==std::string::npos)
+    return 'z';
+  else {
+    std::cerr << "Error: wrong plane " << plane << std::endl;
+    return '?';
   }
 }
 
@@ -145,12 +163,16 @@ void Data::Project()
       const char *h2name = Form("%s_%d", h3->GetName(), bin);
       //      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
 
+
+      const char *h2title = Form("%g< %c < %g",
+				 a->GetBinLowEdge(bin), GetNormalAxisName(), a->GetBinUpEdge(bin));
+
       if (h3->IsA() == TH3F::Class()) // data
-	h2 = std::make_shared<TH2F>(h2name, "h2 data title",     ny, ymin, ymax, nx, xmin, xmax);
+	h2 = std::make_shared<TH2F>(h2name, h2title,     ny, ymin, ymax, nx, xmin, xmax);
       else if (h3->IsA() == TH3S::Class()) // geometry
-	h2 = std::make_shared<TH2S>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
+	h2 = std::make_shared<TH2S>(h2name, h2title, ny, ymin, ymax, nx, xmin, xmax);
       else if (h3->IsA() == TH3I::Class()) // geometry
-	h2 = std::make_shared<TH2I>(h2name, "h2 geometry title", ny, ymin, ymax, nx, xmin, xmax);
+	h2 = std::make_shared<TH2I>(h2name, h2title, ny, ymin, ymax, nx, xmin, xmax);
 
       Float_t val, err;
       if (plane == "xy")
