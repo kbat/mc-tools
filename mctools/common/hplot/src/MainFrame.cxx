@@ -11,7 +11,8 @@
 
 enum MainFrameMessageTypes {
 			    M_FILE_SAVEAS,
-			    M_FILE_EXIT
+			    M_FILE_EXIT,
+			    M_HELP_ABOUT
 };
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
@@ -23,6 +24,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   // Menu bar
   fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
 
+  // File
   fMenuFile = new TGPopupMenu(fClient->GetRoot());
   fMenuFile->AddEntry("S&ave as...\tCtrl+A", M_FILE_SAVEAS);
   fMenuFile->DisableEntry(M_FILE_SAVEAS);
@@ -31,6 +33,14 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   fMenuBar->AddPopup("&File", fMenuFile,
 		     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+
+  // Help
+  fMenuHelp = new TGPopupMenu(fClient->GetRoot());
+  fMenuHelp->AddEntry("About", M_HELP_ABOUT, 0, gClient->GetPicture("about.xpm"));
+  fMenuHelp->Associate(this);
+
+  fMenuBar->AddPopup("&Help", fMenuHelp,
+		     new TGLayoutHints(kLHintsTop | kLHintsRight, 0, 4, 0, 0));
 
   AddFrame(fMenuBar,
 	   new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 1, 1));
@@ -135,7 +145,7 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 
   std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
   std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
-  //  std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
+  std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
 
   switch (GET_MSG(msg)) {
   case kC_COMMAND:
@@ -144,6 +154,10 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
       std::cout << "file -> exit" << std::endl;
       gApplication->Terminate();
       break;
+    case M_HELP_ABOUT:
+      std::cout << "Help" << std::endl;
+      break;
+
     default:
       break;
     }

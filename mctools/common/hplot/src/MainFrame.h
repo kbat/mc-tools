@@ -16,6 +16,7 @@ class MainFrame : public TGMainFrame {
   TRootEmbeddedCanvas *fEcanvas;
   TGMenuBar           *fMenuBar;
   TGPopupMenu         *fMenuFile;
+  TGPopupMenu         *fMenuHelp;
   TGDoubleVSlider     *fSlider;
 
   std::shared_ptr<Data> data;
