@@ -24,6 +24,11 @@ fi
 
 mcnp=$(echo $(basename $0) | sed -e "s/pview/p6/" -e "s/view//")
 
+if ! command -v $mcnp &> /dev/null ; then
+    echo "${prog}: $mcnp executable does not exist"
+    exit 1
+fi
+
 i=inp
 test -z $1 || i=$1
 
