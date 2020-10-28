@@ -15,28 +15,32 @@
 #
 # https://github.com/kbat/mc-tools
 
-mcnp=$(echo $(basename $0) | sed -e "s/pview/p6/" -e "s/view//")
-
-ln -sf ~/.xbindkeysrc-$mcnp ~/.xbindkeysrc
-killall xbindkeys; xbindkeys
-
-tmpdir=`mktemp -d`
+prog=$(basename $0)
 
 if [ $# -eq 0 ]; then
-    echo "Usage: mcnpview inp [zoom] [mcplot command]"
+    echo "Usage: $prog inp [zoom] [MCNP plot requests]"
     exit 1
 fi
+
+mcnp=$(echo $(basename $0) | sed -e "s/pview/p6/" -e "s/view//")
 
 i=inp
 test -z $1 || i=$1
 
-com=""
-test -z $2 || com=$2
-
 if [ ! -f $i ]; then
-    echo "mcnpview: can't open MCNP input file " $i
+    echo $prog": can't open MCNP input file " $i
     exit 1
 fi
+
+if [ -e ~/.xbindkeysrc-$mcnp ]; then
+    ln -sf ~/.xbindkeysrc-$mcnp ~/.xbindkeysrc
+    killall xbindkeys; xbindkeys
+fi
+
+tmpdir=`mktemp -d`
+
+com=""
+test -z $2 || com=$2
 
 /bin/cp -f $i $tmpdir
 i=$tmpdir/$(basename $i)
@@ -46,7 +50,7 @@ if [ ! -z $com -a -f $com ]; then
     cp -f $com $tmpdir
     com=$tmpdir/$(basename $com)
     echo $com
-    # execute commands after $com in mcplot:
+    # execute commands after $com in MCNP plot:
     shift
     shift
     echo $@ >> $com
@@ -66,7 +70,9 @@ rm -fr $tmpdir
 # update the plot
 #	xdotool mousemove 100 100 click 1
 
-f=$(ls -1rt|tail -1)	  	
-if [[ $f =~ \.ps$  ]]; then ps2pdf $f && rm -f $f; fi
-
-
+if command -v ps2pdf &> /dev/null; then
+    f=$(ls -1rt|tail -1)
+    if [[ $f =~ \.ps$  ]]; then ps2pdf $f && rm -f $f; fi
+else
+    echo $prog": install ps2pdf to automatically convert saved PostScript files into PDF format"
+fi
