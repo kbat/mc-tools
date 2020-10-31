@@ -46,6 +46,7 @@ class Arguments {
   Arguments(int ac, const char **av);
   po::variables_map GetMap() const { return &vm; }
   bool IsBatch() const;
+  bool IsFlipped() const {return vm.count("flip"); }
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
   bool        IsSlice() const;

@@ -20,6 +20,7 @@ class Data {
   const Arguments *args;
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
+  void Flip();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */

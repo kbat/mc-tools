@@ -31,6 +31,12 @@ Data::Data(const std::string& fname, const std::string& hname,
   h3->SetDirectory(0);
   df.Close();
 
+  //  auto start = std::chrono::high_resolution_clock::now();
+  if (args->IsFlipped())
+    Flip();
+  //  auto delta = std::chrono::high_resolution_clock::now()-start;
+  //  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+
   h3tmp = nullptr;
 
   h3->Scale(args->GetScale());
@@ -67,6 +73,37 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   const double zmax(args->GetZMax());
   if (zmax<std::numeric_limits<float>::max())
     h2->SetMaximum(zmax);
+
+  return;
+}
+
+void Data::Flip()
+{
+  /*!
+    Flip the h3 along the Y axis
+  */
+  const std::string hname(Form("%s_%s", h3->GetName(), "flipped"));
+  std::shared_ptr<TH3> flipped = std::shared_ptr<TH3>(static_cast<TH3*>(h3->Clone(hname.c_str())));
+  flipped->Reset();
+
+  const Int_t nx = h3->GetNbinsX();
+  const Int_t ny = h3->GetNbinsY();
+  const Int_t nz = h3->GetNbinsZ();
+
+  for (Int_t i=1; i<=nx; ++i)
+    for (Int_t j=1; j<=ny; ++j)
+      for (Int_t k=1; k<=nz; ++k)
+	{
+	  const Double_t val = h3->GetBinContent(i,j,k);
+	  const Double_t err = h3->GetBinError(i,j,k);
+	  flipped->SetBinContent(i, ny+1-j, k, val);
+	  flipped->SetBinError(i,   ny+1-j, k, err);
+	}
+
+  TAxis *AAxis = flipped->GetYaxis();
+  AAxis->Set(AAxis->GetNbins(), -AAxis->GetXmax(), -AAxis->GetXmin());
+
+  h3 = std::move(flipped);
 
   return;
 }

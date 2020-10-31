@@ -68,7 +68,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("right_margin", po::value<float>()->default_value(0.12),
        "Right margin of the canvas in order to allocate enough space for the z-axis title. "
        "Used only if ZTITLE is set and DOPTION is \"colz\"")
-      //      ("flip", "Flip the vertical axis")
+      ("flip", "Flip the vertical axis")
       //      ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(""),
        "Output file name. If given then the canvas is not shown.")
