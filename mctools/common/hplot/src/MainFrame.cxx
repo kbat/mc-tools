@@ -89,6 +89,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   TGTextButton *exit = new TGTextButton(hframe1,"&Exit ",
   					"gApplication->Terminate()");
+  exit->SetState(kButtonDisabled);
   hframe1->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
   					   5,5,3,4));
   AddFrame(hframe1,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
