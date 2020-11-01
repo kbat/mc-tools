@@ -4,6 +4,7 @@
 #include "Data.h"
 
 class Geometry : public Data {
+  inline void ErrorHist(std::shared_ptr<TH2> h) const {;}
 protected:
   virtual void SetH2(std::shared_ptr<TH2> h2);
  public:

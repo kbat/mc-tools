@@ -34,7 +34,7 @@ def ErrorHist(h):
         for j in range(1,ny+1):
             val = h.GetBinContent(i,j)
             if val != 0:
-                err = 100*h.GetBinError(i,j) / h.GetBinContent(i,j)
+                err = 100*h.GetBinError(i,j) / val
             else:
                 err = 100.0
             herr.SetBinContent(i,j,err)

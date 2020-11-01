@@ -15,12 +15,13 @@ class Data {
   TAxis *GetVerticalAxis() const;
   char GetNormalAxisName() const;
   Float_t GetOffset(const std::string&) const;
+  void Flip();
+  void ErrorHist(std::shared_ptr<TH2> h) const;
  protected:
   std::vector< std::shared_ptr<TH2> > vh2;
   const Arguments *args;
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
-  void Flip();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */

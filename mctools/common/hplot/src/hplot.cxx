@@ -100,10 +100,10 @@ int main(int argc, const char **argv)
   std::string ghname = vm["ghist"].as<std::string>();
 
   std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
-  //  auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
   data->Project();
-  //  auto delta = std::chrono::high_resolution_clock::now()-start;
-  //  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+  auto delta = std::chrono::high_resolution_clock::now()-start;
+  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
 
 
 
@@ -145,16 +145,16 @@ int main(int argc, const char **argv)
       gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
-  if ((args.GetZTitle() != "None") &&
+  if (((args.GetZTitle() != "None") &&
       (!args.GetZTitle().empty()) &&
-      (args.GetDoption() == "colz"))
-    c1->SetRightMargin(vm["right_margin"].as<float>());
+       (args.GetDoption() == "colz")) || args.IsErrors())
+      c1->SetRightMargin(vm["right_margin"].as<float>());
 
   // RebinToScreen(h2d, width, height);
 
   h2d->Draw(); // 3 sec to draw
 
-  c1->SetLogz(args.IsLogz());
+  c1->SetLogz(args.IsLogz() && !args.IsErrors());
 
   // GEOMETRY
 

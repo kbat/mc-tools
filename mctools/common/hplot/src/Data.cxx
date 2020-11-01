@@ -34,8 +34,8 @@ Data::Data(const std::string& fname, const std::string& hname,
   //  auto start = std::chrono::high_resolution_clock::now();
   if (args->IsFlipped())
     Flip();
-  //  auto delta = std::chrono::high_resolution_clock::now()-start;
-  //  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+  // auto delta = std::chrono::high_resolution_clock::now()-start;
+  // std::cout << " Data::Flip: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
 
   h3tmp = nullptr;
 
@@ -66,13 +66,11 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   h2->SetContour(args->GetMap()["dcont"].as<size_t>());
   h2->SetOption(args->GetDoption().c_str());
 
-  const double zmin(args->GetZMin());
-  if (zmin>std::numeric_limits<float>::lowest())
-    h2->SetMinimum(zmin);
+  if (args->IsZmin())
+    h2->SetMinimum(args->GetZmin());
 
-  const double zmax(args->GetZMax());
-  if (zmax<std::numeric_limits<float>::max())
-    h2->SetMaximum(zmax);
+  if (args->IsZmax())
+    h2->SetMaximum(args->GetZmax());
 
   return;
 }
@@ -107,6 +105,44 @@ void Data::Flip()
 
   return;
 }
+
+void Data::ErrorHist(std::shared_ptr<TH2> h) const
+/*!
+  Replace values with their relative errors
+ */
+{
+  const Int_t nx = h->GetNbinsX();
+  const Int_t ny = h->GetNbinsY();
+  for (Int_t i=1; i<=nx; ++i)
+    for (Int_t j=1; j<=ny; ++j)
+      {
+	const Double_t val = h->GetBinContent(i,j);
+	Double_t err = std::abs(val)>0.0 ?
+	  100.0 * h->GetBinError(i,j) / val : 0.0;
+	h->SetBinContent(i,j,err);
+	h->SetBinError(i,j,0.0);
+	if (err>100.0)
+	  std::cout << "Warning: relative error > 100%:\t" << err << std::endl;
+      }
+
+  h->GetZaxis()->SetTitle("Relative error [%]");
+
+  Float_t zmin(args->GetZmin());
+  Float_t zmax(args->GetZmax());
+
+  if (zmax>100.0)
+    zmax = 100.0;
+  h->SetMaximum(zmax);
+
+  if (!args->IsZmin()) {
+    //	zmin = h->GetBinContent(h2->GetMinimumBin());
+    zmin = h->GetMinimum(0.0); // return min bin content > 0.0
+    h->SetMinimum(zmin);
+  }
+
+  return;
+}
+
 
 Data::~Data()
 {
@@ -193,9 +229,11 @@ void Data::Project()
   const Int_t n3z = h3->GetNbinsZ();
 
   TAxis *a = GetNormalAxis();
+  const Int_t nbins = a->GetNbins();
+  vh2.reserve(nbins);
   std::shared_ptr<TH2> h2(nullptr);
 
-  for (Int_t bin=1; bin<=a->GetNbins(); ++bin)
+  for (Int_t bin=1; bin<=nbins; ++bin)
     {
       const char *h2name = Form("%s_%d", h3->GetName(), bin);
       //      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
@@ -277,7 +315,11 @@ void Data::Project()
 	    }
 	}
 
+
       SetH2(h2);
+
+      if (args->IsErrors())
+	ErrorHist(h2);
 
       vh2.push_back(h2);
     }

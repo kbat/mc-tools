@@ -46,9 +46,12 @@ class Arguments {
   Arguments(int ac, const char **av);
   po::variables_map GetMap() const { return &vm; }
   bool IsBatch() const;
+  bool IsErrors() const {return vm.count("errors");}
   bool IsFlipped() const {return vm.count("flip"); }
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
+  bool  IsZmax() const {return GetZmax()<std::numeric_limits<float>::max();}
+  bool  IsZmin() const {return GetZmin()>std::numeric_limits<float>::lowest();}
   bool        IsSlice() const;
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
@@ -64,8 +67,8 @@ class Arguments {
   std::string GetXTitle() const {return vm["xtitle"].as<std::string>(); }
   std::string GetYTitle() const {return vm["ytitle"].as<std::string>(); }
   std::string GetZTitle() const {return vm["ztitle"].as<std::string>(); }
-  float GetZMax() const {return vm["zmax"].as<float>(); }
-  float GetZMin() const {return vm["zmin"].as<float>(); }
+  float GetZmax() const {return vm["zmax"].as<float>(); }
+  float GetZmin() const {return vm["zmin"].as<float>(); }
   bool test() const;
 };
 
