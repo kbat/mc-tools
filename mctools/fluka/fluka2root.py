@@ -272,7 +272,7 @@ class Converter:
         if self.verbose:
             printincolor(command)
         return_value = os.system(command)
-        if return_value is 0:
+        if return_value is 0 and not self.keep:
             command = "rm -f %s %s" % (v, ' '.join(self.out_root_files + [item for sublist in self.datafiles for item in sublist]))
             if self.verbose:
                 printincolor(command)
