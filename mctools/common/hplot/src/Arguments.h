@@ -52,8 +52,12 @@ class Arguments {
   bool IsLogz() const {return !vm.count("no-logz"); }
   bool IsRebin() const {return vm.count("rebin"); }
   bool IsVerbose() const {return vm.count("v"); }
-  bool  IsZmax() const {return GetZmax()<std::numeric_limits<float>::max();}
+  bool  IsXmin() const {return GetXmin()>std::numeric_limits<float>::lowest();}
+  bool  IsXmax() const {return GetXmax()<std::numeric_limits<float>::max();}
+  bool  IsYmin() const {return GetYmin()>std::numeric_limits<float>::lowest();}
+  bool  IsYmax() const {return GetYmax()<std::numeric_limits<float>::max();}
   bool  IsZmin() const {return GetZmin()>std::numeric_limits<float>::lowest();}
+  bool  IsZmax() const {return GetZmax()<std::numeric_limits<float>::max();}
   bool        IsSlice() const;
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }
@@ -69,8 +73,12 @@ class Arguments {
   std::string GetXTitle() const {return vm["xtitle"].as<std::string>(); }
   std::string GetYTitle() const {return vm["ytitle"].as<std::string>(); }
   std::string GetZTitle() const {return vm["ztitle"].as<std::string>(); }
-  float GetZmax() const {return vm["zmax"].as<float>(); }
+  float GetXmin() const {return vm["xmin"].as<float>(); }
+  float GetXmax() const {return vm["xmax"].as<float>(); }
+  float GetYmin() const {return vm["ymin"].as<float>(); }
+  float GetYmax() const {return vm["ymax"].as<float>(); }
   float GetZmin() const {return vm["zmin"].as<float>(); }
+  float GetZmax() const {return vm["zmax"].as<float>(); }
   bool test() const;
 };
 
