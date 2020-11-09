@@ -73,6 +73,14 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   if (args->IsZmax())
     h2->SetMaximum(args->GetZmax());
 
+  // TODO: better to define TH2 taking into account [xy]min/max than
+  // limiting the axes
+  if (args->IsXmin())
+    h2->GetXaxis()->SetRangeUser(args->GetXmin(), args->GetXmax());
+
+  if (args->IsYmin())
+    h2->GetYaxis()->SetRangeUser(args->GetYmin(), args->GetYmax());
+
   return;
 }
 
