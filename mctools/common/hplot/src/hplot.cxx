@@ -111,7 +111,11 @@ int main(int argc, const char **argv)
   if (!gfname.empty())
     {
       geo = std::make_shared<Geometry>(gfname, ghname, &args);
+      auto start = std::chrono::high_resolution_clock::now();
       geo->Project();
+      auto delta = std::chrono::high_resolution_clock::now()-start;
+      std::cout << " Geometry::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+
       data->Check(geo->GetNormalAxis());
       //      RebinToScreen(h2g, width, height);
     }
