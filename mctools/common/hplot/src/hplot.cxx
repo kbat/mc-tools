@@ -17,32 +17,6 @@
 #include "Data.h"
 #include "Geometry.h"
 
-void RebinToScreen(std::shared_ptr<TH2> h2, UInt_t width, UInt_t height)
-{
-  std::cerr << "RebinToScreen changes abs value -> do not rebin" << std::endl;
-  return;
-  /*!
-    Rebin h2 so that it is not larger than the screen size in order to avoid having bin < pixel
-   */
-  //  std::clog << "RebinToScreen" << std::endl;
-
-  const Int_t nx = h2->GetNbinsX();
-  const Int_t ny = h2->GetNbinsY();
-
-  const Int_t scaleX =
-    TMath::Ceil(nx/static_cast<float>(width));
-  if (scaleX>=2)
-    h2->RebinX(scaleX);
-
-  const Int_t scaleY =
-    TMath::Ceil(ny/static_cast<float>(height));
-  if (scaleY>=2)
-    h2->RebinY(scaleY);
-
-  std::cout << "h2 after: " << h2->GetNbinsX() << " " << h2->GetNbinsY() << std::endl;
-  return;
-}
-
 void SetColourMap()
 {
   /*!
@@ -117,7 +91,6 @@ int main(int argc, const char **argv)
       std::cout << " Geometry::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
 
       data->Check(geo->GetNormalAxis());
-      //      RebinToScreen(h2g, width, height);
     }
 
   const std::shared_ptr<TH2> h2d = data->GetH2(args.GetOffset());
@@ -153,8 +126,6 @@ int main(int argc, const char **argv)
       (!args.GetZTitle().empty()) &&
        (args.GetDoption() == "colz")) || args.IsErrors())
       c1->SetRightMargin(vm["right_margin"].as<float>());
-
-  // RebinToScreen(h2d, width, height);
 
   h2d->Draw(); // 3 sec to draw
 

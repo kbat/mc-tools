@@ -65,6 +65,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("width", po::value<size_t>()->default_value(800), "Canvas width")
       ("height", po::value<size_t>()->default_value(inan),
        "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
+      ("rebin", "Rebin the 2D histograms such that they are not larger than width x height (specified by the above arguments). This argument drastically speeds up hisgogram drawing, especially in the case when the data or geometry histograms are larger than the screen resolution.")
       ("right_margin", po::value<float>()->default_value(0.12),
        "Right margin of the canvas in order to allocate enough space for the z-axis title. "
        "Used only if ZTITLE is set and DOPTION is \"colz\"")

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <TMath.h>
 #include <TFile.h>
 #include "Data.h"
 
@@ -167,6 +168,45 @@ void Data::ErrorHist(std::shared_ptr<TH2> h) const
   }
 
   return;
+}
+
+void Data::Rebin(std::shared_ptr<TH2> h) const
+{
+  /*!
+    Rebin the histogram so that it is not larger than width x height
+   */
+
+  const Int_t width = args->GetWidth();
+  const Int_t height = args->GetHeight();
+
+  const Int_t nx = h->GetNbinsX();
+  const Int_t ny = h->GetNbinsY();
+
+  const Int_t scaleX =
+    TMath::Ceil(nx/static_cast<float>(width));
+  if (scaleX>=2)
+    h->RebinX(scaleX);
+  else if (scaleX==0)
+    {
+      std::cerr << "hplot: ERROR: scaleX = 0" << std::endl;
+    }
+
+  const Int_t scaleY =
+    TMath::Ceil(ny/static_cast<float>(height));
+  if (scaleY>=2)
+    h->RebinY(scaleY);
+  else if (scaleY==0)
+    {
+      std::cerr << "hplot: ERROR: scaleY = 0" << std::endl;
+    }
+
+  if ((scaleX>=2) || (scaleY>=2))
+    h->Scale(1.0/(scaleX*scaleY));
+
+  std::cout << "Rebinning " << h->GetName() << ": before: " << nx << " x " << ny;
+  std::cout << "\t after: " << h->GetNbinsX() << " x " << h->GetNbinsY();
+  std::cout << "\t by factor " << scaleX << " x " << scaleY  << std::endl;
+
 }
 
 
@@ -340,6 +380,9 @@ void Data::Project()
 	      h2->SetBinError(j,i,err);
 	    }
 	}
+
+      if (args->IsRebin())
+	Rebin(h2);
 
       SetH2(h2);
 
