@@ -3,7 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
-import argparse, threading
+import argparse
 from sys   import exit
 from array import array
 from math  import sqrt
@@ -52,97 +52,6 @@ def setColourMap():
 
         ROOT.TColor.CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont)
         ROOT.gStyle.SetNumberContours(NCont)
-
-def procData(threadID, name, args, hist, pad, event):
-        print("Starting thread " + name)
-
-        if args.verbose: print("Projecting 3D data onto 2D histogram")
-
-        event.clear()
-
-        hist2 = hist.Project3D(args.plane)
-        hist2.Scale(args.scale)
-
-        if args.errors:
-                if args.verbose:
-                        print("Showing the histogram with errors")
-                hist2 = ErrorHist(hist2)
-                args.ztitle = "Relative error [%]"
-                if args.zmin:
-                        args.zmin = 0
-                        if args.verbose: print("zmin set to 0")
-                if args.zmax and args.zmax>100:
-                        args.zmax = 100
-                        if args.verbose: print("zmax set to 100")
-                args.nologz = True
-
-        if args.flip:
-                if args.verbose: print("Flipping the data histogram...")
-                hist2 = FlipTH2(hist2)
-                if args.verbose: print("Flipping the data histogram done")
-
-        if args.title is not None:
-                hist2.SetTitle(args.title)
-
-        if args.xtitle:
-            hist2.SetXTitle(args.xtitle)
-
-        if args.ytitle:
-            hist2.SetYTitle(args.ytitle)
-
-        if args.ztitle:
-                if args.doption == 'colz':
-                        pad.SetRightMargin(args.right_margin);
-                hist2.SetZTitle(args.ztitle)
-
-        if args.verbose: print("Drawing data")
-
-        pad.cd()
-        hist2.Draw(args.doption)
-        hist2.SetContour(args.dcont)
-        pad.Update()
-
-        if args.xmin is not None:
-                hist2.GetXaxis().SetRangeUser(args.xmin, args.xmax)
-
-        if args.ymin is not None:
-                hist2.GetYaxis().SetRangeUser(args.ymin, args.ymax)
-
-        if not args.nologz:
-#                        pad.SetLogz()
-                ROOT.gPad.SetLogz()
-
-        if args.zmin is not None:
-                hist2.SetMinimum(args.zmin)
-
-        if args.zmax is not None:
-                hist2.SetMaximum(args.zmax)
-        if args.verbose: print("Drawing data done")
-        event.set()
-
-
-def procGeometry(threadID, name, args, hist, pad, event):
-        print("Starting thread " + name)
-
-        if args.verbose: print(" Projecting 3D geometry onto 2D histogram")
-
-        hist2 = hist.Project3D(args.plane)
-        if args.flip:
-                if args.verbose: print(" Flipping the geometry histogram...")
-                hist2 = FlipTH2(hist2)
-                if args.verbose: print(" Flipping the geometry histogram done")
-        hist2.SetLineWidth(args.glwidth)
-        hist2.SetLineColor(eval("ROOT.%s" % args.glcolor))
-        hist2.SetContour(args.gcont)
-
-        if args.verbose: print(" Waiting before drawing geometry...")
-        event.wait()
-
-        if args.verbose: print(" Drawing geometry")
-        pad.cd()
-        hist2.Draw("same %s" % args.goption)
-#        hist2.SaveAs("g.root")
-
 
 def main():
         """A simple TH2 plotter with optional geometry overlay
@@ -219,30 +128,79 @@ def main():
                 print("ERROR: Can't find object '%s' in %s" % (args.dhist, args.dfile))
                 exit(1)
 
-        event = threading.Event()
-        procs = []
+        if args.verbose: print("Projecting 3D data onto 2D histogram")
+
+        dh2 = dh.Project3D(args.plane)
+        dh2.Scale(args.scale)
+
+        if args.errors:
+                if args.verbose:
+                        print("Showing the histogram with errors")
+                dh2 = ErrorHist(dh2)
+                args.ztitle = "Relative error [%]"
+                if args.zmin:
+                        args.zmin = 0
+                        if args.verbose: print("zmin set to 0")
+                if args.zmax and args.zmax>100:
+                        args.zmax = 100
+                        if args.verbose: print("zmax set to 100")
+                args.nologz = True
+
+        if args.flip:
+                if args.verbose: print("Flipping the data histogram")
+                dh2 = FlipTH2(dh2)
+
+        if args.title is not None:
+                dh2.SetTitle(args.title)
+
+        if args.xtitle:
+            dh2.SetXTitle(args.xtitle)
+
+        if args.ytitle:
+            dh2.SetYTitle(args.ytitle)
+
+        if args.ztitle:
+                if args.doption == 'colz':
+                        pad1.SetRightMargin(args.right_margin);
+                dh2.SetZTitle(args.ztitle)
+
+        if args.verbose: print("Drawing data")
+
+        dh2.Draw(args.doption)
+        dh2.SetContour(args.dcont)
+        pad1.Update()
+
+        if args.xmin is not None:
+                dh2.GetXaxis().SetRangeUser(args.xmin, args.xmax)
+
+        if args.ymin is not None:
+                dh2.GetYaxis().SetRangeUser(args.ymin, args.ymax)
+
+        if not args.nologz:
+                ROOT.gPad.SetLogz()
+
+        if args.zmin is not None:
+                dh2.SetMinimum(args.zmin)
+
+        if args.zmax is not None:
+                dh2.SetMaximum(args.zmax)
 
         if args.gfile is not None:
-                gf = ROOT.TFile(args.gfile)
-                gh = gf.Get(args.ghist)
-                if not gh:
-                        print("ERROR: Can't find object '%s' in %s" % (args.ghist, args.gfile))
-                        exit(1)
+            gf = ROOT.TFile(args.gfile)
+            gh = gf.Get(args.ghist)
+            if not gh:
+                print("ERROR: Can't find object '%s' in %s" % (args.ghist, args.gfile))
+                exit(1)
 
-                proc2 = threading.Thread(target=procGeometry,
-                                                  args=(2, "Geometry", args, gh, pad1, event))
-                proc2.start()
-                procs.append(proc2)
-
-        proc1 = threading.Thread(target=procData,
-                                          args=(1, "Data", args, dh, pad1, event))
-
-        proc1.start()
-        procs.append(proc1)
-
-        for p in procs:
-                p.join()
-        if args.verbose: print("Exiting main process")
+            if args.verbose: print("Projecting 3D geometry onto 2D histogram")
+            gh2 = gh.Project3D(args.plane)
+            if args.flip:
+                    if args.verbose: print("Flipping the geometry histogram")
+                    gh2 = FlipTH2(gh2)
+            gh2.SetLineWidth(args.glwidth)
+            gh2.SetLineColor(eval("ROOT.%s" % args.glcolor))
+            gh2.SetContour(args.gcont)
+            gh2.Draw("same %s" % args.goption)
 
         ci = ROOT.TColor.GetFreeColorIndex()
         color = ROOT.TColor(ci,0.27843137254900002, 0.27843137254900002, 0.6)
