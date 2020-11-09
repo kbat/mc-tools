@@ -88,19 +88,45 @@ void Data::Flip()
   const Int_t ny = h3->GetNbinsY();
   const Int_t nz = h3->GetNbinsZ();
 
-  for (Int_t i=1; i<=nx; ++i)
-    for (Int_t j=1; j<=ny; ++j)
-      for (Int_t k=1; k<=nz; ++k)
-	{
-	  const Double_t val = h3->GetBinContent(i,j,k);
-	  const Double_t err = h3->GetBinError(i,j,k);
-	  flipped->SetBinContent(i, ny+1-j, k, val);
-	  flipped->SetBinError(i,   ny+1-j, k, err);
-	}
-
-  TAxis *AAxis = flipped->GetYaxis();
-  AAxis->Set(AAxis->GetNbins(), -AAxis->GetXmax(), -AAxis->GetXmin());
-
+  if (plane[0]=='x') // vertical axis is 'x'
+    {
+      for (Int_t i=1; i<=nx; ++i)
+	for (Int_t j=1; j<=ny; ++j)
+	  for (Int_t k=1; k<=nz; ++k)
+	    {
+	      const Double_t val = h3->GetBinContent(i,j,k);
+	      const Double_t err = h3->GetBinError(i,j,k);
+	      const Int_t ii(nx+1-i);
+	      flipped->SetBinContent(ii, j, k, val);
+	      flipped->SetBinError(ii,   j, k, err);
+	    }
+    }
+  else if (plane[0]=='y') // vertical axis is 'y'
+    {
+      for (Int_t i=1; i<=nx; ++i)
+	for (Int_t j=1; j<=ny; ++j)
+	  for (Int_t k=1; k<=nz; ++k)
+	    {
+	      const Double_t val = h3->GetBinContent(i,j,k);
+	      const Double_t err = h3->GetBinError(i,j,k);
+	      const Int_t jj(ny+1-j);
+	      flipped->SetBinContent(i, jj, k, val);
+	      flipped->SetBinError(i,   jj, k, err);
+	    }
+    }
+  else if (plane[0]=='z') // vertical axis is 'z'
+    {
+      for (Int_t i=1; i<=nx; ++i)
+	for (Int_t j=1; j<=ny; ++j)
+	  for (Int_t k=1; k<=nz; ++k)
+	    {
+	      const Double_t val = h3->GetBinContent(i,j,k);
+	      const Double_t err = h3->GetBinError(i,j,k);
+	      const Int_t kk(nz+1-k);
+	      flipped->SetBinContent(i, j, kk, val);
+	      flipped->SetBinError(i,   j, kk, err);
+	    }
+    }
   h3 = std::move(flipped);
 
   return;
@@ -315,11 +341,16 @@ void Data::Project()
 	    }
 	}
 
-
       SetH2(h2);
 
       if (args->IsErrors())
 	ErrorHist(h2);
+
+      if (args->IsFlipped()) // reverse vertical axis
+	{
+	  TAxis *a = h2->GetYaxis();
+	  a->Set(a->GetNbins(), -a->GetXmax(), -a->GetXmin());
+	}
 
       vh2.push_back(h2);
     }
@@ -340,6 +371,7 @@ Float_t Data::GetOffset(const std::string& val) const
     TAxis *a = GetNormalAxis();
     v = (a->GetXmax()+a->GetXmin())/2.0;
   }
+
   return v;
 }
 
