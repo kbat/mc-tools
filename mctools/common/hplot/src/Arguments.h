@@ -51,6 +51,7 @@ class Arguments {
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
   bool IsRebin() const {return vm.count("rebin"); }
+  bool IsVerbose() const {return vm.count("v"); }
   bool  IsZmax() const {return GetZmax()<std::numeric_limits<float>::max();}
   bool  IsZmin() const {return GetZmin()>std::numeric_limits<float>::lowest();}
   bool        IsSlice() const;

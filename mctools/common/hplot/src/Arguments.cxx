@@ -48,34 +48,43 @@ Arguments::Arguments(int ac, const char **av) :
 
     po::options_description generic("Generic options", w.ws_col);
     generic.add_options()
-      ("help,h", "Show this help message and exit")
+      ("help,h", "Show this help message and exit.")
       ("plane", po::value<Plane>()->default_value(xy, "xy"),
        "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy.")
       ("offset", po::value<std::string>()->default_value("centre"), "Offset of projection plane from origin. The default 'centre' value corresponds to the central bin along the axis normal to the '-plane' of the data histogram, otherwise the numeric value can be set.")
-      ("title", po::value<std::string>()->default_value("None"), "Plot title")
-      ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title")
-      ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title")
-      ("ztitle", po::value<std::string>()->default_value("None"), "Colour axis title")
-      ("xmin", po::value<float>()->default_value(flowest), "Horizontal axis min value")
-      ("xmax", po::value<float>()->default_value(fmax), "Horizontal axis max value")
-      ("ymin", po::value<float>()->default_value(flowest), "Vertical axis min value")
-      ("ymax", po::value<float>()->default_value(fmax), "Vertical axis max value")
-      ("zmin", po::value<float>()->default_value(flowest), "Colour axis min value")
-      ("zmax", po::value<float>()->default_value(fmax), "Colour axis max value")
-      ("width", po::value<size_t>()->default_value(800), "Canvas width")
+      ("title", po::value<std::string>()->default_value("None"), "Plot title.")
+      ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title.")
+      ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title.")
+      ("ztitle", po::value<std::string>()->default_value("None"), "Colour axis title.")
+      ("xmin", po::value<float>()->default_value(flowest), "Horizontal axis min value.")
+      ("xmax", po::value<float>()->default_value(fmax), "Horizontal axis max value.")
+      ("ymin", po::value<float>()->default_value(flowest), "Vertical axis min value.")
+      ("ymax", po::value<float>()->default_value(fmax), "Vertical axis max value.")
+      ("zmin", po::value<float>()->default_value(flowest), "Colour axis min value.")
+      ("zmax", po::value<float>()->default_value(fmax), "Colour axis max value.")
+      ("width", po::value<size_t>()->default_value(800), "Canvas width.")
       ("height", po::value<size_t>()->default_value(inan),
        "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
-      ("rebin", "Rebin the 2D histograms such that they are not larger than width x height (specified by the above arguments). This argument drastically speeds up hisgogram drawing, especially in the case when the data or geometry histograms are larger than the screen resolution.")
+      ("rebin", "Rebin the 2D histograms such that they are not larger than width x height "
+       "(specified by the above arguments). This argument drastically speeds up histogram drawing, "
+       "especially in the case when the data or geometry histograms are larger "
+       "than the screen resolution.")
       ("right_margin", po::value<float>()->default_value(0.12),
        "Right margin of the canvas in order to allocate enough space for the z-axis title. "
-       "Used only if ZTITLE is set and DOPTION is \"colz\"")
-      ("flip", "Flip the vertical axis")
+       "Used only if ZTITLE is set and DOPTION is \"colz\".")
+      ("flip", "Flip the vertical axis.")
       //      ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(""),
        "Output file name. If given then the canvas is not shown.")
-      //      ("v", "Explain what is being done")
-      ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}), "no slice"), "Show live slice averaging the given number of bins. Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. Two integer numbers are required: the first one is the number of bins to average the slice on 2D histogrm, the second one indicates how many bins of this have to be merged into one bin in the 1D histogram")
-    ("errors", "Plot the histogram with relative errors instead of data");
+      ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}),
+									      "no slice"),
+       "Show live slice averaging the given number of bins. "
+       "Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. "
+       "Two integer numbers are required: the first one is the number of bins "
+       "to average the slice on 2D histogrm, the second one indicates how many bins "
+       "of this have to be merged into one bin in the 1D histogram.")
+    ("errors", "Plot the histogram with relative errors instead of data.")
+    ("v", "Explain what is being done.");
 
 
     po::options_description data("Data options", w.ws_col);

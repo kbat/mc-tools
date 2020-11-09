@@ -203,10 +203,13 @@ void Data::Rebin(std::shared_ptr<TH2> h) const
   if ((scaleX>=2) || (scaleY>=2))
     h->Scale(1.0/(scaleX*scaleY));
 
-  std::cout << "Rebinning " << h->GetName() << ": before: " << nx << " x " << ny;
-  std::cout << "\t after: " << h->GetNbinsX() << " x " << h->GetNbinsY();
-  std::cout << "\t by factor " << scaleX << " x " << scaleY  << std::endl;
-
+  if (args->IsVerbose())
+    {
+      std::cout << "Rebinning " << h->GetName() << ": before: " << nx << " x " << ny;
+      std::cout << "\t after: " << h->GetNbinsX() << " x " << h->GetNbinsY();
+      std::cout << "\t by factor " << scaleX << " x " << scaleY  << std::endl;
+    }
+  return;
 }
 
 
@@ -338,7 +341,7 @@ void Data::Project()
 	}
       else if (plane == "yz")
 	{
-	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << a->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3y; ++i)
 	    for (Int_t j=1; j<=n3z; ++j) {
 	      val = h3->GetBinContent(bin,i,j);
@@ -349,7 +352,7 @@ void Data::Project()
 	}
       else if (plane == "zy")
 	{
-	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << a->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3y; ++i)
 	    for (Int_t j=1; j<=n3z; ++j) {
 	      val = h3->GetBinContent(bin,i,j);
@@ -360,7 +363,7 @@ void Data::Project()
 	}
       else if (plane == "xz")
 	{
-	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << a->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3z; ++i)
 	    for (Int_t j=1; j<=n3x; ++j) {
 	      val = h3->GetBinContent(j,bin,i);
@@ -371,7 +374,7 @@ void Data::Project()
 	}
       else if (plane == "zx")
 	{
-	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << a->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3z; ++i)
 	    for (Int_t j=1; j<=n3x; ++j) {
 	      val = h3->GetBinContent(j,bin,i);
@@ -427,7 +430,6 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
 {
   TAxis *a = GetNormalAxis();
   Int_t bin = a->FindBin(val);
-  std::cerr << "bin: " << bin << "\t val: " << val << std::endl;
 
   if (bin>a->GetNbins())
     std::cerr << "Data::GetH2: bin>a->GetNbins() why?" << std::endl;

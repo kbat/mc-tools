@@ -76,10 +76,11 @@ int main(int argc, const char **argv)
   std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
   auto start = std::chrono::high_resolution_clock::now();
   data->Project();
-  auto delta = std::chrono::high_resolution_clock::now()-start;
-  std::cout << " Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-
-
+  if (args.IsVerbose())
+    {
+      auto delta = std::chrono::high_resolution_clock::now()-start;
+      std::cout << "Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+    }
 
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())
@@ -87,8 +88,11 @@ int main(int argc, const char **argv)
       geo = std::make_shared<Geometry>(gfname, ghname, &args);
       auto start = std::chrono::high_resolution_clock::now();
       geo->Project();
-      auto delta = std::chrono::high_resolution_clock::now()-start;
-      std::cout << " Geometry::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+      if (args.IsVerbose())
+	{
+	  auto delta = std::chrono::high_resolution_clock::now()-start;
+	  std::cout << "Geometry::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+	}
 
       data->Check(geo->GetNormalAxis());
     }
