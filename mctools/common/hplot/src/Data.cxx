@@ -294,20 +294,25 @@ TAxis *Data::GetVerticalAxis() const
 
 void Data::Project()
 {
-  const Float_t xmin = GetVerticalAxis()->GetXmin();
-  const Float_t xmax = GetVerticalAxis()->GetXmax();
-  const Float_t ymin = GetHorizontalAxis()->GetXmin();
-  const Float_t ymax = GetHorizontalAxis()->GetXmax();
-  const Int_t nx = GetVerticalAxis()->GetNbins();
-  const Int_t ny = GetHorizontalAxis()->GetNbins();
+  const TAxis *va = GetVerticalAxis();
+  const TAxis *ha = GetHorizontalAxis();
+  const TAxis *na = GetNormalAxis();
+
+  const Float_t xmin = va->GetXmin();
+  const Float_t xmax = va->GetXmax();
+  const Float_t ymin = ha->GetXmin();
+  const Float_t ymax = ha->GetXmax();
+
+  const Int_t nx = va->GetNbins();
+  const Int_t ny = ha->GetNbins();
 
   const Int_t n3x = h3->GetNbinsX();
   const Int_t n3y = h3->GetNbinsY();
   const Int_t n3z = h3->GetNbinsZ();
 
-  TAxis *a = GetNormalAxis();
-  const Int_t nbins = a->GetNbins();
+  const Int_t nbins = na->GetNbins();
   vh2.reserve(nbins);
+
   std::shared_ptr<TH2> h2(nullptr);
 
   for (Int_t bin=1; bin<=nbins; ++bin)
@@ -315,9 +320,8 @@ void Data::Project()
       const char *h2name = Form("%s_%d", h3->GetName(), bin);
       //      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
 
-
       const char *h2title = Form("%g< %c < %g",
-				 a->GetBinLowEdge(bin), GetNormalAxisName(), a->GetBinUpEdge(bin));
+				 na->GetBinLowEdge(bin), GetNormalAxisName(), na->GetBinUpEdge(bin));
 
       if (h3->IsA() == TH3F::Class()) // data
 	h2 = std::make_shared<TH2F>(h2name, h2title,     ny, ymin, ymax, nx, xmin, xmax);
@@ -349,7 +353,7 @@ void Data::Project()
 	}
       else if (plane == "yz")
 	{
-	  //	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << na->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3y; ++i)
 	    for (Int_t j=1; j<=n3z; ++j) {
 	      val = h3->GetBinContent(bin,i,j);
@@ -360,7 +364,7 @@ void Data::Project()
 	}
       else if (plane == "zy")
 	{
-	  //	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << na->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3y; ++i)
 	    for (Int_t j=1; j<=n3z; ++j) {
 	      val = h3->GetBinContent(bin,i,j);
@@ -371,7 +375,7 @@ void Data::Project()
 	}
       else if (plane == "xz")
 	{
-	  //	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << na->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3z; ++i)
 	    for (Int_t j=1; j<=n3x; ++j) {
 	      val = h3->GetBinContent(j,bin,i);
@@ -382,7 +386,7 @@ void Data::Project()
 	}
       else if (plane == "zx")
 	{
-	  //	  std::cout << a->GetTitle() << std::endl;
+	  //	  std::cout << na->GetTitle() << std::endl;
 	  for (Int_t i=1; i<=n3z; ++i)
 	    for (Int_t j=1; j<=n3x; ++j) {
 	      val = h3->GetBinContent(j,bin,i);
