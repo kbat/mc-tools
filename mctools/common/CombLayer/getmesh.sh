@@ -1,12 +1,12 @@
 #! /usr/bin/env bash
 
 if [ $# != 9 ]; then
-    echo "getmesh - prints mesh definition in the CombLayer format"
-    echo "          Vec3D(xmin,ymin,zmin) Vec3D(xmax,ymax,zmax) nx ny dz"
-    echo ""
-    echo "Usage: getmesh  xmin ymin zmin  xmax ymax zmax  dx dy dz"
-    echo "       [xyz]min, [xyz]max  min/max coordinates of the mesh"
-    echo "       d[xyz]              bin widths along each direction"
+    >&2 echo "getmesh - prints mesh definition in the CombLayer format"
+    >&2 echo "          Vec3D(xmin,ymin,zmin) Vec3D(xmax,ymax,zmax) nx ny dz"
+    >&2 echo ""
+    >&2 echo "Usage: getmesh  xmin ymin zmin  xmax ymax zmax  dx dy dz"
+    >&2 echo "       [xyz]min, [xyz]max  min/max coordinates of the mesh"
+    >&2 echo "       d[xyz]              bin widths along each direction"
     exit 1
 fi
 
@@ -37,7 +37,7 @@ nz=$(echo "($zmax - $zmin)/$dz"|bc)
 for a in x y z; do
     nbins="n$a";
     if [ ${!nbins} -le 0 ]; then
-	echo "Error: wrong value of n$a: ${!nbins}. Check ${a}min, ${a}max and d${a}."
+	>&2 echo "Error: wrong value of n$a: ${!nbins}. Check ${a}min, ${a}max and d${a}."
 	exit 3
     fi
 done
