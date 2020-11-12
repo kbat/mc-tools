@@ -13,7 +13,6 @@ class Data {
   std::string plane;
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;
-  TAxis *GetNormalAxis() const;
   char   GetNormalAxisName() const;
   Float_t GetOffset(const std::string&) const;
   void Flip();
@@ -37,6 +36,7 @@ class Data {
   std::shared_ptr <TH2> GetH2(const Float_t val) const;
   void SetOffset(Float_t val) { offset=val; }
   Float_t GetOffset() const { return offset; }
+  TAxis *GetNormalAxis() const;
   Bool_t Check(TAxis *normal) const;
 };
 
