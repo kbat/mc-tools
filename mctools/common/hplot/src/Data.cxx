@@ -32,15 +32,24 @@ Data::Data(const std::string& fname, const std::string& hname,
   h3->SetDirectory(0);
   df.Close();
 
-  //  auto start = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
   if (args->IsFlipped())
     Flip();
-  // auto delta = std::chrono::high_resolution_clock::now()-start;
-  // std::cout << " Data::Flip: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+  if (args->IsVerbose())
+    {
+      auto delta = std::chrono::high_resolution_clock::now()-start;
+      std::cout << " Data::Flip: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+    }
 
   h3tmp = nullptr;
 
+  start = std::chrono::high_resolution_clock::now();
   h3->Scale(args->GetScale());
+  if (args->IsVerbose())
+    {
+      auto delta = std::chrono::high_resolution_clock::now()-start;
+      std::cout << " Data: scale " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+    }
   offset = GetOffset(args->GetOffset());
 }
 
