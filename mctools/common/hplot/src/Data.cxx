@@ -1,5 +1,4 @@
 #include <iostream>
-#include <chrono>
 #include <TMath.h>
 #include <TFile.h>
 #include "Data.h"
@@ -36,7 +35,7 @@ Data::Data(const std::string& fname, const std::string& hname,
     {
       auto start = std::chrono::high_resolution_clock::now();
       Flip();
-      PrintChrono(start, " "+GetType()+"::Flip: ");
+      PrintChrono(start, " "+GetTypeStr()+"::Flip: ");
     }
 
   h3tmp = nullptr;
@@ -209,11 +208,11 @@ void Data::Rebin(std::shared_ptr<TH2> h) const
     }
 
   if ((scaleX>=2) || (scaleY>=2))
-    if (GetType() == "Data") // we do not need to scale geometry
+    if (GetType() == kData) // we do not need to scale geometry
       {
 	auto start = std::chrono::high_resolution_clock::now();
 	h->Scale(1.0/(scaleX*scaleY));
-	PrintChrono(start, " Rebin: "+GetType() + " scale after rebin: ");
+	PrintChrono(start, " Rebin: "+GetTypeStr() + " scale after rebin: ");
       }
 
   if (args->IsVerbose())
@@ -299,11 +298,11 @@ TAxis *Data::GetVerticalAxis() const
 
 void Data::Project()
 {
-  if (GetType()=="Data") // we do not need to scale geometry
+  if (GetType() == kData) // we do not need to scale geometry
     {
       auto start = std::chrono::high_resolution_clock::now();
       h3->Scale(args->GetScale());
-      PrintChrono(start, " Project: "+GetType() + " scale ");
+      PrintChrono(start, " Project: "+GetTypeStr() + " scale ");
     }
 
   const TAxis *va = GetVerticalAxis();
@@ -412,7 +411,7 @@ void Data::Project()
 	{
 	  auto start = std::chrono::high_resolution_clock::now();
 	  Rebin(h2);
-	  PrintChrono(start, " Project: "+GetType()+"::Rebin");
+	  PrintChrono(start, " Project: "+GetTypeStr()+"::Rebin");
 	}
 
       SetH2(h2);

@@ -1,11 +1,15 @@
 #ifndef Data_h_
 #define Data_h_
 
+#include <chrono>
+
 #include <TH3.h>
 #include <TH2.h>
 #include <TAxis.h>
 
 #include "Arguments.h"
+
+enum data_t {kData, kGeometry};
 
 class Data {
  private:
@@ -38,7 +42,8 @@ class Data {
   Float_t GetOffset() const { return offset; }
   TAxis *GetNormalAxis() const;
   Bool_t Check(TAxis *normal) const;
-  virtual std::string GetType() const { return "Data"; }
+  virtual data_t GetType() const { return kData; }
+  virtual std::string GetTypeStr() const { return "Data"; }
   void PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const;
 };
 
