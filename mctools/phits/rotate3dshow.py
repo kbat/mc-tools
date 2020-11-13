@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# $Id: rotate3dshow.py 100 2012-06-27 10:19:30Z batkov $
-# $URL$
 #
 # rotate3dshow.py - a script to rotate the [t-3dshow] output of PHITS.
 #
