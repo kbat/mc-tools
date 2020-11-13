@@ -3,6 +3,7 @@
 #  A script to convert ANGEL (PHITS) output into the ROOT format
 #  Author: Konstantin Batkov
 #  Contact: batkov@gmail.com
+#  https://github.com/kbat/mc-tools
 #
 #  Usage: angel2root.py file.dat
 #
