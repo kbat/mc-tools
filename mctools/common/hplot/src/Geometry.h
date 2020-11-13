@@ -14,6 +14,7 @@ protected:
   virtual ~Geometry();
 
   std::string GetGOption() const {return "same " + args->GetGoption(); }
+  virtual std::string GetType() const { return "Geometry"; }
 };
 
 #endif

@@ -38,6 +38,8 @@ class Data {
   Float_t GetOffset() const { return offset; }
   TAxis *GetNormalAxis() const;
   Bool_t Check(TAxis *normal) const;
+  virtual std::string GetType() const { return "Data"; }
+  void PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const;
 };
 
 #endif

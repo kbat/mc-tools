@@ -32,24 +32,15 @@ Data::Data(const std::string& fname, const std::string& hname,
   h3->SetDirectory(0);
   df.Close();
 
-  auto start = std::chrono::high_resolution_clock::now();
   if (args->IsFlipped())
-    Flip();
-  if (args->IsVerbose())
     {
-      auto delta = std::chrono::high_resolution_clock::now()-start;
-      std::cout << " Data::Flip: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+      auto start = std::chrono::high_resolution_clock::now();
+      Flip();
+      PrintChrono(start, " "+GetType()+"::Flip: ");
     }
 
   h3tmp = nullptr;
 
-  start = std::chrono::high_resolution_clock::now();
-  h3->Scale(args->GetScale());
-  if (args->IsVerbose())
-    {
-      auto delta = std::chrono::high_resolution_clock::now()-start;
-      std::cout << " Data: scale " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-    }
   offset = GetOffset(args->GetOffset());
 }
 
@@ -218,7 +209,12 @@ void Data::Rebin(std::shared_ptr<TH2> h) const
     }
 
   if ((scaleX>=2) || (scaleY>=2))
-    h->Scale(1.0/(scaleX*scaleY));
+    if (GetType() == "Data") // we do not need to scale geometry
+      {
+	auto start = std::chrono::high_resolution_clock::now();
+	h->Scale(1.0/(scaleX*scaleY));
+	PrintChrono(start, " Rebin: "+GetType() + " scale after rebin: ");
+      }
 
   if (args->IsVerbose())
     {
@@ -303,6 +299,13 @@ TAxis *Data::GetVerticalAxis() const
 
 void Data::Project()
 {
+  if (GetType()=="Data") // we do not need to scale geometry
+    {
+      auto start = std::chrono::high_resolution_clock::now();
+      h3->Scale(args->GetScale());
+      PrintChrono(start, " Project: "+GetType() + " scale ");
+    }
+
   const TAxis *va = GetVerticalAxis();
   const TAxis *ha = GetHorizontalAxis();
   const TAxis *na = GetNormalAxis();
@@ -406,7 +409,11 @@ void Data::Project()
 	}
 
       if (args->IsRebin())
-	Rebin(h2);
+	{
+	  auto start = std::chrono::high_resolution_clock::now();
+	  Rebin(h2);
+	  PrintChrono(start, " Project: "+GetType()+"::Rebin");
+	}
 
       SetH2(h2);
 
@@ -492,4 +499,13 @@ Bool_t Data::Check(TAxis *normal) const
     }
 
   return val;
+}
+
+void Data::PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const
+{
+  if (args->IsVerbose())
+    {
+      auto delta = std::chrono::high_resolution_clock::now()-start;
+      std::cout << msg << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
+    }
 }
