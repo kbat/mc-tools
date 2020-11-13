@@ -191,35 +191,35 @@ void Data::Rebin(std::shared_ptr<TH2> h) const
 
   const Int_t scaleX =
     TMath::Ceil(nx/static_cast<float>(width));
-  if (scaleX>=2)
-    h->RebinX(scaleX);
-  else if (scaleX==0)
+  if (scaleX==0)
     {
       std::cerr << "hplot: ERROR: scaleX = 0" << std::endl;
+      exit(1);
     }
 
   const Int_t scaleY =
     TMath::Ceil(ny/static_cast<float>(height));
-  if (scaleY>=2)
-    h->RebinY(scaleY);
-  else if (scaleY==0)
+  if (scaleY==0)
     {
       std::cerr << "hplot: ERROR: scaleY = 0" << std::endl;
+      exit(1);
     }
 
-  if ((scaleX>=2) || (scaleY>=2))
+  if ((scaleX>=2) || (scaleY>=2)) {
+    h->Rebin2D(scaleX, scaleY);
     if (GetType() == kData) // we do not need to scale geometry
       {
 	auto start = std::chrono::high_resolution_clock::now();
 	h->Scale(1.0/(scaleX*scaleY));
 	PrintChrono(start, " Rebin: "+GetTypeStr() + " scale after rebin: ");
       }
+  }
 
   if (args->IsVerbose())
     {
       std::cout << "Rebinning " << h->GetName() << ": before: " << nx << " x " << ny;
       std::cout << "\t after: " << h->GetNbinsX() << " x " << h->GetNbinsY();
-      std::cout << "\t by factor " << scaleX << " x " << scaleY  << std::endl;
+      std::cout << "\t by factor " << scaleX << " x " << scaleY << std::endl;
     }
   return;
 }
