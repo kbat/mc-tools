@@ -31,6 +31,15 @@ Data::Data(const std::string& fname, const std::string& hname,
   h3->SetDirectory(0);
   df.Close();
 
+  if (args->IsRebin())
+    {
+      auto start = std::chrono::high_resolution_clock::now();
+      Rebin();
+      PrintChrono(start, " "+GetTypeStr()+": Rebin");
+    }
+
+
+
   if (args->IsFlipped())
     {
       auto start = std::chrono::high_resolution_clock::now();
@@ -177,7 +186,7 @@ void Data::ErrorHist(std::shared_ptr<TH2> h) const
   return;
 }
 
-void Data::Rebin(std::shared_ptr<TH2> h) const
+void Data::Rebin() const
 {
   /*!
     Rebin the histogram so that it is not larger than width x height
@@ -186,8 +195,8 @@ void Data::Rebin(std::shared_ptr<TH2> h) const
   const Int_t width = args->GetWidth();
   const Int_t height = args->GetHeight();
 
-  const Int_t nx = h->GetNbinsX();
-  const Int_t ny = h->GetNbinsY();
+  const Int_t nx = GetHorizontalAxis()->GetNbins();
+  const Int_t ny = GetVerticalAxis()->GetNbins();
 
   const Int_t scaleX =
     TMath::Ceil(nx/static_cast<float>(width));
@@ -206,19 +215,31 @@ void Data::Rebin(std::shared_ptr<TH2> h) const
     }
 
   if ((scaleX>=2) || (scaleY>=2)) {
-    h->Rebin2D(scaleX, scaleY);
+    if (plane == "xy")
+      h3->Rebin3D(scaleY, scaleX, 1);
+    else if (plane == "yx")
+      h3->Rebin3D(scaleX, scaleY, 1);
+    else if (plane == "yz")
+      h3->Rebin3D(1, scaleY, scaleX);
+    else if (plane == "zy")
+      h3->Rebin3D(1, scaleX, scaleY);
+    else if (plane == "xz")
+      h3->Rebin3D(scaleY, 1, scaleX);
+    else if (plane == "zx")
+      h3->Rebin3D(scaleX, 1, scaleY);
+
     if (GetType() == kData) // we do not need to scale geometry
       {
 	auto start = std::chrono::high_resolution_clock::now();
-	h->Scale(1.0/(scaleX*scaleY));
+	h3->Scale(1.0/(scaleX*scaleY));
 	PrintChrono(start, " Rebin: "+GetTypeStr() + " scale after rebin: ");
       }
   }
 
   if (args->IsVerbose())
     {
-      std::cout << "Rebinning " << h->GetName() << ": before: " << nx << " x " << ny;
-      std::cout << "\t after: " << h->GetNbinsX() << " x " << h->GetNbinsY();
+      std::cout << "Rebinning " << h3->GetName() << ": before: " << nx << " x " << ny;
+      std::cout << "\t after: " << GetHorizontalAxis()->GetNbins() << " x " << GetVerticalAxis()->GetNbins();
       std::cout << "\t by factor " << scaleX << " x " << scaleY << std::endl;
     }
   return;
@@ -405,13 +426,6 @@ void Data::Project()
 	      h2->SetBinContent(j,i,val);
 	      h2->SetBinError(j,i,err);
 	    }
-	}
-
-      if (args->IsRebin())
-	{
-	  auto start = std::chrono::high_resolution_clock::now();
-	  Rebin(h2);
-	  PrintChrono(start, " Project: "+GetTypeStr()+"::Rebin");
 	}
 
       SetH2(h2);
