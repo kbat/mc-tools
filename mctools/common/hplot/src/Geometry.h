@@ -16,6 +16,9 @@ protected:
   std::string GetGOption() const {return "same " + args->GetGoption(); }
   virtual data_t GetType() const { return kGeometry; }
   virtual std::string GetTypeStr() const { return "Geometry"; }
+  virtual void Draw(const Float_t val) const { GetH2(val)->Draw(GetGOption().c_str()); }
+  virtual void Draw(const std::string val="") const { Data::Draw(val); }
+
 };
 
 #endif

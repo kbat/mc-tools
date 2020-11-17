@@ -88,18 +88,9 @@ int main(int argc, const char **argv)
       geo = std::make_shared<Geometry>(gfname, ghname, &args);
       auto start = std::chrono::high_resolution_clock::now();
       geo->Project();
-      if (args.IsVerbose())
-	{
-	  auto delta = std::chrono::high_resolution_clock::now()-start;
-	  std::cout << "Geometry::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-	}
-
+      geo->PrintChrono(start,"Geometry::Project: ");
       data->Check(geo->GetNormalAxis());
     }
-
-  const std::shared_ptr<TH2> h2d = data->GetH2(args.GetOffset());
-  const std::shared_ptr<TH2> h2g = geo ? geo->GetH2(args.GetOffset()) : nullptr;
-
 
   // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);
@@ -131,16 +122,14 @@ int main(int argc, const char **argv)
        (args.GetDoption() == "colz")) || args.IsErrors())
       c1->SetRightMargin(vm["right_margin"].as<float>());
 
-  h2d->Draw(); // 3 sec to draw
+  data->Draw();
 
   c1->SetLogz(args.IsLogz() && !args.IsErrors());
 
   // GEOMETRY
 
   if (geo)
-    {
-      h2g->Draw(geo->GetGOption().c_str());
-    }
+      geo->Draw();
 
   if (args.IsBatch())
     {

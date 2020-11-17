@@ -1,6 +1,8 @@
 #include <iostream>
 #include <TMath.h>
 #include <TFile.h>
+#include <TGaxis.h>
+#include <TCanvas.h>
 #include "Data.h"
 
 // Data::Data(const TH3* h3, const std::string& plane) :
@@ -86,8 +88,12 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   if (args->IsXmin())
     h2->GetXaxis()->SetRangeUser(args->GetXmin(), args->GetXmax());
 
-  if (args->IsYmin())
-    h2->GetYaxis()->SetRangeUser(args->GetYmin(), args->GetYmax());
+  // if (args->IsYmin()) {
+  //   if (args->IsFlipped())
+  //     h2->GetYaxis()->SetRangeUser(-args->GetYmax(), -args->GetYmin());
+  //   else
+  //     h2->GetYaxis()->SetRangeUser(args->GetYmin(), args->GetYmax());
+  //  }
 
   return;
 }
@@ -243,6 +249,33 @@ void Data::Rebin() const
       std::cout << "\t by factor " << scaleX << " x " << scaleY << std::endl;
     }
   return;
+}
+
+void Data::ReverseYAxis(std::shared_ptr<TH2> h) const
+{
+  return;
+
+
+  // Remove the current axis
+  h->GetYaxis()->SetLabelOffset(999);
+  h->GetYaxis()->SetTickLength(0);
+
+  const TAxis *ax = h->GetXaxis();
+
+  // Redraw the new axis
+  gPad->Update();
+  TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),
+  		       gPad->GetUymax(),
+  		       gPad->GetUxmin()-0.001,
+  		       gPad->GetUymin(),
+  		       h->GetYaxis()->GetXmin(),
+  		       h->GetYaxis()->GetXmax(),
+  		       510,"+");
+  newaxis->SetLabelOffset(-0.03);
+  newaxis->SetLabelFont(ax->GetLabelFont());
+  newaxis->SetLabelSize(ax->GetLabelSize());
+  newaxis->SetLabelColor(ax->GetLabelColor());
+  newaxis->Draw();
 }
 
 
@@ -433,11 +466,11 @@ void Data::Project()
       if (args->IsErrors())
 	ErrorHist(h2);
 
-      if (args->IsFlipped()) // reverse vertical axis
-	{
-	  TAxis *a = h2->GetYaxis();
-	  a->Set(a->GetNbins(), -a->GetXmax(), -a->GetXmin());
-	}
+      // if (args->IsFlipped()) // reverse vertical axis
+      // 	{
+      // 	  TAxis *a = h2->GetYaxis();
+      // 	  a->Set(a->GetNbins(), -a->GetXmax(), -a->GetXmin());
+      // 	}
 
       vh2.push_back(h2);
     }
@@ -480,6 +513,32 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
   }
 
   return vh2[bin-1];
+}
+
+void Data::Draw(const Float_t val) const
+/*!
+  Draws h2 at the given offset
+ */
+{
+  std::shared_ptr <TH2> h2 = GetH2(val);
+  if (args->IsFlipped())
+    ReverseYAxis(h2);
+  h2->Draw();
+
+  return;
+}
+
+void Data::Draw(const std::string val) const
+/*!
+  Draws h2 at the given offset
+ */
+{
+  if (val.empty())
+    Draw(GetOffset(args->GetOffset()));
+  else
+    Draw(GetOffset(val));
+
+  return;
 }
 
 Bool_t Data::Check(TAxis *normal) const

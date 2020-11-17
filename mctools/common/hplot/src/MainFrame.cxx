@@ -125,12 +125,15 @@ void MainFrame::DoSlider()
 {
   float ymin, ymax;
   fSlider->GetPosition(ymin,ymax);
+  const float y = (ymin+ymax)/2.0;
 
-  std::cout << data->GetH2((ymax+ymin)/2.0)->GetTitle() << std::endl;;
+  //  std::cout << data->GetH2(y)->GetTitle() << std::endl;;
   GetCanvas()->cd();
-  data->GetH2((ymax+ymin)/2.0)->Draw("");
+  data->Draw(y);
+  //  data->GetH2(y)->Draw();
+
   if (geo)
-    geo->GetH2((ymax+ymin)/2.0)->Draw(geo->GetGOption().c_str());
+    geo->Draw(y);
 
   GetCanvas()->Update();
 }
