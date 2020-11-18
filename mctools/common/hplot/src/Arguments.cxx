@@ -277,3 +277,13 @@ bool Arguments::IsSlice() const
 
   return (!((slice.size() == 1) && (slice[0] == 0)));
 }
+
+bool Arguments::IsZTitle() const
+/*!
+  Return true if z-title is shown
+  (and therefore canvas right margin should be set)
+ */
+{
+  return ((GetZTitle() != "None") && (!GetZTitle().empty()) &&
+	  (GetDoption() == "colz")) || IsErrors();
+}

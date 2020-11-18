@@ -58,6 +58,7 @@ class Arguments {
   bool  IsYmax() const {return GetYmax()<std::numeric_limits<float>::max();}
   bool  IsZmin() const {return GetZmin()>std::numeric_limits<float>::lowest();}
   bool  IsZmax() const {return GetZmax()<std::numeric_limits<float>::max();}
+  bool  IsZTitle() const;
   bool        IsSlice() const;
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   std::string GetDoption() const {return vm["doption"].as<std::string>(); }

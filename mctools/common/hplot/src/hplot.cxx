@@ -76,11 +76,7 @@ int main(int argc, const char **argv)
   std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
   auto start = std::chrono::high_resolution_clock::now();
   data->Project();
-  if (args.IsVerbose())
-    {
-      auto delta = std::chrono::high_resolution_clock::now()-start;
-      std::cout << "Data::Project: " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-    }
+  data->PrintChrono(start, "Data::Project: ");
 
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())
@@ -113,13 +109,11 @@ int main(int argc, const char **argv)
 
       c1 = mf->GetCanvas();
 
-      Int_t x, y;
-      gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
+      // Int_t x, y;
+      // gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
-  if (((args.GetZTitle() != "None") &&
-      (!args.GetZTitle().empty()) &&
-       (args.GetDoption() == "colz")) || args.IsErrors())
+  if ( args->IsZTitle() )
       c1->SetRightMargin(vm["right_margin"].as<float>());
 
   data->Draw();
