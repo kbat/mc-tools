@@ -6,6 +6,7 @@
 #include <TH3.h>
 #include <TH2.h>
 #include <TAxis.h>
+#include <TGaxis.h>
 
 #include "Arguments.h"
 
@@ -15,6 +16,7 @@ class Data {
  private:
   std::shared_ptr<TH3> h3;
   std::string plane;
+  mutable std::shared_ptr<TGaxis> yrev; // reversed Y axis [if flipped]
 
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;

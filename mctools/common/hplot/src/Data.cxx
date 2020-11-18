@@ -14,7 +14,7 @@
 
 Data::Data(const std::string& fname, const std::string& hname,
 	   const Arguments *args) :
-  h3(nullptr), plane(""), args(args)
+  h3(nullptr), plane(""), yrev(nullptr), args(args)
 {
   plane = args->GetPlane();
   TFile df(fname.c_str());
@@ -39,8 +39,6 @@ Data::Data(const std::string& fname, const std::string& hname,
       Rebin();
       PrintChrono(start, " "+GetTypeStr()+": Rebin");
     }
-
-
 
   if (args->IsFlipped())
     {
@@ -88,20 +86,31 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   if (args->IsXmin())
     h2->GetXaxis()->SetRangeUser(args->GetXmin(), args->GetXmax());
 
-  // if (args->IsYmin()) {
-  //   if (args->IsFlipped())
-  //     h2->GetYaxis()->SetRangeUser(-args->GetYmax(), -args->GetYmin());
-  //   else
-  //     h2->GetYaxis()->SetRangeUser(args->GetYmin(), args->GetYmax());
-  //  }
+  TAxis *a = h2->GetYaxis();
+  if (args->IsYmin()) {
+    if (args->IsFlipped()) {
+      const float xmin = a->GetXmin();
+      const float xmax = a->GetXmax();
+      const float dy = args->GetYmax()-args->GetYmin();
+      const float dmax = xmax-args->GetYmax();
 
+      a->SetRangeUser(xmin+dmax, xmin+dmax+dy);
+      //      std::cout << a->GetBinLowEdge(a->GetFirst()) << " "
+      // << a->GetBinUpEdge(a->GetLast()) << std::endl;
+    }
+    else
+      a->SetRangeUser(args->GetYmin(), args->GetYmax());
+   }
+    //  std::cout << a->GetXmin() << " " << a->GetXmax() << std::endl;
+    //  std::cout << a->GetBinLowEdge(a->GetFirst()) << " "
+    // << a->GetBinUpEdge(a->GetLast()) << std::endl;
   return;
 }
 
 void Data::Flip()
 {
   /*!
-    Flip the h3 along the Y axis
+    Flip the h3 along the TH2 vertical axis
   */
   const std::string hname(Form("%s_%s", h3->GetName(), "flipped"));
   std::shared_ptr<TH3> flipped = std::shared_ptr<TH3>(static_cast<TH3*>(h3->Clone(hname.c_str())));
@@ -253,29 +262,39 @@ void Data::Rebin() const
 
 void Data::ReverseYAxis(std::shared_ptr<TH2> h) const
 {
-  return;
+  TAxis *ay = h->GetYaxis();
 
+  double ymin = ay->GetBinLowEdge(ay->GetFirst());
+  double ymax = ay->GetBinUpEdge(ay->GetLast());
+
+  if (args->IsYmin())
+    {
+      // TODO: not exactly correct
+      // will cause problems with rought binning
+      ymin = args->GetYmin();
+      ymax = args->GetYmax();
+    }
 
   // Remove the current axis
-  h->GetYaxis()->SetLabelOffset(999);
-  h->GetYaxis()->SetTickLength(0);
-
-  const TAxis *ax = h->GetXaxis();
+  ay->SetLabelOffset(999);
+  ay->SetTickLength(0);
 
   // Redraw the new axis
   gPad->Update();
-  TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),
-  		       gPad->GetUymax(),
-  		       gPad->GetUxmin()-0.001,
-  		       gPad->GetUymin(),
-  		       h->GetYaxis()->GetXmin(),
-  		       h->GetYaxis()->GetXmax(),
-  		       510,"+");
-  newaxis->SetLabelOffset(-0.03);
-  newaxis->SetLabelFont(ax->GetLabelFont());
-  newaxis->SetLabelSize(ax->GetLabelSize());
-  newaxis->SetLabelColor(ax->GetLabelColor());
-  newaxis->Draw();
+  if (!yrev)
+    {
+      yrev = std::make_shared<TGaxis>(gPad->GetUxmin(),
+      				      gPad->GetUymax(),
+      				      gPad->GetUxmin()-0.001,
+      				      gPad->GetUymin(),
+      				      ymin,ymax,
+      				      510,"+");
+      yrev->SetLabelOffset(-0.03);
+      yrev->SetLabelFont(ay->GetLabelFont());
+      yrev->SetLabelSize(ay->GetLabelSize());
+      yrev->SetLabelColor(ay->GetLabelColor());
+    }
+  yrev->Draw();
 }
 
 
@@ -383,9 +402,7 @@ void Data::Project()
   for (Int_t bin=1; bin<=nbins; ++bin)
     {
       const char *h2name = Form("%s_%d", h3->GetName(), bin);
-      //      std::cout << "Data::Project: bin=" << bin << " " << h2name << std::endl;
-
-      const char *h2title = Form("%g< %c < %g",
+       const char *h2title = Form("%g< %c < %g",
 				 na->GetBinLowEdge(bin), GetNormalAxisName(), na->GetBinUpEdge(bin));
 
       if (h3->IsA() == TH3F::Class()) // data
@@ -394,6 +411,10 @@ void Data::Project()
 	h2 = std::make_shared<TH2S>(h2name, h2title, ny, ymin, ymax, nx, xmin, xmax);
       else if (h3->IsA() == TH3I::Class()) // geometry
 	h2 = std::make_shared<TH2I>(h2name, h2title, ny, ymin, ymax, nx, xmin, xmax);
+      else {
+	std::cerr << "ERROR: unknown TH3 class name, " << h3->ClassName() << std::endl;
+	exit(1);
+      }
 
       Float_t val, err;
       if (plane == "xy")
@@ -466,10 +487,18 @@ void Data::Project()
       if (args->IsErrors())
 	ErrorHist(h2);
 
+      // TAxis *a = h2->GetYaxis();
+      // float xmin = a->GetBinLowEdge(a->GetFirst());
+      // float xmax = a->GetBinUpEdge(a->GetLast());
+      // std::cout << xmin << " " << xmax << " " << nbins << " " << a->GetNbins() << std::endl;
+
       // if (args->IsFlipped()) // reverse vertical axis
       // 	{
       // 	  TAxis *a = h2->GetYaxis();
-      // 	  a->Set(a->GetNbins(), -a->GetXmax(), -a->GetXmin());
+      // 	  const float xmin = a->GetBinLowEdge(a->GetFirst());
+      // 	  const float xmax = a->GetBinUpEdge(a->GetLast());
+      // 	  const int nbins = a->GetLast()-a->GetFirst()+1;
+      // 	  a->Set(nbins, -xmax, -xmin);
       // 	}
 
       vh2.push_back(h2);
@@ -521,9 +550,11 @@ void Data::Draw(const Float_t val) const
  */
 {
   std::shared_ptr <TH2> h2 = GetH2(val);
+
+  h2->Draw();
+
   if (args->IsFlipped())
     ReverseYAxis(h2);
-  h2->Draw();
 
   return;
 }

@@ -113,7 +113,7 @@ int main(int argc, const char **argv)
       // gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
-  if ( args->IsZTitle() )
+  if (args.IsZTitle())
       c1->SetRightMargin(vm["right_margin"].as<float>());
 
   data->Draw();
