@@ -53,7 +53,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   TCanvas *c1 = fEcanvas->GetCanvas();
   c1->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","MainFrame",this,
-	      "EventInfo(Int_t,Int_t,Int_t,TObject*)");
+	      "EventInfo(EEventType,Int_t,Int_t,TObject*)");
 
 
   hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
@@ -87,24 +87,26 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
 
-  Int_t parts[] = {45, 15, 10, 30};
+  // Status bar
+  const Int_t nparts = 4;
+  std::array<Int_t,4> parts = {45, 15, 10, 30};
   fStatusBar = new TGStatusBar(this, 50, 10, kVerticalFrame);
-  fStatusBar->SetParts(parts, 4);
-  fStatusBar->Draw3DCorner(kFALSE);
+  fStatusBar->SetParts(parts.data(), nparts);
+  fStatusBar->Draw3DCorner(kTRUE);
   AddFrame(fStatusBar, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
 
-  TGHorizontalFrame *hframe1=new TGHorizontalFrame(this, w,40);
-  TGTextButton *draw = new TGTextButton(hframe1,"&Draw");
-  draw->Connect("Clicked()","MainFrame",this,"DoDraw()");
-  hframe1->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,
-  					   5,5,3,4));
+  // TGHorizontalFrame *hframe1=new TGHorizontalFrame(this, w,40);
+  // TGTextButton *draw = new TGTextButton(hframe1,"&Draw");
+  // draw->Connect("Clicked()","MainFrame",this,"DoDraw()");
+  // hframe1->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,
+  // 					   5,5,3,4));
 
-  TGTextButton *exit = new TGTextButton(hframe1,"&Exit ",
-  					"gApplication->Terminate()");
-  exit->SetState(kButtonDisabled);
-  hframe1->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
-  					   5,5,3,4));
-  AddFrame(hframe1,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+  // TGTextButton *exit = new TGTextButton(hframe1,"&Exit ",
+  // 					"gApplication->Terminate()");
+  // exit->SetState(kButtonDisabled);
+  // hframe1->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
+  // 					   5,5,3,4));
+  // AddFrame(hframe1,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
 
   //////////
 
@@ -113,6 +115,8 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   MapWindow();
 
   fEcanvas->Connect("TCanvas", "Closed()", "TApplication", gApplication, "Terminate()");
+
+  h2 = data->GetH2(); // default histogram
 }
 
 void MainFrame::DoDraw()
@@ -141,7 +145,7 @@ void MainFrame::DoSlider()
 
   //  std::cout << data->GetH2(y)->GetTitle() << std::endl;;
   GetCanvas()->cd();
-  data->Draw(y);
+  h2 = data->Draw(y);
   //  data->GetH2(y)->Draw();
 
   if (geo)
@@ -183,21 +187,33 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
   return kTRUE;
 }
 
-void MainFrame::EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected)
+void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected)
 {
 //  Writes the event status in the status bar parts
 
-   const char *text0, *text1, *text3;
+   fStatusBar->SetText(h2->GetTitle(),0);
+   fStatusBar->SetText(h2->GetName(),1);
+
    char text2[50];
-   text0 = selected->GetTitle();
-   fStatusBar->SetText(text0,0);
-   text1 = selected->GetName();
-   fStatusBar->SetText(text1,1);
    if (event == kKeyPress)
-      sprintf(text2, "%c", (char) px);
+     sprintf(text2, "%c %c", (char) px, (char) py);
    else
       sprintf(text2, "%d,%d", px, py);
+
    fStatusBar->SetText(text2,2);
-   text3 = selected->GetObjectInfo(px,py);
-   fStatusBar->SetText(text3,3);
+
+   // value and error
+   const Double_t x  = gPad->PadtoX(gPad->AbsPixeltoX(px));
+   const Double_t y  = gPad->PadtoY(gPad->AbsPixeltoY(py));
+
+   const Int_t binx = h2->GetXaxis()->FindFixBin(x);
+   const Int_t biny = h2->GetYaxis()->FindFixBin(y);
+
+   const Double_t val = h2->GetBinContent(binx, biny);
+   const Double_t err = h2->GetBinError(binx, biny);
+   Double_t relerr = 100.0;
+   if (std::abs(val)>0)
+     relerr = err/val * 100.0;
+
+   fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
 }

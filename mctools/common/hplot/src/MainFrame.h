@@ -7,6 +7,7 @@
 #include <TGMenu.h>
 #include <TGDoubleSlider.h>
 #include <TGStatusBar.h>
+#include <Buttons.h>
 
 #include "Data.h"
 #include "Geometry.h"
@@ -23,6 +24,7 @@ class MainFrame : public TGMainFrame {
 
   std::shared_ptr<Data> data;
   std::shared_ptr<Geometry> geo;
+  std::shared_ptr<TH2> h2; // current data histogram
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 	    const std::shared_ptr<Data> data,
@@ -33,7 +35,7 @@ class MainFrame : public TGMainFrame {
   void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 
-  void EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected);
+  void EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected);
 
   ClassDef(MainFrame,0);
 };
