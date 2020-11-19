@@ -183,12 +183,6 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
   return kTRUE;
 }
 
-void MainFrame::SetStatusText(const char *txt, Int_t pi)
-{
-   // Set text in status bar.
-   fStatusBar->SetText(txt,pi);
-}
-
 void MainFrame::EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected)
 {
 //  Writes the event status in the status bar parts
@@ -196,14 +190,14 @@ void MainFrame::EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected)
    const char *text0, *text1, *text3;
    char text2[50];
    text0 = selected->GetTitle();
-   SetStatusText(text0,0);
+   fStatusBar->SetText(text0,0);
    text1 = selected->GetName();
-   SetStatusText(text1,1);
+   fStatusBar->SetText(text1,1);
    if (event == kKeyPress)
       sprintf(text2, "%c", (char) px);
    else
       sprintf(text2, "%d,%d", px, py);
-   SetStatusText(text2,2);
+   fStatusBar->SetText(text2,2);
    text3 = selected->GetObjectInfo(px,py);
-   SetStatusText(text3,3);
+   fStatusBar->SetText(text3,3);
 }

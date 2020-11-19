@@ -33,7 +33,6 @@ class MainFrame : public TGMainFrame {
   void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 
-  void SetStatusText(const char *txt, Int_t pi);
   void EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected);
 
   ClassDef(MainFrame,0);
