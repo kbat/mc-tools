@@ -24,7 +24,8 @@ class MainFrame : public TGMainFrame {
 
   std::shared_ptr<Data> data;
   std::shared_ptr<Geometry> geo;
-  std::shared_ptr<TH2> h2; // current data histogram
+  std::shared_ptr<TH2> dh2; // current data histogram
+  std::shared_ptr<TH2> gh2; // current geometry histogram
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 	    const std::shared_ptr<Data> data,

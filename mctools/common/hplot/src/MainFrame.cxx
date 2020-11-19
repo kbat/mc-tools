@@ -18,7 +18,7 @@ enum MainFrameMessageTypes {
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data> data,
 		     const std::shared_ptr<Geometry> geo) :
-  TGMainFrame(p,w,h), data(data), geo(geo)
+  TGMainFrame(p,w,h), data(data), geo(geo), gh2(nullptr)
 {
 
   // Menu bar
@@ -116,7 +116,9 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   fEcanvas->Connect("TCanvas", "Closed()", "TApplication", gApplication, "Terminate()");
 
-  h2 = data->GetH2(); // default histogram
+  dh2 = data->GetH2(); // default data histogram
+  if (geo)
+    gh2 = geo->GetH2();
 }
 
 void MainFrame::DoDraw()
@@ -145,11 +147,11 @@ void MainFrame::DoSlider()
 
   //  std::cout << data->GetH2(y)->GetTitle() << std::endl;;
   GetCanvas()->cd();
-  h2 = data->Draw(y);
+  dh2 = data->Draw(y);
   //  data->GetH2(y)->Draw();
 
   if (geo)
-    geo->Draw(y);
+    gh2 = geo->Draw(y);
 
   GetCanvas()->Update();
 }
@@ -191,8 +193,18 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 {
 //  Writes the event status in the status bar parts
 
-   fStatusBar->SetText(h2->GetTitle(),0);
-   fStatusBar->SetText(h2->GetName(),1);
+  Int_t binx(0), biny(0);
+  const Double_t x  = gPad->PadtoX(gPad->AbsPixeltoX(px));
+  const Double_t y  = gPad->PadtoY(gPad->AbsPixeltoY(py));
+
+  fStatusBar->SetText(Form("%s: %s", dh2->GetName(), dh2->GetTitle()),0);
+
+  if (gh2)
+    {
+      binx = gh2->GetXaxis()->FindFixBin(x);
+      biny = gh2->GetYaxis()->FindFixBin(y);
+      fStatusBar->SetText(Form("Material: %d", static_cast<int>(gh2->GetBinContent(binx, biny))),1);
+    }
 
    char text2[50];
    if (event == kKeyPress)
@@ -202,15 +214,13 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 
    fStatusBar->SetText(text2,2);
 
-   // value and error
-   const Double_t x  = gPad->PadtoX(gPad->AbsPixeltoX(px));
-   const Double_t y  = gPad->PadtoY(gPad->AbsPixeltoY(py));
+   // data value and error
 
-   const Int_t binx = h2->GetXaxis()->FindFixBin(x);
-   const Int_t biny = h2->GetYaxis()->FindFixBin(y);
+   binx = dh2->GetXaxis()->FindFixBin(x);
+   biny = dh2->GetYaxis()->FindFixBin(y);
 
-   const Double_t val = h2->GetBinContent(binx, biny);
-   const Double_t err = h2->GetBinError(binx, biny);
+   const Double_t val = dh2->GetBinContent(binx, biny);
+   const Double_t err = dh2->GetBinError(binx, biny);
    Double_t relerr = 100.0;
    if (std::abs(val)>0)
      relerr = err/val * 100.0;
