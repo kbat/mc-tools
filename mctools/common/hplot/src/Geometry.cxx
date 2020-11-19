@@ -25,3 +25,11 @@ void Geometry::SetH2(std::shared_ptr<TH2> h2)
 Geometry::~Geometry()
 {
 }
+
+std::shared_ptr<TH2> Geometry::Draw(const Float_t val) const
+{
+  std::shared_ptr <TH2> h2 = GetH2(val);
+  h2->Draw(GetGOption().c_str());
+
+  return h2;
+}

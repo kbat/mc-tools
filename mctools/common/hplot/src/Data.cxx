@@ -526,7 +526,10 @@ Float_t Data::GetOffset(const std::string& val) const
 
 std::shared_ptr<TH2> Data::GetH2(const std::string val) const
 {
-  return GetH2(GetOffset(val));
+  if (val.empty())
+    return GetH2(GetOffset(args->GetOffset()));
+  else
+    return GetH2(GetOffset(val));
 }
 
 std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
@@ -544,7 +547,7 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
   return vh2[bin-1];
 }
 
-void Data::Draw(const Float_t val) const
+std::shared_ptr<TH2> Data::Draw(const Float_t val) const
 /*!
   Draws h2 at the given offset
  */
@@ -556,20 +559,18 @@ void Data::Draw(const Float_t val) const
   if (args->IsFlipped())
     ReverseYAxis(h2);
 
-  return;
+  return h2;
 }
 
-void Data::Draw(const std::string val) const
+std::shared_ptr<TH2> Data::Draw(const std::string val) const
 /*!
   Draws h2 at the given offset
  */
 {
   if (val.empty())
-    Draw(GetOffset(args->GetOffset()));
+    return Draw(GetOffset(args->GetOffset()));
   else
-    Draw(GetOffset(val));
-
-  return;
+    return Draw(GetOffset(val));
 }
 
 Bool_t Data::Check(TAxis *normal) const

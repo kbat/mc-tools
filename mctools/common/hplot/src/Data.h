@@ -39,10 +39,10 @@ class Data {
   virtual ~Data();
   void Project();
   const std::shared_ptr<TH3> GetH3() const { return h3; };
-  std::shared_ptr <TH2> GetH2(const std::string val) const;
+  std::shared_ptr <TH2> GetH2(const std::string val="") const;
   std::shared_ptr <TH2> GetH2(const Float_t val) const;
-  virtual void Draw(const Float_t val) const;
-  virtual void Draw(const std::string val="") const;
+  virtual std::shared_ptr<TH2> Draw(const Float_t val) const;
+  virtual std::shared_ptr<TH2> Draw(const std::string val="") const;
   void SetOffset(Float_t val) { offset=val; }
   Float_t GetOffset() const { return offset; }
   TAxis *GetNormalAxis() const;
