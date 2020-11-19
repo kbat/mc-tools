@@ -50,6 +50,12 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   // Canvas
   fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",hframe,w,h);
   // AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
+
+  TCanvas *c1 = fEcanvas->GetCanvas();
+  c1->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","MainFrame",this,
+	      "EventInfo(Int_t,Int_t,Int_t,TObject*)");
+
+
   hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
 
@@ -80,6 +86,12 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
     }
 
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
+
+  Int_t parts[] = {45, 15, 10, 30};
+  fStatusBar = new TGStatusBar(this, 50, 10, kVerticalFrame);
+  fStatusBar->SetParts(parts, 4);
+  fStatusBar->Draw3DCorner(kFALSE);
+  AddFrame(fStatusBar, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
 
   TGHorizontalFrame *hframe1=new TGHorizontalFrame(this, w,40);
   TGTextButton *draw = new TGTextButton(hframe1,"&Draw");
@@ -169,4 +181,29 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
     break;
   }
   return kTRUE;
+}
+
+void MainFrame::SetStatusText(const char *txt, Int_t pi)
+{
+   // Set text in status bar.
+   fStatusBar->SetText(txt,pi);
+}
+
+void MainFrame::EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected)
+{
+//  Writes the event status in the status bar parts
+
+   const char *text0, *text1, *text3;
+   char text2[50];
+   text0 = selected->GetTitle();
+   SetStatusText(text0,0);
+   text1 = selected->GetName();
+   SetStatusText(text1,1);
+   if (event == kKeyPress)
+      sprintf(text2, "%c", (char) px);
+   else
+      sprintf(text2, "%d,%d", px, py);
+   SetStatusText(text2,2);
+   text3 = selected->GetObjectInfo(px,py);
+   SetStatusText(text3,3);
 }

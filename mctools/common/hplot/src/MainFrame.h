@@ -6,6 +6,7 @@
 #include <TGLayout.h>
 #include <TGMenu.h>
 #include <TGDoubleSlider.h>
+#include <TGStatusBar.h>
 
 #include "Data.h"
 #include "Geometry.h"
@@ -18,6 +19,7 @@ class MainFrame : public TGMainFrame {
   TGPopupMenu         *fMenuFile;
   TGPopupMenu         *fMenuHelp;
   TGDoubleVSlider     *fSlider;
+  TGStatusBar         *fStatusBar;
 
   std::shared_ptr<Data> data;
   std::shared_ptr<Geometry> geo;
@@ -30,6 +32,9 @@ class MainFrame : public TGMainFrame {
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
+
+  void SetStatusText(const char *txt, Int_t pi);
+  void EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected);
 
   ClassDef(MainFrame,0);
 };
