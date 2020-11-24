@@ -272,11 +272,29 @@ class Converter:
         if self.verbose:
             printincolor(command)
         return_value = os.system(command)
-        if return_value is 0:
+        if return_value == 0:
             command = "rm -f %s %s" % (v, ' '.join(self.out_root_files + [item for sublist in self.datafiles for item in sublist]))
             if self.verbose:
                 printincolor(command)
             return_value = os.system(command)
+
+        if return_value == 0:
+            for f in self.inp:
+                n = "[0-9][0-9][0-9]"
+                basename = os.path.splitext(f)[0] + n
+                vec = []
+                vec.append("ran"+basename)
+                vec.append(basename + ".err")
+                vec.append(basename + ".log")
+                vec.append(basename + ".out")
+                vec.append(basename + "_fort.*")
+                for c in vec:
+                    command = "rm -f %s %s " % (v, c)
+                    if self.verbose:
+                        printincolor(command)
+                    os.system(command)
+        else if self.verbose:
+            print("Warning: FLUKA output files not deleted since the previous command did not return 0")
 
         return return_value
 
@@ -290,6 +308,7 @@ def main():
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite', help='overwrite the output ROOT files produced by hadd')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
     parser.add_argument('-keep', '--keep-files', action='store_true', default=False, dest='keep', help='do not delete temporary files')
+    parser.add_argument('-clean', action='store_true', default=False, dest='clean', help='remove FLUKA-generated data files')
 
     args = parser.parse_args()
 
