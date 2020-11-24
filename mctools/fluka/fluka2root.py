@@ -293,7 +293,7 @@ class Converter:
                     if self.verbose:
                         printincolor(command)
                     os.system(command)
-        else if self.verbose:
+        elif self.verbose:
             print("Warning: FLUKA output files not deleted since the previous command did not return 0")
 
         return return_value
