@@ -205,6 +205,9 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
       biny = gh2->GetYaxis()->FindFixBin(y);
       fStatusBar->SetText(Form("Material: %d", static_cast<int>(gh2->GetBinContent(binx, biny))),1);
     }
+  else
+    fStatusBar->SetText("Geometry file not specified",1);
+
 
    char text2[50];
    if (event == kKeyPress)
