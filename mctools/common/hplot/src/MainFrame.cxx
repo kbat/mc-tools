@@ -71,6 +71,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 				    kVerticalFrame,
 				    GetDefaultFrameBackground(),
 				    kTRUE,kTRUE);
+      std::cerr<<"Xmin == "<<a->GetXmin()<<std::endl;
       fSlider->SetRange(a->GetXmin(), a->GetXmax());
       fSlider->SetPosition(a->GetBinLowEdge(bin), a->GetBinUpEdge(bin));
       fSlider->SetScale(1000.0/nbins);

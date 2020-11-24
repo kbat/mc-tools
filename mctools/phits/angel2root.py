@@ -15,7 +15,7 @@ import ROOT
 # The line below is needed to prevent command-line arguments from
 # stolen by PyROOT and handed to TApplication
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray, TGraphErrors
+from ROOT import ROOT, TH1F, TH2F, TH3F, TFile, TObjArray, TGraphErrors
 
 """
 def isData(line):
@@ -75,7 +75,10 @@ class Angel:
     dict_nbins = {} # dictionary of number of bins - to guess if 2D histo is needed
     last_nbins_read = None # last name of binning read (ne, nt, na, ...)
     dict_edges_array = {} # dictionary of arrays with bin edges
-
+    h3x = 0
+    h3y = 1
+    h3z = 2
+    
     histos = TObjArray()
     ihist = 0 # histogram number - must start from ZERO
     fname_out = None
@@ -156,7 +159,9 @@ class Angel:
                 continue
             if re.search("#    data = ", line):
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
+                sys.stderr.write('Data line %s == %s\n' % (self.last_nbins_read, len(self.dict_edges_array[self.last_nbins_read])))
                 continue
+            
             if re.search("part = ", line):
                 words = line.split()
 # this loop is needed in case we define particles in separate lines as shown on page 121 of the Manual. Otherwise we could have used 'self.part = words[2:]'
@@ -208,24 +213,36 @@ class Angel:
             #              global line number for data decoding
             for iline, line in enumerate(pageLST[npage]):
                 line.strip()
+
+                ## S
+
+                
                 #: 'global' line number (not in the current page).
                 #: The counting of local line number (iline) start just after
                 #: the location of "^[\s#]newpage:$" and therefore '+1'
                 igline = iline + pageSepLineLST[npage-1] + 1
+
                 if re.search("^h", line):
+
                     if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                         if DEBUG: print("one dimentional graph section")
                         self.Read1DHist(igline)
                         continue
+
                     elif re.search("h:              x", line):
                         self.Read1DGraphErrors(igline)
                         continue
+
                     elif re.search("^h[2dc]:", line):
                         if DEBUG:
                             if re.search("^h2", line): print("h2: two dimentional contour plot section")
                             if re.search("^hd", line): print("hd: two dimentional cluster plot section")
                             if re.search("^hc", line): print("hc: two dimentional colour cluster plot section")
-                        self.Read2DHist(igline)
+
+                        if all(keyItem in self.dict_edges_array for keyItem in ('nx','ny','nz')):
+                            self.Read3DHist(igline)
+                        else:
+                            self.Read2DHist(igline)
                         continue
                     elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                         self.Read1DHist(igline)
@@ -451,18 +468,115 @@ class Angel:
         self.title = self.title.replace("cm^2", "cm^{2}")
         self.title = self.title.replace("cm^3", "cm^{3}")
 
+    def Read3DHist(self, iline):
+        """
+        Read 3D histogram section
+        """
+
+        line = self.lines[iline].replace(" =", "=") # sometimes Angel writes 'y=' and sometimes 'y ='
+        sys.stderr.write('LINE == %s \n' % (line))
+        words = line.split()
+        if len(words) != 15:
+            print(words)
+            print(len(words))
+            sys.exit("Read3DHist: format error")
+#        print(words)
+
+
+        data = []
+        for line in self.lines[iline+1:]:
+            line = line.strip()
+            if line == '': break
+            elif re.search("^#", line): continue
+            words = line.split()
+#            if DEBUG: print("words: ", words)
+            for w in words:
+                if w == 'z:':
+#                    if DEBUG: print("this is a color palette -> exit")
+                    return # this was a color palette
+                data.append(float(w))
+#        if DEBUG: print(data)
+       
+        # self.ihist+1 - start from ONE as in Angel - easy to compare
+
+        
+        xN=len(self.dict_edges_array['nx'])-1
+        yN=len(self.dict_edges_array['ny'])-1
+        zN=len(self.dict_edges_array['nz'])-1
+        xA=float(self.dict_edges_array['nx'][0])
+        xB=float(self.dict_edges_array['nx'][-1])
+        yA=float(self.dict_edges_array['ny'][0])
+        yB=float(self.dict_edges_array['ny'][-1])
+        zA=float(self.dict_edges_array['nz'][0])
+        zB=float(self.dict_edges_array['nz'][-1])
+                
+        sys.stderr.write('X == %d %f %f\n' % (xN,xA,xB))
+        sys.stderr.write('Y == %d %f %f\n' % (yN,yA,yB))
+        sys.stderr.write('Z == %d %f %f\n' % (zN,zA,zB))
+
+        h = TH3F("h%d" %
+                 (self.ihist+1), "%s - %s;%s;%s;%s" %
+                 (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle),
+                 xN,xA,xB,yN,yA,yB,zN,zA,zB)
+        self.ihist += 1
+        
+        data = []
+
+        for line in self.lines[iline+1:]:
+            line = line.strip()
+            if line == '': break
+            elif re.search("^#", line): continue
+            words = line.split()
+#            if DEBUG: print("words: ", words)
+            for w in words:
+                if w == 'z:':
+                    if DEBUG: print("this is a color palette -> exit")
+                    return # this was a color palette
+                
+                data.append(float(w))
+##      if DEBUG: print(data)
+
+## PROCESS EACH DATA SET DIFFERENTLY : needs to be a nice way to do this:
+
+
+        if (xN==1):
+            for y in range(yN-1, -1, -1):
+                for z in range(zN):
+                    d = data[z+(yN-1-y)*zN]
+                    h.SetBinContent(1, y+1, z+1, d)
+
+        elif (yN==1):      
+            for x in range(xN-1, -1, -1):
+                for z in range(zN):
+                    d = data[z+(xN-1-x)*zN]
+                    h.SetBinContent(x+1, 1, z+1, d)
+
+        elif (zN==1):
+            for y in range(yN-1, -1, -1):
+                for x in range(xN):
+                    d = data[x+(yN-1-y)*xN]
+                    h.SetBinContent(x+1, y+1, 1, d)
+        else:
+            sys.stderr.write('No Method 3d written\n')
+            sys.exit(1)
+
+        self.histos.Add(h)
+        return
+
+
     def Read2DHist(self, iline):
         """
         Read 2D histogram section
         """
 
         line = self.lines[iline].replace(" =", "=") # sometimes Angel writes 'y=' and sometimes 'y ='
+        sys.stderr.write('LINE == %s \n' % (line))
         words = line.split()
         if len(words) != 15:
             print(words)
             print(len(words))
             sys.exit("Read2DHist: format error")
-#        print(words)
+            ##        print(words)
 
         dy = float(words[6])
         ymin = float(words[2])
@@ -497,22 +611,25 @@ class Angel:
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
-#            if DEBUG: print("words: ", words)
+            if DEBUG: print("words: ", words)
             for w in words:
                 if w == 'z:':
-#                    if DEBUG: print("this is a color palette -> exit")
+                    if DEBUG: print("this is a color palette -> exit")
                     return # this was a color palette
                 data.append(float(w))
-#        if DEBUG: print(data)
-       
-        # self.ihist+1 - start from ONE as in Angel - easy to compare
-        h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
+                #  if DEBUG: print(data)
+
+        h = TH2F("h%d" %
+                 (self.ihist+1), "%s - %s;%s;%s;%s" %
+                 (self.title, self.subtitles[self.ihist],
+                  self.xtitle, self.ytitle, self.ztitle),
+                 nx, xmin, xmax, ny, ymin, ymax)
         self.ihist += 1
 
         for y in range(ny-1, -1, -1):
             for x in range(nx):
                 d = data[x+(ny-1-y)*nx]
-                h.SetBinContent(x+1, y+1, d)
+                h.SetBinContent(x+1, y+1, 1, d)
         self.histos.Add(h)
 
     def isSameXaxis(self):
