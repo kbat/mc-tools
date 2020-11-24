@@ -285,6 +285,9 @@ class Converter:
                 vec = []
                 vec.append("ran"+basename)
                 vec.append(basename + ".err")
+                vec.append(basename + ".error")
+                vec.append(basename + ".output")
+                vec.append(basename + ".slurm")
                 vec.append(basename + ".log")
                 vec.append(basename + ".out")
                 vec.append(basename + "_fort.*")
