@@ -281,13 +281,14 @@ class Converter:
         if return_value == 0:
             for f in self.inp:
                 n = "[0-9][0-9][0-9]"
-                basename = os.path.splitext(f)[0] + n
+                inp = os.path.splitext(f)[0]
+                basename = inp + n
                 vec = []
                 vec.append("ran"+basename)
                 vec.append(basename + ".err")
-                vec.append(basename + ".error")
-                vec.append(basename + ".output")
-                vec.append(basename + ".slurm")
+                vec.append(inp + ".error")
+                vec.append(inp + ".output")
+                vec.append(inp + ".slurm")
                 vec.append(basename + ".log")
                 vec.append(basename + ".out")
                 vec.append(basename + "_fort.*")
