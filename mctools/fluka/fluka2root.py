@@ -78,7 +78,8 @@ class Converter:
             print("input files:", self.inp)
             print("output ROOT file:", self.root)
 
-    def clean(self):
+    def Clean(self):
+        v = "-v" if self.verbose else ""
         for f in self.inp:
             n = "[0-9][0-9][0-9]"
             inp = os.path.splitext(f)[0]
@@ -301,7 +302,7 @@ class Converter:
 
         if self.clean:
             if return_value == 0:
-                clean()
+                self.Clean()
             elif self.verbose:
                 print("Warning: FLUKA output files not deleted since the previous command did not return 0")
 
