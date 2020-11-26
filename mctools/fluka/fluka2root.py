@@ -50,6 +50,7 @@ class Converter:
         self.overwrite  = args.overwrite
         self.verbose    = args.verbose
         self.keep       = args.keep
+        self.clean      = args.clean
         self.parallel   = find_executable("parallel") is not None
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw"),
@@ -76,6 +77,26 @@ class Converter:
         if self.verbose:
             print("input files:", self.inp)
             print("output ROOT file:", self.root)
+
+    def clean(self):
+        for f in self.inp:
+            n = "[0-9][0-9][0-9]"
+            inp = os.path.splitext(f)[0]
+            basename = inp + n
+            vec = []
+            vec.append("ran"+basename)
+            vec.append(basename + ".err")
+            vec.append(inp + ".error")
+            vec.append(inp + ".output")
+            vec.append(inp + ".slurm")
+            vec.append(basename + ".log")
+            vec.append(basename + ".out")
+            vec.append(basename + "_fort.*")
+            for c in vec:
+                command = "rm -f %s %s " % (v, c)
+                if self.verbose:
+                    printincolor(command)
+                os.system(command)
 
     def getROOTFileName(self):
         """ Generate the output ROOT file name based on the input files """
@@ -278,27 +299,11 @@ class Converter:
                 printincolor(command)
             return_value = os.system(command)
 
-        if return_value == 0:
-            for f in self.inp:
-                n = "[0-9][0-9][0-9]"
-                inp = os.path.splitext(f)[0]
-                basename = inp + n
-                vec = []
-                vec.append("ran"+basename)
-                vec.append(basename + ".err")
-                vec.append(inp + ".error")
-                vec.append(inp + ".output")
-                vec.append(inp + ".slurm")
-                vec.append(basename + ".log")
-                vec.append(basename + ".out")
-                vec.append(basename + "_fort.*")
-                for c in vec:
-                    command = "rm -f %s %s " % (v, c)
-                    if self.verbose:
-                        printincolor(command)
-                    os.system(command)
-        elif self.verbose:
-            print("Warning: FLUKA output files not deleted since the previous command did not return 0")
+        if self.clean:
+            if return_value == 0:
+                clean()
+            elif self.verbose:
+                print("Warning: FLUKA output files not deleted since the previous command did not return 0")
 
         return return_value
 
