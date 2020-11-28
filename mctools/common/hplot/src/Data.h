@@ -17,6 +17,7 @@ class Data {
   std::shared_ptr<TH3> h3;
   std::string plane;
   mutable std::shared_ptr<TGaxis> yrev; // reversed Y axis [if flipped]
+  std::shared_ptr<TH2> h2max;
 
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;
@@ -30,6 +31,7 @@ class Data {
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
   void Rebin() const;
+  void BuildMaxH2();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */

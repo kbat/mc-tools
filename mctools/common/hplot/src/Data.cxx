@@ -14,7 +14,7 @@
 
 Data::Data(const std::string& fname, const std::string& hname,
 	   const Arguments *args) :
-  h3(nullptr), plane(""), yrev(nullptr), args(args)
+  h3(nullptr), plane(""), yrev(nullptr), h2max(nullptr), args(args)
 {
   plane = args->GetPlane();
   TFile df(fname.c_str());
@@ -258,6 +258,41 @@ void Data::Rebin() const
       std::cout << "\t by factor " << scaleX << " x " << scaleY << std::endl;
     }
   return;
+}
+
+void Data::BuildMaxH2()
+/*!
+  Build the histogram with max values along the normal axis
+  (called if the -max argument is used)
+ */
+{
+  const std::shared_ptr<TH2> h2 = vh2[0];
+  h2max = std::shared_ptr<TH2>(dynamic_cast<TH2*>(h2->Clone("hmax")));
+  //  h2max->Reset();
+
+  const Int_t nx = h2->GetNbinsX();
+  const Int_t ny = h2->GetNbinsY();
+
+  for (Int_t i=1; i<=nx; ++i)
+    for (Int_t j=1; j<ny; ++j)
+      {
+	Double_t max = 0.0;
+	Double_t err = 0.0;
+	for (const auto h : vh2)
+	  {
+	    Float_t val = h->GetBinContent(i,j);
+	    if (max<val)
+	      {
+		max = val;
+		err = h->GetBinError(i,j);
+	      }
+	  }
+	if (max>0.0)
+	  {
+	    h2max->SetBinContent(i,j,max);
+	    h2max->SetBinError(i,j,err);
+	  }
+      }
 }
 
 void Data::ReverseYAxis(std::shared_ptr<TH2> h) const
@@ -504,6 +539,9 @@ void Data::Project()
       vh2.push_back(h2);
     }
 
+  if (args->IsMax())
+    BuildMaxH2();
+
   return;
 }
 
@@ -544,19 +582,24 @@ std::shared_ptr<TH2> Data::GetH2(const std::string val) const
 
 std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
 {
-  TAxis *a = GetNormalAxis();
-  const Int_t nbins = a->GetNbins();
-  Int_t bin = a->FindBin(val);
+  if (h2max)
+    return h2max;
+  else
+    {
+      const TAxis *a = GetNormalAxis();
+      const Int_t nbins = a->GetNbins();
+      Int_t bin = a->FindBin(val);
 
-  if (bin>nbins) {
-    std::cerr << "Data::GetH2: bin>a->GetNbins() why?" << std::endl;
-    bin = nbins;
-  } else if (bin==0) {
-    std::cerr << "Data:GetH2: bin = 0! why?" << std::endl;
-    bin = 1;
-  }
+      if (bin>nbins) {
+	std::cerr << "Data::GetH2: bin>a->GetNbins() why?" << std::endl;
+	bin = nbins;
+      } else if (bin==0) {
+	std::cerr << "Data:GetH2: bin = 0! why?" << std::endl;
+	bin = 1;
+      }
 
-  return vh2[bin-1];
+      return vh2[bin-1];
+    }
 }
 
 std::shared_ptr<TH2> Data::Draw(const Float_t val) const
