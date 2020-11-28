@@ -514,11 +514,21 @@ Float_t Data::GetOffset(const std::string& val) const
     v = std::stof(val);
   }
   catch (std::invalid_argument const &e) {
-    if (val != "centre")
-      std::cerr << "GetOffset: unknown val value: " << val << std::endl;
-
     TAxis *a = GetNormalAxis();
-    v = (a->GetXmax()+a->GetXmin())/2.0;
+    if (val == "centre")
+      {
+	v = (a->GetXmax()+a->GetXmin())/2.0;
+      }
+    else if (val == "min")
+      {
+	v = a->GetBinCenter(1);
+      }
+    else if (val == "max")
+      {
+	v = a->GetBinCenter(a->GetLast());
+      }
+    else
+      std::cerr << "Data::GetOffset(): unknown argument: " << val << std::endl;
   }
 
   return v;

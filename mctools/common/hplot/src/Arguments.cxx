@@ -50,8 +50,10 @@ Arguments::Arguments(int ac, const char **av) :
     generic.add_options()
       ("help,h", "Show this help message and exit.")
       ("plane", po::value<Plane>()->default_value(xy, "xy"),
-       "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy.")
-      ("offset", po::value<std::string>()->default_value("centre"), "Offset of projection plane from origin. The default 'centre' value corresponds to the central bin along the axis normal to the '-plane' of the data histogram, otherwise the numeric value can be set.")
+       "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy. The ROOT notation is used, i.e. the first symbol corresponds to the verical axis and the second symbol - to the horizontal axis of TH2.")
+      ("offset", po::value<std::string>()->default_value("0.0"), "Offset of projection plane from origin. "
+       " Either a float number or min/max/centre strings can be used. centre = (max+min)/2, min corresponds to the centre of the first bin, "
+       "and max - to the last bin of the axis perpendicular to the projection plane.")
       ("title", po::value<std::string>()->default_value("None"), "Plot title.")
       ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title.")
       ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title.")
@@ -70,7 +72,7 @@ Arguments::Arguments(int ac, const char **av) :
        "especially in the case when the data or geometry histograms are larger "
        "than the screen resolution.")
       ("right_margin", po::value<float>()->default_value(0.12),
-       "Right margin of the canvas in order to allocate enough space for the z-axis title. "
+       "Right margin of the canvas in order to allocate enough space for the TH2 z-axis title. "
        "Used only if ZTITLE is set and DOPTION is \"colz\".")
       ("flip", "Flip the vertical axis.")
       //      ("bgcolor", "Set the frame background colour to some hard-coded value")
@@ -193,7 +195,7 @@ bool Arguments::test() const
     std::stof(offset);
   }
   catch (std::invalid_argument const &e) {
-    if (offset != "centre") {
+    if ((offset != "centre") && (offset != "min") && (offset != "max")) {
       std::cerr << "Arguments::test(): unknown 'offset' value: " << offset << std::endl;
       val = false;
     }
