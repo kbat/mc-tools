@@ -85,8 +85,10 @@ Arguments::Arguments(int ac, const char **av) :
        "Two integer numbers are required: the first one is the number of bins "
        "to average the slice on 2D histogrm, the second one indicates how many bins "
        "of this have to be merged into one bin in the 1D histogram.")
-    ("errors", "Plot the histogram with relative errors instead of data.")
-    ("v", "Explain what is being done.");
+      ("errors", "Plot the histogram with relative errors instead of data.")
+      ("max","Plot the histogram where each bin content is the max value "
+       "of all histograms along the normal axis.")
+      ("v", "Explain what is being done.");
 
 
     po::options_description data("Data options", w.ws_col);

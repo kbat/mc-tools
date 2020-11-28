@@ -50,6 +50,7 @@ class Arguments {
   bool IsFlipped() const {return vm.count("flip"); }
   bool IsHelp() const { return help; }
   bool IsLogz() const {return !vm.count("no-logz"); }
+  bool IsMax() const {return vm.count("max"); }
   bool IsRebin() const {return vm.count("rebin"); }
   bool IsVerbose() const {return vm.count("v"); }
   bool  IsXmin() const {return GetXmin()>std::numeric_limits<float>::lowest();}
