@@ -31,6 +31,7 @@ class Data {
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
   void Rebin() const;
+  std::shared_ptr<TH2> MakeH2(std::string& name, std::string& title);
   void BuildMaxH2();
  public:
   /* Data(const TH3F* h3, */

@@ -260,12 +260,35 @@ void Data::Rebin() const
   return;
 }
 
+// void Data::BuildMaxH2()
+// {
+//   const TAxis *va = GetVerticalAxis();
+//   const TAxis *ha = GetHorizontalAxis();
+//   const TAxis *na = GetNormalAxis();
+
+//   const Float_t xmin = va->GetXmin();
+//   const Float_t xmax = va->GetXmax();
+//   const Float_t ymin = ha->GetXmin();
+//   const Float_t ymax = ha->GetXmax();
+
+//   const Int_t nx = va->GetNbins();
+//   const Int_t ny = ha->GetNbins();
+
+//   const Int_t n3x = h3->GetNbinsX();
+//   const Int_t n3y = h3->GetNbinsY();
+//   const Int_t n3z = h3->GetNbinsZ();
+
+
+//   return;
+// }
+
 void Data::BuildMaxH2()
 /*!
   Build the histogram with max values along the normal axis
   (called if the -max argument is used)
  */
 {
+  std::cout << GetTypeStr() << "::BuildMaxH2" << std::endl;
   const std::shared_ptr<TH2> h2 = vh2[0];
   h2max = std::shared_ptr<TH2>(dynamic_cast<TH2*>(h2->Clone("hmax")));
   //  h2max->Reset();
@@ -404,18 +427,13 @@ TAxis *Data::GetVerticalAxis() const
     }
 }
 
-void Data::Project()
+std::shared_ptr<TH2> Data::MakeH2(std::string& name, std::string& title)
+/*!
+  Creates the TH2 histogram based on prjection plane
+ */
 {
-  if (GetType() == kData) // we do not need to scale geometry
-    {
-      auto start = std::chrono::high_resolution_clock::now();
-      h3->Scale(args->GetScale());
-      PrintChrono(start, " Project: "+GetTypeStr() + " scale ");
-    }
-
   const TAxis *va = GetVerticalAxis();
   const TAxis *ha = GetHorizontalAxis();
-  const TAxis *na = GetNormalAxis();
 
   const Float_t xmin = va->GetXmin();
   const Float_t xmax = va->GetXmax();
@@ -425,31 +443,49 @@ void Data::Project()
   const Int_t nx = va->GetNbins();
   const Int_t ny = ha->GetNbins();
 
+  std::shared_ptr<TH2> h2(nullptr);
+
+  if (h3->IsA() == TH3F::Class())      // data
+    h2 = std::make_shared<TH2F>(name.c_str(), title.c_str(),     ny, ymin, ymax, nx, xmin, xmax);
+  else if (h3->IsA() == TH3S::Class()) // geometry
+    h2 = std::make_shared<TH2S>(name.c_str(), title.c_str(), ny, ymin, ymax, nx, xmin, xmax);
+  else if (h3->IsA() == TH3I::Class()) // also geometry
+    h2 = std::make_shared<TH2I>(name.c_str(), title.c_str(), ny, ymin, ymax, nx, xmin, xmax);
+  else {
+    std::cerr << "ERROR: unknown TH3 class name, " << h3->ClassName() << std::endl;
+    exit(1);
+  }
+
+  return h2;
+}
+
+
+void Data::Project()
+{
+  if (GetType() == kData) // we do not need to scale geometry
+    {
+      auto start = std::chrono::high_resolution_clock::now();
+      h3->Scale(args->GetScale());
+      PrintChrono(start, " Project: "+GetTypeStr() + " scale ");
+    }
+
+  const TAxis *na = GetNormalAxis();
+  const Int_t nbins = na->GetNbins();
+  vh2.reserve(nbins);
+
   const Int_t n3x = h3->GetNbinsX();
   const Int_t n3y = h3->GetNbinsY();
   const Int_t n3z = h3->GetNbinsZ();
-
-  const Int_t nbins = na->GetNbins();
-  vh2.reserve(nbins);
 
   std::shared_ptr<TH2> h2(nullptr);
 
   for (Int_t bin=1; bin<=nbins; ++bin)
     {
-      const char *h2name = Form("%s_%d", h3->GetName(), bin);
-       const char *h2title = Form("%g< %c < %g",
+      std::string h2name = Form("%s_%d", h3->GetName(), bin);
+      std::string h2title = Form("%g< %c < %g",
 				 na->GetBinLowEdge(bin), GetNormalAxisName(), na->GetBinUpEdge(bin));
 
-      if (h3->IsA() == TH3F::Class()) // data
-	h2 = std::make_shared<TH2F>(h2name, h2title,     ny, ymin, ymax, nx, xmin, xmax);
-      else if (h3->IsA() == TH3S::Class()) // geometry
-	h2 = std::make_shared<TH2S>(h2name, h2title, ny, ymin, ymax, nx, xmin, xmax);
-      else if (h3->IsA() == TH3I::Class()) // geometry
-	h2 = std::make_shared<TH2I>(h2name, h2title, ny, ymin, ymax, nx, xmin, xmax);
-      else {
-	std::cerr << "ERROR: unknown TH3 class name, " << h3->ClassName() << std::endl;
-	exit(1);
-      }
+      h2 = MakeH2(h2name, h2title);
 
       Float_t val, err;
       if (plane == "xy")
