@@ -21,7 +21,22 @@ void validate(boost::any &v,
   } else {
     std::cerr << "plane: " << s << std::endl;
     throw validation_error(validation_error::invalid_option_value);
-  }
+ }
+}
+
+void conflicting_options(const boost::program_options::variables_map & vm,
+                         const std::string & opt1, const std::string & opt2)
+/*!
+  Function used to check that 'opt1' and 'opt2' are not specified at the same time.
+  https://www.boost.org/doc/libs/1_55_0/libs/program_options/example/real.cpp
+ */
+{
+  if (vm.count(opt1) && !vm[opt1].defaulted() &&
+      vm.count(opt2) && !vm[opt2].defaulted())
+    {
+      throw std::logic_error(std::string("Conflicting options '") +
+      			     opt1 + "' and '" + opt2 + "'.");
+    }
 }
 
 Arguments::Arguments(int ac, const char **av) :
@@ -37,7 +52,7 @@ Arguments::Arguments(int ac, const char **av) :
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
-  try{
+  try {
     //  options(argc, argv);
     po::options_description hidden("Positional arguments");
     hidden.add_options()
@@ -89,7 +104,6 @@ Arguments::Arguments(int ac, const char **av) :
       ("max","Plot the histogram where each bin content is the max value "
        "of all histograms along the normal axis.")
       ("v", "Explain what is being done.");
-
 
     po::options_description data("Data options", w.ws_col);
     data.add_options()
@@ -149,6 +163,8 @@ Arguments::Arguments(int ac, const char **av) :
       exit(1);
     }
 
+    conflicting_options(vm, "offset", "max");
+
     if (help || vm.count("help"))
       {
 	help = true;
@@ -165,12 +181,12 @@ Arguments::Arguments(int ac, const char **av) :
       }
   }
   catch(std::exception& e) {
-    std::cerr << "error: " << e.what() << "\n";
-    return;
+    std::cerr << "hplot ERROR: " << e.what() << "\n";
+    exit(1);
   }
   catch(...) {
     std::cerr << "Exception of unknown type!\n";
-    return;
+    exit(2);
   }
 
   return;
