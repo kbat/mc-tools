@@ -7,6 +7,7 @@ class Geometry : public Data {
   inline void ErrorHist(std::shared_ptr<TH2> h) const {;}
 protected:
   virtual void SetH2(std::shared_ptr<TH2> h2);
+  virtual void BuildMaxH2();
  public:
   Geometry(const std::string& fname,
 	   const std::string& hname,

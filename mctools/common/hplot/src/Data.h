@@ -14,10 +14,7 @@ enum data_t {kData, kGeometry};
 
 class Data {
  private:
-  std::shared_ptr<TH3> h3;
-  std::string plane;
   mutable std::shared_ptr<TGaxis> yrev; // reversed Y axis [if flipped]
-  std::shared_ptr<TH2> h2max;
 
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;
@@ -26,13 +23,16 @@ class Data {
   void Flip();
   void ErrorHist(std::shared_ptr<TH2> h) const;
  protected:
+  std::string plane;
+  std::shared_ptr<TH3> h3;
+  std::shared_ptr<TH2> h2max;
   std::vector< std::shared_ptr<TH2> > vh2;
   const Arguments *args;
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
   void Rebin() const;
   std::shared_ptr<TH2> MakeH2(std::string& name, std::string& title);
-  void BuildMaxH2();
+  virtual void BuildMaxH2();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */
@@ -52,6 +52,7 @@ class Data {
   Bool_t Check(TAxis *normal) const;
   virtual data_t GetType() const { return kData; }
   virtual std::string GetTypeStr() const { return "Data"; }
+  const std::vector<std::shared_ptr<TH2> > GetVH2() const {return vh2;}
   void PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const;
   void ReverseYAxis(std::shared_ptr<TH2> h2) const;
 };

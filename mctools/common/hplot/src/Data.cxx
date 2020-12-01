@@ -14,7 +14,7 @@
 
 Data::Data(const std::string& fname, const std::string& hname,
 	   const Arguments *args) :
-  h3(nullptr), plane(""), yrev(nullptr), h2max(nullptr), args(args)
+  yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr), args(args)
 {
   plane = args->GetPlane();
   TFile df(fname.c_str());
@@ -262,7 +262,7 @@ void Data::Rebin() const
 
 void Data::BuildMaxH2()
 {
-  std::cout << GetTypeStr() << "::BuildMaxH2" << std::endl;
+  //  std::cout << "Data::BuildMaxH2" << std::endl;
   const Int_t n3x = h3->GetNbinsX();
   const Int_t n3y = h3->GetNbinsY();
   const Int_t n3z = h3->GetNbinsZ();

@@ -66,9 +66,13 @@ Arguments::Arguments(int ac, const char **av) :
       ("help,h", "Show this help message and exit.")
       ("plane", po::value<Plane>()->default_value(xy, "xy"),
        "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy. The ROOT notation is used, i.e. the first symbol corresponds to the verical axis and the second symbol - to the horizontal axis of TH2.")
-      ("offset", po::value<std::string>()->default_value("0.0"), "Offset of projection plane from origin. "
-       " Either a float number or min/max/centre strings can be used. centre = (max+min)/2, min corresponds to the centre of the first bin, "
-       "and max - to the last bin of the axis perpendicular to the projection plane.")
+      ("offset", po::value<std::string>()->default_value("0.0"),
+       "Offset of projection plane from origin. "
+       " Either a float number or min/max/centre strings can be used. "
+       "centre = (max+min)/2, min corresponds to the centre of the first bin, "
+       "and max - to the last bin of the axis perpendicular to the projection plane. "
+       "With the '-max' option offset applies to the geometry histogram only which allows to select "
+       "the representative geometry view.")
       ("title", po::value<std::string>()->default_value("None"), "Plot title.")
       ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title.")
       ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title.")
@@ -102,7 +106,9 @@ Arguments::Arguments(int ac, const char **av) :
        "of this have to be merged into one bin in the 1D histogram.")
       ("errors", "Plot the histogram with relative errors instead of data.")
       ("max","Plot the histogram where each bin content is the max value "
-       "of all histograms along the normal axis.")
+       "of all histograms along the normal axis. "
+       "With this option the '-offset' value applies to geomtry only which allows to select "
+       "the representative geometry view.")
       ("v", "Explain what is being done.");
 
     po::options_description data("Data options", w.ws_col);
@@ -162,8 +168,6 @@ Arguments::Arguments(int ac, const char **av) :
       std::cout << "Error: " << e.what() << "\n";
       exit(1);
     }
-
-    conflicting_options(vm, "offset", "max");
 
     if (help || vm.count("help"))
       {
