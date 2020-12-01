@@ -9,7 +9,7 @@ ROOTCONFIG := root-config
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTGLIBS  := $(shell $(ROOTCONFIG) --glibs)
 ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
-GCC         = g++
+GCC         = g++ -std=c++17
 
 CXXFLAGS := -g -Ofast -fno-math-errno -Wall
 
