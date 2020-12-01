@@ -413,6 +413,10 @@ void Data::BuildMaxH2()
 	      }
 	}
 
+  SetH2(h2max);
+  if (args->IsErrors())
+    ErrorHist(h2max);
+
   return;
 }
 
@@ -572,9 +576,6 @@ void Data::Project()
   if (args->IsMax())
     {
       BuildMaxH2();
-      SetH2(h2max);
-      if (args->IsErrors())
-	ErrorHist(h2max);
       return;
     }
   else
