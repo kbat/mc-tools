@@ -59,11 +59,11 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
 
-  const TAxis *a  = data->GetNormalAxis();
-  const Int_t nbins = a->GetNbins();
-
-  if (nbins>1)
+  if (data->GetVH2().size()>1)
     {
+      const TAxis *a  = data->GetNormalAxis();
+      const Int_t nbins = a->GetNbins();
+
       Int_t bin = a->FindBin(data->GetOffset());
       if (bin > nbins)
 	bin = nbins;
