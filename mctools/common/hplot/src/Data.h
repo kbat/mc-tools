@@ -33,7 +33,6 @@ class Data {
   void Rebin() const;
   std::shared_ptr<TH2> MakeH2(std::string& name, std::string& title);
   void BuildMaxH2();
-  void BuildMaxH2old();
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */

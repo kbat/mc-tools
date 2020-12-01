@@ -416,42 +416,6 @@ void Data::BuildMaxH2()
   return;
 }
 
-void Data::BuildMaxH2old()
-/*!
-  Build the histogram with max values along the normal axis
-  (called if the -max argument is used)
- */
-{
-  std::cout << GetTypeStr() << "::BuildMaxH2old" << std::endl;
-  const std::shared_ptr<TH2> h2 = vh2[0];
-  h2max = std::shared_ptr<TH2>(dynamic_cast<TH2*>(h2->Clone("hmax")));
-  //  h2max->Reset();
-
-  const Int_t nx = h2->GetNbinsX();
-  const Int_t ny = h2->GetNbinsY();
-
-  for (Int_t i=1; i<=nx; ++i)
-    for (Int_t j=1; j<ny; ++j)
-      {
-	Double_t max = 0.0;
-	Double_t err = 0.0;
-	for (const auto h : vh2)
-	  {
-	    Double_t val = h->GetBinContent(i,j);
-	    if (max<val)
-	      {
-		max = val;
-		err = h->GetBinError(i,j);
-	      }
-	  }
-	if (max>0.0)
-	  {
-	    h2max->SetBinContent(i,j,max);
-	    h2max->SetBinError(i,j,err);
-	  }
-      }
-}
-
 void Data::ReverseYAxis(std::shared_ptr<TH2> h) const
 {
   TAxis *ay = h->GetYaxis();
