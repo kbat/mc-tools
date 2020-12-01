@@ -47,60 +47,60 @@ void Geometry::BuildMaxH2()
 
   if (plane == "xy")
     {
+      const Int_t k = h3->GetZaxis()->FindBin(offset);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
-	    Int_t k = h3->GetZaxis()->FindBin(offset);
 	    Double_t val = h3->GetBinContent(i,j,k);
 	    h2max->SetBinContent(j,i,val);
 	  }
     }
   else if (plane == "yx")
     {
+      Int_t k = h3->GetZaxis()->FindBin(offset);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
-	    Int_t k = h3->GetZaxis()->FindBin(offset);
 	    Double_t val = h3->GetBinContent(i,j,k);
 	    h2max->SetBinContent(i,j,val);
 	  }
     }
   else if (plane == "yz")
     {
+      const Int_t i = h3->GetXaxis()->FindBin(offset);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t k=1; k<=n3z; ++k)
 	  {
-	    Int_t i = h3->GetXaxis()->FindBin(offset);
 	    Double_t val = h3->GetBinContent(i,j,k);
 	    h2max->SetBinContent(k,j,val);
 	  }
     }
   else if (plane == "zy")
     {
+      const Int_t i = h3->GetXaxis()->FindBin(offset);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t k=1; k<=n3z; ++k)
 	  {
-	    Int_t i = h3->GetXaxis()->FindBin(offset);
 	    Double_t val = h3->GetBinContent(i,j,k);
 	    h2max->SetBinContent(j,k,val);
 	  }
     }
   else if (plane == "xz")
     {
+      const Int_t j = h3->GetYaxis()->FindBin(offset);
       for (Int_t k=1; k<=n3z; ++k)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
-	    Int_t j = h3->GetYaxis()->FindBin(offset);
 	    Double_t val = h3->GetBinContent(i,j,k);
 	    h2max->SetBinContent(k,i,val);
 	  }
     }
   else if (plane == "zx")
     {
+      const Int_t j = h3->GetYaxis()->FindBin(offset);
       for (Int_t k=1; k<=n3z; ++k)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
-	    Int_t j = h3->GetYaxis()->FindBin(offset);
 	    Double_t val = h3->GetBinContent(i,j,k);
 	    h2max->SetBinContent(i,k,val);
 	  }
