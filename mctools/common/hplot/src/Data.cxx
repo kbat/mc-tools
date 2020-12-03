@@ -120,7 +120,7 @@ void Data::Flip()
   const Int_t ny = h3->GetNbinsY();
   const Int_t nz = h3->GetNbinsZ();
 
-  if (plane[0]=='x') // vertical axis is 'x'
+  if (plane[0]=='x') // TH2 vertical axis is 'x'
     {
       for (Int_t i=1; i<=nx; ++i)
 	for (Int_t j=1; j<=ny; ++j)
@@ -133,7 +133,7 @@ void Data::Flip()
 	      flipped->SetBinError(ii,   j, k, err);
 	    }
     }
-  else if (plane[0]=='y') // vertical axis is 'y'
+  else if (plane[0]=='y') // TH2 vertical axis is 'y'
     {
       for (Int_t i=1; i<=nx; ++i)
 	for (Int_t j=1; j<=ny; ++j)
@@ -146,7 +146,7 @@ void Data::Flip()
 	      flipped->SetBinError(i,   jj, k, err);
 	    }
     }
-  else if (plane[0]=='z') // vertical axis is 'z'
+  else if (plane[0]=='z') // TH2 vertical axis is 'z'
     {
       for (Int_t i=1; i<=nx; ++i)
 	for (Int_t j=1; j<=ny; ++j)
