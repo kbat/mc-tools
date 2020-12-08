@@ -8,6 +8,7 @@
 #include <TGDoubleSlider.h>
 #include <TGStatusBar.h>
 #include <Buttons.h>
+#include <TVirtualPad.h>
 
 #include "Data.h"
 #include "Geometry.h"
@@ -33,6 +34,7 @@ class MainFrame : public TGMainFrame {
   virtual ~MainFrame();
   void DoDraw();
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
+  TVirtualPad *GetHistogramPad() const;
   void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 

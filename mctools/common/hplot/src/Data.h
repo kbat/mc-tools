@@ -41,6 +41,7 @@ class Data {
        const Arguments *args);
   virtual ~Data();
   void Project();
+  const Arguments *GetArgs() const {return args;}
   const std::shared_ptr<TH3> GetH3() const { return h3; };
   std::shared_ptr <TH2> GetH2(const std::string val="") const;
   std::shared_ptr <TH2> GetH2(const Float_t val) const;

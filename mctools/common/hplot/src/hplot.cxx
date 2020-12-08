@@ -107,18 +107,25 @@ int main(int argc, const char **argv)
       mf = new MainFrame(gClient->GetRoot(), width, height, data, geo);
       mf->SetWindowName(args.GetWindowTitle().c_str());
 
-      c1 = mf->GetCanvas();
+      c1 = dynamic_cast<TCanvas*>(mf->GetCanvas());
 
       // Int_t x, y;
       // gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
+  if (args.IsSlice())
+    {
+      c1->Divide(1,2);
+      c1->cd(1);
+    }
+  TVirtualPad *pad1 = gPad;
+
   if (args.IsZTitle())
-      c1->SetRightMargin(vm["right_margin"].as<float>());
+      pad1->SetRightMargin(vm["right_margin"].as<float>());
 
   data->Draw();
 
-  c1->SetLogz(args.IsLogz() && !args.IsErrors());
+  pad1->SetLogz(args.IsLogz() && !args.IsErrors());
 
   // GEOMETRY
 

@@ -51,10 +51,9 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",hframe,w,h);
   // AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
 
-  TCanvas *c1 = fEcanvas->GetCanvas();
+  TCanvas *c1 = GetCanvas();
   c1->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","MainFrame",this,
 	      "EventInfo(EEventType,Int_t,Int_t,TObject*)");
-
 
   hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
@@ -126,7 +125,7 @@ void MainFrame::DoDraw()
   TF1 *f1 = new TF1("f1","sin(x)/x",0,gRandom->Rndm()*10);
   f1->SetLineWidth(3);
   f1->Draw();
-  TCanvas *fCanvas = GetCanvas();
+  TVirtualPad *fCanvas = GetCanvas();
   fCanvas->cd();
   fCanvas->Update();
 }
@@ -139,21 +138,33 @@ MainFrame::~MainFrame()
   Cleanup();
 }
 
+TVirtualPad *MainFrame::GetHistogramPad() const
+/*!
+  Return the canvas pad with the 2D histgoram
+ */
+{
+  TVirtualPad *c1 = GetCanvas();
+  if (data->GetArgs()->IsSlice())
+    return c1->GetPad(1);
+  else
+    return c1;
+}
+
 void MainFrame::DoSlider()
 {
   float ymin, ymax;
   fSlider->GetPosition(ymin,ymax);
   const float y = (ymin+ymax)/2.0;
 
-  //  std::cout << data->GetH2(y)->GetTitle() << std::endl;;
-  GetCanvas()->cd();
+  TVirtualPad *pad1 = GetHistogramPad();
+  pad1->cd();
+
   dh2 = data->Draw(y);
-  //  data->GetH2(y)->Draw();
 
   if (geo)
     gh2 = geo->Draw(y);
 
-  GetCanvas()->Update();
+  pad1->Update();
 }
 
 Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
