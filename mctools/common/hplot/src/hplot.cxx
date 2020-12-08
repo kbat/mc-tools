@@ -90,7 +90,7 @@ int main(int argc, const char **argv)
 
   // These must be raw pointers due to ROOT garbage collectors:
   TCanvas      *c1(nullptr);
-  MainFrame    *mf(nullptr);
+  std::unique_ptr<MainFrame>   mf(nullptr);
   TApplication *theApp(nullptr);
 
   UInt_t width = args->GetWidth();
@@ -104,7 +104,7 @@ int main(int argc, const char **argv)
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
-      mf = new MainFrame(gClient->GetRoot(), width, height, data, geo);
+      mf = std::make_unique<MainFrame>(gClient->GetRoot(), width, height, data, geo);
       mf->SetWindowName(args->GetWindowTitle().c_str());
 
       c1 = dynamic_cast<TCanvas*>(mf->GetCanvas());
@@ -141,8 +141,6 @@ int main(int argc, const char **argv)
     {
       theApp->Run(kTRUE);
     }
-
-  delete mf; mf = nullptr;
 
   //gObjectTable->Print();
 
