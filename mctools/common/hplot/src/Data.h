@@ -27,7 +27,7 @@ class Data {
   std::shared_ptr<TH3> h3;
   std::shared_ptr<TH2> h2max;
   std::vector< std::shared_ptr<TH2> > vh2;
-  const Arguments *args;
+  const std::shared_ptr<Arguments> args;
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
   void Rebin() const;
@@ -38,10 +38,10 @@ class Data {
   /*      const std::string& plane); */
   Data(const std::string& fname,
        const std::string& hname,
-       const Arguments *args);
+       const std::shared_ptr<Arguments> args);
   virtual ~Data();
   void Project();
-  const Arguments *GetArgs() const {return args;}
+  const std::shared_ptr<Arguments> GetArgs() const {return args;}
   const std::shared_ptr<TH3> GetH3() const { return h3; };
   std::shared_ptr <TH2> GetH2(const std::string val="") const;
   std::shared_ptr <TH2> GetH2(const Float_t val) const;

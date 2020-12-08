@@ -11,7 +11,7 @@ protected:
  public:
   Geometry(const std::string& fname,
 	   const std::string& hname,
-	   const Arguments *args);
+	   const std::shared_ptr<Arguments> args);
   virtual ~Geometry();
 
   std::string GetGOption() const {return "same " + args->GetGoption(); }

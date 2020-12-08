@@ -55,15 +55,15 @@ void SetColourMap()
 
 int main(int argc, const char **argv)
 {
-  Arguments args(argc, argv);
+  std::shared_ptr<Arguments> args = std::make_shared<Arguments>(argc, argv);
 
-  if (args.IsHelp())
+  if (args->IsHelp())
     return 0;
 
-  if (!args.test())
+  if (!args->test())
     return 1;
 
-  const po::variables_map vm = args.GetMap();
+  const po::variables_map vm = args->GetMap();
 
   gStyle->SetOptStat(kFALSE);
   SetColourMap();
@@ -73,7 +73,7 @@ int main(int argc, const char **argv)
   std::string gfname = vm["gfile"].as<std::string>();
   std::string ghname = vm["ghist"].as<std::string>();
 
-  std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, &args);
+  std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, args);
   auto start = std::chrono::high_resolution_clock::now();
   data->Project();
   data->PrintChrono(start, "Data::Project: ");
@@ -81,7 +81,7 @@ int main(int argc, const char **argv)
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())
     {
-      geo = std::make_shared<Geometry>(gfname, ghname, &args);
+      geo = std::make_shared<Geometry>(gfname, ghname, args);
       auto start = std::chrono::high_resolution_clock::now();
       geo->Project();
       geo->PrintChrono(start,"Geometry::Project: ");
@@ -93,19 +93,19 @@ int main(int argc, const char **argv)
   MainFrame    *mf(nullptr);
   TApplication *theApp(nullptr);
 
-  UInt_t width = args.GetWidth();
-  UInt_t height = args.GetHeight();
+  UInt_t width = args->GetWidth();
+  UInt_t height = args->GetHeight();
 
-  if (args.IsBatch())
+  if (args->IsBatch())
     {
-      c1 = new TCanvas("hplot", args.GetWindowTitle().c_str(), width, height);
+      c1 = new TCanvas("hplot", args->GetWindowTitle().c_str(), width, height);
     }
   else
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
       mf = new MainFrame(gClient->GetRoot(), width, height, data, geo);
-      mf->SetWindowName(args.GetWindowTitle().c_str());
+      mf->SetWindowName(args->GetWindowTitle().c_str());
 
       c1 = dynamic_cast<TCanvas*>(mf->GetCanvas());
 
@@ -113,26 +113,26 @@ int main(int argc, const char **argv)
       // gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
-  if (args.IsSlice())
+  if (args->IsSlice())
     {
       c1->Divide(1,2);
       c1->cd(1);
     }
   TVirtualPad *pad1 = gPad;
 
-  if (args.IsZTitle())
+  if (args->IsZTitle())
       pad1->SetRightMargin(vm["right_margin"].as<float>());
 
   data->Draw();
 
-  pad1->SetLogz(args.IsLogz() && !args.IsErrors());
+  pad1->SetLogz(args->IsLogz() && !args->IsErrors());
 
   // GEOMETRY
 
   if (geo)
       geo->Draw();
 
-  if (args.IsBatch())
+  if (args->IsBatch())
     {
       c1->Print(vm["o"].as<std::string>().c_str());
       delete c1; c1 = nullptr;

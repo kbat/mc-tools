@@ -13,7 +13,7 @@
 // }
 
 Data::Data(const std::string& fname, const std::string& hname,
-	   const Arguments *args) :
+	   const std::shared_ptr<Arguments> args) :
   yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr), args(args)
 {
   plane = args->GetPlane();
