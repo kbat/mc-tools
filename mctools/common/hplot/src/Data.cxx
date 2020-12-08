@@ -5,13 +5,6 @@
 #include <TCanvas.h>
 #include "Data.h"
 
-// Data::Data(const TH3* h3, const std::string& plane) :
-//   h3(h3), h2(nullptr), plane(plane)
-// {
-//   // std::cout << "Data constructor" << std::endl;
-//   // h3->Print();
-// }
-
 Data::Data(const std::string& fname, const std::string& hname,
 	   const std::shared_ptr<Arguments> args) :
   yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr), args(args)

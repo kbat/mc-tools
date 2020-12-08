@@ -88,10 +88,10 @@ int main(int argc, const char **argv)
       data->Check(geo->GetNormalAxis());
     }
 
-  // These must be raw pointers due to ROOT garbage collectors:
-  TCanvas      *c1(nullptr);
   std::unique_ptr<MainFrame>   mf(nullptr);
-  TApplication *theApp(nullptr);
+  // These must be raw pointers due to ROOT garbage collectors:
+  TCanvas                     *c1(nullptr);
+  TApplication            *theApp(nullptr);
 
   UInt_t width = args->GetWidth();
   UInt_t height = args->GetHeight();
@@ -127,8 +127,6 @@ int main(int argc, const char **argv)
 
   pad1->SetLogz(args->IsLogz() && !args->IsErrors());
 
-  // GEOMETRY
-
   if (geo)
       geo->Draw();
 
@@ -146,9 +144,3 @@ int main(int argc, const char **argv)
 
   return 0;
 }
-
-// Performance:
-// h2  - Project3D + draw = 8 sec (same time with Python script)
-//   since it takes 8 sec to draw -> 5 sec to Project3D
-// h2 - Data::Project + draw = 5 sec (since it takes 3 sec to draw -> 2 sec to project)
-// project and draw both = 13 sec -> correct
