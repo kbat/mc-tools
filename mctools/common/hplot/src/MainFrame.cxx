@@ -94,21 +94,6 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   fStatusBar->Draw3DCorner(kTRUE);
   AddFrame(fStatusBar, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
 
-  // TGHorizontalFrame *hframe1=new TGHorizontalFrame(this, w,40);
-  // TGTextButton *draw = new TGTextButton(hframe1,"&Draw");
-  // draw->Connect("Clicked()","MainFrame",this,"DoDraw()");
-  // hframe1->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,
-  // 					   5,5,3,4));
-
-  // TGTextButton *exit = new TGTextButton(hframe1,"&Exit ",
-  // 					"gApplication->Terminate()");
-  // exit->SetState(kButtonDisabled);
-  // hframe1->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,
-  // 					   5,5,3,4));
-  // AddFrame(hframe1,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-
-  //////////
-
   MapSubwindows();
   Resize(GetDefaultSize());
   MapWindow();
@@ -118,16 +103,6 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   dh2 = data->GetH2(); // default data histogram
   if (geo)
     gh2 = geo->GetH2();
-}
-
-void MainFrame::DoDraw()
-{
-  TF1 *f1 = new TF1("f1","sin(x)/x",0,gRandom->Rndm()*10);
-  f1->SetLineWidth(3);
-  f1->Draw();
-  TVirtualPad *fCanvas = GetCanvas();
-  fCanvas->cd();
-  fCanvas->Update();
 }
 
 MainFrame::~MainFrame()

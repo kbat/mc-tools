@@ -32,7 +32,6 @@ class MainFrame : public TGMainFrame {
 	    const std::shared_ptr<Data> data,
 	    const std::shared_ptr<Geometry> geo);
   virtual ~MainFrame();
-  void DoDraw();
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   TVirtualPad *GetHistogramPad() const;
   void DoSlider();
