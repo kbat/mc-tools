@@ -34,6 +34,7 @@ class MainFrame : public TGMainFrame {
   virtual ~MainFrame();
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   TVirtualPad *GetHistogramPad() const;
+  TVirtualPad *GetSlicePad() const;
   void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 

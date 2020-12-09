@@ -125,6 +125,18 @@ TVirtualPad *MainFrame::GetHistogramPad() const
     return c1;
 }
 
+TVirtualPad *MainFrame::GetSlicePad() const
+/*!
+  Return the canvas pad with the slice (if any)
+ */
+{
+  TVirtualPad *c1 = GetCanvas();
+  if (data->GetArgs()->IsSlice())
+    return c1->GetPad(2);
+  else
+    return nullptr;
+}
+
 void MainFrame::DoSlider()
 {
   float ymin, ymax;
