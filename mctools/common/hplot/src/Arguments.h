@@ -67,8 +67,8 @@ class Arguments {
   size_t      GetHeight() const;
   std::string GetPlane() const {return vm["plane"].as<Plane>().GetValue(); }
   float       GetScale()  const { return vm["scale"].as<float>(); }
-  std::vector<short> GetSlice() const { return vm["slice"].as<std::vector<short> >(); }
-  size_t      GetSlice(size_t i) const { return GetSlice()[i]; }
+  std::vector<unsigned short> GetSlice() const {return vm["slice"].as<std::vector<unsigned short> >();}
+  unsigned short GetSlice(size_t i) const { return GetSlice()[i]; }
   std::string GetTitle() const {return vm["title"].as<std::string>(); }
   size_t      GetWidth()  const { return vm["width"].as<size_t>(); }
   std::string GetWindowTitle() const;

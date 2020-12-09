@@ -97,8 +97,8 @@ Arguments::Arguments(int ac, const char **av) :
       //      ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(""),
        "Output file name. If given then the canvas is not shown.")
-      ("slice", po::value<std::vector<short> >()->multitoken()->default_value(std::vector<short>({0}),
-									      "no slice"),
+       ("slice", po::value<std::vector<unsigned short> >()->multitoken()->default_value(std::vector<unsigned short>({0}),
+                                                                             "no slice"),
        "Show live slice averaging the given number of bins. "
        "Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. "
        "Two integer numbers are required: the first one is the number of bins "
@@ -254,7 +254,7 @@ bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::str
 
 bool Arguments::CheckSlice() const
 {
-  const std::vector<short> slice = GetSlice();
+  const std::vector<unsigned short> slice = GetSlice();
   size_t size = slice.size();
 
   if ((size == 1) && (slice[0] == 0)) // default value - slice not specified
@@ -297,7 +297,7 @@ bool Arguments::IsSlice() const
   /*
     Return true if slice is needed
    */
-  const std::vector<short> slice = GetSlice();
+  const std::vector<unsigned short> slice = GetSlice();
 
   return (!((slice.size() == 1) && (slice[0] == 0)));
 }

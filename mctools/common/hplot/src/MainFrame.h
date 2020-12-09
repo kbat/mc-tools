@@ -12,7 +12,7 @@
 
 #include "Data.h"
 #include "Geometry.h"
-
+#include "DynamicSlice.h"
 
 class MainFrame : public TGMainFrame {
  private:
@@ -27,6 +27,8 @@ class MainFrame : public TGMainFrame {
   std::shared_ptr<Geometry> geo;
   std::shared_ptr<TH2> dh2; // current data histogram
   std::shared_ptr<TH2> gh2; // current geometry histogram
+
+  std::unique_ptr<DynamicSlice> slice;
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 	    const std::shared_ptr<Data> data,

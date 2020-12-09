@@ -18,7 +18,7 @@ enum MainFrameMessageTypes {
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data> data,
 		     const std::shared_ptr<Geometry> geo) :
-  TGMainFrame(p,w,h), data(data), geo(geo), gh2(nullptr)
+  TGMainFrame(p,w,h), data(data), geo(geo), gh2(nullptr), slice(nullptr)
 {
 
   // Menu bar
@@ -103,6 +103,9 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   dh2 = data->GetH2(); // default data histogram
   if (geo)
     gh2 = geo->GetH2();
+
+  if (data->GetArgs()->IsSlice())
+    slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice());
 }
 
 MainFrame::~MainFrame()
@@ -227,4 +230,6 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      relerr = err/val * 100.0;
 
    fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
+
+   slice->call(dh2);
 }

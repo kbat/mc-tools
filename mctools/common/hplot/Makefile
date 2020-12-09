@@ -27,11 +27,11 @@ obj/minimal.o: src/minimal.cxx
 
 obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
 	@echo "Generating dictionary $@"
-# rootcint is used due to old ROOT version @ travis. Better to use rootcling
+# use rootcint if going to run on travis. otherwise rootcline is better/newer
 	@rootcling -f MainFrameDict.cxx -c $^
 	@$(GCC) -c $(CXXFLAGS) -I./ MainFrameDict.cxx $(ROOTCFLAGS) -o $@
 
-hplot: obj/hplot.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Geometry.o
+hplot: obj/hplot.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Geometry.o obj/DynamicSlice.o
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 
