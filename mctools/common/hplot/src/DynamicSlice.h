@@ -14,11 +14,12 @@ class DynamicSlice {
   std::pair<int, int> old;
   TVirtualPad *cX;
   TVirtualPad *cY;
+
+  void DestroyPrimitive(const std::string&);
+  std::pair<double, double> DrawSlice(const std::shared_ptr<TH2>, const Int_t, const std::string&);
  public:
   DynamicSlice(const std::vector<unsigned short>&);
-  void DestroyPrimitive(const std::string&);
-  void call(const std::shared_ptr<TH2> h2);
-  std::pair<double, double> DrawSlice(const std::shared_ptr<TH2>, const Int_t, const std::string&);
+  void Draw(const std::shared_ptr<TH2> h2);
 };
 
 #endif

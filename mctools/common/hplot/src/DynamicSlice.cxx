@@ -23,7 +23,7 @@ void DynamicSlice::DestroyPrimitive(const std::string& xy)
   }
 }
 
-void DynamicSlice::call(const std::shared_ptr<TH2> h2)
+void DynamicSlice::Draw(const std::shared_ptr<TH2> h2)
 {
   // if ((!h2) || (!h2.get()->InheritsFrom(TH2::Class())))
   //   return;

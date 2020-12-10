@@ -231,5 +231,6 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 
    fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
 
-   slice->call(dh2);
+   if (slice)
+     slice->Draw(dh2);
 }
