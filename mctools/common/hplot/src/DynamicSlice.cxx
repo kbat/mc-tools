@@ -16,7 +16,7 @@ void DynamicSlice::DestroyPrimitive(const std::string& xy)
   Delete projected histogram
  */
 {
-  const TH2* proj = dynamic_cast<TH2*>((xy == "X" ? cX : cY)->GetPrimitive(("Projection"+xy).c_str()));
+  const TH2* proj = dynamic_cast<TH2*>((xy == "X" ? cX : cY)->GetPrimitive(("Projection"+xy).data()));
   if (proj) {
     delete proj;
     proj = nullptr;
@@ -120,14 +120,15 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   const Double_t vmin = axis->GetBinLowEdge(bin1);
   const Double_t vmax = axis->GetBinUpEdge(bin2);
 
-  const char *hname = ("Projection"+xy).c_str();
+  char *hname = Form("Projection%s",xy.data());
   TH1 *hp = yx == "X" ? histo->ProjectionX(hname, bin1, bin2) : histo->ProjectionY(hname, bin1, bin2);
   hp->SetFillColor(38);
   hp->SetLineWidth(2);
   hp->SetFillStyle(3001);
   hp->SetLineColor(kBlack);
 
-  hp->SetTitle("title");
+  hname = Form("%s Projection of %ld %s bins: %g < %s < %g (#Delta %s = %g)", xy.data(), nbins, vert_axis.data(), vmin, vert_axis.data(), vmax, vert_axis.data(), vmax-vmin);
+  hp->SetTitle(hname);
 
   if (ngroup>=1)
     hp->Rebin(ngroup);
