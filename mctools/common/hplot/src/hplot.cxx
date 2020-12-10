@@ -113,19 +113,20 @@ int main(int argc, const char **argv)
       // gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(), x, y, width, height);
     }
 
-  if (args->IsSlice())
-    {
-      c1->Divide(1,2);
-      c1->cd(1);
-    }
-  TVirtualPad *pad1 = gPad;
+  TVirtualPad *h2pad  = c1;
+
+  if ((args->IsSlice()) && (!args->IsBatch())) {
+    c1->Divide(1,2);
+    c1->cd(1);
+    h2pad = c1->GetPad(1);
+  }
 
   if (args->IsZTitle())
-      pad1->SetRightMargin(vm["right_margin"].as<float>());
+      c1->SetRightMargin(vm["right_margin"].as<float>());
 
   data->Draw();
 
-  pad1->SetLogz(args->IsLogz() && !args->IsErrors());
+  h2pad->SetLogz(args->IsLogz() && !args->IsErrors());
 
   if (geo)
       geo->Draw();
