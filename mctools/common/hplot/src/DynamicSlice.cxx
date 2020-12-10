@@ -6,14 +6,14 @@
 
 DynamicSlice::DynamicSlice(const std::vector<unsigned short>& slice) :
   h2(nullptr), nbins(slice[0]), ngroup(slice[1]), projection(kTRUE), logy(kFALSE),
-  range(0.0, 0.0), old(0, 0), cX(nullptr), cY(nullptr)
+  range(0.0, 0.0), old(0, 0)
 {
 
 }
 
 void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
-			const TVirtualPad *h2pad,
-			const TVirtualPad *slicePad)
+			TVirtualPad *h2pad,
+			TVirtualPad *slicepad)
 {
   // if ((!h2) || (!h2.get()->InheritsFrom(TH2::Class())))
   //   return;
@@ -21,25 +21,27 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
   if (gPad!=h2pad)
     return;
 
-  gPad->GetCanvas()->FeedbackMode(kTRUE);
-  Int_t event = gPad->GetEvent();
+  pad = slicepad;
+
+  h2pad->GetCanvas()->FeedbackMode(kTRUE);
+  Int_t event = h2pad->GetEvent();
   if (event==kButton1Down)
     projection = !projection;
   else if (event == kButton2Up)
     logy = !logy;
 
-  const Int_t px = gPad->GetEventX();
-  const Int_t py = gPad->GetEventY();
+  const Int_t px = h2pad->GetEventX();
+  const Int_t py = h2pad->GetEventY();
 
-  const Double_t uxmin = gPad->GetUxmin();
-  const Double_t uxmax = gPad->GetUxmax();
-  const Double_t uymin = gPad->GetUymin();
-  const Double_t uymax = gPad->GetUymax();
+  const Double_t uxmin = h2pad->GetUxmin();
+  const Double_t uxmax = h2pad->GetUxmax();
+  const Double_t uymin = h2pad->GetUymin();
+  const Double_t uymax = h2pad->GetUymax();
 
-  const Int_t pxmin = gPad->XtoAbsPixel(uxmin);
-  const Int_t pxmax = gPad->XtoAbsPixel(uxmax);
-  const Int_t pymin = gPad->YtoAbsPixel(uymin);
-  const Int_t pymax = gPad->YtoAbsPixel(uymax);
+  const Int_t pxmin = h2pad->XtoAbsPixel(uxmin);
+  const Int_t pxmax = h2pad->XtoAbsPixel(uxmax);
+  const Int_t pymin = h2pad->YtoAbsPixel(uymin);
+  const Int_t pymax = h2pad->YtoAbsPixel(uymax);
 
   const Double_t scaleX = abs((pxmax-pxmin) / (uxmax-uxmin));
   const Double_t scaleY = abs((pymax-pymin) / (uymax-uymin));
@@ -62,35 +64,24 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
   }
 
   if (projection)
-    gPad->SetUniqueID(py);
+    h2pad->SetUniqueID(py);
   else
-    gPad->SetUniqueID(px);
+    h2pad->SetUniqueID(px);
 
   old = {px, py};
 
-  const Double_t upx = gPad->AbsPixeltoX(px);
-  Double_t x = gPad->PadtoX(upx);
+  const Double_t upx = h2pad->AbsPixeltoX(px);
+  Double_t x = h2pad->PadtoX(upx);
 
-  const Double_t upy = gPad->AbsPixeltoY(py);
-  Double_t y = gPad->PadtoY(upy);
-
-  TVirtualPad *padsav = gPad->GetCanvas()->GetPad(1); // pad with 2D histogram
-
-  // create or set the display canvases
-  // no need to delete the old histograms because they can be reused by the new ones
-  // which automatically reset them (see .help TH2F::ProjectionX)
-  if (!cX)
-    cX = gPad->GetCanvas()->GetPad(2);
-
-  if (!cY)
-    cY = gPad->GetCanvas()->GetPad(2);
+  const Double_t upy = h2pad->AbsPixeltoY(py);
+  Double_t y = h2pad->PadtoY(upy);
 
   if (projection)
     range = DrawSlice(h2, y, "Y");
   else
     range = DrawSlice(h2, x, "X");
 
-  padsav->cd();
+  h2pad->cd();
 
   return;
 }
@@ -101,9 +92,8 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   const std::string yx = xy == "X" ? "Y" : "X";
   const std::string vert_axis = yx;
 
-  TVirtualPad *canvas = xy == "X" ? cX : cY;
-  canvas->SetGrid();
-  canvas->cd();
+  pad->SetGrid();
+  pad->cd();
 
   const TAxis *axis = xy == "X" ? histo->GetXaxis() : histo->GetYaxis();
   const Int_t bin1 = axis->FindBin(value);
@@ -131,8 +121,9 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   TAxis *yaxis = hp->GetYaxis();
   yaxis->SetMaxDigits(3);
   yaxis->SetTitle(histo->GetZaxis()->GetTitle());
-  canvas->SetLogy(logy);
+  pad->SetLogy(logy);
 
-  canvas->Update();
+  pad->Update();
+
   return {vmin, vmax};
 }

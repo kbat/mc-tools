@@ -12,13 +12,12 @@ class DynamicSlice {
   bool logy;
   std::pair<double, double> range;
   std::pair<int, int> old;
-  TVirtualPad *cX;
-  TVirtualPad *cY;
+  TVirtualPad *pad; // pad with slice
 
   std::pair<double, double> DrawSlice(const std::shared_ptr<TH2>, const Int_t, const std::string&);
  public:
   DynamicSlice(const std::vector<unsigned short>&);
-  void Draw(const std::shared_ptr<TH2> h2, const TVirtualPad *h2pad, const TVirtualPad *slicePad);
+  void Draw(const std::shared_ptr<TH2> h2, TVirtualPad *h2pad, TVirtualPad *slicePad);
 };
 
 #endif
