@@ -11,18 +11,6 @@ DynamicSlice::DynamicSlice(const std::vector<unsigned short>& slice) :
 
 }
 
-void DynamicSlice::DestroyPrimitive(const std::string& xy)
-/*!
-  Delete projected histogram
- */
-{
-  const TH2* proj = dynamic_cast<TH2*>((xy == "X" ? cX : cY)->GetPrimitive(("Projection"+xy).data()));
-  if (proj) {
-    delete proj;
-    proj = nullptr;
-  }
-}
-
 void DynamicSlice::Draw(const std::shared_ptr<TH2> h2)
 {
   // if ((!h2) || (!h2.get()->InheritsFrom(TH2::Class())))
@@ -84,15 +72,13 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2)
   TVirtualPad *padsav = gPad;
 
   // create or set the display canvases
+  // no need to delete the old histograms because they can be reused by the new ones
+  // which automatically reset them (see .help TH2F::ProjectionX)
   if (!cX)
     cX = gPad->GetCanvas()->GetPad(2);
-  else
-    DestroyPrimitive("X");
 
   if (!cY)
     cY = gPad->GetCanvas()->GetPad(2);
-  else
-    DestroyPrimitive("Y");
 
   if (projection)
     range = DrawSlice(h2, y, "Y");
