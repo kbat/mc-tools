@@ -11,10 +11,15 @@ DynamicSlice::DynamicSlice(const std::vector<unsigned short>& slice) :
 
 }
 
-void DynamicSlice::Draw(const std::shared_ptr<TH2> h2)
+void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
+			const TVirtualPad *h2pad,
+			const TVirtualPad *slicePad)
 {
   // if ((!h2) || (!h2.get()->InheritsFrom(TH2::Class())))
   //   return;
+
+  if (gPad!=h2pad)
+    return;
 
   gPad->GetCanvas()->FeedbackMode(kTRUE);
   Int_t event = gPad->GetEvent();
@@ -69,7 +74,7 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2)
   const Double_t upy = gPad->AbsPixeltoY(py);
   Double_t y = gPad->PadtoY(upy);
 
-  TVirtualPad *padsav = gPad;
+  TVirtualPad *padsav = gPad->GetCanvas()->GetPad(1); // pad with 2D histogram
 
   // create or set the display canvases
   // no need to delete the old histograms because they can be reused by the new ones
