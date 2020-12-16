@@ -128,7 +128,7 @@ Arguments::Arguments(int ac, const char **av) :
     std::array<std::string, 4> positional_args{"dfile", "dhist", "gfile", "ghist"};
     po::positional_options_description p;
     for (const std::string& pa : positional_args)
-      p.add(pa.c_str(), 1);
+      p.add(pa.data(), 1);
 
     po::options_description all_options("Usage: hplot [options] dfile dhist [gfile [ghist]]");
     all_options.add(generic).add(data).add(geom).add(hidden);

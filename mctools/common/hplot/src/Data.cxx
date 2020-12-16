@@ -10,13 +10,13 @@ Data::Data(const std::string& fname, const std::string& hname,
   yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr), args(args)
 {
   plane = args->GetPlane();
-  TFile df(fname.c_str());
+  TFile df(fname.data());
   if (df.IsZombie()) {
     df.Close();
     exit(1);
   }
   TH3 *h3tmp(nullptr);
-  df.GetObject<TH3>(hname.c_str(),h3tmp);
+  df.GetObject<TH3>(hname.data(),h3tmp);
   if (!h3tmp) {
     std::cerr << "Error: Can't find " << hname << " in " << fname << std::endl;
     exit(1);
@@ -48,25 +48,25 @@ Data::Data(const std::string& fname, const std::string& hname,
 void Data::SetH2(std::shared_ptr<TH2> h2)
 {
   if (args->GetTitle() != "None")
-    h2->SetTitle(args->GetTitle().c_str());
+    h2->SetTitle(args->GetTitle().data());
   else
-    h2->SetTitle(Form("%s %s projection: %s", h3->GetTitle(), plane.c_str(), h2->GetTitle()));
+    h2->SetTitle(Form("%s %s projection: %s", h3->GetTitle(), plane.data(), h2->GetTitle()));
 
   if (args->GetXTitle() != "None")
-     h2->SetXTitle(args->GetXTitle().c_str());
+     h2->SetXTitle(args->GetXTitle().data());
   else
     h2->SetXTitle(GetHorizontalAxis()->GetTitle());
 
   if (args->GetYTitle() != "None")
-    h2->SetYTitle(args->GetYTitle().c_str());
+    h2->SetYTitle(args->GetYTitle().data());
   else
     h2->SetYTitle(GetVerticalAxis()->GetTitle());
 
   if (args->GetZTitle() != "None")
-    h2->SetZTitle(args->GetZTitle().c_str());
+    h2->SetZTitle(args->GetZTitle().data());
 
   h2->SetContour(args->GetMap()["dcont"].as<size_t>());
-  h2->SetOption(args->GetDoption().c_str());
+  h2->SetOption(args->GetDoption().data());
 
   if (args->IsZmin())
     h2->SetMinimum(args->GetZmin());
@@ -106,7 +106,7 @@ void Data::Flip()
     Flip the h3 along the TH2 vertical axis
   */
   const std::string hname(Form("%s_%s", h3->GetName(), "flipped"));
-  std::shared_ptr<TH3> flipped = std::shared_ptr<TH3>(static_cast<TH3*>(h3->Clone(hname.c_str())));
+  std::shared_ptr<TH3> flipped = std::shared_ptr<TH3>(static_cast<TH3*>(h3->Clone(hname.data())));
   flipped->Reset();
 
   const Int_t nx = h3->GetNbinsX();
@@ -541,13 +541,13 @@ std::shared_ptr<TH2> Data::MakeH2(std::string& name, std::string& title)
   std::shared_ptr<TH2> h2(nullptr);
 
   if (h3->IsA() == TH3F::Class())      // data
-    h2 = std::make_shared<TH2F>(name.c_str(), title.c_str(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2F>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
   else if (h3->IsA() == TH3D::Class()) // also data
-    h2 = std::make_shared<TH2D>(name.c_str(), title.c_str(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2D>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
   else if (h3->IsA() == TH3S::Class()) // geometry
-    h2 = std::make_shared<TH2S>(name.c_str(), title.c_str(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2S>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
   else if (h3->IsA() == TH3I::Class()) // also geometry
-    h2 = std::make_shared<TH2I>(name.c_str(), title.c_str(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2I>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
   else {
     std::cerr << "ERROR: unknown TH3 class name, " << h3->ClassName() << std::endl;
     exit(1);
