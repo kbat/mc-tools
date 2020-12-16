@@ -1,17 +1,19 @@
 #! /bin/bash
 # mcnpview - a wrapper around "mcnp6 ip"
-# This script has to be used with zoom.sh
+# This script has to be used with mc-tools/bin/zoom
 # It allows to plot geometry with the same view
 # as it was done during one of the previous calls of mcnpview.
-# This is convenient while debugging geometry.
+# This is convenient for building geometry.
 # Example:
-# 1. Plot a geometry fist time:
+# 1. Plot a geometry for the fist time:
 #    mcnpview inp
 #    Play with geometry: set a specific orientation, colour by material or temperature etc.
 # 2. Save the view:
 #    zoom
 # 3. Plot the same view again:
 #    mcnpview inp zoom
+# 4. ... and even add any MCNP plot commands:
+#    mcnpview inp zoom orig 100 200 300 bas 0 1 0 -1 0 0
 #
 # https://github.com/kbat/mc-tools
 
@@ -22,6 +24,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+# 'mcnpview' calls 'mcnp6', wile 'mcnpxview' calls 'mcnpx':
 mcnp=$(echo $(basename $0) | sed -e "s/pview/p6/" -e "s/view//")
 
 if ! command -v $mcnp &> /dev/null ; then
