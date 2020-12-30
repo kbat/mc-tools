@@ -46,6 +46,8 @@ def main():
 
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite',
                         help='overwrite the target output ROOT file')
+    parser.add_argument("-errmax",   type=float, dest='errmax', help='Max relative error [%] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
+                        default=101.0, required=False)
     parser.add_argument('target', type=str, help='Target file')
     parser.add_argument('sources', type=str, help='Source files', nargs='+')
 
@@ -66,9 +68,11 @@ def main():
                 for j in range(1, hnew.GetNbinsY()+1):
                     for k in range(1, hnew.GetNbinsZ()+1):
                         val = hnew.GetBinContent(i,j,k)
-                        if val > h.GetBinContent(i,j,k):
-                            h.SetBinContent(i,j,k,val)
-                            h.SetBinError(i,j,k, hnew.GetBinError(i,j,k))
+                        err = hnew.GetBinError(i,j,k)
+                        relerr = err/val if val != 0.0 else 0.0
+                        if val > h.GetBinContent(i,j,k) and relerr*100.0 < args.errmax:
+                            h.SetBinContent(i,j,k, val)
+                            h.SetBinError(i,j,k, err)
 
     f = ROOT.TFile(args.target, "RECREATE")
     for h in vhist:
