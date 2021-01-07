@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+#
+# alias fluka2root-dir="parallel 'cd {} && fluka2root *.inp' ::: *"
 
 import sys, re, os, argparse
 import glob
