@@ -571,33 +571,37 @@ class MCTAL:
                                 tally.mesh = True
 
                 self.line = self.mctalFile.readline()
-                line = self.line.split() # I must use this trick because some MCTAL files seem to omit
-                                         # the particle list and the code must be compatible with the
-                                         # following part even if this line is missing, but I don't have
-                                         # the possibility to know in advance, so I must duplicate the
-                                         # read line.
+                # Some MCTAL files do not have the particle list
+                # (e.g. produced by MCNP5) so we need to check if it's
+                # present (line with particle list starts with space):
+                if self.line[0] == " " and self.line[1] != " ":
+                        line = self.line.split()
+                        for p in line:
+                                if p.isdigit():
+                                        v = int(p)
+                                        tally.tallyParticles = np.append(tally.tallyParticles, v)
+                                else:
+                                        print("\n \033[1;31m Problem with particle list in tally %d in %s -> exiting.\033[0m\n" % (tally.tallyNumber, self.mctalFileName), file=sys.stderr)
+                                        print(self.line)
+                                        sys.exit(1)
 
-                for p in line:
-                        if p.isdigit():
-                                v = int(p)
-                                tally.tallyParticles = np.append(tally.tallyParticles, v)
+                if len(tally.tallyParticles) != 0:
+                        self.line = self.mctalFile.readline()
 
-                if len(tally.tallyParticles) != 0: self.line = self.mctalFile.readline()
-
-                while self.line[0].lower() != "f":
+                while self.line[0:5] == " "*5 and self.line[0].lower() != "f":
                         tally.tallyComment = np.append(tally.tallyComment, self.line[5:].rstrip())
                         self.line = self.mctalFile.readline()
 
-                self.line = self.line.split()
+                line = self.line.split()
 
                 if not tally.mesh:
-                        tally.nCells = int(self.line[1])
+                        tally.nCells = int(line[1])
                 else:
                         tally.nCells = 1
-                        tally.meshInfo[0] = int(self.line[2]) # Unknown number
-                        tally.meshInfo[1] = int(self.line[3]) # number of cora bins
-                        tally.meshInfo[2] = int(self.line[4]) # number of corb bins
-                        tally.meshInfo[3] = int(self.line[5]) # number of corc bins
+                        tally.meshInfo[0] = int(line[2]) # Unknown number
+                        tally.meshInfo[1] = int(line[3]) # number of cora bins
+                        tally.meshInfo[2] = int(line[4]) # number of corb bins
+                        tally.meshInfo[3] = int(line[5]) # number of corc bins
 
                 self.line = self.mctalFile.readline()
 
