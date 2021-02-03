@@ -42,10 +42,8 @@ class MyComponentGenerator
   double length;                ///< Total length including void
   double width;                 ///< Width
   double height;                ///< Height
-  double wallThick;             ///< Wall thickness
 
   int mainMat;                  ///< Main material
-  int wallMat;                  ///< Wall material
 
  public:
 
