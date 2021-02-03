@@ -53,8 +53,6 @@ class MyComponent :
   int wallMat;                  ///< Wall material
 
   void populate(const FuncDataBase&);
-  void createUnitVector(const attachSystem::FixedComp&,
-			const long int);
 
   void createSurfaces();
   void createObjects(Simulation&);
@@ -68,6 +66,7 @@ class MyComponent :
   virtual MyComponent* clone() const;
   virtual ~MyComponent();
 
+  using FixedComp::createAll;
   void createAll(Simulation&,const attachSystem::FixedComp&,const long int);
 
 };

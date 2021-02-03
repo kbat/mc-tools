@@ -56,6 +56,7 @@
 #include "ContainedComp.h"
 #include "BaseMap.h"
 #include "CellMap.h"
+#include "SurfMap.h"
 
 #include "MyComponent.h"
 
@@ -137,23 +138,6 @@ MyComponent::populate(const FuncDataBase& Control)
   height=Control.EvalVar<double>(keyName+"Height");
 
   mainMat=ModelSupport::EvalMat<int>(Control,keyName+"MainMat");
-
-  return;
-}
-
-void
-MyComponent::createUnitVector(const attachSystem::FixedComp& FC,
-			      const long int sideIndex)
-  /*!
-    Create the unit vectors
-    \param FC :: object for origin
-    \param sideIndex :: link point for origin
-  */
-{
-  ELog::RegMethod RegA("MyComponent","createUnitVector");
-
-  FixedComp::createUnitVector(FC,sideIndex);
-  applyOffset();
 
   return;
 }
