@@ -85,6 +85,7 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
 2. Set the variable MCTOOLS to the folder where you have installed the
    code:
 ```export MCTOOLS=/path/to/mc-tools```
+   (specify the folder containing README.md)
 3. Add the ```$MCTOOLS``` folder into ```$PYTHONPATH```:
 ```export PYTHONPATH=$MCTOOLS:$PYTHONPATH```
 4. Add the ```$MCTOOLS/bin``` folder into your ```$PATH```:
