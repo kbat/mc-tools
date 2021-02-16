@@ -37,7 +37,10 @@ def genSource(cxx, args):
         line = line.rstrip()
         if re.search(f"{args.after}\(", line):
             ccFixed = True
-            l = f"  {args.name}({args.value})"
+            if args.type == "std::string":
+                l = f"  {args.name}(\"{args.value}\")"
+            else:
+                l = f"  {args.name}({args.value})"
             if line[-1:] == ',':
                 l = l + ','
             else:
