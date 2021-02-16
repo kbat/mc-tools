@@ -19,6 +19,8 @@ class Paster:
         self.hDir   = self.cxxDir+'Inc'
         # generator for variables
         self.cxxGenDir = os.path.join('/'.join(self.cxxDir.split('/')[:-1]), "commonGenerator")
+        if not os.path.isdir(self.cxxGenDir):
+            self.cxxGenDir = self.cxxDir
         self.hGenDir = self.cxxGenDir + 'Inc'
         print(self.cxxGenDir, self.hGenDir)
 

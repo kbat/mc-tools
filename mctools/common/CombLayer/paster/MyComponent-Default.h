@@ -36,8 +36,9 @@ namespace NAMESPACE
 */
 
 class MyComponent : public attachSystem::ContainedComp,
-		    public attachSystem::FixedRotate,
-		    public attachSystem::CellMap
+                    public attachSystem::FixedRotate,
+                    public attachSystem::CellMap,
+                    public attachSystem::SurfMap
 {
  private:
 
@@ -48,9 +49,6 @@ class MyComponent : public attachSystem::ContainedComp,
   int mainMat;                   ///< Main material
 
   void populate(const FuncDataBase&);
-  void createUnitVector(const attachSystem::FixedComp&,
-			const long int);
-
   void createSurfaces();
   void createObjects(Simulation&);
   void createLinks();
@@ -63,6 +61,7 @@ class MyComponent : public attachSystem::ContainedComp,
   virtual MyComponent* clone() const;
   virtual ~MyComponent();
 
+  using FixedComp::createAll;
   void createAll(Simulation&,const attachSystem::FixedComp&,const long int);
 
 };

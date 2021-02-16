@@ -98,14 +98,14 @@ int main(int argc, const char **argv)
 
   if (args->IsBatch())
     {
-      c1 = new TCanvas("hplot", args->GetWindowTitle().c_str(), width, height);
+      c1 = new TCanvas("hplot", args->GetWindowTitle().data(), width, height);
     }
   else
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
       mf = std::make_unique<MainFrame>(gClient->GetRoot(), width, height, data, geo);
-      mf->SetWindowName(args->GetWindowTitle().c_str());
+      mf->SetWindowName(args->GetWindowTitle().data());
 
       c1 = dynamic_cast<TCanvas*>(mf->GetCanvas());
 
@@ -133,7 +133,7 @@ int main(int argc, const char **argv)
 
   if (args->IsBatch())
     {
-      c1->Print(vm["o"].as<std::string>().c_str());
+      c1->Print(vm["o"].as<std::string>().data());
       delete c1; c1 = nullptr;
     }
   else

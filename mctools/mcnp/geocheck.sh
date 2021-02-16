@@ -23,7 +23,7 @@ if [ ! -r $inp ]; then
     exit 3
 fi
 
-N=1E+6
+N=1E+7
 if [ $# == 4 ]; then
     x=$2
     y=$3
