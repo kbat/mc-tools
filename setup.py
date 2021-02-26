@@ -27,21 +27,23 @@ except ImportError:
         sys.exit(1)
 
 setup(
-    name = "mc-tools",
+    name = "mc_tools",
     version = os.popen("git describe --tags --long").read().strip(),
     author = "Konstantin Batkov",
     author_email = "batkov@gmail.com",
     url = "https://github.com/kbat/mc-tools/",
-    license = "BSD License",
+    license = "LGPL-3.0 License",
     description = "Some Monte Carlo tools for MCNPX, PHITS and FLUKA",
 
     packages = find_packages(),
+
     install_requires = [ "numpy",
                          "pandas"
     ],
+
     data_files = [
         # MCNP
-        ("mcnp", [ "mctools/mcnp/reference_guide.pdf" ]
+        ("mctools/mcnp", [ "mctools/mcnp/reference_guide.pdf" ]
         ),
         ("mctools/mcnp/examples",
          [ "mctools/mcnp/examples/ssw2root/example.C" ]
@@ -58,6 +60,7 @@ setup(
          ["mctools/fluka/fluka-mode.el"]
         )
     ],
+
     entry_points = {
         "console_scripts" : [
             # COMMON
@@ -89,6 +92,7 @@ setup(
             "rotate3dshow = mctools.phits.rotate3dshow:main",
         ]
     },
+
     scripts = [
         "bin/mc-tools-fluka-merge",
         "bin/fluka.stop",
