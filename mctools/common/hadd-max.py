@@ -10,7 +10,7 @@ import os
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-def getHistograms(fname):
+def getHistograms(fname, only):
     """ Return list of histograms found in the given file
     """
     logging.info("getHistograms")
@@ -22,7 +22,11 @@ def getHistograms(fname):
         obj = key.ReadObj()
         if obj.Class().InheritsFrom(ROOT.TH1.Class()):
             obj.SetDirectory(0)
-            vhist.append(obj)
+            if only is None:
+                vhist.append(obj)
+            elif obj.GetName() == only:
+                vhist.append(obj)
+
     f.Close()
 
     return vhist
@@ -33,7 +37,7 @@ def getHist(vhist, hname, fname):
     for h in vhist:
         if h.GetName() == hname:
             return h
-    logging.error("%f contains a histogram %s which does not exist in vhist" % (fname, hname))
+    logging.error("%s contains a histogram %s which does not exist in vhist" % (fname, hname))
     return 0
 
 def main():
@@ -48,6 +52,7 @@ def main():
                         help='overwrite the target output ROOT file')
     parser.add_argument("-errmax",   type=float, dest='errmax', help='Max relative error [%] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
                         default=101.0, required=False)
+    parser.add_argument("-only", type=str, default=None, help="Take into account only the given histogram name")
     parser.add_argument('target', type=str, help='Target file')
     parser.add_argument('sources', type=str, help='Source files', nargs='+')
 
@@ -57,11 +62,13 @@ def main():
         logging.critical("File %s exists. Use -f to overwrite" % args.target)
         exit(1)
 
-    vhist = getHistograms(args.sources[0])
+    vhist = getHistograms(args.sources[0], args.only)
 
     for fname in args.sources[1:]:
         f = ROOT.TFile(fname)
         for key in f.GetListOfKeys():
+            if key.GetName() != args.only:
+                continue;
             h = getHist(vhist, key.GetName(), fname)
             hnew = key.ReadObj()
             for i in range(1, hnew.GetNbinsX()+1):
