@@ -67,7 +67,7 @@ def main():
     for fname in args.sources[1:]:
         f = ROOT.TFile(fname)
         for key in f.GetListOfKeys():
-            if key.GetName() != args.only:
+            if args.only is not None and key.GetName() != args.only:
                 continue;
             h = getHist(vhist, key.GetName(), fname)
             hnew = key.ReadObj()
