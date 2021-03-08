@@ -2,7 +2,7 @@
 ## Comblayer-related functions
 ##
 import re, math
-from ROOT import TFile, Double
+from ROOT import TFile, Double_t
 
 def getIntegral(fname, tname, axis, bmin, bmax):
     """
@@ -12,9 +12,9 @@ def getIntegral(fname, tname, axis, bmin, bmax):
     t = f.Get(tname)
     h = t.Projection(axis)
     val = 0
-    err = Double(0)
+    err = Double_t(0)
     val = h.IntegralAndError(bmin, bmax, err)
-    return Double(val), Double(err)
+    return Double_t(val), Double_t(err)
 
 
 
