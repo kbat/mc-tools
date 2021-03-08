@@ -39,7 +39,7 @@ def getGraph(args, tname, color):
     for mctal in glob.glob(args.mctal):
         dirname = os.path.split(mctal)[0]
 #        print(dirname)
-        inp = os.path.join(dirname, 'inp')
+        inp = os.path.join(dirname, args.inp)
         f = ROOT.TFile(mctal)
         if args.axis>=0: # axis and bin are specified
             f.Get(tname).GetAxis(2).SetRange(1,1)
@@ -136,6 +136,7 @@ def main():
     parser.add_argument('-save', dest='save', type=str, help='Saves resulting graph into a ROOT file', default="")
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
     parser.add_argument('-mctal', dest='mctal', default="case*/mctal.root", help='list of mctal files to use')
+    parser.add_argument('-inp', dest='inp', default="inp", help='input file name')
     parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos). It must be written as a commented string in the MCNP input deck.')
     args = parser.parse_args()
 
