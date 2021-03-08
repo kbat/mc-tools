@@ -41,13 +41,17 @@ def getGraph(args, tname, color):
 #        print(dirname)
         inp = os.path.join(dirname, args.inp)
         f = ROOT.TFile(mctal)
-        if args.axis>=0: # axis and bin are specified
-            f.Get(tname).GetAxis(2).SetRange(1,1)
-            print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=stderr)
-            tally = f.Get(tname).Projection(args.axis);
-        else: # args.bin is absolute bin number
-            tally = f.Get(tname)
-        x.append(eval("%g%s" % (getParCL(inp, args.var, int(args.varpos)), args.xscale)))
+        obj = f.Get(tname)
+        if obj.Class().InheritsFrom(ROOT.THnSparse.Class()):
+                if args.axis>=0: # axis and bin are specified for th1
+                        obj.GetAxis(2).SetRange(1,1)
+                        print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=stderr)
+                        tally = obj.Projection(args.axis);
+                else: # args.bin is absolute bin number
+                        tally = obj
+        else:
+                tally = obj
+        x.append(eval("%g%s" % (getParCL(inp, args.var, int(args.varpos), args.comment), args.xscale)))
         ex.append(0.0)
 
         bins = args.bin.split('+')
@@ -58,6 +62,7 @@ def getGraph(args, tname, color):
         for b in bins:
             thebin = int(b.strip())
             ytmp += tally.GetBinContent(thebin)
+            print(b,thebin,ytmp)
             eytmp += pow(tally.GetBinError(thebin), 2)
         eytmp = sqrt(eytmp)
         y.append(eval("%g%s" % (ytmp, args.yscale)))
@@ -115,14 +120,15 @@ def getAverage(args, mg):
 
 def main():
     """
+    Plots figure-of-merit as a function of the specified variable. Supports both MCNP and FLUKA syntax / data files.
     If getfom-analysis.py file exists in the current folder, evaluates it line-by-line in the end of the script
     """
     ROOT.gStyle.SetOptFit(0)
 
     parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-tally', dest='tally', type=str, default="f5", help='Tally name')
-    parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on. If <0, the absolute value of BIN must be specified (see next argument).')
-    parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin number to use as the figure of merit. Plus-sign-separated list of bins is allowed: the result will be the sum over all bins. Hint: the bin number is the serial number of the bin in the outp file provided that no FQ print hierarhy was used.')
+    parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on. If<0, the absolute value of BIN must be specified (see next argument). This option make sence only for THnSparse objects.')
+    parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin number to use as the figure of merit. Plus-sign-separated list of bins is allowed: the result will be the sum over all bins. Hint for the MCNP case: the bin number is the serial number of the bin in the outp file provided that no FQ print hierarhy was used.')
     parser.add_argument('-title', dest='title', type=str, default="", help='graph title')
     parser.add_argument('-xtitle', dest='xtitle', type=str, default="par [cm]", help='x-axis title')
     parser.add_argument('-ytitle', dest='ytitle', type=str, default="Figure of Merit [a.u.]", help='y-axis title')
@@ -137,9 +143,16 @@ def main():
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
     parser.add_argument('-mctal', dest='mctal', default="case*/mctal.root", help='list of mctal files to use')
     parser.add_argument('-inp', dest='inp', default="inp", help='input file name')
+    parser.add_argument('-comment', dest='comment', default=None, help="input file comment symbol. Default value: if file extension is 'inp' then comment is set to '*', otherwise to 'c' ")
     parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos). It must be written as a commented string in the MCNP input deck.')
+
     args = parser.parse_args()
 
+    if args.comment is None:
+            if os.path.splitext(args.inp)[1] == ".inp": # assume FLUKA
+                    args.comment = "*"
+            else: # assume MCNP
+                    args.comment = "c"
 
     tallies = args.tally.split(',')
     ntallies = len(tallies)

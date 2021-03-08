@@ -25,16 +25,18 @@ def distance(x1, y1, z1, x2, y2, z2 ):
     return math.sqrt(pow(x2-x1, 2) + pow(y2-y1, 2) + pow(z2-z1, 2))
 
 
-def getPar(masterfile, parname, pos=2):
+def getPar(masterfile, parname, pos=2, comment="c"):
     """
     Return parameter 'parname' from MCNP master file 'masterfile' (the syntax of CombLayer is assumed)
     pos - optional argument, specifies the position of the value in the THEparname string
     """
     f = open(masterfile)
     val = ""
+    if comment == "*":
+        comment = "\*"
     for line in f.readlines():
-        if re.search("\Ac %s " % parname, line, re.IGNORECASE):
-#            print line.strip(), val
+        if re.search("\A%s %s " % (comment, parname), line, re.IGNORECASE):
+#            print (line.strip(), val)
             val = float(line.split()[pos])
     f.close()
     if val is "":
