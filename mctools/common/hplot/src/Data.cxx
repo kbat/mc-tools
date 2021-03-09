@@ -738,6 +738,13 @@ std::shared_ptr<TH2> Data::Draw(const Float_t val) const
   if (args->IsFlipped())
     ReverseYAxis(h2);
 
+  if (args->IsVerbose())
+    {
+      Int_t locmix, locmax, locmiy, locmay, locmiz, locmaz;
+      std::cout << "min: " << h2->GetBinContent(h2->GetMinimumBin(locmix,locmiy,locmiz)) << " at (" << h2->GetXaxis()->GetBinCenter(locmix) << ", " << h2->GetYaxis()->GetBinCenter(locmiy) << ")\t" << std::flush;
+      std::cout << "max: " << h2->GetBinContent(h2->GetMaximumBin(locmax,locmay,locmaz)) << " at (" << h2->GetXaxis()->GetBinCenter(locmax) << ", " << h2->GetYaxis()->GetBinCenter(locmay) << ")" << std::endl;
+    }
+
   return h2;
 }
 
