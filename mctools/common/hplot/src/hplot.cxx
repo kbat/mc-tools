@@ -12,22 +12,31 @@
 #include <TObjectTable.h>
 #include <TMath.h>
 #include <TVirtualX.h>
+#include <TColor.h>
 #include "Arguments.h"
 #include "MainFrame.h"
 #include "Data.h"
 #include "Geometry.h"
 
-void SetColourMap(const std::string& opt="RAINBOW")
+void SetColourMap(const std::string& palette="MAXIV")
 {
   /*!
     Set the colour map scheme
   */
+  std::string pal(palette);
+  bool invert(false);
 
-  if (opt == "RAINBOW")
+  if (pal.front() == '-')
     {
-      // Rainbow palette
-      // almost the same as saying gStyle->SetPalette(kRainBow);
-      // Disadvantages of rainbow colour map: https://root.cern/blog/rainbow-color-map
+      pal.erase(0,1);
+      invert = true;
+    }
+
+  if (pal == "MAXIV")
+    {
+      // This is actually very close to Rainbow palette
+      // (almost the same as saying gStyle->SetPalette(kRainBow))
+      // Disadvantages of kRainBow are discussed here: https://root.cern/blog/rainbow-color-map
 
       // PView is exported from ParaView
       const std::vector<Float_t>
@@ -55,10 +64,36 @@ void SetColourMap(const std::string& opt="RAINBOW")
       TColor::CreateGradientColorTable(NRGBs, stops.data(), red.data(), green.data(), blue.data(), NColors);
       gStyle->SetNumberContours(NColors);
     }
-  else if (opt == "GREYSCALE")
+  else
     { // https://root.cern.ch/doc/master/classTColor.html
-      gStyle->SetPalette(kGreyScale);
+      // tail -23 core/base/inc/TColor.h|sed -e "s;\(k[a-z][A-Z]*\);\{\"\1\"=\1;gi" -e "s;\=[0-9].;};g"
+      std::map<std::string, EColorPalette> p { {"kDeepSea", kDeepSea},            {"kGreyScale", kGreyScale},  {"kDarkBodyRadiator", kDarkBodyRadiator},
+					       {"kBlueYellow", kBlueYellow},      {"kRainBow", kRainBow},      {"kInvertedDarkBodyRadiator", kInvertedDarkBodyRadiator},
+					       {"kBird", kBird},                  {"kCubehelix", kCubehelix},  {"kGreenRedViolet", kGreenRedViolet},
+					       {"kBlueRedYellow", kBlueRedYellow},{"kOcean", kOcean},          {"kColorPrintableOnGrey", kColorPrintableOnGrey},
+					       {"kAlpine", kAlpine},              {"kAquamarine", kAquamarine},{"kArmy", kArmy},
+					       {"kAtlantic", kAtlantic},          {"kAurora", kAurora},        {"kAvocado", kAvocado},
+					       {"kBeach", kBeach},                {"kBlackBody", kBlackBody},  {"kBlueGreenYellow", kBlueGreenYellow},
+					       {"kBrownCyan", kBrownCyan},        {"kCMYK", kCMYK},            {"kCandy", kCandy},
+					       {"kCherry", kCherry},              {"kCoffee", kCoffee},        {"kDarkRainBow", kDarkRainBow},
+					       {"kDarkTerrain", kDarkTerrain},    {"kFall", kFall},            {"kFruitPunch", kFruitPunch},
+					       {"kFuchsia", kFuchsia},            {"kGreyYellow", kGreyYellow},{"kGreenBrownTerrain", kGreenBrownTerrain},
+					       {"kGreenPink", kGreenPink},        {"kIsland", kIsland},        {"kLake", kLake},
+					       {"kLightTemperature", kLightTemperature}, {"kLightTerrain", kLightTerrain}, {"kMint", kMint},
+					       {"kNeon", kNeon},                  {"kPastel", kPastel},        {"kPearl", kPearl},
+					       {"kPigeon", kPigeon},              {"kPlum", kPlum},            {"kRedBlue", kRedBlue},
+					       {"kRose", kRose},                  {"kRust", kRust},            {"kSandyTerrain", kSandyTerrain},
+					       {"kSienna", kSienna},              {"kSolar", kSolar},          {"kSouthWest", kSouthWest},
+					       {"kStarryNight", kStarryNight},    {"kSunset", kSunset},        {"kTemperatureMap", kTemperatureMap},
+					       {"kThermometer", kThermometer},    {"kValentine", kValentine},  {"kVisibleSpectrum", kVisibleSpectrum},
+					       {"kWaterMelon", kWaterMelon},      {"kCool", kCool},            {"kCopper", kCopper},
+					       {"kGistEarth", kGistEarth},        {"kViridis", kViridis},      {"kCividis", kCividis} };
+
+      gStyle->SetPalette(p[pal]);
     }
+
+  if (invert)
+    TColor::InvertPalette();
 
   return;
 }
@@ -77,8 +112,7 @@ int main(int argc, const char **argv)
   const po::variables_map vm = args->GetMap();
 
   gStyle->SetOptStat(kFALSE);
-  // SetColourMap("GREYSCALE");
-  SetColourMap("RAINBOW");
+  SetColourMap(args->GetPalette());
 
   std::string dfname = vm["dfile"].as<std::string>();
   std::string dhname = vm["dhist"].as<std::string>();

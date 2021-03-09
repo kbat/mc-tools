@@ -109,6 +109,8 @@ Arguments::Arguments(int ac, const char **av) :
        "of all histograms along the normal axis. "
        "With this option the '-offset' value applies to geomtry only which allows to select "
        "the representative geometry view.")
+      ("palette",po::value<std::string>()->default_value("MAXIV"),"Set colour palette. ROOT palette names predefined in TColor::EColorPalette are alowed, e.g. kDeepSea."
+       " Palette can be inverted if preceeded by a minus sign, e.g. -kDeepSea.")
       ("v", "Explain what is being done.");
 
     po::options_description data("Data options", w.ws_col);

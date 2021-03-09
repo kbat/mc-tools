@@ -81,6 +81,7 @@ class Arguments {
   float GetYmax() const {return vm["ymax"].as<float>(); }
   float GetZmin() const {return vm["zmin"].as<float>(); }
   float GetZmax() const {return vm["zmax"].as<float>(); }
+  std::string GetPalette() const {return vm["palette"].as<std::string>(); }
   bool test() const;
 };
 
