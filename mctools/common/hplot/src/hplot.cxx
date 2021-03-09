@@ -88,8 +88,11 @@ void SetColourMap(const std::string& palette="MAXIV")
 					       {"kThermometer", kThermometer},    {"kValentine", kValentine},  {"kVisibleSpectrum", kVisibleSpectrum},
 					       {"kWaterMelon", kWaterMelon},      {"kCool", kCool},            {"kCopper", kCopper},
 					       {"kGistEarth", kGistEarth},        {"kViridis", kViridis},      {"kCividis", kCividis} };
-
-      gStyle->SetPalette(p[pal]);
+      const EColorPalette &val = p[pal];
+      if (val != 0)
+	gStyle->SetPalette(val);
+      else
+	std::cout << "hplot warning: palette " << palette << " not known." << std::endl;
     }
 
   if (invert)
