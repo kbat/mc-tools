@@ -49,17 +49,17 @@ def main():
     if arguments.splitlevel==99:
         T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
     elif arguments.splitlevel == 1:
-        T.Branch("history", ROOT.AddressOf(hits, 'history'), "history")
-        T.Branch("id",      ROOT.AddressOf(hits, 'id'),      "id")
-        T.Branch("weight",  ROOT.AddressOf(hits, 'weight'),  "weight")
-        T.Branch("energy",  ROOT.AddressOf(hits, 'energy'),  "energy")
-        T.Branch("time",    ROOT.AddressOf(hits, 'time'),    "time")
-        T.Branch("x",       ROOT.AddressOf(hits, 'x'),       "x")
-        T.Branch("y",       ROOT.AddressOf(hits, 'y'),       "y")
-        T.Branch("z",       ROOT.AddressOf(hits, 'z'),       "z")
-        T.Branch("wx",      ROOT.AddressOf(hits, 'wx'),      "wx")
-        T.Branch("wy",      ROOT.AddressOf(hits, 'wy'),      "wy")
-        T.Branch("k",       ROOT.AddressOf(hits, 'k'),       "k")
+        T.Branch("history", ROOT.addressof(hits, 'history'), "history")
+        T.Branch("id",      ROOT.addressof(hits, 'id'),      "id")
+        T.Branch("weight",  ROOT.addressof(hits, 'weight'),  "weight")
+        T.Branch("energy",  ROOT.addressof(hits, 'energy'),  "energy")
+        T.Branch("time",    ROOT.addressof(hits, 'time'),    "time")
+        T.Branch("x",       ROOT.addressof(hits, 'x'),       "x")
+        T.Branch("y",       ROOT.addressof(hits, 'y'),       "y")
+        T.Branch("z",       ROOT.addressof(hits, 'z'),       "z")
+        T.Branch("wx",      ROOT.addressof(hits, 'wx'),      "wx")
+        T.Branch("wy",      ROOT.addressof(hits, 'wy'),      "wy")
+        T.Branch("k",       ROOT.addressof(hits, 'k'),       "k")
 
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
@@ -77,7 +77,7 @@ def main():
         T.Fill()
 
     ssw.file.close()
-        
+
     sinfo = ROOT.TObjString("%d" % ssw.N); # number of incident particles for correct normalisation
     T.GetUserInfo().Add(sinfo);
 
