@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # https://github.com/kbat/mc-tools
-# 
+#
 
 import sys, math, struct
 
@@ -71,11 +71,9 @@ class SSW:
         return self.aids
 
     def unsupported(self):
-            print("WARNING: This version of MCNP(X) (%s) is not supported." % self.vers,
-                  file=sys.stderr)
-            print("\t       The code was developed for SSW files produced by these MCNP(X) versions:",
-                  self.supported_mcnp_versions, file=sys.stderr)
-
+            print("WARNING: This version of MCNP(X) is not supported.", file=sys.stderr)
+            print("         Contact the mc-tools authors in order to have this problem fixed.", file=sys.stderr)
+            print("         https://github.com/kbat/mc-tools", file=sys.stderr)
 
     def readHeader(self, filename, nevt=0):
         """Read header information and return the file handle"""
@@ -93,9 +91,13 @@ class SSW:
 #        print("size: ", size)
         if size == 8: # mcnp 6
                 (tmpi0) = struct.unpack('8s',data) # wssa file type
- #               print(" type_of_rssa:", tmpi0[0].decode())
+                # print(" type_of_rssa:", tmpi0[0].decode())
                 data = fortranRead(self.file)
-                (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
+                size = len(data)
+                if size == 143: # mcnp <= 6.1
+                        (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
+                elif size == 191: # mcnp 6.3 (Egor)
+                        (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s128si", data)
                 self.vers = self.vers.decode().strip()
                 if self.vers not in self.supported_mcnp6_versions:
                         print("version: %s" % self.vers)
@@ -160,7 +162,7 @@ class SSW:
         print("number of histories in RSSA data:\t%i" % niss)
 
 #       raise IOError("end")
-        
+
 
         nevt = nrss
         self.nrcdo = self.nrcd
@@ -178,7 +180,7 @@ class SSW:
             niwr = tmp[0]
             mipts = tmp[1]
 #            print(niwr,mipts,tmp)
-            
+
         if self.nrcd != 6 and self.nrcd != 10: self.nrcd = self.nrcd - 1
 
         for i in range(njsw+niwr):
@@ -203,7 +205,7 @@ class SSW:
 #        for i in range(2+4*mipts):
 #            for j in range(njsw+niwr):
 #                a = 1 # !!! to be implemented
-        
+
         return self.file
 
     def readHit(self):
