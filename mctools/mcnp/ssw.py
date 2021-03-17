@@ -96,7 +96,7 @@ class SSW:
                 size = len(data)
                 if size == 143: # mcnp <= 6.1
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
-                elif size == 191: # mcnp 6.3 [EV]
+                elif size == 191: # mcnp 6.2 [EV]
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s128si", data)
                 else:
                         self.unsupported()
