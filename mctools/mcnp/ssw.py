@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#
 # https://github.com/kbat/mc-tools
 #
 
@@ -12,7 +13,6 @@ def fortranRead(f):
         blen = f.read(4)
         if len(blen)==0: return None
         (size,) = struct.unpack("=i", blen)
-#       print("length:", size)
         data  = f.read(size)
         blen2 = f.read(4)
         if blen != blen2:
@@ -29,10 +29,11 @@ def unpackArray(data):
 
 #       """Class to read the SSW output file (wssa)"""
 class SSW:
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, verbose=False):
         """Initialise a SSW structure"""
         self.reset()
         if filename is None: return
+        self.verbose = verbose
         self.readHeader(filename)
 
     def reset(self):
@@ -64,7 +65,6 @@ class SSW:
         self.supported_mcnpx_verstions = ('2.6.0', '26b', '2.7.0')
         self.supported_mcnp6_versions = ('6', '6.mpi')
         self.supported_mcnp_versions = self.supported_mcnpx_verstions + self.supported_mcnp6_versions
-
 
     def getTitle(self):
         """Return the problem title"""
@@ -98,6 +98,9 @@ class SSW:
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
                 elif size == 191: # mcnp 6.3 (Egor)
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s128si", data)
+                else:
+                        self.unsupported()
+
                 self.vers = self.vers.decode().strip()
                 if self.vers not in self.supported_mcnp6_versions:
                         print("version: %s" % self.vers)
@@ -121,13 +124,14 @@ class SSW:
         self.idtms = self.idtms.decode().strip() # machine designator
         self.aids = self.aids.decode().strip()   # title
 
-        print("Code:\t\t%s" % self.kods)
-        print("Version:\t%s" % self.vers)
-        print("Date:\t\t%s" % self.lods)
-        print("Machine designator:", self.idtms)
-        print("Problem id:\t%s" % self.probs)
-        print("Title:\t\t%s" % self.aids)
-        print("knods:", self.knods)
+        if self.verbose:
+                print("Code:\t\t%s" % self.kods)
+                print("Version:\t%s" % self.vers)
+                print("Date:\t\t%s" % self.lods)
+                print("Machine designator:", self.idtms)
+                print("Problem id:\t%s" % self.probs)
+                print("Title:\t\t%s" % self.aids)
+                print("knods:", self.knods)
 
         if self.kods not in ['mcnpx', 'mcnp'] or self.vers not in self.supported_mcnp_versions:
                 self.unsupported()
@@ -144,7 +148,8 @@ class SSW:
         if self.vers in self.supported_mcnp6_versions:
 #               (np1,nrss,self.nrcd,njsw,niss,self.probs) = struct.unpack("=5i12s", data)
                 (np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=4i4i", data)
-                print("probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss)
+                if self.verbose:
+                        print("probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss)
         elif size==20:
                 (np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
         elif size==40: # Tibor with 2.7.0
@@ -155,11 +160,12 @@ class SSW:
                 sys.exit(1)
 
         self.N = abs(np1)
-        print("number of incident particles:\t%i" % abs(np1))
-        print("number of tracks:\t%i" % nrss)
-        print("length of ssb array:\t%i" % self.nrcd)
-        print("number of surfaces in RSSA data:\t%i" % njsw)
-        print("number of histories in RSSA data:\t%i" % niss)
+        if self.verbose:
+                print("number of incident particles:\t%i" % abs(np1))
+                print("number of tracks:\t%i" % nrss)
+                print("length of ssb array:\t%i" % self.nrcd)
+                print("number of surfaces in RSSA data:\t%i" % njsw)
+                print("number of histories in RSSA data:\t%i" % niss)
 
 #       raise IOError("end")
 
