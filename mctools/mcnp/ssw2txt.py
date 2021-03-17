@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+#
+# https://github.com/kbat/mc-tools
+#
 
 import sys, argparse
+from os import path
 from mctools.mcnp.ssw import SSW
 
 def main():
     """
-    Converts SSW binary to ASCII.
+    WSSA to ASCII converter.
     The particle type (IPT) and surface number (surface) can be derived as shown below:
 
     i   = TMath::Nint(TMath::Abs(id/1E+6)); # tmp for particle type
@@ -16,16 +20,29 @@ def main():
     surface = TMath::Abs(id) % 1000000        # surface crossed
     """
 
-    parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools', formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('wssa', type=str, help='ssw output file name')
-    arguments = parser.parse_args()
+    parser = argparse.ArgumentParser(description=main.__doc__,
+                                     epilog='Homepage: https://github.com/kbat/mc-tools',
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("wssa", type=str, help="file name of SSW card output")
+    parser.add_argument("txt",  type=str, nargs="?", help="ASCII file name to convert to", default=None)
+    parser.add_argument("-f", "--force", action="store_true", default=False, dest="force", help="overwrite the ASCII file, if exists")
+    parser.add_argument("-v", "--verbose", action="store_true", default=False, dest="verbose", help="explain what is being done and print some debug info")
 
-    fin_name = arguments.wssa
-    fout_name = fin_name + ".root"
+    args = parser.parse_args()
 
-    ssw = SSW(fin_name)
+    if not path.isfile(args.wssa):
+        sys.exit("ssw2txt: File %s does not exist." % args.wssa, file=sys.stderr)
 
-    print("history id weight energy time x y z wx wy k")
+    fout_name = args.wssa+".txt" if args.txt is None else args.txt
+
+    if path.isfile(fout_name) and not args.force:
+        sys.exit("ssw2txt: Can't overwrite %s. Remove it or use the '-f' argument." % fout_name)
+
+    fout = open(fout_name, "w")
+
+    ssw = SSW(args.wssa, args.verbose)
+
+    print("history id weight energy time x y z wx wy k", file=fout)
 
     for i in range(ssw.nevt):
         ssb = ssw.readHit()
@@ -40,9 +57,10 @@ def main():
         wx = ssb[8] # x-direction cosine
         wy = ssb[9] # y-direction cosine
         k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
-        print(history, id, weight, energy, time, x, y, z, wx, wy, k)
+        print(history, id, weight, energy, time, x, y, z, wx, wy, k, file=fout)
 
     ssw.file.close()
+    fout.close()
 
 if __name__ == "__main__":
 	sys.exit(main())

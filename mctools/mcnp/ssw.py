@@ -96,10 +96,11 @@ class SSW:
                 size = len(data)
                 if size == 143: # mcnp <= 6.1
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
-                elif size == 191: # mcnp 6.3 (Egor)
+                elif size == 191: # mcnp 6.3 [EV]
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s128si", data)
                 else:
                         self.unsupported()
+                        sys.exit(1)
 
                 self.vers = self.vers.decode().strip()
                 if self.vers not in self.supported_mcnp6_versions:
