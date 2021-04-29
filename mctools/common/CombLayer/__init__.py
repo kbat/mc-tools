@@ -36,7 +36,7 @@ def getPar(masterfile, parname, pos=2, comment="c"):
         comment = "\*"
     for line in f.readlines():
         if re.search("\A%s %s " % (comment, parname), line, re.IGNORECASE):
-#            print (line.strip(), val)
+            # print (line.strip(), val)
             try:
                 val = float(line.split()[pos])
             except ValueError:
