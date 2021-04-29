@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from comblayer import getOmega, getPar
+from mctools.common.CombLayer import getOmega
 import argparse, sys
 
 def main():

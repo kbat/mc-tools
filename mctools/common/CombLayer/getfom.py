@@ -4,7 +4,7 @@ from sys import argv, exit, stderr
 from math import sqrt
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from comblayer import getPar as getParCL
+from mctools.common.CombLayer import getPar as getParCL
 import glob, os, argparse
 from array import array
 from datetime import datetime
