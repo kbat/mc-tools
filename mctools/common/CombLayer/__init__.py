@@ -36,8 +36,11 @@ def getPar(masterfile, parname, pos=2, comment="c"):
         comment = "\*"
     for line in f.readlines():
         if re.search("\A%s %s " % (comment, parname), line, re.IGNORECASE):
-#            print (line.strip(), val)
-            val = float(line.split()[pos])
+            print (line.strip(), val)
+            try:
+                val = float(line.split()[pos])
+            except ValueError:
+                val = line.split()[pos] # non-float
     f.close()
     if val is "":
         raise IOError("Value of %s not found in %s" % (parname, masterfile))
