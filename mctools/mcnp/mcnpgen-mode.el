@@ -106,7 +106,7 @@
     ("^*?trcl[0-9]+" . 'font-lock-transformation-face)
     ("^*?tr[0-9]+" . 'font-lock-transformation-face)
 
-    ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
+    ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+i?log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
 
     ;; surfaces:
     ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|sur\\|so\\|p\\)\\>" . 'font-lock-surface-face)
