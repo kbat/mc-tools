@@ -390,7 +390,7 @@ class Tally:
 
                 if axis == "e":
                         if len(self.erg) != 0:
-                                first = self.erg[0] - 1.
+                                first = 0.0 # self.erg[0] - 1.
                                 return np.append([first], self.erg)
 
                 if axis == "t":
