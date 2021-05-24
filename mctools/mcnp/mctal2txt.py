@@ -59,7 +59,6 @@ def main():
                 print("#   f     d     u     s     m     c     e     t     i     j     k           val     rel.error", file=txtFile)
         elif arguments.edges:
                 print("# {:>11s} ".format("fmin") + (23*"{:>13s} ").format("fmax","dmin","dmax","umin","umax","smin","smax","mmin","mmax","cmin","cmax","emin","emax","tmin","tmax","imin","imax","jmin","jmax","kmin","kmax","val","rel.err"),file=txtFile)
-#                print("# {:>11s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s}".format("fmin","fmax","dmin","dmax","umin","umax","smin","smax","mmin","mmax","cmin","cmax","emin","emax","tmin","tmax","imin","imax","jmin","jmax","kmin","kmax","val","rel.err"),file=txtFile)
         for tally in T:
                 tallyLetter = "f"
                 if tally.radiograph:
