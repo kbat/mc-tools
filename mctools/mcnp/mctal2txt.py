@@ -9,6 +9,13 @@ from mctools.mcnp.mctal import MCTAL
 import numpy as np
 sys.path.insert(1, '@python2dir@')
 
+def getEdges(axis, n):
+        if len(axis):
+                return ("{:13.5e} {:13.5e}".format(axis[n-1],axis[n]))
+        else:
+                return ("{:13.5e} {:13.5e}".format(0.0, 0.0)) # artificial values if axis not divided
+
+
 def main():
         """
         MCTAL to TXT converter.
@@ -18,9 +25,14 @@ def main():
                                          epilog="Homepage: https://github.com/kbat/mc-tools")
         parser.add_argument('mctal', type=str, help='mctal file name')
         parser.add_argument('txt', type=str, nargs='?', help='output txt file name', default="")
+        parser.add_argument('-bins', '--print-bins', action='store_true', default=False, dest='bins', help='print bin numbers')
+        parser.add_argument('-edges', '--print-edges', action='store_true', default=False, dest='edges', help='print bin edges')
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
         arguments = parser.parse_args()
+
+        if not (arguments.bins ^ arguments.edges):
+                parser.error("Either -bins or -edges must be specified")
 
         if not path.isfile(arguments.mctal):
                 print("mctal2txt: File %s does not exist." % arguments.mctal, file=sys.stderr)
@@ -43,7 +55,11 @@ def main():
         if arguments.verbose:
                 print("\n\033[1;34m[Converting...]\033[0m")
 
-        print("#   f     d     u     s     m     c     e     t     i     j     k           val     rel.error", file=txtFile)
+        if arguments.bins:
+                print("#   f     d     u     s     m     c     e     t     i     j     k           val     rel.error", file=txtFile)
+        elif arguments.edges:
+                print("# {:>11s} ".format("fmin") + (23*"{:>13s} ").format("fmax","dmin","dmax","umin","umax","smin","smax","mmin","mmax","cmin","cmax","emin","emax","tmin","tmax","imin","imax","jmin","jmax","kmin","kmax","val","rel.err"),file=txtFile)
+#                print("# {:>11s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s} {:>13s}".format("fmin","fmax","dmin","dmax","umin","umax","smin","smax","mmin","mmax","cmin","cmax","emin","emax","tmin","tmax","imin","imax","jmin","jmax","kmin","kmax","val","rel.err"),file=txtFile)
         for tally in T:
                 tallyLetter = "f"
                 if tally.radiograph:
@@ -52,18 +68,24 @@ def main():
                         tallyLetter = tally.getDetectorType(True)
 
                 # name and tally comment:
-                print("# %s%d" % (tallyLetter, tally.tallyNumber) + ' '.join(tally.tallyComment.tolist()).strip(), file=txtFile)
+                print("# %s%d" % (tallyLetter, tally.tallyNumber) + " " + ' '.join(tally.tallyComment.tolist()).strip(), file=txtFile)
 
                 nCells  = tally.getNbins("f",False)
+                fAxis   = tally.getAxis("f")
                 nCora   = tally.getNbins("i",False) # Is set to 1 even when mesh tallies are not present
+                iAxis   = tally.getAxis("i")
                 nCorb   = tally.getNbins("j",False) # Is set to 1 even when mesh tallies are not present
+                jAxis   = tally.getAxis("j")
                 nCorc   = tally.getNbins("k",False) # Is set to 1 even when mesh tallies are not present
+                kAxis   = tally.getAxis("k")
                 nDir    = tally.getNbins("d",False)
+                dAxis   = tally.getAxis("d")
                 usrAxis = tally.getAxis("u")
                 nUsr    = tally.getNbins("u",False)
                 segAxis = tally.getAxis("s")
                 nSeg    = tally.getNbins("s",False)
                 nMul    = tally.getNbins("m",False)
+                mAxis   = tally.getAxis("m")
                 cosAxis = tally.getAxis("c")
                 nCos    = tally.getNbins("c",False)
                 ergAxis = tally.getAxis("e")
@@ -84,7 +106,16 @@ def main():
                                                                                                 for i in range(nCora):
                                                                                                         val = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0)
                                                                                                         err = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)
-                                                                                                        print("%5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %13.5e %13.5e" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val,err), file=txtFile)
+                                                                                                        if arguments.bins:
+                                                                                                                print("%5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %13.5e %13.5e" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val,err), file=txtFile)
+                                                                                                        elif arguments.edges:
+                                                                                                                print("{} {} {} {} {} {} {} {} {} {} {} {:13.5e} {:13.5e}".
+                                                                                                                      format(getEdges(fAxis,f+1),getEdges(dAxis,d+1),
+                                                                                                                             getEdges(usrAxis,u+1),getEdges(segAxis,s+1),getEdges(mAxis,m+1),
+                                                                                                                             getEdges(cosAxis,c+1),getEdges(ergAxis,e+1),getEdges(timAxis,t+1),
+                                                                                                                             getEdges(iAxis,i+1),getEdges(jAxis,j+1),getEdges(kAxis,k+1),
+                                                                                                                             val,err),
+                                                                                                                      file=txtFile)
 
                 if arguments.verbose:
                         print(" \033[33mTally %5d saved\033[0m" % (tally.tallyNumber))
