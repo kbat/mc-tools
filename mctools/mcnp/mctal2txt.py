@@ -35,7 +35,7 @@ def main():
                 parser.error("Either -bins or -edges must be specified")
 
         if not path.isfile(arguments.mctal):
-                print("mctal2txt: File %s does not exist." % arguments.mctal, file=sys.stderr)
+                print(f"mctal2txt: File {arguments.mctal} does not exist.", file=sys.stderr)
                 return 1
 
         m = MCTAL(arguments.mctal,arguments.verbose)
@@ -56,9 +56,12 @@ def main():
                 print("\n\033[1;34m[Converting...]\033[0m")
 
         if arguments.bins:
-                print("#   f     d     u     s     m     c     e     t     i     j     k           val     rel.error", file=txtFile)
+                print("#   f     d     u     s     m     c     e     t     i     j     k           value   rel.error", file=txtFile)
         elif arguments.edges:
-                print("# {:>11s} ".format("fmin") + (23*"{:>13s} ").format("fmax","dmin","dmax","umin","umax","smin","smax","mmin","mmax","cmin","cmax","emin","emax","tmin","tmax","imin","imax","jmin","jmax","kmin","kmax","val","rel.err"),file=txtFile)
+                print("# {:>11s} ".format("fmin") + (23*"{:>13s} ").
+                      format("fmax","dmin","dmax","umin","umax","smin","smax","mmin","mmax","cmin","cmax","emin","emax","tmin","tmax","imin","imax","jmin","jmax","kmin","kmax","value","rel.error"),
+                      file=txtFile)
+
         for tally in T:
                 tallyLetter = "f"
                 if tally.radiograph:
@@ -67,7 +70,7 @@ def main():
                         tallyLetter = tally.getDetectorType(True)
 
                 # name and tally comment:
-                print("# %s%d" % (tallyLetter, tally.tallyNumber) + " " + ' '.join(tally.tallyComment.tolist()).strip(), file=txtFile)
+                print(f"# {tallyLetter}{tally.tallyNumber} {' '.join(tally.tallyComment.tolist()).strip()}", file=txtFile)
 
                 nCells  = tally.getNbins("f",False)
                 fAxis   = tally.getAxis("f")
@@ -106,9 +109,10 @@ def main():
                                                                                                         val = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,0)
                                                                                                         err = tally.getValue(f,d,u,s,m,c,e,t,i,j,k,1)
                                                                                                         if arguments.bins:
-                                                                                                                print("%5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %13.5e %13.5e" % (f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val,err), file=txtFile)
+                                                                                                                print((11*"{:5d} "+2*"{:13.5e} ").format(f+1,d+1,u+1,s+1,m+1,c+1,e+1,t+1,i+1,j+1,k+1,val,err),
+                                                                                                                      file=txtFile)
                                                                                                         elif arguments.edges:
-                                                                                                                print("{} {} {} {} {} {} {} {} {} {} {} {:13.5e} {:13.5e}".
+                                                                                                                print((11*"{} "+2*"{:13.5e} ").
                                                                                                                       format(getEdges(fAxis,f+1),getEdges(dAxis,d+1),
                                                                                                                              getEdges(usrAxis,u+1),getEdges(segAxis,s+1),getEdges(mAxis,m+1),
                                                                                                                              getEdges(cosAxis,c+1),getEdges(ergAxis,e+1),getEdges(timAxis,t+1),
@@ -117,9 +121,9 @@ def main():
                                                                                                                       file=txtFile)
 
                 if arguments.verbose:
-                        print(" \033[33mTally %5d saved\033[0m" % (tally.tallyNumber))
+                        print(f" \033[33mTally {tally.tallyNumber:5d} saved\033[0m")
 
-        print("\n\033[1;34mASCII file saved to:\033[1;32m %s\033[0m\n" % (txtFileName))
+        print(f"\n\033[1;34mASCII file saved to:\033[1;32m {txtFileName}\033[0m\n")
         txtFile.close()
 
 
