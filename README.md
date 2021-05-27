@@ -9,10 +9,10 @@ Project homepage: https://github.com/kbat/mc-tools
     [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
     object. This API allows to convert **mctal** files into any format. It should work with any tallies and kcode records. Known bugs: Tallies with perturbation records are not supported.
   * [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
-    script converts a mctal file into the [ROOT](http://root.cern.ch) format. The tallies are saved
+    script converts an mctal file into the [ROOT](http://root.cern) format. The tallies are saved
     as [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html) histograms.
   * [mctal2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2txt.py)
-    script shows an example how to convert a mctal file into an easily parsable ASCII file.
+    script shows an example how to convert an mctal file into an easily parsable ASCII file.
   * WSSA file converters **(MCNP6 is not fully supported)**
     * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
       converter: it converts WSSA phase space files produced by MCNP(X) into plain
@@ -35,7 +35,7 @@ Project homepage: https://github.com/kbat/mc-tools
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
 * PHITS
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
-  * ANGEL to [ROOT](http://root.cern.ch) converter (converts the PHITS
+  * ANGEL to [ROOT](http://root.cern) converter (converts the PHITS
     output to ROOT) - most of the tallies are supported, but there are
     known bugs and limitations, should be used with care.
   * A script
@@ -66,7 +66,7 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
    * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ```a compact ENDF``` to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
-* If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern.ch) to be compiled with Python support. In order to check whether the Python
+* If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern) to be compiled with Python support. In order to check whether the Python
    support in ROOT is set up correctly, say
    ```import ROOT```
    in the Python shell. You should not see any error messages. Python 3 can be used, but the ```fluka2root``` converter requires ROOT to be compiled with Python 2. These ```cmake``` arguments allow to select Python 2 for ROOT:

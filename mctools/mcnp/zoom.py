@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-
-
 import sys, re
 import argparse
 
 def main():
-    """
-    This script should be used with mcnpview.sh.
-    It creates the COMOUT file based on the command file produced by mcnpview.
+    """This script should be used with mcnpview.sh It creates the COMOUT
+    file based on the command file produced by mcnpview.
+
     """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
@@ -23,7 +21,7 @@ def main():
 
     bas = False
     plane = False
-    
+
     with open(args.com) as f:
         for line in f.readlines():
             words = line.strip().split()
@@ -36,6 +34,8 @@ def main():
                     if plane is False: bas = True # basis was before plane cuts
                 elif re.search("^or", w):
                     cmd['or'] = list(map(float, words[i+1:i+4]))
+                elif re.search("^th", w):
+                    cmd['theta'] = list(map(float, words[i+1:i+2]))
                 elif re.search("^ex", w):
                     try: # both x and y scales are given
                         cmd['ex'] = list(map(float, words[i+1:i+3]))
@@ -57,15 +57,15 @@ def main():
                     if int(words[i+1])==1: # no need to put 'mesh 1'
                         cmd[w] = [words[i+1]]
 
-    print(bas, plane)
+#    print(bas, plane)
 
     if plane: # bas was first
-        keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label', 'mesh', 'legend', 'scale')
+        keys = ('bas', 'or', 'ex', 'px', 'py', 'pz', 'label', 'mesh', 'legend', 'scale', 'theta')
     elif bas:
-        keys = ('or', 'ex', 'px', 'py', 'pz', 'bas', 'label', 'mesh', 'legend', 'scale')
+        keys = ('or', 'ex', 'px', 'py', 'pz', 'bas', 'label', 'mesh', 'legend', 'scale', 'theta')
     else:
-        keys = {'or', 'ex', 'label', 'mesh', 'legend', 'scale'}
-        
+        keys = {'or', 'ex', 'label', 'mesh', 'legend', 'scale', 'theta'}
+
     with open(args.comout, 'w') as f:
         for key in keys:
             if key in cmd:
