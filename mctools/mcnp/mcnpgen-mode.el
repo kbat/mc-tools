@@ -109,7 +109,7 @@
     ("\\<\\([0-9]*[jJrRiI]\\|[0-9]+i?log\\)\\>" . 'font-lock-skip-face) ;; skips, e.g "1 3j 10"
 
     ;; surfaces:
-    ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|sq\\|sur\\|so\\|p\\)\\>" . 'font-lock-surface-face)
+    ("\\<\\([ckpst][xyz]\\|c/[xyz]\\|gq\\|sq\\|sur\\|so\\|p\\)\\>" . 'font-lock-surface-face)
 
     ;; temperatures
     ("\\<\\(tmp=[0-9.e]+-?[0-9]*\\)\\>" . 'font-lock-temperature-face)
