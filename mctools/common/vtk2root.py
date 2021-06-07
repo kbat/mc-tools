@@ -3,13 +3,15 @@
 # https://github.com/kbat/mc-tools
 #
 
+from decimal import Decimal
 import os,sys,re,numpy,argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 class VTK:
-    def __init__(self, fname):
+    def __init__(self, fname, htype):
         self.fname=fname
+        self.htype=htype
         self.read()
 
     def Print(self):
@@ -88,14 +90,22 @@ class VTK:
                     continue
                 if found:
                     for v in l.split():
-                        val.append(int(v))
+                        if self.htype[-1] == "F":
+                            val.append(float(v))
+                        elif self.htype[-1] == "D":
+                            val.append(Decimal(v))
+                        else:
+                            try:
+                                val.append(int(v));
+                            except:
+                                raise TypeError(f"Trying to fill the {self.htype} histogram with non-integer data. Use the -type argument to set the correct TH3 type.")
 
         return val
 
-    def getTH3(self,htype):
+    def getTH3(self):
 #        print(self.nz, self.z)
         title = os.path.splitext(os.path.basename(self.fname))[0]
-        h = eval("ROOT."+htype)("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
+        h = eval("ROOT."+self.htype)("h3", "%s;x;y;z" % title, self.nx, numpy.array(self.x), self.ny, numpy.array(self.y), self.nz, numpy.array(self.z))
         ii = 0
         for k in range(self.nz):
             for j in range(self.ny):
@@ -120,8 +130,8 @@ def main():
     if args.root is None:
         args.root = os.path.splitext(os.path.basename(args.vtk))[0] + ".root"
 
-    fin = VTK(args.vtk)
-    h = fin.getTH3(args.htype)
+    fin = VTK(args.vtk,args.htype)
+    h = fin.getTH3()
     h.SaveAs(args.root)
 
 
