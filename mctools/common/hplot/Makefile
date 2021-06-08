@@ -9,9 +9,9 @@ ROOTCONFIG := root-config
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTGLIBS  := $(shell $(ROOTCONFIG) --glibs)
 ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
-GCC         = g++ -std=c++17
+GCC         = g++
 
-CXXFLAGS := -g -Ofast -fno-math-errno -Wall
+CXXFLAGS := -g -std=c++17 -Ofast -fno-math-errno -Wall
 
 obj/%.o: src/%.cxx src/%.h
 	@echo "Compiling $@"

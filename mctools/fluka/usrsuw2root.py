@@ -23,16 +23,15 @@ def graph(name, title, val, err):
     N = len(val)
     assert N == len(err), "graph: length of val and err differ"
 
-    x = []
-    y = []
-    ey = []
+    ge = ROOT.TGraphErrors(N)
     for i in range(N):
-        if val[i] > 0.0 or err[i] > 0.0:
-            x.append(i+1)
-            y.append(val[i])
-            ey.append(err[i]*val[i])
+        # if val[i] > 0.0 or err[i] > 0.0:
+        x = i+1
+        y = val[i]
+        ey = err[i]*val[i]
+        ge.SetPoint(i, x, y)
+        ge.SetPointError(i, 0, ey)
 
-    ge = ROOT.TGraphErrors(len(x), np.array(x, dtype=float), np.array(y, dtype=float), np.array(ey, dtype=float)*0.0, np.array(ey, dtype=float))
     ge.SetNameTitle(name, title)
 
     return ge
