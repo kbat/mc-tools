@@ -63,13 +63,14 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     mixture for the given volume fractions of materials. Some examples
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
-   * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ```a compact ENDF``` to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
+   * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE (a compact ENDF) to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
 
 ## Requirements ##
-* If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern) to be compiled with Python 3 support. In order to check whether the Python
-   support in ROOT is set up correctly, say
-   ```import ROOT```
-   in the Python shell. You should not see any error messages.
+* If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern) to be compiled with Python 3 support.
+  * In order to check whether the Python
+    support in ROOT is set up correctly, say
+    ```import ROOT```
+    in the Python shell. You should not see any error messages.
 * The ```hplot``` tool requires the [Boost](https://www.boost.org) libraries and ROOT to be compiled with at least ```C++17``` standard.
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
 * If the [GNU parallel](https://www.gnu.org/software/parallel) tool is installed then the FLUKA merge and ROOT converter tools called by the ```fluka2root``` script will be executed in parallel which makes them run faster.
