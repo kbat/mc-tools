@@ -264,147 +264,49 @@ void Data::BuildMaxH2()
   std::string title = "max";
   h2max = MakeH2(name, title);
 
+  Int_t i,j,k;
+
+  auto f = [&](Int_t &i,  Int_t &j,  Int_t &k,
+	       Int_t NI,  Int_t NJ,  Int_t NK,
+	       Int_t &ii, Int_t &jj, Int_t &kk,
+	       Int_t &x,  Int_t&y)
+	   {
+	     for (j=1; j<=NJ; ++j)
+	       for (i=1; i<=NI; ++i)
+		 {
+
+		   Double_t max(0.0);
+		   Double_t err(0.0);
+		   for (k=1; k<=NK; ++k)
+		     {
+		       Double_t val = h3->GetBinContent(ii,jj,kk);
+		       if (max<val)
+			 {
+			   max = val;
+			   err = h3->GetBinError(ii,jj,kk);
+			 }
+		     }
+		   if (max>0.0)
+		     {
+		       h2max->SetBinContent(x,y,max);
+		       h2max->SetBinError(x,y,err);
+		     }
+		 }
+	   };
+
+
   if (plane == "xy")
-    {
-      for (Int_t j=1; j<=n3y; ++j)
-	for (Int_t i=1; i<=n3x; ++i)
-	  {
-	    Double_t max(0.0);
-	    Double_t err(0.0);
-	    for (Int_t k=1; k<=n3z; ++k)
-	      {
-		Double_t val = h3->GetBinContent(i,j,k);
-		if (max<val)
-		  {
-		    max = val;
-		    err = h3->GetBinError(i,j,k);
-		  }
-	      }
-	    if (max>0.0)
-	      {
-		h2max->SetBinContent(j,i,max);
-		h2max->SetBinError(j,i,err);
-	      }
-	  }
-    }
+    f(j,i,k,n3y,n3x,n3z,i,j,k,j,i);
   else if (plane == "yx")
-    {
-      for (Int_t j=1; j<=n3y; ++j)
-	for (Int_t i=1; i<=n3x; ++i)
-	  {
-	    Double_t max(0.0);
-	    Double_t err(0.0);
-	    for (Int_t k=1; k<=n3z; ++k)
-	      {
-		Double_t val = h3->GetBinContent(i,j,k);
-		if (max<val)
-		  {
-		    max = val;
-		    err = h3->GetBinError(i,j,k);
-		  }
-
-	      }
-	    if (max>0.0)
-	      {
-		h2max->SetBinContent(i,j,max);
-		h2max->SetBinError(i,j,err);
-	      }
-	  }
-    }
+    f(j,i,k,n3y,n3x,n3z,i,j,k,i,j);
   else if (plane == "yz")
-	{
-	  for (Int_t j=1; j<=n3y; ++j)
-	    for (Int_t k=1; k<=n3z; ++k)
-	      {
-		Double_t max(0.0);
-		Double_t err(0.0);
-		for (Int_t i=1; i<=n3x; ++i)
-		  {
-		    Double_t val = h3->GetBinContent(i,j,k);
-		    if (max<val)
-		      {
-			max = val;
-			err = h3->GetBinError(i,j,k);
-		      }
-
-		  }
-		if (max>0.0)
-		  {
-		    h2max->SetBinContent(k,j,max);
-		    h2max->SetBinError(k,j,err);
-		  }
-	      }
-	}
+    f(j,k,i,n3y,n3z,n3x,i,j,k,k,j);
   else if (plane == "zy")
-	{
-	  for (Int_t j=1; j<=n3y; ++j)
-	    for (Int_t k=1; k<=n3z; ++k)
-	      {
-		Double_t max(0.0);
-		Double_t err(0.0);
-		for (Int_t i=1; i<=n3x; ++i)
-		  {
-		    Double_t val = h3->GetBinContent(i,j,k);
-		    if (max<val)
-		      {
-			max = val;
-			err = h3->GetBinError(i,j,k);
-		      }
-
-		  }
-		if (max>0.0)
-		  {
-		    h2max->SetBinContent(j,k,max);
-		    h2max->SetBinError(j,k,err);
-		  }
-	      }
-	}
+    f(j,k,i,n3y,n3z,n3x,i,j,k,j,k);
   else if (plane == "xz")
-	{
-	  for (Int_t k=1; k<=n3z; ++k)
-	    for (Int_t i=1; i<=n3x; ++i)
-	      {
-		Double_t max(0.0);
-		Double_t err(0.0);
-		for (Int_t j=1; j<=n3y; ++j)
-		  {
-		    Double_t val = h3->GetBinContent(i,j,k);
-		    if (max<val)
-		      {
-			max = val;
-			err = h3->GetBinError(i,j,k);
-		      }
-		  }
-		if (max>0.0)
-		  {
-		    h2max->SetBinContent(k,i,max);
-		    h2max->SetBinError(k,i,err);
-		  }
-	      }
-	}
+    f(k,i,j,n3z,n3x,n3y,i,j,k,k,i);
   else if (plane == "zx")
-	{
-	  for (Int_t k=1; k<=n3z; ++k)
-	    for (Int_t i=1; i<=n3x; ++i)
-	      {
-		Double_t max(0.0);
-		Double_t err(0.0);
-		for (Int_t j=1; j<=n3y; ++j)
-		  {
-		    Double_t val = h3->GetBinContent(i,j,k);
-		    if (max<val)
-		      {
-			max = val;
-			err = h3->GetBinError(i,j,k);
-		      }
-		  }
-		if (max>0.0)
-		  {
-		    h2max->SetBinContent(i,k,max);
-		    h2max->SetBinError(i,k,err);
-		  }
-	      }
-	}
+    f(k,i,j,n3z,n3x,n3y,i,j,k,i,k);
 
   SetH2(h2max);
   if (args->IsErrors())
