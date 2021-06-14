@@ -279,12 +279,14 @@ void Data::BuildMaxH2()
 		   Double_t err(0.0);
 		   for (k=1; k<=NK; ++k)
 		     {
-		       Double_t val = h3->GetBinContent(ii,jj,kk);
-		       if (max<val)
-			 {
-			   max = val;
-			   err = h3->GetBinError(ii,jj,kk);
-			 }
+		       const Double_t val = h3->GetBinContent(ii,jj,kk);
+		       const Double_t e = h3->GetBinError(ii,jj,kk);
+		       if ((val>0.0) && (e/val<0.7)) // to avoid individual tracks from outliers
+			   if (max<val)
+			     {
+			       max = val;
+			       err = e;
+			     }
 		     }
 		   if (max>0.0)
 		     {
