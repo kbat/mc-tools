@@ -64,7 +64,7 @@ jobs:
     #    uses a compiled language
 
     - run: |
-      make -C mctools/common/hplot
+       make -C mctools/common/hplot
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
