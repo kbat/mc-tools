@@ -4,7 +4,7 @@
 
 import sys, re, os, argparse
 import glob
-import tempfile
+from tempfile import NamedTemporaryFile
 from distutils.spawn import find_executable
 
 def str2int(s):
@@ -213,10 +213,9 @@ class Converter:
                 continue
 
             for u in e.units:
-                temp_path = tempfile.mktemp(".%s" % e.converter)
-                if self.verbose:
-                    print("unit=%d" % u, e.name, temp_path)
-                with open(temp_path, "w") as tmpfile:
+                with NamedTemporaryFile(suffix="."+e.converter, mode="w", delete=False) as tmpfile:
+                    if self.verbose:
+                        print("unit=%d" % u, e.name, tmpfile.name)
                     suwfile = self.getSuwFileName(e,u)
                     if self.verbose:
                         print(suwfile)
