@@ -113,45 +113,31 @@ void Data::Flip()
   const Int_t ny = h3->GetNbinsY();
   const Int_t nz = h3->GetNbinsZ();
 
-  if (plane[0]=='x') // TH2 vertical axis is 'x'
-    {
-      for (Int_t i=1; i<=nx; ++i)
-	for (Int_t j=1; j<=ny; ++j)
-	  for (Int_t k=1; k<=nz; ++k)
-	    {
-	      const Double_t val = h3->GetBinContent(i,j,k);
-	      const Double_t err = h3->GetBinError(i,j,k);
-	      const Int_t ii(nx+1-i);
-	      flipped->SetBinContent(ii, j, k, val);
-	      flipped->SetBinError(ii,   j, k, err);
-	    }
-    }
-  else if (plane[0]=='y') // TH2 vertical axis is 'y'
-    {
-      for (Int_t i=1; i<=nx; ++i)
-	for (Int_t j=1; j<=ny; ++j)
-	  for (Int_t k=1; k<=nz; ++k)
-	    {
-	      const Double_t val = h3->GetBinContent(i,j,k);
-	      const Double_t err = h3->GetBinError(i,j,k);
-	      const Int_t jj(ny+1-j);
-	      flipped->SetBinContent(i, jj, k, val);
-	      flipped->SetBinError(i,   jj, k, err);
-	    }
-    }
-  else if (plane[0]=='z') // TH2 vertical axis is 'z'
-    {
-      for (Int_t i=1; i<=nx; ++i)
-	for (Int_t j=1; j<=ny; ++j)
-	  for (Int_t k=1; k<=nz; ++k)
-	    {
-	      const Double_t val = h3->GetBinContent(i,j,k);
-	      const Double_t err = h3->GetBinError(i,j,k);
-	      const Int_t kk(nz+1-k);
-	      flipped->SetBinContent(i, j, kk, val);
-	      flipped->SetBinError(i,   j, kk, err);
-	    }
-    }
+  Int_t i, j, k, ii;
+
+  auto f = [&](Int_t& i, Int_t& j, Int_t& k,
+	       Int_t n, const Int_t& m, Int_t& q,
+	       const Int_t& a, const Int_t& b, const Int_t& c)
+	   {
+	     for (i=1; i<=nx; ++i)
+	       for (j=1; j<=ny; ++j)
+		 for (k=1; k<=nz; ++k)
+		   {
+		     const Double_t val = h3->GetBinContent(i,j,k);
+		     const Double_t err = h3->GetBinError(i,j,k);
+		     q = n+1-m;
+		     flipped->SetBinContent(a, b, c, val);
+		     flipped->SetBinError(a,   b, c, err);
+		   }
+	   };
+
+  if (plane[0]=='x')
+    f(i,j,k,nx,i,ii,ii,j,k);
+  if (plane[0]=='y')
+    f(i,j,k,ny,j,ii,i,ii,k);
+  if (plane[0]=='z')
+    f(i,j,k,nz,k,ii,i,j,ii);
+
   h3 = std::move(flipped);
 
   return;
@@ -582,7 +568,7 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
       Int_t bin = a->FindBin(val);
 
       if (bin>nbins) {
-	std::cerr << "Data::GetH2: bin>a->GetNbins() why?" << std::endl;
+	std::cerr << "Data::GetH2: bin>a->GetNbins() why? " << bin << " " << nbins << std::endl;
 	bin = nbins;
       } else if (bin==0) {
 	std::cerr << "Data:GetH2: bin = 0! why?" << std::endl;
