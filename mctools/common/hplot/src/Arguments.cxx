@@ -109,6 +109,8 @@ Arguments::Arguments(int ac, const char **av) :
        "of all histograms along the normal axis. "
        "With this option the '-offset' value applies to geomtry only which allows to select "
        "the representative geometry view.")
+      ("maxerr",po::value<double>()->default_value(-1.0),
+       "Bins with relative error above this value will not be shown. With negative value (by default) the bin error is not checked, i.e. all bins are drawn. This option is not compatible with -errors")
       ("palette",po::value<std::string>()->default_value("MAXIV"),"Set colour palette. ROOT palette names predefined in TColor::EColorPalette are alowed, e.g. kDeepSea."
        " Palette can be inverted if preceeded by a minus sign, e.g. -kDeepSea.")
       ("v", "Explain what is being done.");
@@ -170,6 +172,19 @@ Arguments::Arguments(int ac, const char **av) :
       std::cout << "Error: " << e.what() << "\n";
       exit(1);
     }
+
+    if (vm.count("errors") && (IsMaxErr()))
+      {
+	std::cerr << "Error: -errors and -maxerr can not be used together" << std::endl;
+	exit(1);
+      }
+
+    if (GetMaxErr()>1.0)
+      {
+	std::cerr << "Error: -maxerr must be <= 1.0" << std::endl;
+	exit(1);
+      }
+
 
     if (help || vm.count("help"))
       {
@@ -312,4 +327,21 @@ bool Arguments::IsZTitle() const
 {
   return ((GetZTitle() != "None") && (!GetZTitle().empty()) &&
 	  (GetDoption() == "colz")) || IsErrors();
+}
+
+bool Arguments::IsMaxErr(const double& val, const double& err) const
+/*!
+  Return true if err/val < GetMaxErr()
+*/
+{
+  //  std::cout << IsMaxErr() << " " << (err/val<GetMaxErr()) << std::endl;
+
+  if (!IsMaxErr())
+    return true;
+  else if (val==0.0)
+    return false;
+  else if (err/val<GetMaxErr())
+    return true;
+  else
+    return false;
 }
