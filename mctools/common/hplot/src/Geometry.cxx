@@ -45,9 +45,21 @@ void Geometry::BuildMaxH2()
   std::string title = "max";
   h2max = MakeH2(name, title);
 
+  const TAxis *zAxis = h3->GetZaxis();
+  Float_t ofs = offset;
+
+  if ((ofs<zAxis->GetBinLowEdge(1)) || (ofs>=zAxis->GetBinUpEdge(zAxis->GetLast()))) {
+    ofs = GetOffset("centre");
+    if (args->IsVerbose()) {
+      std::cout << "Info: Setting geometry offset to " << ofs <<
+	" because the original value (" << offset << ") is outside geometry range. ";
+      std::cout << "Override it with the -offset option." << std::endl;
+    }
+  }
+
   if (plane == "xy")
     {
-      const Int_t k = h3->GetZaxis()->FindBin(offset);
+      const Int_t k = h3->GetZaxis()->FindBin(ofs);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
@@ -57,7 +69,7 @@ void Geometry::BuildMaxH2()
     }
   else if (plane == "yx")
     {
-      Int_t k = h3->GetZaxis()->FindBin(offset);
+      Int_t k = h3->GetZaxis()->FindBin(ofs);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
@@ -67,7 +79,7 @@ void Geometry::BuildMaxH2()
     }
   else if (plane == "yz")
     {
-      const Int_t i = h3->GetXaxis()->FindBin(offset);
+      const Int_t i = h3->GetXaxis()->FindBin(ofs);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t k=1; k<=n3z; ++k)
 	  {
@@ -77,7 +89,7 @@ void Geometry::BuildMaxH2()
     }
   else if (plane == "zy")
     {
-      const Int_t i = h3->GetXaxis()->FindBin(offset);
+      const Int_t i = h3->GetXaxis()->FindBin(ofs);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t k=1; k<=n3z; ++k)
 	  {
@@ -87,7 +99,7 @@ void Geometry::BuildMaxH2()
     }
   else if (plane == "xz")
     {
-      const Int_t j = h3->GetYaxis()->FindBin(offset);
+      const Int_t j = h3->GetYaxis()->FindBin(ofs);
       for (Int_t k=1; k<=n3z; ++k)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
@@ -97,7 +109,7 @@ void Geometry::BuildMaxH2()
     }
   else if (plane == "zx")
     {
-      const Int_t j = h3->GetYaxis()->FindBin(offset);
+      const Int_t j = h3->GetYaxis()->FindBin(ofs);
       for (Int_t k=1; k<=n3z; ++k)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
