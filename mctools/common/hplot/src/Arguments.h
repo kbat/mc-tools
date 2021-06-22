@@ -81,8 +81,8 @@ class Arguments {
   float GetYmax() const { return vm["ymax"].as<float>(); }
   float GetZmin() const { return vm["zmin"].as<float>(); }
   float GetZmax() const { return vm["zmax"].as<float>(); }
-  inline double GetMaxErr() const { return vm["maxerr"].as<double>(); }
-  inline bool   IsMaxErr()  const { return vm["maxerr"].as<double>()>0.0; }
+  inline double GetMaxErr() const { return vm["maxerror"].as<double>(); }
+  inline bool   IsMaxErr()  const { return vm["maxerror"].as<double>()>0.0; }
   bool   IsMaxErr(const double&, const double&) const;
   std::string GetPalette() const { return vm["palette"].as<std::string>(); }
   bool test() const;

@@ -47,19 +47,21 @@ void Geometry::BuildMaxH2()
 
   const TAxis *zAxis = h3->GetZaxis();
   Float_t ofs = offset;
+  const Double_t zmin = zAxis->GetBinLowEdge(1);
+  const Double_t zmax = zAxis->GetBinUpEdge(zAxis->GetLast());
 
-  if ((ofs<zAxis->GetBinLowEdge(1)) || (ofs>=zAxis->GetBinUpEdge(zAxis->GetLast()))) {
-    ofs = GetOffset("centre");
+  if ((ofs<zmin) || (ofs>=zmax)) {
+    ofs = (std::abs(ofs-zmin) < std::abs(ofs-zmax)) ? GetOffset("min") : GetOffset("max");
     if (args->IsVerbose()) {
       std::cout << "Info: Setting geometry offset to " << ofs <<
-	" because the original value (" << offset << ") is outside geometry range. ";
+	" because the original value (" << offset << ") is outside the geometry histogram range. ";
       std::cout << "Override it with the -offset option." << std::endl;
     }
   }
 
   if (plane == "xy")
     {
-      const Int_t k = h3->GetZaxis()->FindBin(ofs);
+      const Int_t k = zAxis->FindBin(ofs);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
@@ -69,7 +71,7 @@ void Geometry::BuildMaxH2()
     }
   else if (plane == "yx")
     {
-      Int_t k = h3->GetZaxis()->FindBin(ofs);
+      Int_t k = zAxis->FindBin(ofs);
       for (Int_t j=1; j<=n3y; ++j)
 	for (Int_t i=1; i<=n3x; ++i)
 	  {
