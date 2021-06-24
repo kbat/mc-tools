@@ -64,6 +64,8 @@ jobs:
     #    uses a compiled language
 
     - run: |
+       sudo apt-get update
+       sudo apt-cache search root|grep CERN
        make -C mctools/common/hplot
 
     - name: Perform CodeQL Analysis
