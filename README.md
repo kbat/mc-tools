@@ -73,8 +73,12 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     in the Python shell. You should not see any error messages.
 * The ```hplot``` tool requires the [Boost](https://www.boost.org) libraries and ROOT to be compiled with at least ```C++17``` standard.
 * If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
-* If the [GNU parallel](https://www.gnu.org/software/parallel) tool is installed then the FLUKA merge and ROOT converter tools called by the ```fluka2root``` script will be executed in parallel which makes them run faster.
-* Linux and MacOS are supported. We have never tried to use these tools on Windows.
+* If the [GNU parallel](https://www.gnu.org/software/parallel) tool is
+  installed then the FLUKA merge and ROOT converter tools called by
+  the ```fluka2root``` script will use all available cores which makes
+  them run faster.
+* Linux and MacOS are supported. We have never tried to use these
+  tools on Windows.
 
 ## Installation ##
 
