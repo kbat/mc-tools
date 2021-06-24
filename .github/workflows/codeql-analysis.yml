@@ -64,8 +64,9 @@ jobs:
     #    uses a compiled language
 
     - run: |
-#       sudo apt-get update
        sudo apt-cache search root|grep CERN
+       sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev
+       root-config --features
        pwd
        make
 
