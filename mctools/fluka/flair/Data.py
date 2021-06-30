@@ -95,6 +95,10 @@ class Usrxxx:
                         (title, time, self.weight,
                          self.ncase, over1b, self.nbatch) = \
                                 struct.unpack("=80s32sfiii", data)
+                elif size == 136: # FLUKA2021.2: LISFVR and LMSFVR variables added
+                        (title, time, self.weight,
+                         self.ncase, over1b, self.nbatch, lisfvr, lmsfvr) = \
+                                struct.unpack("=80s32sfiiiii", data)
                 else:
                         raise IOError("Invalid USRxxx file")
 
@@ -152,7 +156,9 @@ class Resnuclei(Usrxxx):
         # Fill the self.detector structure
         # ----------------------------------------------------------------------
         def readHeader(self, filename):
-                """Read residual nuclei detector information """
+                """Read residual nuclei detector information
+
+                """
                 f = super().readHeader(filename)
                 self.nisomers = 0
                 if self.ncase <= 0:
