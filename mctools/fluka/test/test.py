@@ -8,7 +8,8 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def compare(val1, val2, msg="", relPrec=1.0e-5):
-    """ Compare two float variables with the given relative precision
+    """Compare two float variables with the given relative precision
+
     """
     if not ROOT.TMath.AreEqualRel(val1, val2, relPrec):
         print(msg, "values do not match: ", val1, val2, file=sys.stderr)
@@ -17,7 +18,8 @@ def compare(val1, val2, msg="", relPrec=1.0e-5):
         return True
 
 def usrtrack(rootfname, hname, lisfname):
-    """ Test USRTRACK output
+    """Test USRTRACK output
+
     """
 
     rootf = ROOT.TFile(rootfname)
@@ -34,9 +36,9 @@ def usrtrack(rootfname, hname, lisfname):
             val = h.GetBinContent(b)
             err = h.GetBinError(b)
             relerr = err/val*100 if val>0.0  else 0.0
-            
+
             #print(b, w, h.GetBinLowEdge(b), h.GetBinLowEdge(b+1), val, relerr)
-            
+
             if not compare(float(w[2]), val, "Bin content") or \
                not compare(float(w[3]), relerr, "Relative bin error") or \
                not compare(float(w[0]), h.GetBinLowEdge(b), "Bin %d low edge" % b) or \
@@ -52,14 +54,16 @@ def usrtrack(rootfname, hname, lisfname):
     print(hname, "usrtrack test passed" if passed else "test failed", file=sys.stderr)
 
     return passed
-    
+
 
 def main():
     """Some tests of the FLUKA converters
+
     """
     rootfname = "test.root"
     usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
     usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
+    print("test.47_tab.lis, test.52_tab.lis and test.53_tab.lis files were not tested")
 
 if __name__ == "__main__":
     sys.exit(main())

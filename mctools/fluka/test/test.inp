@@ -60,8 +60,11 @@ USRBIN         -50.0     -50.0     -10.0     100.0     100.0      60.0   &
 * Cartesian binning of the deposited energy inside the target
 USRBIN          10.0     208.0     -51.0      10.0      10.0       5. Edeposit
 USRBIN         -10.0     -10.0       0.0      20.0      20.0       5.0   &
-* Residual nuclei
-* RESNUCLE         3.0       -53                          -1.0
+* Residual nuclei - physics options based on RELEASE-NOTES.fluka2021.2
+PHYSICS          3.0                                                  EVAPORAT
+PHYSICS          1.0                                                  COALESCE
+PHYSICS          1.0     0.005      0.15       2.0       2.0       2. IONSPLIT
+RESNUCLE         3.0       -53                          -1.0          resnuc
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 RANDOMIZE        1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
