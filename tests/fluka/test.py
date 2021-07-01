@@ -7,6 +7,61 @@ import re, sys
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
+_format="%.3E"
+
+def test_root():
+    """Test whether ROOT is installed and compiled with Python support
+
+    """
+    import ROOT
+
+def test_import():
+    """Test whether the mctools module can be imported
+
+    """
+    import mctools
+
+def fluka2root(inp):
+    """Run fluka2root converter with the given file
+
+    """
+
+    tmpdir = tempfile.mkdtemp(suffix='.mc-tools')
+    inpto = os.path.join(tmpdir, inp)
+    shutil.copyfile(inp, inpto)
+
+    os.chdir(tmpdir)
+
+    cmd = "$FLUTIL/rfluka -N0 -M2 " + inp
+    val = os.system(cmd)
+    assert val == 0
+
+    cmd = "fluka2root " + inp
+    val = os.system(cmd)
+    assert val == 0
+
+    shutil.rmtree(tmpdir)
+
+
+def getNskip(fname, hname):
+    """Return number of rows to skip in the _tab.lis file before the
+        current estimator data
+
+    """
+    i = 1
+    with open(fname) as f:
+        for line in f.readlines():
+            i += 1
+            if re.search(hname, line):
+                break
+    return i
+
+def compare_str(hist, tab, name):
+    """Compares hist and tab and calls assert if they are different
+
+    """
+    assert hist == tab, "problem with %s:\ttab: %s\thist: %s" % (name, tab, hist)
+
 def compare(val1, val2, msg="", relPrec=1.0e-5):
     """Compare two float variables with the given relative precision
 
@@ -17,7 +72,7 @@ def compare(val1, val2, msg="", relPrec=1.0e-5):
     else:
         return True
 
-def usrtrack(rootfname, hname, lisfname):
+def usrtrack(rootfname, hname, tabfname):
     """Test USRTRACK output
 
     """
@@ -27,8 +82,8 @@ def usrtrack(rootfname, hname, lisfname):
 
     b = 0
     passed = True
-    with open(lisfname) as lisf:
-        for line in lisf.readlines():
+    with open(tabfname) as tabf:
+        for line in tabf.readlines():
             if re.search("\A #", line):
                 continue
             w =  line.strip().split()
@@ -55,8 +110,8 @@ def usrtrack(rootfname, hname, lisfname):
 
     return passed
 
-def resnuclei(rootfname, hname, lisfname):
-    """Test RESNUCLEI output
+def resnuclei(rootfname, hname, tabfname):
+    """Test RESNUCLEI (usrsuw) output
 
     """
 
@@ -73,8 +128,8 @@ def resnuclei(rootfname, hname, lisfname):
     valuesAZ = False
     binA = geA.GetN()
     binZ = geZ.GetN()
-    with open(lisfname) as lisf:
-        for line in lisf.readlines():
+    with open(tabfname) as tabf:
+        for line in tabf.readlines():
             if re.search("\A# Detector", line):
                 continue
 
@@ -115,7 +170,7 @@ def resnuclei(rootfname, hname, lisfname):
                     # the geA test succeeded and geA contains more significant digits than the .lis file
                     relerrh=hA.GetBinError(i)/hA.GetBinContent(i)*100 if hA.GetBinContent(i)>0.0 else 0.0
                     if not compare(val, hA.GetBinContent(i), "h.ProjectionY:val") or \
-                       not compare(relerr, relerrh, "h.ProjectionY::relerr"):
+                       not compare(relerr, relerrh, "\th.ProjectionY::relerr"):
                         print("\t(this might be due to TH2F::ProjectionY implemenation in ROOT)")
                         passed = True
                         break
@@ -161,6 +216,84 @@ def resnuclei(rootfname, hname, lisfname):
     return passed
 
 
+def usrbdx(rootfname, hname, tabfname):
+    """Test USRBDX (usxsuw) output
+
+    """
+    print("usrbdx:\t", end="", flush=True)
+
+    import pandas as pd
+    passed = True
+
+    rootf = ROOT.TFile(rootfname)
+    h2 = rootf.Get(hname)
+    assert h2, f"{hname} not found in {rootfname}"
+    h2_lowneu = rootf.Get(hname+"_lowneu")
+
+    # here we assume all bin widths are the same:
+    dOmega = h2.GetYaxis().GetBinLowEdge(2)-h2.GetYaxis().GetBinLowEdge(1)
+
+    h = h2.ProjectionX()
+    h.Scale(dOmega)
+    if h2_lowneu:
+        h_lowneu = h2_lowneu.ProjectionX()
+        h_lowneu.Scale(dOmega)
+
+    nrows = h.GetNbinsX()
+    if h2_lowneu:
+        nrows += h2_lowneu.GetNbinsX()
+
+    df = pd.read_csv(tabfname, sep='\s+', names=["emin", "emax", "val", "err"],
+                     skiprows=getNskip(tabfname, hname),
+                     nrows=nrows) # data frame
+    j=0
+    if h2_lowneu: # compare the low energy part
+        nbins = h2_lowneu.GetNbinsX()
+#        print("nbins:",nbins)
+        j += nbins
+        for i in range(nbins):
+            hemin = _format % h_lowneu.GetBinLowEdge(i+1)
+            hemax = _format % h_lowneu.GetBinLowEdge(i+2)
+            hval  = _format % h_lowneu.GetBinContent(i+1)
+            herr  = _format % h_lowneu.GetBinError(i+1)
+            femin = _format % df['emin'][i]
+            femax = _format % df['emax'][i]
+            fval  = _format % df['val'][i]
+            ferr  = _format % df['err'][i]
+            #                        print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
+            #                print(df.ix[i])
+            compare_str(hemin, femin, "emin")
+            compare_str(hemax, femax, "emax")
+            compare_str(hval, fval, "val")
+            compare_str(herr, ferr, "err")
+
+    nbins = h.GetNbinsX();
+    for i in range(nbins):
+        hemin = _format % h.GetBinLowEdge(i+1)
+        hemax = _format % h.GetBinLowEdge(i+2)
+        hval  = _format % h.GetBinContent(i+1)
+        herr  = _format % h.GetBinError(i+1)
+        femin = _format % df['emin'][i+j]
+        femax = _format % df['emax'][i+j]
+        fval  = _format % df['val'][i+j]
+        ferr  = _format % df['err'][i+j]
+        #                print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
+
+        compare_str(hemin, femin, "emin")
+        compare_str(hemax, femax, "emax")
+        compare_str(hval, fval, "val")
+
+    print(hname, "test passed" if passed else "test failed", file=sys.stderr)
+
+def test_fluka2root():
+#        inpfrom = os.path.join(os.environ["FLUPRO"], inp)
+#        inputs = ("example.inp", "exmixed.inp", "exdefi.inp", "exfixed.inp")
+
+        inputs = ("test.inp",)
+        for inp in inputs:
+                fluka2root(inp)
+
+
 def main():
     """Some tests of fluka2root converters
 
@@ -168,9 +301,10 @@ def main():
     rootfname = "test.root"
     usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
     usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
+    usrtrack(rootfname, "h52U", "test.52_tab.lis")
+    usrtrack(rootfname, "h52D", "test.54_tab.lis")
+    usrbdx(rootfname, "pFluenUD", "test.47_tab.lis")
     resnuclei(rootfname, "resnuc", "test.53_tab.lis")
-
-    print("test.47_tab.lis and test.52_tab.lis files were not tested")
 
 if __name__ == "__main__":
     sys.exit(main())
