@@ -12,6 +12,39 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 sys.path.insert(1, '@python2dir@')
 
+# def strictly_increasing(L):
+#     """Check if values in the list L are strictly increasing.
+
+#     """
+#     return all(x<y for x, y in zip(L, L[1:]))
+
+def setUserAxis(a,L):
+    """Set the axis "a" so that its bin boundaries are natural numbers with
+       bin labels taken from the tuple "L"
+
+       This is used in e.g. usrAxis because its original bin boundaris
+       might be not strictly increasing so that we can't pass them for
+       the TAxis constructor.  See e.g. FT ICD coupled with FU card.
+
+       Note that THnSparse::Projection() does not pass the bin labels
+       to the resulting histogram.
+    """
+
+    N = len(L)-1 # number of bins ( = boundaries minus one)
+    vals = []
+    labels = []
+    for i,b in enumerate(L):
+        vals.append(float(i))
+        labels.append(b)
+
+    a.Set(N, np.array(vals))
+    for b,l in enumerate(labels[1:], start=1):
+        a.SetBinLabel(b,str(l))
+
+    return a
+
+
+
 def main():
         """
         MCTAL to ROOT converter.
@@ -56,11 +89,11 @@ def main():
 
                 nCells = tally.getNbins("f",False)
 
-                nCora = tally.getNbins("i",False) # Is set to 1 even when mesh tallies are not present
+                nCora = tally.getNbins("i",False) # set to 1 even when mesh tallies are not present
 
-                nCorb = tally.getNbins("j",False) # Is set to 1 even when mesh tallies are not present
+                nCorb = tally.getNbins("j",False) # set to 1 even when mesh tallies are not present
 
-                nCorc = tally.getNbins("k",False) # Is set to 1 even when mesh tallies are not present
+                nCorc = tally.getNbins("k",False) # set to 1 even when mesh tallies are not present
 
                 nDir = tally.getNbins("d",False)
 
@@ -100,7 +133,11 @@ def main():
 
 
                 if len(usrAxis) != 0:
-                        hs.GetAxis(2).Set(nUsr,usrAxis)
+                    a = hs.GetAxis(2)
+                    # if strictly_increasing(usrAxis):
+                    #     a.Set(nUsr,usrAxis)
+                    # else:
+                    setUserAxis(a,usrAxis)
 
                 if len(segAxis) != 0:
                         hs.GetAxis(3).Set(nSeg,segAxis)
