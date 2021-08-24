@@ -16,13 +16,13 @@ c
 sdef erg = 2
 c
 f1:n 5 6 7
-e1 1e-10 99i 3
+e1 1e-10 9i 3
 c
 tmesh
 rmesh21:n flux
 cora21 -1.0 1.0
-corb21 -10.0 49i 10.0
-corc21 -10.0 49i 10.0
+corb21 -10.0 3i 10.0
+corc21 -10.0 4i 10.0
 endmd
 c
 f5:n 1.0 1.0 1.0 0

@@ -7,5 +7,9 @@ mctal: inp
 convert: mctal
 	@mctal2root mctal
 
+xml: mctal
+	@mctal2root mctal mctal.xml
+	@bzip2 -9 mctal.xml
+
 clean:
 	@rm -fv *~ runtp? mdat? out? mctal mctal.root

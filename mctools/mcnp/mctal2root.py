@@ -53,7 +53,7 @@ def main():
         parser = argparse.ArgumentParser(description=main.__doc__,
                                          epilog="Homepage: https://github.com/kbat/mc-tools")
         parser.add_argument('mctal', type=str, help='mctal file name')
-        parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
+        parser.add_argument('root', type=str, nargs='?', help='output ROOT file name. XML file will be created if the .xml extension is used.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
         arguments = parser.parse_args()
@@ -74,7 +74,7 @@ def main():
         else:
                 rootFileName = arguments.root
 
-        rootFile = ROOT.TFile(rootFileName,"RECREATE");
+        rootFile = ROOT.TFile.Open(rootFileName,"RECREATE");
 
         if arguments.verbose:
                 print("\n\033[1;34m[Converting...]\033[0m")
