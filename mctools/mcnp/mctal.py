@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 #
 # https://github.com/kbat/mc-tools
 #
 
-from __future__ import print_function
 import sys, re, math
 import numpy as np
 
