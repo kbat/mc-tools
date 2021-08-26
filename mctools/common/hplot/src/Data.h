@@ -19,7 +19,6 @@ class Data {
   TAxis *GetHorizontalAxis() const;
   TAxis *GetVerticalAxis() const;
   char   GetNormalAxisName() const;
-  Float_t GetOffset(const std::string&) const;
   void Flip();
   void ErrorHist(std::shared_ptr<TH2> h) const;
  protected:
@@ -33,6 +32,7 @@ class Data {
   void Rebin() const;
   std::shared_ptr<TH2> MakeH2(std::string& name, std::string& title);
   virtual void BuildMaxH2();
+  Float_t GetOffset(const std::string&) const;
  public:
   /* Data(const TH3F* h3, */
   /*      const std::string& plane); */

@@ -1,6 +1,6 @@
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 TITLE
-Test the FLUKA converters
+fluka2root converter tests
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 BEAM         50.E+00                                                  PROTON
 BEAMPOS          0.0       0.0     -50.0
@@ -38,30 +38,33 @@ EMFCUT        -0.010     0.010       1.0  BERYLLIU                    PROD-CUT
 * score in each region energy deposition and stars produced by primaries
 SCORE          208.0     210.0
 * Boundary crossing fluence in the middle of the target (log intervals, one-way)
-USRBDX          99.0     209.0     -47.0       3.0       4.0     400. piFluenUD
+USRBDX          99.0  BEAMPART     -47.0       3.0       4.0     400. pFluenUD
 USRBDX         +50.0               +50.0                 0.0      10.0 &
 * Boundary crossing current in the middle of the target (log intervals, one-way)
-USRBDX          -1.0     209.0     -47.0       3.0       4.0     400. piCurrUD
+USRBDX          -1.0   PIONS+-     -47.0        3.0       4.0     400. piCurrUD
 USRBDX         +50.0               +50.0                 0.0      10.0 &
 * Tracklength fluence inside the target, Upstream part and Downstream part
 * Logarithmic energy intervals
-USRTRACK        -1.0     209.0     -48.0       3.0    1000.0      20. piFluenU
+USRTRACK        -1.0   PIONS+-     -48.0       3.0    1000.0      20. piFluenU
 USRTRACK        50.0     0.001                                           &
-USRTRACK        -1.0     209.0     -49.0       4.0    1000.0      20. piFluenD
+USRTRACK        -1.0   PIONS+-     -49.0       4.0    1000.0      20. piFluenD
 USRTRACK        50.0     0.001                                           &
 * two estimators in the same file:
-USRTRACK        -1.0     209.0     -52.0       3.0    1000.0      20. h52U
+USRTRACK        -1.0   PIONS+-     -52.0       3.0    1000.0      20. h52U
 USRTRACK        50.0     0.001                                           &
-USRTRACK        -1.0     209.0     -52.0       4.0    1000.0      20. h52D
+USRTRACK        -1.0   PIONS+-     -54.0       4.0    1000.0      20. h52D
 USRTRACK        50.0     0.001                                           &
 * Cartesian binning of the pion fluence inside and around the target
-USRBIN          10.0     209.0     -50.0      50.0      50.0      50. piFluBin
+USRBIN          10.0   PIONS+-     -50.0      50.0      50.0      50. piFluBin
 USRBIN         -50.0     -50.0     -10.0     100.0     100.0      60.0   &
 * Cartesian binning of the deposited energy inside the target
-USRBIN          10.0     208.0     -51.0      10.0      10.0       5. Edeposit
+USRBIN          10.0    ENERGY     -51.0      10.0      10.0       5. Edeposit
 USRBIN         -10.0     -10.0       0.0      20.0      20.0       5.0   &
-* Residual nuclei
-* RESNUCLE         3.0       -53                          -1.0
+* Residual nuclei - physics options based on RELEASE-NOTES.fluka2021.2
+PHYSICS          3.0                                                  EVAPORAT
+PHYSICS          1.0                                                  COALESCE
+PHYSICS          1.0     0.005      0.15       2.0       2.0       2. IONSPLIT
+RESNUCLE         3.0       -53                          -1.0          resnuc
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 RANDOMIZE        1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8

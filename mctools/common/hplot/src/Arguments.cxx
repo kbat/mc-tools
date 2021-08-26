@@ -104,11 +104,13 @@ Arguments::Arguments(int ac, const char **av) :
        "Two integer numbers are required: the first one is the number of bins "
        "to average the slice on 2D histogrm, the second one indicates how many bins "
        "of this have to be merged into one bin in the 1D histogram.")
-      ("errors", "Plot the histogram with relative errors instead of data.")
+      ("errors", "Plot the histogram with relative errors instead of data. This option is not compatible with -maxerror.")
       ("max","Plot the histogram where each bin content is the max value "
        "of all histograms along the normal axis. "
        "With this option the '-offset' value applies to geomtry only which allows to select "
        "the representative geometry view.")
+      ("maxerror",po::value<double>()->default_value(-1.0),
+       "Bins with relative error above this value will not be shown. With negative value (by default) the bin error is not checked, i.e. all bins are drawn. This option is not compatible with -errors.")
       ("palette",po::value<std::string>()->default_value("MAXIV"),"Set colour palette. ROOT palette names predefined in TColor::EColorPalette are alowed, e.g. kDeepSea."
        " Palette can be inverted if preceeded by a minus sign, e.g. -kDeepSea.")
       ("v", "Explain what is being done.");
@@ -125,7 +127,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("goption", po::value<std::string>()->default_value("cont3"), "Geometry draw option")
       ("gcont", po::value<size_t>()->default_value(25), "Number of contour levels for geometry")
       ("glwidth", po::value<size_t>()->default_value(2), "Geometry line width")
-      ("glcolor", po::value<std::string>()->default_value("#000000"), "Geometry line color specified by hex color of form \"#rrggbb\"");
+      ("glcolor", po::value<std::string>()->default_value("#000000"), "Geometry line colour specified by hex code, e.g. \"#rrggbb\"");
 
     std::array<std::string, 4> positional_args{"dfile", "dhist", "gfile", "ghist"};
     po::positional_options_description p;
@@ -170,6 +172,19 @@ Arguments::Arguments(int ac, const char **av) :
       std::cout << "Error: " << e.what() << "\n";
       exit(1);
     }
+
+    if (vm.count("errors") && (IsMaxErr()))
+      {
+	std::cerr << "Error: -errors and -maxerror can not be used together" << std::endl;
+	exit(1);
+      }
+
+    if (GetMaxErr()>1.0)
+      {
+	std::cerr << "Error: -maxerror must be <= 1.0" << std::endl;
+	exit(1);
+      }
+
 
     if (help || vm.count("help"))
       {
@@ -312,4 +327,21 @@ bool Arguments::IsZTitle() const
 {
   return ((GetZTitle() != "None") && (!GetZTitle().empty()) &&
 	  (GetDoption() == "colz")) || IsErrors();
+}
+
+bool Arguments::IsMaxErr(const double& val, const double& err) const
+/*!
+  Return true if err/val < GetMaxErr()
+*/
+{
+  //  std::cout << IsMaxErr() << " " << (err/val<GetMaxErr()) << std::endl;
+
+  if (!IsMaxErr())
+    return true;
+  else if (val==0.0)
+    return false;
+  else if (err/val<GetMaxErr())
+    return true;
+  else
+    return false;
 }

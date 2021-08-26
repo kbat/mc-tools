@@ -113,45 +113,31 @@ void Data::Flip()
   const Int_t ny = h3->GetNbinsY();
   const Int_t nz = h3->GetNbinsZ();
 
-  if (plane[0]=='x') // TH2 vertical axis is 'x'
-    {
-      for (Int_t i=1; i<=nx; ++i)
-	for (Int_t j=1; j<=ny; ++j)
-	  for (Int_t k=1; k<=nz; ++k)
-	    {
-	      const Double_t val = h3->GetBinContent(i,j,k);
-	      const Double_t err = h3->GetBinError(i,j,k);
-	      const Int_t ii(nx+1-i);
-	      flipped->SetBinContent(ii, j, k, val);
-	      flipped->SetBinError(ii,   j, k, err);
-	    }
-    }
-  else if (plane[0]=='y') // TH2 vertical axis is 'y'
-    {
-      for (Int_t i=1; i<=nx; ++i)
-	for (Int_t j=1; j<=ny; ++j)
-	  for (Int_t k=1; k<=nz; ++k)
-	    {
-	      const Double_t val = h3->GetBinContent(i,j,k);
-	      const Double_t err = h3->GetBinError(i,j,k);
-	      const Int_t jj(ny+1-j);
-	      flipped->SetBinContent(i, jj, k, val);
-	      flipped->SetBinError(i,   jj, k, err);
-	    }
-    }
-  else if (plane[0]=='z') // TH2 vertical axis is 'z'
-    {
-      for (Int_t i=1; i<=nx; ++i)
-	for (Int_t j=1; j<=ny; ++j)
-	  for (Int_t k=1; k<=nz; ++k)
-	    {
-	      const Double_t val = h3->GetBinContent(i,j,k);
-	      const Double_t err = h3->GetBinError(i,j,k);
-	      const Int_t kk(nz+1-k);
-	      flipped->SetBinContent(i, j, kk, val);
-	      flipped->SetBinError(i,   j, kk, err);
-	    }
-    }
+  Int_t i, j, k, ii;
+
+  auto f = [&](Int_t& i, Int_t& j, Int_t& k,
+	       Int_t n, const Int_t& m, Int_t& q,
+	       const Int_t& a, const Int_t& b, const Int_t& c)
+	   {
+	     for (i=1; i<=nx; ++i)
+	       for (j=1; j<=ny; ++j)
+		 for (k=1; k<=nz; ++k)
+		   {
+		     const Double_t val = h3->GetBinContent(i,j,k);
+		     const Double_t err = h3->GetBinError(i,j,k);
+		     q = n+1-m;
+		     flipped->SetBinContent(a, b, c, val);
+		     flipped->SetBinError(a,   b, c, err);
+		   }
+	   };
+
+  if (plane[0]=='x')
+    f(i,j,k,nx,i,ii,ii,j,k);
+  if (plane[0]=='y')
+    f(i,j,k,ny,j,ii,i,ii,k);
+  if (plane[0]=='z')
+    f(i,j,k,nz,k,ii,i,j,ii);
+
   h3 = std::move(flipped);
 
   return;
@@ -281,12 +267,10 @@ void Data::BuildMaxH2()
 		     {
 		       const Double_t val = h3->GetBinContent(ii,jj,kk);
 		       const Double_t e = h3->GetBinError(ii,jj,kk);
-		       if ((val>0.0) && (e/val<0.7)) // to avoid individual tracks from outliers
-			   if (max<val)
-			     {
-			       max = val;
-			       err = e;
-			     }
+		       if ((args->IsMaxErr(val,e)) && (max<val)) {
+			 max = val;
+			 err = e;
+		       }
 		     }
 		   if (max>0.0)
 		     {
@@ -487,79 +471,44 @@ void Data::Project()
 
       std::shared_ptr<TH2> h2(nullptr);
 
+      Int_t  i,j;
+      auto f = [&](Int_t &i,  Int_t &j,
+		   Int_t NI,  Int_t NJ,
+		   Int_t &xx, Int_t &yy, Int_t &kk,
+		   Int_t &x,  Int_t &y)
+	       {
+		 for (i=1; i<=NI; ++i)
+		   for (j=1; j<=NJ; ++j) {
+		     const Double_t val = h3->GetBinContent(xx,yy,kk);
+		     const Double_t err = h3->GetBinError(xx,yy,kk);
+		     if (args->IsMaxErr(val,err)) {
+		       h2->SetBinContent(x,y,val);
+		       h2->SetBinError(x,y,err);
+		     }
+		   }
+	       };
+
       for (Int_t bin=1; bin<=nbins; ++bin)
 	{
-	  std::string h2name = Form("%s_%d", h3->GetName(), bin);
+	  std::string h2name  = Form("%s_%d", h3->GetName(), bin);
 	  std::string h2title = Form("%g< %c < %g",
-				     na->GetBinLowEdge(bin), GetNormalAxisName(), na->GetBinUpEdge(bin));
+				     na->GetBinLowEdge(bin), GetNormalAxisName(),
+				     na->GetBinUpEdge(bin));
 
 	  h2 = MakeH2(h2name, h2title);
 
-	  Double_t val, err;
 	  if (plane == "xy")
-	    {
-	      for (Int_t i=1; i<=n3y; ++i)
-		for (Int_t j=1; j<=n3x; ++j) {
-		  val = h3->GetBinContent(j,i,bin);
-		  err = h3->GetBinError(j,i,bin);
-		  h2->SetBinContent(i,j,val);
-		  h2->SetBinError(i,j,err);
-		}
-	    }
+	    f(i,j,n3y,n3x,j,i,bin,i,j);
 	  else if (plane == "yx")
-	    {
-	      for (Int_t i=1; i<=n3y; ++i)
-		for (Int_t j=1; j<=n3x; ++j) {
-		  val = h3->GetBinContent(j,i,bin);
-		  err = h3->GetBinError(j,i,bin);
-		  h2->SetBinContent(j,i,val);
-		  h2->SetBinError(j,i,err);
-		}
-	    }
+	    f(i,j,n3y,n3x,j,i,bin,j,i);
 	  else if (plane == "yz")
-	    {
-	      //	  std::cout << na->GetTitle() << std::endl;
-	      for (Int_t i=1; i<=n3y; ++i)
-		for (Int_t j=1; j<=n3z; ++j) {
-		  val = h3->GetBinContent(bin,i,j);
-		  err = h3->GetBinError(bin,i,j);
-		  h2->SetBinContent(j,i,val);
-		  h2->SetBinError(j,i,err);
-		}
-	    }
+	    f(i,j,n3y,n3z,bin,i,j,j,i);
 	  else if (plane == "zy")
-	    {
-	      //	  std::cout << na->GetTitle() << std::endl;
-	      for (Int_t i=1; i<=n3y; ++i)
-		for (Int_t j=1; j<=n3z; ++j) {
-		  val = h3->GetBinContent(bin,i,j);
-		  err = h3->GetBinError(bin,i,j);
-		  h2->SetBinContent(i,j,val);
-		  h2->SetBinError(i,j,err);
-		}
-	    }
+	    f(i,j,n3y,n3z,bin,i,j,i,j);
 	  else if (plane == "xz")
-	    {
-	      //	  std::cout << na->GetTitle() << std::endl;
-	      for (Int_t i=1; i<=n3z; ++i)
-		for (Int_t j=1; j<=n3x; ++j) {
-		  val = h3->GetBinContent(j,bin,i);
-		  err = h3->GetBinError(j,bin,i);
-		  h2->SetBinContent(i,j,val);
-		  h2->SetBinError(i,j,err);
-		}
-	    }
+	    f(i,j,n3z,n3x,j,bin,i,i,j);
 	  else if (plane == "zx")
-	    {
-	      //	  std::cout << na->GetTitle() << std::endl;
-	      for (Int_t i=1; i<=n3z; ++i)
-		for (Int_t j=1; j<=n3x; ++j) {
-		  val = h3->GetBinContent(j,bin,i);
-		  err = h3->GetBinError(j,bin,i);
-		  h2->SetBinContent(j,i,val);
-		  h2->SetBinError(j,i,err);
-		}
-	    }
+	    f(i,j,n3z,n3x,j,bin,i,j,i);
 
 	  SetH2(h2);
 
@@ -619,7 +568,7 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
       Int_t bin = a->FindBin(val);
 
       if (bin>nbins) {
-	std::cerr << "Data::GetH2: bin>a->GetNbins() why?" << std::endl;
+	std::cerr << "Data::GetH2: bin>a->GetNbins() why? " << bin << " " << nbins << std::endl;
 	bin = nbins;
       } else if (bin==0) {
 	std::cerr << "Data:GetH2: bin = 0! why?" << std::endl;
