@@ -77,7 +77,7 @@
     ;; tally comments go before keywords so that tally comment with a keyword is highlighted correctly
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
 
-    ("\\<\\(ara\\|axs\\|cel\\|ctme\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|erg\\|ext\\|flux\\|hlib\\|icd\\|imp\\|kcode\\|^lc[abc]\\|^le[ab]\\|lost\\|mgopt +[af]\\|mode\\|model\\|mphys\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|print\\|ptrac\\|psc=[0-9]\\|rad\\|rand\\|seed\\|sdef\\|stop\\|ssr\\|tme\\|vec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(ara\\|axs\\|cap\\|cel\\|ctme\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|elc\\|erg\\|ext\\|flux\\|frv\\|geb\\|hlib\\|icd\\|imp\\|inc\\|kcode\\|^lc[abc]\\|^le[abt]\\|lost\\|mgopt +[af]\\|mode\\|model\\|mphys\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|roc\\|phl\\|print\\|ptrac\\|psc=[0-9]\\|ptt\\|rad\\|rand\\|res\\|seed\\|scd\\|scx\\|sdef\\|stop\\|ssr\\|tag\\|tme\\|tmc\\|xvec\\|void\\|vol\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|fill\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
