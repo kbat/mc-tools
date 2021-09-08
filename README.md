@@ -4,31 +4,31 @@ Some Monte Carlo tools for MCNP, MCNPX, PHITS and FLUKA
 Project homepage: https://github.com/kbat/mc-tools
 
 * MСNРХ
-  * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for MCNP
-  * An implementation of application programming interface (API) to read tallies from **mctal** files into a
-    [Tally](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal.py)
-    object. This API allows to convert **mctal** files into any format. It should work with any tallies and kcode records. Known bugs: Tallies with perturbation records are not supported.
+  * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for MCNP.
+  * An implementation of application programming interface (API) to
+    read data from **mctal** files. It allows to convert **mctal**
+    files into any format. Known issue: tallies with perturbation
+    records are not supported.
     * [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py)
-      script converts an mctal file to [ROOT](http://root.cern) format. The tallies are saved
-      as [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html) histograms. The same script can convert mctal to XML format.
+      script converts mctal to [ROOT](http://root.cern) format. The
+      tallies are saved as
+      [THnSparse](https://root.cern.ch/doc/master/classTHnSparse.html)
+      histograms. The same script can convert mctal to XML format via [TXMLFile](https://root.cern.ch/doc/master/classTXMLFile.html).
     * [mctal2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2txt.py)
       script shows an example how to convert an mctal file into an easily parsable ASCII file.
-  * WSSA file converters **(MCNP6 is not fully supported)**
-    * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py)
-      converter: it converts WSSA phase space files produced by MCNP(X) into plain
-      text. The comments in the script explain how to derive additional
-      information (like particle type and surface crossed) from the
-      WSSA records.
-    * [ssw2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2root.py)
-      converter: it converts WSSA phase space files produced by MСNР(X) into a ROOT
-      ntuple.
-      The list of aliases defined in the tree can be printed
-      by the TTree::GetListOfAliases()::Print()
-      method. In particular, this list shows how to get particle type and surface number.
-      [This macro](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/examples/ssw2root/example.C)
-      shows several very simple examples how to analyse SSW files with
+  * WSSA file converters. Work fine with MCNPX, but **MCNP6 is not fully supported**.
+    * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py):
+	  converts WSSA phase space files into plain text. The comments in
+	  the script explain how to derive additional information (like
+	  particle type and surface crossed) from the WSSA records.
+    * [ssw2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2root.py):
+      converts WSSA phase space files into a ROOT ntuple.  The list of
+      aliases defined in the tree can be printed by the
+      TTree::GetListOfAliases()::Print() method. In particular, this
+      list shows how to get particle type and surface number.  [This
+      macro](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/examples/ssw2root/example.C)
+      gives several simple examples how to analyse SSW files with
       ROOT.
-    The WSSA file format depends on the MCNPX version, and currently the script has been tested with versions 2.6.0, 26b and 2.7.0.
   * A Python module to calculate atomic fractions of isotopes in a
     mixture for the given volume fractions of materials. Some examples
     can be found in
