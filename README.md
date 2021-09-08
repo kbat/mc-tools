@@ -66,6 +66,9 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
    * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE (a compact ENDF) to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
+   * [hplot](https://github.com/kbat/mc-tools/tree/master/mctools/common/hplot)
+     tool allows to superimpose data maps with Monte Carlo geometry (TH3 histograms in the ROOT format).
+     Detailed manual can be generted with the ```-h``` argument.
 
 ## Requirements ##
 * If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern) to be compiled with Python 3 support.
