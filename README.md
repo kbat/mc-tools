@@ -37,7 +37,8 @@ Project homepage: https://github.com/kbat/mc-tools
     a tool to facilitate input of volume/importance/probability values
     for all cells in geometry. To be used with cards like **area**, **vol**, **imp**, **pd**, **dxc** etc.
 	For example, in order to set the volume of cell 5 to 3.14, cell 7 to 2.71 in a geometry of 10 cells total, run
-```python $MCTOOLS/mctools/mcnp/vol.py -card vol -ntotal 10 -values "5 3.14 7 2.71" -default j```
+```python $MCTOOLS/mctools/mcnp/vol.py -card vol -ntotal 10 -values "5 3.14 7 2.71" -default j```.
+    This generates the required **vol** card: ```vol 4j 3.1 j 2.7 3j```.
 * PHITS
   * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
   * ANGEL to [ROOT](http://root.cern) converter (converts the PHITS
