@@ -71,13 +71,13 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
      Detailed manual can be generted with the ```-h``` argument.
 
 ## Requirements ##
-* If you are going to use the ROOT-related scripts (file names end with ```*2root```), you need to have [ROOT](http://root.cern) to be compiled with Python 3 support.
+* The ROOT-related scripts (file names end with ```*2root```), require [ROOT](http://root.cern) to be compiled with Python 3 support.
   * In order to check whether the Python
     support in ROOT is set up correctly, say
     ```import ROOT```
-    in the Python shell. You should not see any error messages.
-* The ```hplot``` tool requires the [Boost](https://www.boost.org) libraries and ROOT to be compiled with at least ```C++17``` standard.
-* If you are going to use the ```ace2root``` converter, you also need to have the [PyNE](http://pyne.io) toolkit to be installed.
+    in the Python 3 shell. You should not see any error messages.
+* ```hplot``` requires the [Boost](https://www.boost.org) libraries and ROOT to be compiled with at least ```C++17``` standard.
+* ```ace2root``` needs the [PyNE](http://pyne.io) toolkit.
 * If the [GNU parallel](https://www.gnu.org/software/parallel) tool is
   installed then the FLUKA merge and ROOT converter tools called by
   the ```fluka2root``` script will use all available cores which makes
