@@ -7,7 +7,7 @@ import sys, textwrap, argparse
 def main():
     """Generate volume/imp/probability data cards for MCNP input deck
 
-    The same script can be used for other similar cards, i.e. inp, pd, dxc...
+    The same script can be used for other similar cards, i.e. area, inp, pd, dxc...
     Typical use: python $MCTOOLS/mctools/mcnp/vol.py -card dxc -ntotal 100 -values "25 1 26 1 30 1" -default 0
     """
 

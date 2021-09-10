@@ -51,14 +51,15 @@ def hist(det):
     return ROOT.TH1F(det.name, title, det.ne, getEbins(det))
 
 def histN(det):
-    """ Create histogram for the given detector with low energy neutrons """
+    """Create histogram for the given detector with low energy neutrons
+
+    """
     if det.lowneu:
         name = det.name + "_lowneu"
         title = name + getAxesTitle(det)
         return ROOT.TH1F(name, title, det.ngroup, np.array(det.egroup[::-1]))
     else:
         return 0
-
 
 class Usrtrack(Data.Usrxxx):
     """ Reads the ustsuw binary output
@@ -142,7 +143,9 @@ class Usrtrack(Data.Usrxxx):
         return data
 
     def readData(self, det,lowneu):
-        """Read detector det data structure"""
+        """Read detector det data structure
+
+        """
         f = open(self.file,"rb")
         fortran.skip(f) # Skip header
         for i in range(2*det):
@@ -153,9 +156,6 @@ class Usrtrack(Data.Usrxxx):
         data = fortran.read(f)
         f.close()
         return data
-
-
-
 
 def main():
     """ Converts ustsuw output into a ROOT TH1F histogram """
@@ -190,26 +190,33 @@ def main():
 
     fout = ROOT.TFile(rootFileName, "recreate")
     for i in range(ND):
-        val = Data.unpackArray(b.readData(i,b.detector[i].lowneu))
-        err = Data.unpackArray(b.readStat(i,b.detector[i].lowneu))
-
         det = b.detector[i]
+        val = Data.unpackArray(b.readData(i, det.lowneu))
+        err = Data.unpackArray(b.readStat(i, det.lowneu))
 
         h = hist(det)
         hn = histN(det) # filled only if det.lowneu
 
         n = h.GetNbinsX()
-#        print(n, len(val), det.ne, val)
+        assert n == det.ne, "n != det.ne"
 
-        for i in range(det.ne):
+        for i in range(n):
             h.SetBinContent(i+1, val[i])
-
-        for i in range(det.ne):
             h.SetBinError(i+1,   err[n-i-1]*val[i])
 
         h.SetEntries(b.weight)
         h.Write()
+
         if det.lowneu:
+            # val_lowneu = val[det.ne::][::-1]
+            # err_lowneu = err[det.ne::][::-1]
+            n = hn.GetNbinsX()
+            assert n == det.ngroup, "n != det.ngroup"
+            for i in range(n):
+                hn.SetBinContent(i+1, val[-i-1])
+                hn.SetBinError(i+1,   err[-i-1]*val[-i-1])
+
+            hn.SetEntries(b.weight)
             hn.Write()
 
     fout.Close()

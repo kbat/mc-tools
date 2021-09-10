@@ -79,29 +79,45 @@ def usrtrack(rootfname, hname, tabfname):
 
     rootf = ROOT.TFile(rootfname)
     h = rootf.Get(hname)
+    assert h, f"{hname} not found in {rootfname}"
+    hn = rootf.Get(hname+"_lowneu")
+
+    n_lowneu = 0 # number of bins
+    if hn:
+        n_lowneu = hn.GetNbinsX()
 
     b = 0
     passed = True
+    hist = hn if hn else h
+    val, err, e1, e2 = 0.0, 0.0, -1.0, -1.0 # current bin value and edges
     with open(tabfname) as tabf:
         for line in tabf.readlines():
             if re.search("\A #", line):
                 continue
             w =  line.strip().split()
+
             b += 1
-            val = h.GetBinContent(b)
-            err = h.GetBinError(b)
+            if b<=n_lowneu:
+                val = hn.GetBinContent(b)
+                err = hn.GetBinError(b)
+                e1 = hn.GetBinLowEdge(b)
+                e2 = hn.GetBinLowEdge(b+1)
+            else:
+                val = h.GetBinContent(b-n_lowneu)
+                err = h.GetBinError(b-n_lowneu)
+                e1 = h.GetBinLowEdge(b-n_lowneu)
+                e2 = h.GetBinLowEdge(b+1-n_lowneu)
             relerr = err/val*100 if val>0.0  else 0.0
 
-            #print(b, w, h.GetBinLowEdge(b), h.GetBinLowEdge(b+1), val, relerr)
-
+            # check bin contents and edges
             if not compare(float(w[2]), val, "Bin content") or \
                not compare(float(w[3]), relerr, "Relative bin error") or \
-               not compare(float(w[0]), h.GetBinLowEdge(b), "Bin %d low edge" % b) or \
-               not compare(float(w[1]), h.GetBinLowEdge(b+1), "Bin %d up edge" % b):
+               not compare(float(w[0]), e1, "Bin %d low edge" % b) or \
+               not compare(float(w[1]), e2, "Bin %d up edge" % b):
                 passed = False
                 break
 
-    if passed and not compare(b, h.GetNbinsX(), "NBinsX"):
+    if passed and not compare(b, h.GetNbinsX()+n_lowneu, "NBinsX"):
         passed = False
 
     rootf.Close()
@@ -301,10 +317,11 @@ def main():
     rootfname = "test.root"
     usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
     usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
-    usrtrack(rootfname, "h52U", "test.52_tab.lis")
-    usrtrack(rootfname, "h52D", "test.54_tab.lis")
-    usrbdx(rootfname, "pFluenUD", "test.47_tab.lis")
-    resnuclei(rootfname, "resnuc", "test.53_tab.lis")
+    usrtrack(rootfname, "trDOSEEQ", "test.50_tab.lis") # lowneu
+    usrtrack(rootfname, "h52U", "test.51_tab.lis")
+    usrtrack(rootfname, "h52D", "test.52_tab.lis")
+    usrbdx(rootfname, "pFluenUD", "test.47_tab.lis") # lowneu
+    resnuclei(rootfname, "resnuc", "test.55_tab.lis")
 
 if __name__ == "__main__":
     sys.exit(main())

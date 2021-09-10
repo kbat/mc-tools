@@ -49,22 +49,24 @@ USRTRACK        -1.0   PIONS+-     -48.0       3.0    1000.0      20. piFluenU
 USRTRACK        50.0     0.001                                           &
 USRTRACK        -1.0   PIONS+-     -49.0       4.0    1000.0      20. piFluenD
 USRTRACK        50.0     0.001                                           &
-* two estimators in the same file:
-USRTRACK        -1.0   PIONS+-     -52.0       3.0    1000.0      20. h52U
+USRTRACK        -1.0   DOSE-EQ     -50.0       4.0                20. trDOSEEQ
 USRTRACK        50.0     0.001                                           &
-USRTRACK        -1.0   PIONS+-     -54.0       4.0    1000.0      20. h52D
+* two estimators in the same file:
+USRTRACK        -1.0   PIONS+-     -51.0       3.0    1000.0      20. h52U
+USRTRACK        50.0     0.001                                           &
+USRTRACK        -1.0   PIONS+-     -52.0       4.0    1000.0      20. h52D
 USRTRACK        50.0     0.001                                           &
 * Cartesian binning of the pion fluence inside and around the target
-USRBIN          10.0   PIONS+-     -50.0      50.0      50.0      50. piFluBin
+USRBIN          10.0   PIONS+-     -53.0      50.0      50.0      50. piFluBin
 USRBIN         -50.0     -50.0     -10.0     100.0     100.0      60.0   &
 * Cartesian binning of the deposited energy inside the target
-USRBIN          10.0    ENERGY     -51.0      10.0      10.0       5. Edeposit
+USRBIN          10.0    ENERGY     -54.0      10.0      10.0       5. Edeposit
 USRBIN         -10.0     -10.0       0.0      20.0      20.0       5.0   &
 * Residual nuclei - physics options based on RELEASE-NOTES.fluka2021.2
 PHYSICS          3.0                                                  EVAPORAT
 PHYSICS          1.0                                                  COALESCE
 PHYSICS          1.0     0.005      0.15       2.0       2.0       2. IONSPLIT
-RESNUCLE         3.0       -53                          -1.0          resnuc
+RESNUCLE         3.0       -55                          -1.0          resnuc
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
 RANDOMIZE        1.0
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....8
