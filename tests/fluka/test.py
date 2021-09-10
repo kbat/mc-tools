@@ -130,6 +130,8 @@ def resnuclei(rootfname, hname, tabfname):
     """Test RESNUCLEI (usrsuw) output
 
     """
+    print("resnuclei:\t", end="", flush=True)
+
 
     rootf = ROOT.TFile(rootfname)
     h = rootf.Get(hname)
@@ -225,7 +227,7 @@ def resnuclei(rootfname, hname, tabfname):
 
     rootf.Close()
 
-    print("resnuclei: ", hname, "test passed" if passed else "test failed", file=sys.stderr)
+    print(hname, "test passed" if passed else "test failed", file=sys.stderr)
     print("\tIt's not a serious problem if only the TH2F::Projection[XY] tests failed since this might be due to ROOT [check this].")
     print("\tThis warning means that in both TGraphErrors objects the values and errors are the same as in the FLUKA output, but in the TH2F some errors are different from FLUKA output (while values are the same).")
 
@@ -265,23 +267,22 @@ def usrbdx(rootfname, hname, tabfname):
     j=0
     if h2_lowneu: # compare the low energy part
         nbins = h2_lowneu.GetNbinsX()
-#        print("nbins:",nbins)
         j += nbins
         for i in range(nbins):
             hemin = _format % h_lowneu.GetBinLowEdge(i+1)
             hemax = _format % h_lowneu.GetBinLowEdge(i+2)
             hval  = _format % h_lowneu.GetBinContent(i+1)
             herr  = _format % h_lowneu.GetBinError(i+1)
+            hrelerr = _format % (100.0*h_lowneu.GetBinError(i+1)/h_lowneu.GetBinContent(i+1) if h_lowneu.GetBinContent(i+1)>0.0 else 0.0)
             femin = _format % df['emin'][i]
             femax = _format % df['emax'][i]
             fval  = _format % df['val'][i]
             ferr  = _format % df['err'][i]
-            #                        print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
-            #                print(df.ix[i])
+            # print("lowneu",i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,hrelerr)
             compare_str(hemin, femin, "emin")
             compare_str(hemax, femax, "emax")
             compare_str(hval, fval, "val")
-            compare_str(herr, ferr, "err")
+            compare_str(hrelerr, ferr, "err")
 
     nbins = h.GetNbinsX();
     for i in range(nbins):
@@ -289,15 +290,17 @@ def usrbdx(rootfname, hname, tabfname):
         hemax = _format % h.GetBinLowEdge(i+2)
         hval  = _format % h.GetBinContent(i+1)
         herr  = _format % h.GetBinError(i+1)
+        hrelerr = _format % (100.0*h.GetBinError(i+1)/h.GetBinContent(i+1) if h.GetBinContent(i+1)>0.0 else 0.0)
         femin = _format % df['emin'][i+j]
         femax = _format % df['emax'][i+j]
         fval  = _format % df['val'][i+j]
         ferr  = _format % df['err'][i+j]
-        #                print(i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
+#        print("h",i+1,femin,femax,fval,ferr,"\t",hemin,hemax,hval,herr)
 
         compare_str(hemin, femin, "emin")
         compare_str(hemax, femax, "emax")
         compare_str(hval, fval, "val")
+        compare_str(hrelerr, ferr, "err")
 
     print(hname, "test passed" if passed else "test failed", file=sys.stderr)
 
@@ -314,6 +317,7 @@ def main():
     """Some tests of fluka2root converters
 
     """
+
     rootfname = "test.root"
     usrtrack(rootfname, "piFluenU", "test.48_tab.lis")
     usrtrack(rootfname, "piFluenD", "test.49_tab.lis")
@@ -322,6 +326,24 @@ def main():
     usrtrack(rootfname, "h52D", "test.52_tab.lis")
     usrbdx(rootfname, "pFluenUD", "test.47_tab.lis") # lowneu
     resnuclei(rootfname, "resnuc", "test.55_tab.lis")
+
+
+    # rootfname = "SpecF1.root"
+    # usrtrack(rootfname, "cell34", "SpecF1.34_tab.lis")  # lowneu
+    # usrbdx(rootfname, "surf33", "SpecF1.33_tab.lis")
+    # usrbdx(rootfname, "surf28", "SpecF1.28_tab.lis")# lowneu
+    # usrtrack(rootfname, "cell36", "SpecF1.36_tab.lis")
+    # usrtrack(rootfname, "cell37", "SpecF1.37_tab.lis")
+    # usrtrack(rootfname, "cell38", "SpecF1.38_tab.lis")
+    # usrtrack(rootfname, "cell39", "SpecF1.39_tab.lis")
+    # usrtrack(rootfname, "cell40", "SpecF1.40_tab.lis")
+    # usrtrack(rootfname, "cell41", "SpecF1.41_tab.lis")
+    # usrtrack(rootfname, "cell42", "SpecF1.42_tab.lis")
+    # usrbdx(rootfname, "surf31", "SpecF1.31_tab.lis")
+    # usrbdx(rootfname, "surf29", "SpecF1.29_tab.lis")
+    # usrbdx(rootfname, "surf32", "SpecF1.32_tab.lis")
+    # usrbdx(rootfname, "surf30", "SpecF1.30_tab.lis")
+    # usrtrack(rootfname, "cell35", "SpecF1.35_tab.lis")
 
 if __name__ == "__main__":
     sys.exit(main())

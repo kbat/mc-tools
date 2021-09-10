@@ -8,7 +8,9 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def main():
-    """ Converts usbsuw output into a ROOT histogram """
+    """Convert usbsuw output into a ROOT TH2F histogram
+
+    """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
