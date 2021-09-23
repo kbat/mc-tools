@@ -182,7 +182,10 @@ int main(int argc, const char **argv)
 
   if (args->IsBatch())
     {
+      const Int_t oldLevel = gErrorIgnoreLevel;
+      gErrorIgnoreLevel = kWarning; // suppress the "Info in <TCanvas::Print>" message
       c1->Print(vm["o"].as<std::string>().data());
+      gErrorIgnoreLevel = oldLevel;
       delete c1; c1 = nullptr;
     }
   else
