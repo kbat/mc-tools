@@ -11,7 +11,8 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 def getAxesTitle(det):
     # differential energy fluence/current
     # FLUKA manual page 259
-    ytitle = "GeV/cm^{2}"  if int(det.dist) in (208,211) else "1/GeV/cm^{2}"
+    ytitle = fluka.particle.get(det.dist, "undefined")
+    ytitle += "[GeV/cm^{2}]"  if int(det.dist) in (208,211) else "[1/GeV/cm^{2}]"
     return ";Energy [GeV];" + ytitle
 
 def getLogBins(nbins, low, high):
