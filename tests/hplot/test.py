@@ -136,5 +136,8 @@ def main():
     else:
         print(nerrors, " errors found")
 
+    nerrors = 1
+    return nerrors
+
 if __name__ == "__main__":
     exit(main())
