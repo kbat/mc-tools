@@ -176,25 +176,31 @@ def main():
         assert lenval == len(val), "%d != %d" % (lenval, len(val))
         assert lenval == len(err), "%d != %d" % (lenval, len(err))
 
-
         nebins = getNEbins(det)
         for i in range(nebins):
             for j in range(det.na):
                 gbin = i + j * nebins
                 h.SetBinContent(i+1, j+1, val[gbin])
-                h.SetBinError(i+1, j+1, val[gbin]*err[gbin]*15.91549*det.na) # still wrong if det.na>1
-
-        # if (det.name=="pBackN"):
-        #     for j in range(det.na):
-        #         print(j)
-        #         for i in range(nebins):
-        #             print("%.3E %.3E %.3E" % (h.GetXaxis().GetBinLowEdge(i+1),
-        #                                       h.GetXaxis().GetBinLowEdge(i+2), h.GetBinContent(i+1,j+1)))
+                # why had to multiply by 15.91549 before?
+                h.SetBinError(i+1, j+1, val[gbin]*err[gbin])
 
         h.SetEntries(b.weight)
         h.Write()
 
+        # todo: use index [-gbin] instead of adding these two tuples
+        nval = val[::-1] # double diff distribution - checked
+        nerr = err[::-1] # checked
         if det.lowneu and det.dist!=8:
+            nebins = hn.GetNbinsX()
+            assert nebins == det.ngroup, "n != det.ngroup"
+            nabins = hn.GetNbinsY()
+            assert nabins == det.na, "n != det.na"
+            for i in range(nebins):
+                for j in range(nabins):
+                    gbin = i + j * nebins
+                    hn.SetBinContent(i+1, j+1, nval[gbin])
+                    hn.SetBinError(i+1, j+1, nerr[gbin]*nval[gbin])
+
             hn.Write()
 
     fout.Close()

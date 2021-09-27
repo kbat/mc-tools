@@ -1,9 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # https://github.com/kbat/mc-tools
 #
 
-from __future__ import print_function
 import sys, argparse
 from os import path
 from mctools.mcnp.mctal import MCTAL
@@ -11,6 +10,39 @@ import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 sys.path.insert(1, '@python2dir@')
+
+# def strictly_increasing(L):
+#     """Check if values in the list L are strictly increasing.
+
+#     """
+#     return all(x<y for x, y in zip(L, L[1:]))
+
+def setUserAxis(a,L):
+    """Set the axis "a" so that its bin boundaries are natural numbers with
+       bin labels taken from the tuple "L"
+
+       This is used in e.g. usrAxis because its original bin boundaris
+       might be not strictly increasing so that we can't pass them for
+       the TAxis constructor.  See e.g. FT ICD coupled with FU card.
+
+       Note that THnSparse::Projection() does not pass the bin labels
+       to the resulting histogram.
+    """
+
+    N = len(L)-1 # number of bins ( = boundaries minus one)
+    vals = []
+    labels = []
+    for i,b in enumerate(L):
+        vals.append(float(i))
+        labels.append(b)
+
+    a.Set(N, np.array(vals))
+    for b,l in enumerate(labels[1:], start=1):
+        a.SetBinLabel(b,str(l))
+
+    return a
+
+
 
 def main():
         """
@@ -20,7 +52,7 @@ def main():
         parser = argparse.ArgumentParser(description=main.__doc__,
                                          epilog="Homepage: https://github.com/kbat/mc-tools")
         parser.add_argument('mctal', type=str, help='mctal file name')
-        parser.add_argument('root', type=str, nargs='?', help='output ROOT file name', default="")
+        parser.add_argument('root', type=str, nargs='?', help='output ROOT file name. XML file will be created if the .xml extension is used.', default="")
         parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
         arguments = parser.parse_args()
@@ -41,7 +73,7 @@ def main():
         else:
                 rootFileName = arguments.root
 
-        rootFile = ROOT.TFile(rootFileName,"RECREATE");
+        rootFile = ROOT.TFile.Open(rootFileName,"RECREATE");
 
         if arguments.verbose:
                 print("\n\033[1;34m[Converting...]\033[0m")
@@ -56,11 +88,11 @@ def main():
 
                 nCells = tally.getNbins("f",False)
 
-                nCora = tally.getNbins("i",False) # Is set to 1 even when mesh tallies are not present
+                nCora = tally.getNbins("i",False) # set to 1 even when mesh tallies are not present
 
-                nCorb = tally.getNbins("j",False) # Is set to 1 even when mesh tallies are not present
+                nCorb = tally.getNbins("j",False) # set to 1 even when mesh tallies are not present
 
-                nCorc = tally.getNbins("k",False) # Is set to 1 even when mesh tallies are not present
+                nCorc = tally.getNbins("k",False) # set to 1 even when mesh tallies are not present
 
                 nDir = tally.getNbins("d",False)
 
@@ -100,7 +132,11 @@ def main():
 
 
                 if len(usrAxis) != 0:
-                        hs.GetAxis(2).Set(nUsr,usrAxis)
+                    a = hs.GetAxis(2)
+                    # if strictly_increasing(usrAxis):
+                    #     a.Set(nUsr,usrAxis)
+                    # else:
+                    setUserAxis(a,usrAxis)
 
                 if len(segAxis) != 0:
                         hs.GetAxis(3).Set(nSeg,segAxis)

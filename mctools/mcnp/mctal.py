@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 #
 # https://github.com/kbat/mc-tools
 #
 
-from __future__ import print_function
 import sys, re, math
 import numpy as np
 
@@ -55,7 +53,10 @@ class Header:
 
 #############################################################################################################################
 class Tally:
-        """This class is aimed to store all the information contained in a tally."""
+        """This class is aimed to store all the information contained in a
+           tally.
+
+        """
 
         def __init__(self,tN,verbose=False):
                 self.verbose = verbose                          # Verbosity flag
@@ -353,7 +354,9 @@ class Tally:
                         return False
 
         def insertValue(self,c,d,u,s,m,a,e,t,f,i,j,k,val):
-                """Insert tally value."""
+                """Insert tally value.
+
+                """
 
                 if self.isInitialized == False:
                         self.initializeValuesVectors()
@@ -361,12 +364,22 @@ class Tally:
                 self.valsErrors[c][d][u][s][m][a][e][t][f][i][j][k] = val
 
         def getValue(self,f,d,u,s,m,c,e,t,i,j,k,v):
-                """Return a value from tally."""
+                """Return a value from tally.
+
+                """
 
                 return self.valsErrors[f][d][u][s][m][c][e][t][i][j][k][v]
 
         def getAxis(self,axis):
-                """Returns an array containing the values of the axis bins. The desired axis is set by passing the corresponding letter as a function argument. The corrspondence is the usual defined in MCNPX manual (u,s,c,e,t) for the standard and (i,j,k) for mesh tallies axes (namely cora/b/c)."""
+                """Return an array containing the values of the axis bins.
+
+                   The desired axis is set by passing the
+                   corresponding letter as a function argument as
+                   defined in MCNPX manual (u,s,c,e,t) for the
+                   standard and (i,j,k) for mesh tallies axes (namely
+                   cora/b/c).
+
+                """
 
                 if axis == "u":
                         if len(self.usr) != 0:
@@ -792,7 +805,8 @@ class MCTAL:
                         self.line = self.mctalFile.readline().strip()
                         while "tally" not in self.line and len(self.line) != 0:
                                 if "kcode" in self.line:
-                                        print("\n \033[1;31m KCODE card found in %s. Tallies below the KCODE records are not read.\033[0m\n" % self.mctalFileName, file=sys.stderr)
+                                        if self.verbose:
+                                                print("\n \033[1;31m KCODE card found in %s. Tallies below the KCODE records are not read.\033[0m\n" % self.mctalFileName, file=sys.stderr)
                                         self.tallies.append(tally) # append the current tally (anyway it's finished)
 
                                         self.kcode.header = self.line.split()[1:]

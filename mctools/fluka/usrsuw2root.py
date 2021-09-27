@@ -9,7 +9,9 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def getType(det):
-    """ Return printable type of products to be scored """
+    """Return printable type of products to be scored
+
+    """
     if int(det.type) == 1:
         return "Spallation products"
     elif int(det.type) == 2:
@@ -50,15 +52,19 @@ def getRegion(det):
         return "region = %d" % det.region
 
 def hist(det):
-    """ Create histogram for the given detector """
+    """Create histogram for the given detector
 
-    title = "%s: %s, volume = %g cm^{3};Z;A" % (getType(det), getRegion(det), det.volume)
+    """
+
+    title = "%s: %s, volume = %g cm^{3};Z;A;Isotope yield [nuclei/cm^{2}/primary]" % (getType(det), getRegion(det), det.volume)
 
     return ROOT.TH2F(det.name, title, det.zhigh-1, 1, det.zhigh, det.mhigh-1, 1, det.mhigh)
 
 
 def main():
-    """ Converts usrsuw output into a ROOT TH2F histogram """
+    """Convert usrsuw output into a ROOT TH2F histogram
+
+    """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
@@ -106,7 +112,6 @@ def main():
 
         grA = graphA(det, A, errA)
         grZ = graphZ(det, Z, errZ)
-#        s = 0.0
 
         for z in range(1,det.zhigh+1):
             for j in range(1,det.mhigh+1):
@@ -116,13 +121,9 @@ def main():
                     h.SetBinContent(z,a,val[gbin])
                     h.SetBinError(z,a,err[gbin]*val[gbin])
 
-#                    s += val[gbin]
-
-#        print("test of total sum:",s-total[0]>1e-8)
-
         h.Write()
-        grA.Write()
-        grZ.Write()
+        grA.Write() # same as h.ProjectionY()
+        grZ.Write() # same as h.ProjectionX()
 
     fout.Close()
 

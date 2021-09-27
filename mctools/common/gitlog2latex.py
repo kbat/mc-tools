@@ -51,6 +51,8 @@ sed -i -e 's;%;\\%;g' $tmp
 sed -i -e 's;\\theta;$\\theta$;g' $tmp
 # LaTeX
 sed -i -e 's;Latex;\\LaTeX;g' $tmp
+# underscore
+sed -i -e 's;_;\\_;g' $tmp
 
 # Now we need to add \\ after each line, but instead we do it in the beginning the next one:
 # add \\ before the lines starting with date assuming year > 2000

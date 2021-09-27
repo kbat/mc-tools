@@ -2,13 +2,13 @@
 # Some examples of calculation of atomic fractions for the given volume fractions
 # https://github.com/kbat/mc-tools
 
-from mctools import Isotope, Material, Compound
+from mctools.mctools import Isotope, Material, Compound
 
 H   = Isotope("01001.70c", 1.00794)
 D   = Isotope("01002.70c", 2.01410178)
 He3 = Isotope("02003.70c", 3.0160293)
 He4 = Isotope("02004.70c", 4.002602)
-C   = Isotope("06000.71c", 12.011)
+C12 = Isotope("06000.71c", 12.011)
 O   = Isotope("08016.70c", 15.999)
 Be  = Isotope("04009.70c", 9.012)
 
@@ -101,7 +101,7 @@ Aluminium = Material("Aluminium", 2.7) # cold Al: 2.73
 Aluminium.AddIsotope(Al, 1)
 
 SS316L = Material("SS316L", 7.76)
-SS316L.AddIsotope(C,  0.001392603)
+SS316L.AddIsotope(C12,  0.001392603)
 SS316L.AddIsotope(Si28,  0.007323064)
 SS316L.AddIsotope(Si29,  0.000372017)
 SS316L.AddIsotope(Si30,  0.000245523)
@@ -136,7 +136,7 @@ SS316L.Print()
 
 # Poly
 Poly = Material("Poly", 0.91)
-Poly.AddIsotope(C, 1)
+Poly.AddIsotope(C12, 1)
 Poly.AddIsotope(H, 2)
 Poly.Print()
 
