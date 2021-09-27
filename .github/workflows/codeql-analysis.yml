@@ -77,6 +77,8 @@ jobs:
 
     - name: compile hplot
       run: |
+       source root/bin/thisroot.sh
+       export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
        sudo apt-get install libboost-program-options-dev
        pwd
        export MCTOOLS=$(pwd)
@@ -87,6 +89,8 @@ jobs:
     - name: Test hplot
       shell: bash
       run: |
+       source root/bin/thisroot.sh
+       export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
        cd tests/hplot
        python3 test.py
 
