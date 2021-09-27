@@ -75,10 +75,6 @@ jobs:
        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
        root-config --features
 
-    - name: Check if ROOT supports Pyton3
-      shell: python3
-      run:   import ROOT
-
     - name: compile hplot
       run: |
        sudo apt-get install libboost-program-options-dev
