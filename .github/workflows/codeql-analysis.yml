@@ -16,7 +16,7 @@ on:
     branches: [ master, codeql ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches: [ master, codeql ]
   schedule:
     - cron: '29 17 * * 3'
 
@@ -64,7 +64,7 @@ jobs:
     #    uses a compiled language
 
     - run: |
-       sudo apt-cache search root|grep CERN
+       apt-cache search root
        sudo apt-get install root-system libroot-bindings-python5.34 libroot-bindings-python-dev
        root-config --features
        pwd
