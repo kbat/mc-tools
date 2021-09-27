@@ -76,7 +76,7 @@ jobs:
        root-config --features
 
     - name: Check if ROOT supports Pyton3
-      shell: python
+      shell: python3
       run:   import ROOT
 
     - name: compile hplot
