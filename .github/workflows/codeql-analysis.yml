@@ -91,6 +91,9 @@ jobs:
       run: |
        source root/bin/thisroot.sh
        export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
+       export MCTOOLS=$(pwd)
+       ls $MCTOOLS
+       export PATH=$MCTOOLS/bin:$PATH
        cd tests/hplot
        python3 test.py
 
