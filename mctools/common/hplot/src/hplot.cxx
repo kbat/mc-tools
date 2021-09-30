@@ -15,7 +15,7 @@
 #include <TColor.h>
 #include "Arguments.h"
 #include "MainFrame.h"
-#include "Data.h"
+#include "Data3.h"
 #include "Geometry.h"
 
 void SetColourMap(const std::string& palette="MAXIV")
@@ -122,10 +122,10 @@ int main(int argc, const char **argv)
   std::string gfname = vm["gfile"].as<std::string>();
   std::string ghname = vm["ghist"].as<std::string>();
 
-  std::shared_ptr<Data> data = std::make_shared<Data>(dfname, dhname, args);
+  std::shared_ptr<Data3> data = std::make_shared<Data3>(dfname, dhname, args);
   auto start = std::chrono::high_resolution_clock::now();
   data->Project();
-  data->PrintChrono(start, "Data::Project: ");
+  data->PrintChrono(start, "Data3::Project: ");
 
   std::shared_ptr<Geometry> geo(nullptr);
   if (!gfname.empty())

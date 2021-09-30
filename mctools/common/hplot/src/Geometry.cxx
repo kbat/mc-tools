@@ -2,7 +2,7 @@
 #include "Geometry.h"
 
 Geometry::Geometry(const std::string& fname, const std::string& hname,
-		   const std::shared_ptr<Arguments> args) : Data(fname, hname, args)
+		   const std::shared_ptr<Arguments> args) : Data3(fname, hname, args)
 {
 
 }

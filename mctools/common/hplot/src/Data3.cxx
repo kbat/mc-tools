@@ -3,9 +3,9 @@
 #include <TFile.h>
 #include <TGaxis.h>
 #include <TCanvas.h>
-#include "Data.h"
+#include "Data3.h"
 
-Data::Data(const std::string& fname, const std::string& hname,
+Data3::Data3(const std::string& fname, const std::string& hname,
 	   const std::shared_ptr<Arguments> args) :
   yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr), args(args)
 {
@@ -45,7 +45,7 @@ Data::Data(const std::string& fname, const std::string& hname,
   offset = GetOffset(args->GetOffset());
 }
 
-void Data::SetH2(std::shared_ptr<TH2> h2)
+void Data3::SetH2(std::shared_ptr<TH2> h2)
 {
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().data());
@@ -100,7 +100,7 @@ void Data::SetH2(std::shared_ptr<TH2> h2)
   return;
 }
 
-void Data::Flip()
+void Data3::Flip()
 {
   /*!
     Flip the h3 along the TH2 vertical axis
@@ -143,7 +143,7 @@ void Data::Flip()
   return;
 }
 
-void Data::ErrorHist(std::shared_ptr<TH2> h) const
+void Data3::ErrorHist(std::shared_ptr<TH2> h) const
 /*!
   Replace values with their relative errors
  */
@@ -180,7 +180,7 @@ void Data::ErrorHist(std::shared_ptr<TH2> h) const
   return;
 }
 
-void Data::Rebin() const
+void Data3::Rebin() const
 {
   /*!
     Rebin the histogram so that it is not larger than width x height
@@ -222,7 +222,7 @@ void Data::Rebin() const
     else if (plane == "zx")
       h3->Rebin3D(scaleX, 1, scaleY);
 
-    if (GetType() == kData) // we do not need to scale geometry
+    if (GetType() == kData3) // we do not need to scale geometry
       {
 	auto start = std::chrono::high_resolution_clock::now();
 	h3->Scale(1.0/(scaleX*scaleY));
@@ -239,9 +239,9 @@ void Data::Rebin() const
   return;
 }
 
-void Data::BuildMaxH2()
+void Data3::BuildMaxH2()
 {
-  //  std::cout << "Data::BuildMaxH2" << std::endl;
+  //  std::cout << "Data3::BuildMaxH2" << std::endl;
   const Int_t n3x = h3->GetNbinsX();
   const Int_t n3y = h3->GetNbinsY();
   const Int_t n3z = h3->GetNbinsZ();
@@ -301,7 +301,7 @@ void Data::BuildMaxH2()
   return;
 }
 
-void Data::ReverseYAxis(std::shared_ptr<TH2> h) const
+void Data3::ReverseYAxis(std::shared_ptr<TH2> h) const
 {
   TAxis *ay = h->GetYaxis();
 
@@ -339,12 +339,12 @@ void Data::ReverseYAxis(std::shared_ptr<TH2> h) const
 }
 
 
-Data::~Data()
+Data3::~Data3()
 {
 
 }
 
-TAxis *Data::GetNormalAxis() const
+TAxis *Data3::GetNormalAxis() const
 {
   /*!
     Return the plane normal axis
@@ -362,7 +362,7 @@ TAxis *Data::GetNormalAxis() const
   }
 }
 
-char Data::GetNormalAxisName() const
+char Data3::GetNormalAxisName() const
 {
   /*!
     Return the plane normal axis
@@ -380,7 +380,7 @@ char Data::GetNormalAxisName() const
   }
 }
 
-TAxis *Data::GetHorizontalAxis() const
+TAxis *Data3::GetHorizontalAxis() const
 {
   if (plane[1] == 'x')
     return h3->GetXaxis();
@@ -390,12 +390,12 @@ TAxis *Data::GetHorizontalAxis() const
     return h3->GetZaxis();
   else
     {
-      std::cerr << "Error in Data::GetHorizontalAxis()" << std::endl;
+      std::cerr << "Error in Data3::GetHorizontalAxis()" << std::endl;
       return nullptr;
     }
 }
 
-TAxis *Data::GetVerticalAxis() const
+TAxis *Data3::GetVerticalAxis() const
 {
   if (plane[0] == 'x')
     return h3->GetXaxis();
@@ -405,12 +405,12 @@ TAxis *Data::GetVerticalAxis() const
     return h3->GetZaxis();
   else
     {
-      std::cerr << "Error in Data::GetVerticalAxis()" << std::endl;
+      std::cerr << "Error in Data3::GetVerticalAxis()" << std::endl;
       return nullptr;
     }
 }
 
-std::shared_ptr<TH2> Data::MakeH2(std::string& name, std::string& title)
+std::shared_ptr<TH2> Data3::MakeH2(std::string& name, std::string& title)
 /*!
   Create the TH2 histogram from based on the projection plane and TH3 binning
  */
@@ -445,9 +445,9 @@ std::shared_ptr<TH2> Data::MakeH2(std::string& name, std::string& title)
 }
 
 
-void Data::Project()
+void Data3::Project()
 {
-  if (GetType() == kData) // we do not need to scale geometry
+  if (GetType() == kData3) // we do not need to scale geometry
     {
       auto start = std::chrono::high_resolution_clock::now();
       h3->Scale(args->GetScale());
@@ -522,7 +522,7 @@ void Data::Project()
   return;
 }
 
-Float_t Data::GetOffset(const std::string& val) const
+Float_t Data3::GetOffset(const std::string& val) const
 {
   float v(0.0);
   try {
@@ -543,13 +543,13 @@ Float_t Data::GetOffset(const std::string& val) const
 	v = a->GetBinCenter(a->GetLast());
       }
     else
-      std::cerr << "Data::GetOffset(): unknown argument: " << val << std::endl;
+      std::cerr << "Data3::GetOffset(): unknown argument: " << val << std::endl;
   }
 
   return v;
 }
 
-std::shared_ptr<TH2> Data::GetH2(const std::string val) const
+std::shared_ptr<TH2> Data3::GetH2(const std::string val) const
 {
   if (val.empty())
     return GetH2(GetOffset(args->GetOffset()));
@@ -557,7 +557,7 @@ std::shared_ptr<TH2> Data::GetH2(const std::string val) const
     return GetH2(GetOffset(val));
 }
 
-std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
+std::shared_ptr<TH2> Data3::GetH2(const Float_t val) const
 {
   if (h2max)
     return h2max;
@@ -568,10 +568,10 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
       Int_t bin = a->FindBin(val);
 
       if (bin>nbins) {
-	std::cerr << "Data::GetH2: bin>a->GetNbins() why? " << bin << " " << nbins << std::endl;
+	std::cerr << "Data3::GetH2: bin>a->GetNbins() why? " << bin << " " << nbins << std::endl;
 	bin = nbins;
       } else if (bin==0) {
-	std::cerr << "Data:GetH2: bin = 0! why?" << std::endl;
+	std::cerr << "Data3:GetH2: bin = 0! why?" << std::endl;
 	bin = 1;
       }
 
@@ -579,7 +579,7 @@ std::shared_ptr<TH2> Data::GetH2(const Float_t val) const
     }
 }
 
-std::shared_ptr<TH2> Data::Draw(const Float_t val) const
+std::shared_ptr<TH2> Data3::Draw(const Float_t val) const
 /*!
   Draws h2 at the given offset
  */
@@ -601,7 +601,7 @@ std::shared_ptr<TH2> Data::Draw(const Float_t val) const
   return h2;
 }
 
-std::shared_ptr<TH2> Data::Draw(const std::string val) const
+std::shared_ptr<TH2> Data3::Draw(const std::string val) const
 /*!
   Draws h2 at the given offset
  */
@@ -612,7 +612,7 @@ std::shared_ptr<TH2> Data::Draw(const std::string val) const
     return Draw(GetOffset(val));
 }
 
-Bool_t Data::Check(TAxis *normal) const
+Bool_t Data3::Check(TAxis *normal) const
 {
   /*!
     Checks if data and geometry histograms can be used together
@@ -622,21 +622,21 @@ Bool_t Data::Check(TAxis *normal) const
 
   if (myA->GetNbins() != normal->GetNbins())
     {
-      std::cerr << "Data::Check(): geometry/data normal axes nbins are different:" << std::endl;
+      std::cerr << "Data3::Check(): geometry/data normal axes nbins are different:" << std::endl;
       std::cerr << "\t" << myA->GetNbins() << " " << normal->GetNbins() << std::endl;
       val = kFALSE;
     }
 
   if (std::abs(myA->GetXmin()-normal->GetXmin())>std::numeric_limits<double>::epsilon())
     {
-      std::cerr << "Data::Check(): geometry/data normal axes have different min values:" << std::endl;
+      std::cerr << "Data3::Check(): geometry/data normal axes have different min values:" << std::endl;
       std::cerr << "\t" << myA->GetXmin() << " " << normal->GetXmin() << std::endl;
       val = kFALSE;
     }
 
   if (std::abs(myA->GetXmax()-normal->GetXmax())>std::numeric_limits<double>::epsilon())
     {
-      std::cerr << "Data::Check(): geometry/data normal axes have different max values:" << std::endl;
+      std::cerr << "Data3::Check(): geometry/data normal axes have different max values:" << std::endl;
       std::cerr << "\t" << myA->GetXmax() << " " << normal->GetXmax() << std::endl;
       val = kFALSE;
     }
@@ -644,7 +644,7 @@ Bool_t Data::Check(TAxis *normal) const
   return val;
 }
 
-void Data::PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const
+void Data3::PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const
 {
   if (args->IsVerbose())
     {
