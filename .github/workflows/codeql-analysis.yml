@@ -17,8 +17,8 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master, codeql ]
-  schedule:
-    - cron: '29 17 * * 3'
+  # schedule:
+  #   - cron: '29 17 * * 3'
 
 jobs:
   analyze:
@@ -76,6 +76,8 @@ jobs:
        root-config --features
 
     - name: compile hplot
+      with:
+        languages: cpp
       run: |
        source root/bin/thisroot.sh
        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
@@ -87,6 +89,8 @@ jobs:
       shell: bash
 
     - name: Test hplot
+      with:
+        languages: cpp
       shell: bash
       run: |
        source root/bin/thisroot.sh
