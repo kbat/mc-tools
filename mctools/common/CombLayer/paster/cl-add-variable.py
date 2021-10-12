@@ -3,7 +3,7 @@
 
 import argparse, os, re, sys
 import fileinput
-from mctools.mctools import checkPaths
+from mctools import checkPaths
 
 def checkTitle(n, t):
     """ Check if title can be omitted for the given type.
