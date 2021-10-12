@@ -106,7 +106,8 @@ Arguments::Arguments(int ac, const char **av) :
        "of this have to be merged into one bin in the 1D histogram.")
       ("errors", "Plot the histogram with relative errors instead of data. This option is not compatible with -maxerror.")
       ("max","Plot the histogram where each bin content is the max value "
-       "of all histograms along the normal axis. "
+       "of all histograms along the normal axis. In order to avoid statistically unsignificant outliers (causing single-particle tracks in the max plots), "
+       "the bin value is compared with the max value at the 1 sigma level: bin-ebin < max+emax, see the Data3::BuildMaxH2() method. "
        "With this option the '-offset' value applies to geomtry only which allows to select "
        "the representative geometry view.")
       ("maxerror",po::value<double>()->default_value(-1.0),
