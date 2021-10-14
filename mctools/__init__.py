@@ -1,7 +1,6 @@
 # enable 'from mctools import *'
-__all__ = [ "mctools", "common", "fluka", "mcnp", "phits" ]
+__all__ = ["common", "fluka", "mcnp", "phits" ]
 
-# from scipy import constants
 import subprocess, os, sys
 from math import sqrt
 
@@ -33,7 +32,6 @@ def GetVariable(f, var):
     Return the variable value from the CombLayer-generated xml file
     """
     p = subprocess.Popen("getvariable %s %s" % (f, var), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    pid = p.pid
     output, error = p.communicate()
     return output
 
@@ -147,7 +145,6 @@ class Material:
         for j,i in enumerate(self.isotopes):
             if i == isotope:
                 vf = self.nn[j]/sum(self.nn)
-                pass
         if vf == None:
             raise IOError("Material %s does not have isotope %s" % (self.name, isotope.name))
         return vf

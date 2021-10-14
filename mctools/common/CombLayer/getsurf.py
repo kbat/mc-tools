@@ -8,12 +8,12 @@ def getCombLayerSurf(mcnpsurf):
     """Return CombLayer surf number"""
 
     clsurf = 0 #  CombLayer surf number
-    
+
     fname = "Renumber.txt"
     if not path.isfile(fname):
         fname = path.join("case001", fname)
     f = open(fname)
-        
+
     for line in f.readlines():
         if re.search("^Surf Change", line):
             words = line.strip().split()
@@ -23,7 +23,7 @@ def getCombLayerSurf(mcnpsurf):
     f.close()
     return clsurf
 
-                
+
 def main():
     """
     Finds a CombLayer surf number
@@ -35,10 +35,8 @@ def main():
     mcnpsurf = arguments.surf
 
     clsurf = getCombLayerSurf(mcnpsurf)
-#    obj = getCombLayerObject(clsurf)
     print(clsurf)
-                
+
 
 if __name__ == "__main__":
     exit(main())
-

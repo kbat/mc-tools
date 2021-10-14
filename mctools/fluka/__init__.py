@@ -1,5 +1,3 @@
-__all__ = [ "fluka " ]
-
 particle = {
     -6: "4-HELIUM",
     -5: "3-HELIUM",
@@ -119,4 +117,3 @@ particle = {
     249: "HEHAD-EQ",
     250: "THNEU-EQ"
 }
-

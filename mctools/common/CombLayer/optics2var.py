@@ -28,9 +28,9 @@ def read(opt,dtl,start,end):
             iPMQ += 1
 
         if found and re.search(end,l):
-            stop = True
+#            stop = True
             break
-            
+
     f.close()
 #    print("  Control.addVariable(\"%sPMQ%dMat5\", \"SS304L\");" % (dtl,iPMQ-1)) # last half
     print("  Control.addVariable(\"%sNPMQ\",%d);" % (dtl,iPMQ-1))
@@ -92,7 +92,7 @@ def printTail():
 }
 }
     """)
-    
+
 def main():
     """ Convert optics file into C++ code with CombLayer variables """
 
@@ -123,4 +123,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-

@@ -55,8 +55,6 @@ def getGraph(args, tname, color):
         ex.append(0.0)
 
         bins = args.bin.split('+')
-#        print("args.bin: ", bins)
-        nbins = len(bins)
         ytmp = 0.0
         eytmp = 0.0
         for b in bins:
@@ -155,7 +153,6 @@ def main():
                     args.comment = "c"
 
     tallies = args.tally.split(',')
-    ntallies = len(tallies)
 
     # fix x title
     if args.xtitle=="par [cm]": args.xtitle = args.var + " [cm]"

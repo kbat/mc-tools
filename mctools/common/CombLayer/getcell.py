@@ -23,22 +23,11 @@ def getCombLayerObject(cell):
             if words[0] != 'World':
                 if len(cells) == 1:
                     if int(cells[0]) == cell:
-#                        print(words[0])
                         return words[0]
                 elif len(cells) == 2: # min/max range is given
                     cmin,cmax = map(int,(cells[0][1:], cells[1][:-1]))
                     if cell >= cmin and cell <= cmax:
-#                        print(words[0])
                         return words[0]
-            # if l in [7,8]:
-            #     if words[0] != 'World':
-            #         cmin,cmax = map(int,(words[l-2][1:], words[l-1][:-1]))
-            #         if cell >= cmin and cell <= cmax:
-            #             print(line.strip())
-            #             return words[0]
-            #     elif cell == int(words[l-1]): # World
-            #         print(line.strip())
-            #         return words[0]
 
     print("Object not found")
     return None

@@ -10,8 +10,7 @@ def checkTitle(n, t):
     Normally, title can be omitted for the variables which are not populated in the *Variables.cxx file
     (like vectors or pointers)
     """
-    if len(n) == 0:
-        if not re.search("vector",t) and not re.search("shared_ptr", t):
+    if len(n) == 0 and not re.search("vector",t) and not re.search("shared_ptr", t):
             print("Argument '-title' must be specified for type '%s'" % t, file=sys.stderr)
             sys.exit(4)
 

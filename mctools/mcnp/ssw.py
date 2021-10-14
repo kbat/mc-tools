@@ -75,7 +75,7 @@ class SSW:
             print("         Contact the mc-tools authors in order to have this problem fixed.", file=sys.stderr)
             print("         https://github.com/kbat/mc-tools", file=sys.stderr)
 
-    def readHeader(self, filename, nevt=0):
+    def readHeader(self, filename):
         """Read header information and return the file handle"""
 
         self.reset()

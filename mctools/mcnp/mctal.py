@@ -843,7 +843,6 @@ class MCTAL:
                 self.tallies.append(tally)
 
                 if self.line == "":
-                        self.line = self.line
                         return True
                 elif "tally" in self.line:
                         self.line = self.line.split()

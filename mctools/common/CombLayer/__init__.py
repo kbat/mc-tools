@@ -42,7 +42,7 @@ def getPar(masterfile, parname, pos=2, comment="c"):
             except ValueError:
                 val = line.split()[pos] # non-float
     f.close()
-    if val is "":
+    if val == "":
         raise IOError("Value of %s not found in %s" % (parname, masterfile))
     return val
 
