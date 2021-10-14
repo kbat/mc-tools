@@ -76,8 +76,8 @@ jobs:
        root-config --features
 
     - name: compile hplot
-      with:
-        languages: cpp
+      # with:
+      #   languages: cpp
       run: |
        source root/bin/thisroot.sh
        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
@@ -89,8 +89,8 @@ jobs:
       shell: bash
 
     - name: Test hplot
-      with:
-        languages: cpp
+      # with:
+      #   languages: cpp
       shell: bash
       run: |
        source root/bin/thisroot.sh
