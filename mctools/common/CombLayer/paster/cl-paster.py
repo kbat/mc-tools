@@ -8,7 +8,7 @@ import argparse, re
 import os
 import pwd
 from datetime import datetime
-from mctools.mctools import checkPaths
+from mctools import checkPaths
 
 class Paster:
     def __init__(self, m, c):

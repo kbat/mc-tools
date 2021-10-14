@@ -213,19 +213,19 @@ MyComponent::createObjects(Simulation& System)
 {
   ELog::RegMethod RegA("MyComponent","createObjects");
 
-  std::string Out;
-  const std::string frontStr(frontRule());
-  const std::string backStr(backRule());
+  HeadRule Out;
+  const HeadRule frontStr(frontRule());
+  const HeadRule backStr(backRule());
 
-  Out=ModelSupport::getComposite(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
+  Out=ModelSupport::getHeadRule(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
   makeCell("MainCell",System,cellIndex++,mainMat,0.0,Out);
 
-  Out=ModelSupport::getComposite(SMap,buildIndex,
+  Out=ModelSupport::getHeadRule(SMap,buildIndex,
 				 " 13 -14 15 -16 (-1:2:-3:4:-5:6) ");
-  makeCell("Wall",System,cellIndex++,wallMat,0.0,Out+frontStr+backStr);
+  makeCell("Wall",System,cellIndex++,wallMat,0.0,Out*frontStr*backStr);
 
-  Out=ModelSupport::getComposite(SMap,buildIndex," 13 -14 15 -16");
-  addOuterSurf(Out+frontStr+backStr);
+  Out=ModelSupport::getHeadRule(SMap,buildIndex," 13 -14 15 -16");
+  addOuterSurf(Out*frontStr*backStr);
 
   return;
 }

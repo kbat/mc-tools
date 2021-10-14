@@ -66,7 +66,8 @@ namespace NAMESPACE
 MyComponent::MyComponent(const std::string& Key)  :
   attachSystem::ContainedComp(),
   attachSystem::FixedRotate(Key,6),
-  attachSystem::CellMap()
+  attachSystem::CellMap(),
+  attachSystem::SurfMap()
  /*!
     Constructor BUT ALL variable are left unpopulated.
     \param Key :: Name for item in search
@@ -77,6 +78,7 @@ MyComponent::MyComponent(const MyComponent& A) :
   attachSystem::ContainedComp(A),
   attachSystem::FixedRotate(A),
   attachSystem::CellMap(A),
+  attachSystem::SurfMap(A),
   length(A.length),width(A.width),height(A.height),
   mainMat(A.mainMat)
   /*!
@@ -171,8 +173,8 @@ MyComponent::createObjects(Simulation& System)
 {
   ELog::RegMethod RegA("MyComponent","createObjects");
 
-  std::string Out;
-  Out=ModelSupport::getComposite(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
+  HeadRule Out;
+  Out=ModelSupport::getHeadRule(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
   makeCell("MainCell",System,cellIndex++,mainMat,0.0,Out);
 
   addOuterSurf(Out);

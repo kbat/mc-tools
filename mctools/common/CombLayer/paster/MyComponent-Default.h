@@ -61,7 +61,7 @@ class MyComponent : public attachSystem::ContainedComp,
   virtual MyComponent* clone() const;
   virtual ~MyComponent();
 
-  using FixedComp::createAll;
+  using attachSystem::FixedComp::createAll;
   void createAll(Simulation&,const attachSystem::FixedComp&,const long int);
 
 };
