@@ -26,7 +26,9 @@ GeometryMultiGraph::GeometryMultiGraph(const std::string& fname, const std::stri
       // move this to SetH2 as in Geometry3
       obj->SetLineWidth(args->GetMap()["glwidth"].as<size_t>());
       const Int_t col = TColor::GetColor(args->GetMap()["glcolor"].as<std::string>().data());
-      obj->SetLineColor(col);
+      const Float_t alpha = args->GetMap()["glalpha"].as<float>();
+      obj->SetLineColorAlpha(col, alpha);
+      obj->SetMarkerColorAlpha(col, alpha);
     }
 
   if (args->IsFlipped())
@@ -39,7 +41,7 @@ GeometryMultiGraph::GeometryMultiGraph(const std::string& fname, const std::stri
 
 void GeometryMultiGraph::Draw() const
 {
-  mg->Draw("pl");
+  mg->Draw("l");
 }
 
 void GeometryMultiGraph::Flip()
@@ -55,9 +57,7 @@ void GeometryMultiGraph::Flip()
   else
     a = h3->GetZaxis();
 
-  const Double_t A = a->GetXmin();
-  const Double_t B = a->GetXmax();
-  const Double_t offset = A+B;
+  const Double_t offset = a->GetXmin() + a->GetXmax();
 
   TGraph *gr(nullptr);
   const TList *l = mg->GetListOfGraphs();
@@ -68,7 +68,7 @@ void GeometryMultiGraph::Flip()
       for (Int_t i=0; i<N; ++i)
 	{
 	  const Double_t x = gr->GetX()[i];
-	  const Double_t y = -gr->GetY()[i]+offset;
+	  const Double_t y = offset-gr->GetY()[i];
 	  gr->SetPoint(i, x, y);
 	}
     }

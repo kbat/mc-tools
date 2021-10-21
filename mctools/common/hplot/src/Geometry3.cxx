@@ -13,7 +13,7 @@ void Geometry3::SetH2(std::shared_ptr<TH2> h2)
   h2->SetLineWidth(args->GetMap()["glwidth"].as<size_t>());
 
   const Int_t col = TColor::GetColor(args->GetMap()["glcolor"].as<std::string>().data());
-  h2->SetLineColor(col);
+  h2->SetLineColorAlpha(col, args->GetMap()["glalpha"].as<float>());
 
   h2->SetContour(args->GetMap()["gcont"].as<size_t>());
 
