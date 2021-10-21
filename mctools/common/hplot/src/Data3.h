@@ -1,18 +1,17 @@
 #ifndef Data3_h_
 #define Data3_h_
 
-#include <chrono>
-
 #include <TH3.h>
 #include <TH2.h>
 #include <TAxis.h>
 #include <TGaxis.h>
 
+#include "Data.h"
 #include "Arguments.h"
 
 enum data_t {kData3, kGeometry};
 
-class Data3 {
+class Data3 : public Data {
  private:
   mutable std::shared_ptr<TGaxis> yrev; // reversed Y axis [if flipped]
 
@@ -26,7 +25,6 @@ class Data3 {
   std::shared_ptr<TH3> h3;
   std::shared_ptr<TH2> h2max;
   std::vector< std::shared_ptr<TH2> > vh2;
-  const std::shared_ptr<Arguments> args;
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
   void Rebin() const;
@@ -37,8 +35,8 @@ class Data3 {
   /* Data3(const TH3F* h3, */
   /*      const std::string& plane); */
   Data3(const std::string& fname,
-       const std::string& hname,
-       const std::shared_ptr<Arguments> args);
+	const std::string& hname,
+	const std::shared_ptr<Arguments> args);
   virtual ~Data3();
   void Project();
   const std::shared_ptr<Arguments> GetArgs() const {return args;}
@@ -54,7 +52,6 @@ class Data3 {
   virtual data_t GetType() const { return kData3; }
   virtual std::string GetTypeStr() const { return "Data3"; }
   const std::vector<std::shared_ptr<TH2> > GetVH2() const {return vh2;}
-  void PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const;
   void ReverseYAxis(std::shared_ptr<TH2> h2) const;
 };
 

@@ -6,8 +6,9 @@
 #include "Data3.h"
 
 Data3::Data3(const std::string& fname, const std::string& hname,
-	   const std::shared_ptr<Arguments> args) :
-  yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr), args(args)
+	     const std::shared_ptr<Arguments> args) :
+  Data(fname,hname,args),
+  yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr)
 {
   plane = args->GetPlane();
   TFile df(fname.data());
@@ -643,13 +644,4 @@ Bool_t Data3::Check(TAxis *normal) const
     }
 
   return val;
-}
-
-void Data3::PrintChrono(std::chrono::system_clock::time_point start, std::string msg) const
-{
-  if (args->IsVerbose())
-    {
-      auto delta = std::chrono::high_resolution_clock::now()-start;
-      std::cout << msg << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() << " ms" << std::endl;
-    }
 }
