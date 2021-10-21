@@ -1,9 +1,10 @@
 #ifndef Geometry3_h_
 #define Geometry3_h_
 
+#include "Geometry.h"
 #include "Data3.h"
 
-class Geometry3 : public Data3 {
+class Geometry3 : public Geometry, public Data3 {
   inline void ErrorHist(std::shared_ptr<TH2> h) const {;}
 protected:
   virtual void SetH2(std::shared_ptr<TH2> h2);

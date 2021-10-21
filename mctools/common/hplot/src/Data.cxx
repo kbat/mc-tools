@@ -1,6 +1,6 @@
 #include "Data.h"
 
-Data::Data(const std::string& fname, const std::string& hname,
+Data::Data(const std::string& fname, const std::string& objname,
 	   const std::shared_ptr<Arguments> args) :
   args(args)
 {

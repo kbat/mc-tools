@@ -128,14 +128,33 @@ int main(int argc, const char **argv)
   data->Project();
   data->PrintChrono(start, "Data3::Project: ");
 
-  std::shared_ptr<Geometry3> geo(nullptr);
+  std::shared_ptr<Geometry3> geo3(nullptr);
+  std::shared_ptr<GeometryMultiGraph> geoMG(nullptr);
   if (!gfname.empty())
     {
-      geo = std::make_shared<Geometry3>(gfname, ghname, args);
-      auto start = std::chrono::high_resolution_clock::now();
-      geo->Project();
-      geo->PrintChrono(start,"Geometry3::Project: ");
-      data->Check(geo->GetNormalAxis());
+      TFile df(gfname.data());
+      if (df.IsZombie()) {
+	df.Close();
+	exit(1);
+      }
+
+      TObject *obj = df.Get(ghname.data());
+      if (!obj) {
+	std::cerr << "hplot: " << ghname << " not found in " << gfname << std::endl;
+	exit(1);
+      }
+      if (obj->InheritsFrom("TH3")) {
+	std::cout << "type: TH3" << std::endl;
+	geo3 = std::make_shared<Geometry3>(gfname, ghname, args);
+	auto start = std::chrono::high_resolution_clock::now();
+	geo3->Project();
+	geo3->PrintChrono(start,"Geometry3::Project: ");
+	data->Check(geo3->GetNormalAxis());
+      } else if (obj->InheritsFrom("TMultiGraph")) {
+	std::cout << "type: TMultiGraph" << std::endl;
+	geoMG = std::make_shared<GeometryMultiGraph>(gfname, ghname, args);
+      }
+      df.Close();
     }
 
   std::unique_ptr<MainFrame>   mf(nullptr);
@@ -154,7 +173,7 @@ int main(int argc, const char **argv)
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
-      mf = std::make_unique<MainFrame>(gClient->GetRoot(), width, height, data, geo);
+      mf = std::make_unique<MainFrame>(gClient->GetRoot(), width, height, data, geo3);
       mf->SetWindowName(args->GetWindowTitle().data());
 
       c1 = dynamic_cast<TCanvas*>(mf->GetCanvas());
@@ -178,8 +197,10 @@ int main(int argc, const char **argv)
 
   h2pad->SetLogz(args->IsLogz() && !args->IsErrors());
 
-  if (geo)
-      geo->Draw();
+  if (geo3)
+      geo3->Draw();
+  else if (geoMG)
+    geoMG->Draw();
 
   if (args->IsBatch())
     {
