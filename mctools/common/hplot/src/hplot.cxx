@@ -144,15 +144,13 @@ int main(int argc, const char **argv)
 	exit(1);
       }
       if (obj->InheritsFrom("TH3")) {
-	std::cout << "type: TH3" << std::endl;
 	geo3 = std::make_shared<Geometry3>(gfname, ghname, args);
 	auto start = std::chrono::high_resolution_clock::now();
 	geo3->Project();
 	geo3->PrintChrono(start,"Geometry3::Project: ");
 	data->Check(geo3->GetNormalAxis());
       } else if (obj->InheritsFrom("TMultiGraph")) {
-	std::cout << "type: TMultiGraph" << std::endl;
-	geoMG = std::make_shared<GeometryMultiGraph>(gfname, ghname, args);
+	geoMG = std::make_shared<GeometryMultiGraph>(gfname, ghname, args, data);
       }
       df.Close();
     }
