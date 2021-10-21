@@ -9,7 +9,7 @@
 #include "Data.h"
 #include "Arguments.h"
 
-enum data_t {kData3, kGeometry};
+enum data_t {kData3, kGeometry3};
 
 class Data3 : public Data {
  private:

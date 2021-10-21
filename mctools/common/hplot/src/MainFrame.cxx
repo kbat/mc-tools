@@ -17,7 +17,7 @@ enum MainFrameMessageTypes {
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data,
-		     const std::shared_ptr<Geometry> geo) :
+		     const std::shared_ptr<Geometry3> geo) :
   TGMainFrame(p,w,h), data(data), geo(geo), gh2(nullptr), slice(nullptr)
 {
 

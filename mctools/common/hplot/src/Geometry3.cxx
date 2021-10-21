@@ -1,13 +1,13 @@
 #include "TColor.h"
-#include "Geometry.h"
+#include "Geometry3.h"
 
-Geometry::Geometry(const std::string& fname, const std::string& hname,
+Geometry3::Geometry3(const std::string& fname, const std::string& hname,
 		   const std::shared_ptr<Arguments> args) : Data3(fname, hname, args)
 {
 
 }
 
-void Geometry::SetH2(std::shared_ptr<TH2> h2)
+void Geometry3::SetH2(std::shared_ptr<TH2> h2)
 {
   h2->SetLineWidth(args->GetMap()["glwidth"].as<size_t>());
 
@@ -22,11 +22,11 @@ void Geometry::SetH2(std::shared_ptr<TH2> h2)
   return;
 }
 
-Geometry::~Geometry()
+Geometry3::~Geometry3()
 {
 }
 
-std::shared_ptr<TH2> Geometry::Draw(const Float_t val) const
+std::shared_ptr<TH2> Geometry3::Draw(const Float_t val) const
 {
   std::shared_ptr <TH2> h2 = GetH2(val);
   h2->Draw(GetGOption().data());
@@ -34,9 +34,9 @@ std::shared_ptr<TH2> Geometry::Draw(const Float_t val) const
   return h2;
 }
 
-void Geometry::BuildMaxH2()
+void Geometry3::BuildMaxH2()
 {
-  //  std::cout << "Geometry::BuildMaxH2" << std::endl;
+  //  std::cout << "Geometry3::BuildMaxH2" << std::endl;
   const Int_t n3x = h3->GetNbinsX();
   const Int_t n3y = h3->GetNbinsY();
   const Int_t n3z = h3->GetNbinsZ();

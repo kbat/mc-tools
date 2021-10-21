@@ -16,7 +16,8 @@
 #include "Arguments.h"
 #include "MainFrame.h"
 #include "Data3.h"
-#include "Geometry.h"
+#include "Geometry3.h"
+#include "GeometryMultiGraph.h"
 
 void SetColourMap(const std::string& palette="MAXIV")
 {
@@ -127,13 +128,13 @@ int main(int argc, const char **argv)
   data->Project();
   data->PrintChrono(start, "Data3::Project: ");
 
-  std::shared_ptr<Geometry> geo(nullptr);
+  std::shared_ptr<Geometry3> geo(nullptr);
   if (!gfname.empty())
     {
-      geo = std::make_shared<Geometry>(gfname, ghname, args);
+      geo = std::make_shared<Geometry3>(gfname, ghname, args);
       auto start = std::chrono::high_resolution_clock::now();
       geo->Project();
-      geo->PrintChrono(start,"Geometry::Project: ");
+      geo->PrintChrono(start,"Geometry3::Project: ");
       data->Check(geo->GetNormalAxis());
     }
 
