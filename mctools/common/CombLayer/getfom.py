@@ -44,8 +44,8 @@ def getGraph(args, tname, color):
         obj = f.Get(tname)
         if obj.Class().InheritsFrom(ROOT.THnSparse.Class()):
                 if args.axis>=0: # axis and bin are specified for th1
-                        obj.GetAxis(2).SetRange(1,1)
-                        print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=stderr)
+#                        obj.GetAxis(2).SetRange(1,1)
+#                        print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=stderr)
                         tally = obj.Projection(args.axis);
                 else: # args.bin is absolute bin number
                         tally = obj
@@ -60,7 +60,7 @@ def getGraph(args, tname, color):
         for b in bins:
             thebin = int(b.strip())
             ytmp += tally.GetBinContent(thebin)
-            print(b,thebin,ytmp)
+#            print(b,thebin,ytmp)
             eytmp += pow(tally.GetBinError(thebin), 2)
         eytmp = sqrt(eytmp)
         y.append(eval("%g%s" % (ytmp, args.yscale)))
