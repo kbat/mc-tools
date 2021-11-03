@@ -11,6 +11,7 @@
 #include <TVirtualPad.h>
 
 #include "Data3.h"
+#include "GeometryMultiGraph.h"
 #include "Geometry3.h"
 #include "DynamicSlice.h"
 
@@ -24,16 +25,20 @@ class MainFrame : public TGMainFrame {
   TGStatusBar         *fStatusBar;
 
   std::shared_ptr<Data3> data;
-  std::shared_ptr<Geometry3> geo;
+  std::shared_ptr<Geometry3> geo3;
+  std::shared_ptr<GeometryMultiGraph> plotgeom;
   std::shared_ptr<TH2> dh2; // current data histogram
   std::shared_ptr<TH2> gh2; // current geometry histogram
 
   std::unique_ptr<DynamicSlice> slice;
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
-	    const std::shared_ptr<Data3> data,
-	    const std::shared_ptr<Geometry3> geo);
+	    const std::shared_ptr<Data3> data);
   virtual ~MainFrame();
+
+  void SetGeometry(const std::shared_ptr<Geometry3>);
+  void SetGeometry(const std::shared_ptr<GeometryMultiGraph>);
+
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   TVirtualPad *GetHistogramPad() const;
   TVirtualPad *GetSlicePad() const;

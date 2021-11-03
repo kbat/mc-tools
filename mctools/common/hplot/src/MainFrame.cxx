@@ -16,9 +16,8 @@ enum MainFrameMessageTypes {
 };
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
-		     const std::shared_ptr<Data3> data,
-		     const std::shared_ptr<Geometry3> geo) :
-  TGMainFrame(p,w,h), data(data), geo(geo), gh2(nullptr), slice(nullptr)
+		     const std::shared_ptr<Data3> data) :
+  TGMainFrame(p,w,h), data(data), geo3(nullptr), plotgeom(nullptr), gh2(nullptr), slice(nullptr)
 {
 
   // Menu bar
@@ -101,12 +100,23 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   fEcanvas->Connect("TCanvas", "Closed()", "TApplication", gApplication, "Terminate()");
 
   dh2 = data->GetH2(); // default data histogram
-  if (geo)
-    gh2 = geo->GetH2();
 
   if (data->GetArgs()->IsSlice())
     slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice());
 }
+
+void MainFrame::SetGeometry(const std::shared_ptr<Geometry3> g)
+{
+  geo3 = g;
+  if (geo3)
+    gh2 = geo3->GetH2();
+}
+
+void MainFrame::SetGeometry(const std::shared_ptr<GeometryMultiGraph> g)
+{
+  plotgeom = g;
+}
+
 
 MainFrame::~MainFrame()
 {
@@ -151,8 +161,8 @@ void MainFrame::DoSlider()
 
   dh2 = data->Draw(y);
 
-  if (geo)
-    gh2 = geo->Draw(y);
+  if (geo3)
+    gh2 = geo3->Draw(y);
 
   pad1->Update();
 }

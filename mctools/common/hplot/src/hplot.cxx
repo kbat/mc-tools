@@ -171,7 +171,12 @@ int main(int argc, const char **argv)
     {
       theApp = new TApplication("hplot", &argc, const_cast<char**>(argv), nullptr, -1);
 
-      mf = std::make_unique<MainFrame>(gClient->GetRoot(), width, height, data, geo3);
+      mf = std::make_unique<MainFrame>(gClient->GetRoot(), width, height, data);
+      if (geo3)
+	mf->SetGeometry(geo3);
+      else if (geoMG)
+	mf->SetGeometry(geoMG);
+
       mf->SetWindowName(args->GetWindowTitle().data());
 
       c1 = dynamic_cast<TCanvas*>(mf->GetCanvas());
