@@ -57,6 +57,16 @@ def main():
                 print("x and y axis length:",XAXLEN,YAXLEN)
 #                print(X0,Y0,Z0,X1,Y1,Z1,TYX,TYY,TYZ,TXX,TXY,TXZ,XAXLEN,YAXLEN)
 
+            plane = "unknown"
+            if abs(X0-X1)<0.001:
+                plane="zx"
+            elif abs(Y0-Y1)<0.001:
+                plane="zy"
+            elif abs(Z0-Z1)<0.001:
+                plane="xy"
+
+            print(plane)
+
             for i in range(1):
                 data = fortran.read(f)
                 size = len(data)
@@ -101,8 +111,20 @@ def main():
                     coord = struct.unpack("=%df" % (wlength*2),data) # pairs of x,y
                     if args.verbose:
                         print(coord[:10])
-                    x = list(map(lambda x:x+Y0, coord[::2])) #[x+Y0 for x in coord[::2]]
-                    y = list(map(lambda y:y+X0, coord[1::2]))
+
+                    if plane == "xy":
+                        x = list(map(lambda x:x+Y0, coord[::2]))
+                        y = list(map(lambda y:y+X0, coord[1::2]))
+                    elif plane=="zy":
+                        x = list(map(lambda x:x+X0, coord[::2]))
+                        y = list(map(lambda y:y+Z0, coord[1::2]))
+                    elif plane=="zx":
+                        x = list(map(lambda x:x+Y0, coord[::2]))
+                        y = list(map(lambda y:y+Z0, coord[1::2]))
+                    else:
+                        print(f"ERROR: Plane is {plane} - not supported", file=sys.stderr)
+                        return 1
+
                     g = ROOT.TGraph(len(x), array('f', x), array('f', y))
                     g.SetName("g%d" % i)
                     mg.Add(g)
