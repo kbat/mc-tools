@@ -49,7 +49,10 @@ def main():
 #    T.SetMaxTreeSize((Long64_t)1e+18)
 
     if args.splitlevel==99:
-        T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
+        if ssw.mcnp6:
+            T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:surface")
+        else:
+            T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
     elif args.splitlevel == 1:
         T.Branch("history", ROOT.addressof(hits, 'history'), "history")
         T.Branch("id",      ROOT.addressof(hits, 'id'),      "id")
@@ -61,12 +64,15 @@ def main():
         T.Branch("z",       ROOT.addressof(hits, 'z'),       "z")
         T.Branch("wx",      ROOT.addressof(hits, 'wx'),      "wx")
         T.Branch("wy",      ROOT.addressof(hits, 'wy'),      "wy")
-        T.Branch("k",       ROOT.addressof(hits, 'k'),       "k")
+        if ssw.mcnp6:
+            T.Branch("surface", ROOT.addressof(hits, 'k'),"surface")
+        else:
+            T.Branch("k",       ROOT.addressof(hits, 'k'),       "k")
 
-    for i in range(ssw.nevt):
+    for i in range(ssw.getNTracks()):
         ssb = ssw.readHit()
         hits.history = ssb[0] # >0 = with collision, <0 = without collision
-        hits.id = ssb[1] # surface + particle type + multigroup problem info
+        hits.id = ssb[1] # if not ssw.mcnp6: surface + particle type + multigroup problem info; if ssw.mcnp6: packed variable 'b' in la-ur-16-20109 (z-direction sign+particle type), see section 4.7
         hits.weight = ssb[2]
         hits.energy = ssb[3] # [MeV]
         hits.time = ssb[4] # [shakes]
@@ -75,8 +81,9 @@ def main():
         hits.z = ssb[7] # [cm]
         hits.wx = ssb[8]
         hits.wy = ssb[9]
-        hits.k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
+        hits.k = ssb[10] # if not ssw.mcnp6: cosine of angle between track and normal to surface jsu (in MCNPX it is called cs); if ssw.mcnp6: surface number (see section 4.7 in la-ur-16-20109)
         T.Fill()
+#        print(hits.history, hits.id, hits.weight, hits.energy, hits.wx)
 
     ssw.file.close()
 
@@ -85,12 +92,15 @@ def main():
 
 #    T.Print()
     T.SetAlias("theta", "TMath::RadToDeg()*(TMath::ATan2(x,y) > 0 ? TMath::ATan2(x,y) : 2*TMath::Pi()+TMath::ATan2(x,y))");
-    T.SetAlias("i","TMath::Nint(TMath::Abs(id/1E+6))");# tmp variable
-    T.SetAlias("JGP","-TMath::Nint(i/200.0)");         # energy group
-    T.SetAlias("JC","TMath::Nint(i/100.0) + 2*JGP");   #
-    T.SetAlias("IPT","i-100*JC+200*JGP");              # particle type: 1=neutron, 2=photon, 3=electron
-    T.SetAlias("wz", "TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id)") # z-direction cosine
-    T.SetAlias("surface", "TMath::Abs(id) % 1000000") # surface crossed
+    T.SetAlias("wz", "TMath::Sqrt(TMath::Max(0.0, 1.0-wx*wx-wy*wy)) * ((id>0)-(id<0))") # z-direction cosine, ((id>0)-(id<0)) = sign(id)
+    if ssw.mcnp6:
+        T.SetAlias("particle", "TMath::Nint(TMath::Abs(id/8))") # sec 4.7 in la-ur-16-20109
+    else:
+        T.SetAlias("surface", "TMath::Abs(id) % 1000000")  # surface crossed
+        T.SetAlias("i","TMath::Nint(TMath::Abs(id/1E+6))");# tmp variable
+        T.SetAlias("JGP","-TMath::Nint(i/200.0)");         # energy group
+        T.SetAlias("JC","TMath::Nint(i/100.0) + 2*JGP");   #
+        T.SetAlias("particle","i-100*JC+200*JGP"); # particle type: 1=neutron, 2=photon, 3=electron
     T.Write()
     fout.Purge()
     fout.Close()

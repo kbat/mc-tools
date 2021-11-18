@@ -2,8 +2,10 @@
 #
 # https://github.com/kbat/mc-tools
 #
+# file format description (not exactly correspond to the 6.1 version):
+# https://mcnp.lanl.gov/pdf_files/la-ur-16-20109.pdf
 
-import sys, math, struct
+import sys, math, struct, array
 
 #-------------------------------------------------------------------------------
 # Read a fortran structure from a binary file
@@ -29,29 +31,31 @@ def unpackArray(data):
 
 #       """Class to read the SSW output file (wssa)"""
 class SSW:
-    def __init__(self, filename=None, verbose=False):
+    def __init__(self, filename=None, verbose=False, debug=False):
         """Initialise a SSW structure"""
         self.reset()
         if filename is None: return
         self.verbose = verbose
+        self.debug = debug
+        self.mcnp6 = False
         self.readHeader(filename)
 
     def reset(self):
         """Reset header information"""
         self.file = None
         self.fname = ""
-        self.kods = "" # 8 Code ID
+        self.kods = "" # 8 Code name
         self.vers = "" # 5 Version
-        self.lods = "" # 8 Date
-        self.idtms = "" # 19 Machine Designator and date of SSW-run
-        self.probs = "" # 19 Problem ID
-        self.aids = ""  # 80 Creation-Run Problem-Title-Card
+        self.lods = "" # 8 Compilation Date
+        self.idtms = "" # 19 Date and time that the file was generated
+        self.probs = "" # 19 User specified surface source filename, minus extension
+        self.aids = ""  # 80 problem description string
         self.knods = 0 #  last dump of SSW-run
         self.nevt = 0 # number of events (hits)
 
-        self.isurfs = [] # 10 Array fur Oberflachen
-        self.kstpps = [] # 10 Array fur Overflachentypen
-        self.ntppsp = [] # 10 Array fur Anzahl der Oberflachen-Parameter
+        self.isurfs = [] # 10 Surface indexes from MCNP input file
+        self.kstpps = [] # 10 Surface type numbers of all the surfaces (from MCNP_GLOBAL module)
+        self.ntppsp = [] # 10 Number of coefficients needed to define the surface type
         self.tpps = [] # 10,64 Array for surface parameters
 
         self.nrcd = 0 # length of ssb-array (?) = evtl+1 (?)
@@ -69,6 +73,12 @@ class SSW:
     def getTitle(self):
         """Return the problem title"""
         return self.aids
+
+    def getNTracks(self):
+            """Return number of tracks
+
+            """
+            return self.nevt
 
     def unsupported(self):
             print("WARNING: This version of MCNP(X) is not supported.", file=sys.stderr)
@@ -88,12 +98,15 @@ class SSW:
         # This is according to Esben's subs.f, but the format seems to be wrong
         #        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
         # This has been modified to fix the format:
-#        print("size: ", size)
+        if self.debug:
+                print("* size1: ", size)
         if size == 8: # mcnp 6
                 (tmpi0) = struct.unpack('8s',data) # wssa file type
                 # print(" type_of_rssa:", tmpi0[0].decode())
                 data = fortranRead(self.file)
                 size = len(data)
+                if self.debug:
+                        print("*  size2: ", size)
                 if size == 143: # mcnp <= 6.1
                         (self.kods, self.vers, self.lods, self.idtms, self.aids, self.knods) = struct.unpack("=8s5s28s18s80si", data)
                 elif size == 191: # mcnp 6.2 [EV]
@@ -130,12 +143,14 @@ class SSW:
                 print("Version:\t%s" % self.vers)
                 print("Date:\t\t%s" % self.lods)
                 print("Machine designator:", self.idtms)
-                print("Problem id:\t%s" % self.probs)
+                print("Problem id:\t%s" % self.probs) # why not read???
                 print("Title:\t\t%s" % self.aids)
                 print("knods:", self.knods)
 
         if self.kods not in ['mcnpx', 'mcnp'] or self.vers not in self.supported_mcnp_versions:
                 self.unsupported()
+
+        self.mcnp6 = self.vers in ("6", "6.mpi") # just to run readHit faster
 
         data = fortranRead(self.file)
         size = len(data)
@@ -145,12 +160,12 @@ class SSW:
         # niss - number of histories in RSSA data
         # niwr - number of cells in RSSA data (np1<0)
         # mipts - Partikel der Quelldatei = incident particles (?) (np1<0)
-#       print("size", size)
+        if self.debug:
+                print("* size3:", size)
         if self.vers in self.supported_mcnp6_versions:
-#               (np1,nrss,self.nrcd,njsw,niss,self.probs) = struct.unpack("=5i12s", data)
-                (np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=4i4i", data)
-                if self.verbose:
-                        print("probs",np1, tmp1, tmp2, tmp3, nrss, self.nrcd, njsw, niss)
+                (np1,tmp1, nrss, tmp2, tmp3, njsw, self.nrcd,niss) = struct.unpack("=8i", data)
+                if self.debug:
+                        print("probs: ",np1, tmp1, nrss, tmp2, tmp3, njsw, self.nrcd, niss)
         elif size==20:
                 (np1,nrss,self.nrcd,njsw,niss) = struct.unpack("=5i", data)
         elif size==40: # Tibor with 2.7.0
@@ -162,52 +177,60 @@ class SSW:
 
         self.N = abs(np1)
         if self.verbose:
-                print("number of incident particles:\t%i" % abs(np1))
+                print("number of incident particles:\t%i" % self.N)
                 print("number of tracks:\t%i" % nrss)
                 print("length of ssb array:\t%i" % self.nrcd)
                 print("number of surfaces in RSSA data:\t%i" % njsw)
-                print("number of histories in RSSA data:\t%i" % niss)
+#                print("number of histories in RSSA data:\t%i" % niss)
+        if self.debug:
+                print("tmp: ",tmp1,tmp2,tmp3)
 
 #       raise IOError("end")
 
-
-        nevt = nrss
-        self.nrcdo = self.nrcd
+        nevt = nrss # number of tracks
+        self.nrcdo = self.nrcd # length of ssb array
         np1o = np1
 
 #        print("Number of tracks:", nevt)
         self.nevt = nevt
         tmp = []
         if np1 < 0:
-            np1 = abs(np1)
-            data = fortranRead(self.file)
-#            print(len(data))
-            # (niwr, mipts,tmp
-            tmp = struct.unpack("=%di" % int(len(data)/4) ,data) # ??? why tmp ???
-            niwr = tmp[0]
-            mipts = tmp[1]
-#            print(niwr,mipts,tmp)
+                np1 = abs(np1)
+                data = fortranRead(self.file)
+                #            print(len(data))
+                # (niwr, mipts,tmp
+                tmp = struct.unpack("=%di" % int(len(data)/4) ,data) # ??? why tmp ???
+                niwr = tmp[0]
+                mipts = tmp[1]
+                if self.debug:
+                        print("* np1<0 => tmp vector:",tmp)
+        else:
+                raise IOError("np1>=0")
 
         if self.nrcd != 6 and self.nrcd != 10: self.nrcd = self.nrcd - 1
 
+        if self.debug:
+                print("* for loop length: ",njsw+niwr)
         for i in range(njsw+niwr):
             data = fortranRead(self.file)
             size = len(data)
-#            print("size", size)
-            tmpii, tmpkk, tmpnn, tmp = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
-#            print("tmpnn", tmpnn, len(tmp))
-            # if self.vers == '2.7.0':
-            #       print("") # struct.unpack("2f", tmp)
-            # elif self.vers == '2.6.0':
-            #       print("") # struct.unpack("3f", tmp)
-            # else:
-            #       print("This MCNP version is not supported:", self.vers)
-#                   sys.exit(1)
-            self.isurfs.append(tmpii)
-            self.kstpps.append(tmpkk)
-            self.ntppsp.append(tmpnn)
+            if self.debug:
+                    print("* size4: ", size)
+            isurfs, kstpps, ntppsp, tpps = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
+            # convert tmp of type string into array of doubles:
+            vtpps = array.array('d')
+            vtpps.fromstring(tpps)
 
+            if self.debug:
+                    print("* inside loop:", isurfs, kstpps, ntppsp, vtpps)
+            self.isurfs.append(isurfs) # Surface indexes from MCNP input file
+            self.kstpps.append(kstpps) # Surface type numbers of all the surfaces (from MCNP_GLOBAL module)
+            self.ntppsp.append(ntppsp) # Number of coefficients needed to define the surface type
+            self.tpps.append(vtpps)    # surface coefficients for each surface
+
+        # Summary:
         data = fortranRead(self.file)
+        size = len(data)
 #        print(len(data), (2+4*mipts), (njsw+niwr))
 #        for i in range(2+4*mipts):
 #            for j in range(njsw+niwr):
@@ -218,9 +241,10 @@ class SSW:
     def readHit(self):
         """Read neutron data and return the SSB array"""
         data = fortranRead(self.file)
-        if self.vers in ("6", "6.mpi"):
+        if self.mcnp6:
                 size = len(data)
-#               print("here", self.nrcd, size)
+                # if self.debug:
+                #         print("* size: ",size)
                 size = size/8
                 ssb = struct.unpack("=%dd" % int(size), data)
         else:
