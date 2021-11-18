@@ -33,22 +33,24 @@ def main():
     parser = argparse.ArgumentParser(description=main.__doc__, epilog='Homepage: https://github.com/kbat/mc-tools')
     parser.add_argument('-splitlevel', dest='splitlevel', type=int, help='split level (see TTree::Branch documentation)', required=False, default=1, choices=allowed_splitlevels)
     parser.add_argument('wssa', type=str, help='ssw output file name')
-    arguments = parser.parse_args()
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
+    parser.add_argument('-d', '--debug', action='store_true', default=False, dest='debug', help='print debug messages')
+    args = parser.parse_args()
 
-    fin_name = arguments.wssa
+    fin_name = args.wssa
     fout_name = fin_name + ".root"
 
     hits = ROOT.hit_t()
 
-    ssw = SSW(fin_name)
+    ssw = SSW(fin_name, args.verbose, args.debug)
 
     fout = ROOT.TFile(fout_name, "recreate", ssw.getTitle())
     T = ROOT.TTree("T", ssw.probs)
 #    T.SetMaxTreeSize((Long64_t)1e+18)
 
-    if arguments.splitlevel==99:
+    if args.splitlevel==99:
         T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
-    elif arguments.splitlevel == 1:
+    elif args.splitlevel == 1:
         T.Branch("history", ROOT.addressof(hits, 'history'), "history")
         T.Branch("id",      ROOT.addressof(hits, 'id'),      "id")
         T.Branch("weight",  ROOT.addressof(hits, 'weight'),  "weight")
