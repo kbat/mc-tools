@@ -16,7 +16,7 @@ Project homepage: https://github.com/kbat/mc-tools
       histograms. The same script can convert mctal to XML format via [TXMLFile](https://root.cern.ch/doc/master/classTXMLFile.html).
   * [mctal2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2txt.py)
       script shows an example how to convert an mctal file into an easily parsable ASCII file.
-* WSSA file converters. Work fine with MCNPX, but **MCNP6 is not fully supported**.
+* WSSA file converters.
   * [ssw2txt](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/ssw2txt.py):
 	  converts WSSA phase space files into plain text. The comments in
 	  the script explain how to derive additional information (like
