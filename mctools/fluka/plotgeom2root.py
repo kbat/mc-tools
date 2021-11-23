@@ -112,9 +112,13 @@ def main():
                     if args.verbose:
                         print(coord[:10])
 
+                    epsilon = 0.001
                     if plane == "xy":
                         x = list(map(lambda x:x+Y0, coord[::2]))
                         y = list(map(lambda y:y+X0, coord[1::2]))
+
+                        if abs(TXX-0.0)<epsilon and abs(TXY<1.0)<epsilon and abs(TYX<1.0)<epsilon and abs(TYY-0.0)<epsilon:
+                            x,y = y,x
                     elif plane=="zy":
                         x = list(map(lambda x:x+X0, coord[::2]))
                         y = list(map(lambda y:y+Z0, coord[1::2]))
