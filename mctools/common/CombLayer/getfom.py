@@ -31,6 +31,31 @@ def printGraph(gr):
     for i in range(N):
         print("case%03d:" % (i+1), gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i])
 
+def getHistAxis(obj, i):
+        """Return TH3 axis based on its number
+
+        0: X-axis
+        1: Y-axis
+        2: Z-axis
+        """
+        if i==0:
+                if obj.Class().InheritsFrom(ROOT.TH1.Class()):
+                        return obj.GetXaxis()
+                else:
+                        raise ValueError('getHistAxis: object %s does not have x-axis', obj.GetName())
+        elif i==1:
+                if obj.Class().InheritsFrom(ROOT.TH2.Class()) or obj.Class().InheritsFrom(ROOT.TH3.Class()):
+                        return obj.GetYaxis()
+                else:
+                        raise ValueError('getHistAxis: object %s does not have y-axis', obj.GetName())
+        elif i==2:
+                if obj.Class().InheritsFrom(ROOT.TH3.Class()):
+                        return obj.GetZaxis()
+                else:
+                        raise ValueError('getHistAxis: object %s does not have z-axis', obj.GetName())
+        else:
+                raise ValueError('getHistAxis: i=%d must be <=2', i)
+
 def getGraph(args, tname, color):
     x = []
     ex = []
@@ -43,14 +68,21 @@ def getGraph(args, tname, color):
         f = ROOT.TFile(mctal)
         obj = f.Get(tname)
         if obj.Class().InheritsFrom(ROOT.THnSparse.Class()):
+                for r in args.rangebin:
+                        obj.GetAxis(r[0]).SetRange(r[1], r[2])
+                for r in args.rangeuser:
+                        obj.GetAxis(int(r[0])).SetRangeUser(float(r[1]), float(r[2]))
                 if args.axis>=0: # axis and bin are specified for th1
-#                        obj.GetAxis(2).SetRange(1,1)
-#                        print("f.Get(tname).GetAxis(2).SetRange(1,1) called!", file=stderr)
                         tally = obj.Projection(args.axis);
                 else: # args.bin is absolute bin number
                         tally = obj
-        else:
+        else: # e.g. TH1, TH2 or TH3
+                for r in args.rangebin:
+                        getHistAxis(r[0]).SetRange(r[1], r[2])
+                for r in args.rangeuser:
+                        getHistAxis(int(r[0])).SetRangeUser(float(r[1]), float(r[2]))
                 tally = obj
+
         x.append(eval("%g%s" % (getParCL(inp, args.var, int(args.varpos), args.comment), args.xscale)))
         ex.append(0.0)
 
@@ -123,9 +155,11 @@ def main():
     """
     ROOT.gStyle.SetOptFit(0)
 
-    parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter,epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-tally', dest='tally', type=str, default="f5", help='Tally name')
     parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on. If<0, the absolute value of BIN must be specified (see next argument). This option make sence only for THnSparse objects.')
+    parser.add_argument('-range', dest='rangebin', action="append", nargs=3, type=int, help='axis number followed by range of bins to set its range (e.g. 6 1 10 will call GetAxis(6)->SetRange(1,10)). +see also description of -range-user',default=[])
+    parser.add_argument('-range-user', dest='rangeuser', action="append", nargs=3, help='axis number followed by range of values to set its user range (e.g. 6 0.5 100.5 will call GetAxis(6)->SetRangeUser(0.5,100.5)). This option can be repeated for several axes. If both -range and -range-user are specified for the same axis, the latter takes precedence. For the TH[123] histograms the [XYZ] axes are called by integer counting from zero.', default=[])
     parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin number to use as the figure of merit. Plus-sign-separated list of bins is allowed: the result will be the sum over all bins. Hint for the MCNP case: the bin number is the serial number of the bin in the outp file provided that no FQ print hierarhy was used.')
     parser.add_argument('-title', dest='title', type=str, default="", help='graph title')
     parser.add_argument('-xtitle', dest='xtitle', type=str, default="par [cm]", help='x-axis title')
@@ -214,14 +248,15 @@ def main():
 
     if not args.nofooter:
         footer = ROOT.TLatex()
-        footer.SetTextSize(0.02)
+        footer.SetTextSize(0.01)
         footer.SetTextColor(ROOT.kGray)
         footer.SetNDC(ROOT.kTRUE)
         vardict = vars(args)
         vardict.pop('xtitle', None)
         vardict.pop('ytitle', None)
         vardict.pop('title', None)
-        vardict.pop('average', None)
+        # vardict.pop('average', None)
+        vardict.pop('nofooter', None)
         if not args.fit:
             vardict.pop('fit', None)
         if args.xscale == "*1":

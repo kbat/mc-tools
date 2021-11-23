@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, argparse
-from mctools.mctools import L2E, E2L
+from mctools import L2E, E2L
 import textwrap
 
 def LambdaBins(nbins, lmin, lmax, edgesE):
