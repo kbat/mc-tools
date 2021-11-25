@@ -210,19 +210,19 @@ class SSW:
         if self.nrcd != 6 and self.nrcd != 10: self.nrcd = self.nrcd - 1
 
         if self.debug:
-                print("* for loop length: ",njsw+niwr)
+                print("* for loop length (total number of surfaces): ",njsw+niwr)
         for i in range(njsw+niwr):
             data = fortranRead(self.file)
             size = len(data)
-            if self.debug:
-                    print("* size4: ", size)
+            # if self.debug:
+            #         print("* size4: ", size)
             isurfs, kstpps, ntppsp, tpps = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
             # convert tmp of type string into array of doubles:
             vtpps = array.array('d')
             vtpps.fromstring(tpps)
 
             if self.debug:
-                    print("* inside loop:", isurfs, kstpps, ntppsp, vtpps)
+                    print(f"* surface index: {isurfs}; type: {kstpps}; number of coefficients: {ntppsp}; surface coefficients: ", vtpps)
             self.isurfs.append(isurfs) # Surface indexes from MCNP input file
             self.kstpps.append(kstpps) # Surface type numbers of all the surfaces (from MCNP_GLOBAL module)
             self.ntppsp.append(ntppsp) # Number of coefficients needed to define the surface type
