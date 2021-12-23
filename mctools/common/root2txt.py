@@ -77,7 +77,7 @@ def main():
         h22ascii(obj)
     elif obj.InheritsFrom("TH1"):
         h12ascii(obj)
-    elif obj.InheritsFrom("TGraphError"):
+    elif obj.InheritsFrom("TGraphErrors"):
         ge2ascii(obj)
     elif obj.InheritsFrom("TGraph"):
         g2ascii(obj)
