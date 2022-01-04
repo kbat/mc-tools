@@ -5,7 +5,7 @@ from math import sqrt
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from mctools.common.CombLayer import getPar as getParCL
-import glob, os, argparse
+import glob, os, argparse, re
 from array import array
 from datetime import datetime
 
@@ -56,15 +56,40 @@ def getHistAxis(obj, i):
         else:
                 raise ValueError('getHistAxis: i=%d must be <=2', i)
 
+def selectValid(inp, select):
+        """Return true if all expressions in the 'select' list are found in
+        the given input file
+
+        """
+        found = False
+        n = len(select)
+        with open(inp) as f:
+                lines = f.readlines()
+                f = 0 # number of valid selections
+                for s in select:
+                        for l in lines:
+                                if re.search(s, l.strip()):
+                                        f = f + 1
+                                        break
+                        if f == n:  # all select items are found
+                                found = True
+                                break
+
+        return found
+
+
 def getGraph(args, tname, color):
     x = []
     ex = []
     y = []
     ey = []
+
     for mctal in glob.glob(args.mctal):
         dirname = os.path.split(mctal)[0]
-#        print(dirname)
         inp = os.path.join(dirname, args.inp)
+        if args.select and not selectValid(inp, args.select):
+                # print("Selection %s not valid in %s -> skipping" % (args.select, inp))
+                continue
         f = ROOT.TFile(mctal)
         obj = f.Get(tname)
         if obj.Class().InheritsFrom(ROOT.THnSparse.Class()):
@@ -167,6 +192,8 @@ def main():
     parser.add_argument('-xscale', dest='xscale', type=str, help='x-scaling factor. It will be evaluated as eval(\"x XSCALE\").', default="*1")
     parser.add_argument('-yscale', dest='yscale', type=str, help='y-scaling factor. It will be evaluated as eval(\"y YSCALE\").', default="/1.0")
     parser.add_argument('-fit', dest='fit', type=str, default="", help='fitting function')
+#    parser.add_argument('-select', dest='select', default=[], nargs='+', help='selection') # -select "cut1" "cut2"
+    parser.add_argument('-select', dest='select', action='append', default=[], help='If used, only the cases matching the given regexp in the input file will be used. This option can be repeated and in this case the individual selections will form logical conjunction.') # -select "cut1" -select "cut2"
     parser.add_argument('-pdf', dest='pdf', type=str, default="do not save", help='PDF file name to save canvas to')
     parser.add_argument('-only-average', dest='average', action='store_true', help='Draws only average of all points')
     parser.add_argument('-no-footer', dest='nofooter', action='store_true', help='Do not draw footer')
