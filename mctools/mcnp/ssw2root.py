@@ -9,7 +9,7 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 ROOT.gROOT.ProcessLine(
-"struct hit_t {\
+"struct fhit_t {\
    Float_t history;\
    Float_t id;\
    Float_t weight;\
@@ -21,6 +21,21 @@ ROOT.gROOT.ProcessLine(
    Float_t wx;\
    Float_t wy;\
    Float_t k;\
+};" );
+
+ROOT.gROOT.ProcessLine(
+"struct ihit_t {\
+   Float_t history;\
+   Float_t id;\
+   Float_t weight;\
+   Float_t energy;\
+   Float_t time;\
+   Float_t x;\
+   Float_t y;\
+   Float_t z;\
+   Float_t wx;\
+   Float_t wy;\
+   Int_t k;\
 };" );
 
 
@@ -40,9 +55,12 @@ def main():
     fin_name = args.wssa
     fout_name = fin_name + ".root"
 
-    hits = ROOT.hit_t()
-
     ssw = SSW(fin_name, args.verbose, args.debug)
+
+    if ssw.mcnp6 and ssw.isMacroBody:
+        hits = ROOT.fhit_t()
+    else:
+        hits = ROOT.ihit_t()
 
     fout = ROOT.TFile(fout_name, "recreate", ssw.getTitle())
     T = ROOT.TTree("T", ssw.probs)
@@ -50,7 +68,10 @@ def main():
 
     if args.splitlevel==99:
         if ssw.mcnp6:
-            T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:surface")
+            if ssw.isMacroBody:
+                T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:surface")
+            else:
+                T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:surface/I")
         else:
             T.Branch("hits", hits, "history:id:weight:energy:time:x:y:z:wx:wy:k")
     elif args.splitlevel == 1:
@@ -65,7 +86,10 @@ def main():
         T.Branch("wx",      ROOT.addressof(hits, 'wx'),      "wx")
         T.Branch("wy",      ROOT.addressof(hits, 'wy'),      "wy")
         if ssw.mcnp6:
-            T.Branch("surface", ROOT.addressof(hits, 'k'),"surface")
+            if ssw.isMacroBody:
+                T.Branch("surface", ROOT.addressof(hits, 'k'),"surface")
+            else:
+                T.Branch("surface", ROOT.addressof(hits, 'k'),"surface/I")
         else:
             T.Branch("k",       ROOT.addressof(hits, 'k'),       "k")
 
@@ -81,7 +105,13 @@ def main():
         hits.z = ssb[7] # [cm]
         hits.wx = ssb[8]
         hits.wy = ssb[9]
-        hits.k = ssb[10] # if not ssw.mcnp6: cosine of angle between track and normal to surface jsu (in MCNPX it is called cs); if ssw.mcnp6: surface number (see section 4.7 in la-ur-16-20109)
+        if ssw.mcnp6:
+            if ssw.isMacroBody:
+                hits.k = ssb[10]
+            else:
+                hits.k = round(ssb[10])
+        else:
+            hits.k = ssb[10] # if not ssw.mcnp6: cosine of angle between track and normal to surface jsu (in MCNPX it is called cs); if ssw.mcnp6: surface number (see section 4.7 in la-ur-16-20109)
         T.Fill()
 #        print(hits.history, hits.id, hits.weight, hits.energy, hits.wx)
 

@@ -69,6 +69,7 @@ class SSW:
         self.supported_mcnpx_verstions = ('2.6.0', '26b', '2.7.0')
         self.supported_mcnp6_versions = ('6', '6.mpi')
         self.supported_mcnp_versions = self.supported_mcnpx_verstions + self.supported_mcnp6_versions
+        self.isMacroBody = False # true if at least one of the surfaces is macrobody
 
     def getTitle(self):
         """Return the problem title"""
@@ -217,8 +218,14 @@ class SSW:
             # if self.debug:
             #         print("* size4: ", size)
             isurfs, kstpps, ntppsp, tpps = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
+            if kstpps>=30:
+                    self.isMacroBody = True
+
             # convert tmp of type string into array of doubles:
-            vtpps = array.array('d')
+            if self.isMacroBody != False:
+                    vtpps = array.array('d')
+            else:
+                    vtpps = array.array('i')
             vtpps.fromstring(tpps)
 
             if self.debug:
