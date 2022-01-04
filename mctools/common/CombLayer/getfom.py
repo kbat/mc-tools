@@ -15,16 +15,33 @@ try:
 except NameError:
         pass
 
+
+def required_length(nmin):
+        """Check if the number of given arguments is at least nmin.
+
+        Supposed to be used as a custom action to argparse argument.
+
+        """
+        class RequiredLength(argparse.Action):
+                def __call__(self, parser, args, values, option_string=None):
+                        if not nmin<=len(values):
+                                msg='argument "{f}" requires at least {nmin} arguments'.format(f=self.dest,nmin=nmin)
+                                raise argparse.ArgumentTypeError(msg)
+                        setattr(args, self.dest, values)
+        return RequiredLength
+
 def saveGraph(gr, fout):
-    """
-    Saves gr into fout
+    """Saves gr into fout
+
     """
     f = ROOT.TFile(fout, "update")
     gr.Write(gr.GetName(), ROOT.TObject.kOverwrite)
     f.Close()
 
 def printGraph(gr):
-    """ Prints TGraphErrors """
+    """Prints TGraphErrors
+
+    """
     print("# ", gr.GetTitle())
     print("# format: x ex y ey")
     N = gr.GetN()
@@ -56,12 +73,13 @@ def getHistAxis(obj, i):
         else:
                 raise ValueError('getHistAxis: i=%d must be <=2', i)
 
-def selectValid(inp, select):
-        """Return true if all expressions in the 'select' list are found in
-        the given input file
+def selectValid(inp, args):
+        """Return true if all regular expressions in the 'args.select' list
+        are found in the given input file
 
         """
         found = False
+        select = args.select
         n = len(select)
         with open(inp) as f:
                 lines = f.readlines()
@@ -77,6 +95,22 @@ def selectValid(inp, select):
 
         return found
 
+def selectEqualValid(inp, args):
+        """Return true if all variables in 'args.select' are equal to each
+        other in the given input file
+
+        """
+        found = True
+        select = args.select_equal
+        val = getParCL(inp, select[0], int(args.varpos), args.comment)
+        for s in select[1:]:
+                val1 = getParCL(inp, s, int(args.varpos), args.comment)
+                if val != val1:
+                        found = False
+                        break
+
+        return found
+
 
 def getGraph(args, tname, color):
     x = []
@@ -87,8 +121,11 @@ def getGraph(args, tname, color):
     for mctal in glob.glob(args.mctal):
         dirname = os.path.split(mctal)[0]
         inp = os.path.join(dirname, args.inp)
-        if args.select and not selectValid(inp, args.select):
+        if args.select and not selectValid(inp, args):
                 # print("Selection %s not valid in %s -> skipping" % (args.select, inp))
+                continue
+        if args.select_equal and not selectEqualValid(inp, args):
+                print("select_equal not valid in ", inp)
                 continue
         f = ROOT.TFile(mctal)
         obj = f.Get(tname)
@@ -193,7 +230,8 @@ def main():
     parser.add_argument('-yscale', dest='yscale', type=str, help='y-scaling factor. It will be evaluated as eval(\"y YSCALE\").', default="/1.0")
     parser.add_argument('-fit', dest='fit', type=str, default="", help='fitting function')
 #    parser.add_argument('-select', dest='select', default=[], nargs='+', help='selection') # -select "cut1" "cut2"
-    parser.add_argument('-select', dest='select', action='append', default=[], help='If used, only the cases matching the given regexp in the input file will be used. This option can be repeated and in this case the individual selections will form logical conjunction.') # -select "cut1" -select "cut2"
+    parser.add_argument('-select', dest='select', action='append', default=[], help='If specified, only the cases matching the given regexp in the input file will be used. This option can be repeated and in this case the individual selections will form logical conjunction.') # -select "cut1" -select "cut2"
+    parser.add_argument('-select-equal', dest='select_equal', default=[], nargs='+', action=required_length(2), help='If specified, only the cases where the given input file variables are equal to each other will be used. At least two variable names must be specified.')
     parser.add_argument('-pdf', dest='pdf', type=str, default="do not save", help='PDF file name to save canvas to')
     parser.add_argument('-only-average', dest='average', action='store_true', help='Draws only average of all points')
     parser.add_argument('-no-footer', dest='nofooter', action='store_true', help='Do not draw footer')
