@@ -57,7 +57,7 @@ class Converter:
         self.estimators = [Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRBDX",   "usxsuw"),
                            Estimator("USRTRACK", "ustsuw"),
-                           Estimator("RESNUCLEI","usrsuw")]
+                           Estimator("RESNUCLE", "usrsuw")]
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
