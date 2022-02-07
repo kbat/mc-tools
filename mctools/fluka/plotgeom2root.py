@@ -17,7 +17,7 @@ def main():
     parser.add_argument('plotgeom', type=str, nargs='*', help='list of plotgeom files')
     parser.add_argument('-o', dest='root', type=str, help='output ROOT file name', default="")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
-    parser.add_argument('-p', dest='plane', type=str, help='Plane type', default="guess")
+    parser.add_argument('-p', '--plane', dest='plane', type=str, help='Plane type', default="guess")
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite', help='overwrite the output ROOT file')
 
 
@@ -61,9 +61,7 @@ def main():
                 print("horizontal/vertical axes length:",XAXLEN,YAXLEN)
 #                print(X0,Y0,Z0,X1,Y1,Z1,TYX,TYY,TYZ,TXX,TXY,TXZ,XAXLEN,YAXLEN)
 
-            if (args.plane=="xy" or args.plane=="yx" or
-                args.plane=="xz" or args.plane=="zx" or
-                args.plane=="zy" or args.plane=="yz"):
+            if args.plane in ("xy", "yx", "xz", "zx", "zy", "yz"):
                 plane=args.plane
             else:
                 plane = "unknown"
@@ -136,9 +134,9 @@ def main():
                     elif plane=="yx":
                         y = list(map(lambda x:x+Y0, coord[::2]))
                         x = list(map(lambda y:y+X0, coord[1::2]))
-                    elif plane=="xz":
-                        x = list(map(lambda x:x+Z0, coord[::2]))
-                        y = list(map(lambda y:y+X0, coord[1::2]))
+                    elif plane=="xz": # checked
+                        x = list(map(lambda x:x+Y0, coord[::2]))
+                        y = list(map(lambda y:y+Z0, coord[1::2]))
                     elif plane=="yz":
                         x = list(map(lambda x:x+Y0, coord[::2]))
                         y = list(map(lambda y:y+Z0, coord[1::2]))
