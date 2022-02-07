@@ -8,7 +8,9 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 
 def main():
-    """ Converts PLOTGEOM output into a ROOT TMuiltiGraph object """
+    """Convert PLOTGEOM output into a ROOT TMuiltiGraph object
+
+    """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
@@ -43,19 +45,20 @@ def main():
                 sys.exit("Format error [title]")
             title = struct.unpack("=80s", data)[0].decode('utf-8').strip()
             if args.verbose:
-                print(title)
+                print("Title:",title)
 
             data = fortran.read(f)
             size = len(data)
             if size != 14*4:
                 print("Format error [basis]")
-            X0,Y0,Z0,X1,Y1,Z1,TYX,TYY,TYZ,TXX,TXY,TXZ,XAXLEN,YAXLEN = struct.unpack("=14f", data) # http://www.fluka.org/fluka.php?id=man_onl&sub=63
-            if not args.verbose:
+            # http://www.fluka.org/fluka.php?id=man_onl&sub=63
+            X0,Y0,Z0,X1,Y1,Z1,TYX,TYY,TYZ,TXX,TXY,TXZ,XAXLEN,YAXLEN = struct.unpack("=14f", data)
+            if args.verbose:
                 print("Bottom left corner:",X0,Y0,Z0)
                 print("Top right corner:",X1,Y1,Z1)
-                print("Direction cosines of the x-axis:",TXX,TXY,TXZ)
-                print("Direction cosines of the y-axis:",TYX,TYY,TYZ)
-                print("x and y axis length:",XAXLEN,YAXLEN)
+                print("Direction cosines of horizontal axis:",TXX,TXY,TXZ)
+                print("Direction cosines of vertical axis:",TYX,TYY,TYZ)
+                print("horizontal/vertical axes length:",XAXLEN,YAXLEN)
 #                print(X0,Y0,Z0,X1,Y1,Z1,TYX,TYY,TYZ,TXX,TXY,TXZ,XAXLEN,YAXLEN)
 
             if (args.plane=="xy" or args.plane=="yx" or
@@ -71,17 +74,18 @@ def main():
                 elif abs(Z0-Z1)<0.001:
                     plane="xy"
 
-            print("Plane == {}\n".format(plane))
+            if args.verbose:
+                print(f"Plane == {plane}")
 
             for i in range(1):
                 data = fortran.read(f)
                 size = len(data)
-                if args.verbose:
-                    print("size: ",size)
+                # if args.verbose:
+                #     print("size: ",size)
                 if size==8:
                     NWORMS,dummy = struct.unpack("=2i", data)
-                    if args.verbose:
-                        print("NWORMS:",NWORMS,dummy)
+                    # if args.verbose:
+                    #     print("NWORMS:",NWORMS,dummy)
 #                elif size==12: # this is never called
 #                    NWORMS,dummy,dummy1 = struct.unpack("=3i", data)
 #                    print(NWORMS,dummy,dummy1)
@@ -95,30 +99,30 @@ def main():
                 if data is None:
                     break
                 size = len(data)
-                if args.verbose:
-                    print("\nsize:",size)
+                # if args.verbose:
+                #     print("\nsize:",size)
 
                 if size == 12:
                     windex,dummy,wlength = struct.unpack("=3i",data)
-                    if args.verbose:
-                        print(windex,dummy,wlength)
+                    # if args.verbose:
+                    #     print(windex,dummy,wlength)
                 elif size==8:
                     tmp = struct.unpack("=2i", data)
-                    if args.verbose:
-                        print("size8:",tmp)
+                    # if args.verbose:
+                    #     print("size8:",tmp)
 ##                    break
                 elif size==24:
                     tmp = struct.unpack("=3i3f", data)
-                    if args.verbose:
-                        print("size24:",tmp)
+                    # if args.verbose:
+                    #     print("size24:",tmp)
                 else:
-                    if args.verbose:
-                        print("a",wlength)
+                    # if args.verbose:
+                    #     print("a",wlength)
                     coord = struct.unpack("=%df" % (wlength*2),data) # pairs of x,y
-                    if args.verbose:
-                        print(coord[:10])
+                    # if args.verbose:
+                    #     print(coord[:10])
 
-                    print ("PLANE[{}] == {} {} {} \n".format(plane,X0,Y0,Z0))
+#                    print ("PLANE[{}] == {} {} {} \n".format(plane,X0,Y0,Z0))
                     if plane=="xy":
                         x = list(map(lambda x:x+Y0, coord[::2]))
                         y = list(map(lambda y:y+X0, coord[1::2]))
