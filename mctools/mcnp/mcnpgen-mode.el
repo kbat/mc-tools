@@ -56,6 +56,9 @@
 (make-face 'font-lock-wwg-face)
 (set-face-foreground 'font-lock-wwg-face "orange")
 
+(make-face 'font-lock-variable-name-face)
+(set-face-foreground 'font-lock-variable-name-face "orange")
+
 
 (define-generic-mode 'mcnpgen-mode
   ;; comment-list (2 ways to comment in MCNP so do below)
@@ -77,7 +80,7 @@
     ;; tally comments go before keywords so that tally comment with a keyword is highlighted correctly
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
 
-    ("\\<\\(ara\\|axs\\|cap\\|cel\\|ctme\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|elc\\|erg\\|ext\\|flux\\|frv\\|geb\\|hlib\\|icd\\|imp\\|inc\\|kcode\\|^lc[abc]\\|^le[abt]\\|lost\\|mgopt +[af]\\|mode\\|model\\|mphys\\|nps\\|nrm\\|par\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|roc\\|phl\\|print\\|ptrac\\|psc=[0-9]\\|ptt\\|rad\\|rand\\|res\\|seed\\|scd\\|scx\\|sdef\\|stop\\|ssr\\|tag\\|tme\\|tmc\\|xvec\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(ara\\|axs\\|cap\\|cel\\|ctme\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|elc\\|ext\\|flux\\|frv\\|geb\\|hlib\\|icd\\|imp\\|inc\\|kcode\\|^lc[abc]\\|^le[abt]\\|lost\\|mgopt +[af]\\|mode\\|model\\|mphys\\|nps\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|roc\\|phl\\|print\\|ptrac\\|psc=[0-9]\\|ptt\\|rad\\|rand\\|res\\|seed\\|scd\\|scx\\|sdef\\|stop\\|ssr\\|tag\\|tme\\|tmc\\|xvec\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
 
     ;; Data cards related to geometry
     ("\\<\\(area\\|fill\\|lat\\|u\\|uran\\|vol\\|\\>" . 'font-lock-keyword-face)
@@ -85,7 +88,7 @@
     ("^*?trcl[0-9]+" . 'font-lock-transformation-face)
     ("^*?tr[0-9]+" . 'font-lock-transformation-face)
 
-    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|fcel d[0-9]+\\|file\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|plot\\|surface\\|tally\\|traks\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
+    ("\\<\\(buffer\\|but\\|cell\\|d[0-9]+\\|dose [0-9]\\|event\\|erg\\|fcel d[0-9]+\\|file\\|filter\\|freq\\|ftme\\|like\\|max\\|meph\\|nrm\\|par\\|plot\\|sur\\|surface\\|tally\\|traks\\|type\\|write\\|ulat\\)\\>" . 'font-lock-variable-name-face)
 
     ("[:= ]\\([|/hnpz#]\\)[\n \,=]" . 'font-lock-particle-face) ;; particles
     ;;("<h1>\\([^<]+?\\)</h1>" . 'font-lock-particle-face)

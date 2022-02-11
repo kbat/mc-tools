@@ -1,17 +1,20 @@
-;; Generic mode for highlighting syntax for LANL's
+;; Generic mode for highlighting syntax for INFN/CERN
 ;; FLUKA Monte Carlo transport code input file.
 ;;
 ;; Latest version is available here:
 ;; https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el
 ;;
 ;; How to use:
-;; Put -*-fluka-*- on the first line of your
-;; input file to autoload this mode (often this is the title card).
 ;;
-;; Your .emacs file should contain something like:
-;; (setq load-path (cons (expand-file-name "/path/to/your/lispdirectory") load-path))
-;; (global-font-lock-mode t)
-;; (load "fluka-mode")
+;; In order to autoload this mode for the *.inp files
+;; your .emacs configuration file should contain something like:
+;;
+;; (autoload 'fluka-mode "/path/to/fluka-mode.el" "FLUKA Mode." t)
+;; (or (assoc "\\.inp$" auto-mode-alist)
+;;     (setq auto-mode-alist
+;;     (cons '("\\.inp$" . fluka-mode) auto-mode-alist)))
+;;
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'font-lock)
