@@ -7,11 +7,10 @@
 
 import sys, math, struct, array
 
-#-------------------------------------------------------------------------------
-# Read a fortran structure from a binary file
-# @return data, None for EOF
-#-------------------------------------------------------------------------------
 def fortranRead(f):
+        """Read a fortran structure from a binary file
+        return data, None for EOF
+        """
         blen = f.read(4)
         if len(blen)==0: return None
         (size,) = struct.unpack("=i", blen)
@@ -21,15 +20,7 @@ def fortranRead(f):
                 raise IOError("Reading fortran block")
         return data
 
-
-#-------------------------------------------------------------------------------
-# Unpack an array of floating point numbers
-#-------------------------------------------------------------------------------
-def unpackArray(data):
-        return struct.unpack("=%df"%(len(data)//4),  data)
-
-
-#       """Class to read the SSW output file (wssa)"""
+#        """Class to read the SSW output file (wssa)"""
 class SSW:
     def __init__(self, filename=None, verbose=False, debug=False):
         """Initialise a SSW structure"""
@@ -76,9 +67,7 @@ class SSW:
         return self.aids
 
     def getNTracks(self):
-            """Return number of tracks
-
-            """
+            """Return number of tracks"""
             return self.nevt
 
     def unsupported(self):
@@ -96,9 +85,6 @@ class SSW:
         data = fortranRead(self.file)
         if data is None: raise IOError("Invalid SSW file")
         size = len(data)
-        # This is according to Esben's subs.f, but the format seems to be wrong
-        #        (kods, vers, lods, idtms, probs, aids, knods) = struct.unpack("=8s5s8s19s19s80s24s", data) # ??? why 24s ???
-        # This has been modified to fix the format:
         if self.debug:
                 print("* size1: ", size)
         if size == 8: # mcnp 6
@@ -188,18 +174,15 @@ class SSW:
 
 #       raise IOError("end")
 
-        nevt = nrss # number of tracks
-        self.nrcdo = self.nrcd # length of ssb array
+        nevt = nrss # Number of tracks
+        self.nrcdo = self.nrcd # Length of ssb array
         np1o = np1
 
-#        print("Number of tracks:", nevt)
         self.nevt = nevt
         tmp = []
         if np1 < 0:
                 np1 = abs(np1)
                 data = fortranRead(self.file)
-                #            print(len(data))
-                # (niwr, mipts,tmp
                 tmp = struct.unpack("=%di" % int(len(data)/4) ,data) # ??? why tmp ???
                 niwr = tmp[0]
                 mipts = tmp[1]
@@ -212,11 +195,10 @@ class SSW:
 
         if self.debug:
                 print("* for loop length (total number of surfaces): ",njsw+niwr)
+
         for i in range(njsw+niwr):
             data = fortranRead(self.file)
             size = len(data)
-            # if self.debug:
-            #         print("* size4: ", size)
             isurfs, kstpps, ntppsp, tpps = struct.unpack("=3i%ds" % int(size-12), data) #  12=3*4 due to '3i'
             if kstpps>=30:
                     self.isMacroBody = True
@@ -230,10 +212,10 @@ class SSW:
 
             if self.debug:
                     print(f"* surface index: {isurfs}; type: {kstpps}; number of coefficients: {ntppsp}; surface coefficients: ", vtpps)
-            self.isurfs.append(isurfs) # Surface indexes from MCNP input file
+            self.isurfs.append(isurfs) # Surface indices from MCNP input file
             self.kstpps.append(kstpps) # Surface type numbers of all the surfaces (from MCNP_GLOBAL module)
             self.ntppsp.append(ntppsp) # Number of coefficients needed to define the surface type
-            self.tpps.append(vtpps)    # surface coefficients for each surface
+            self.tpps.append(vtpps)    # Surface coefficients for each surface
 
         # Summary:
         data = fortranRead(self.file)
@@ -247,13 +229,13 @@ class SSW:
 
     def readHit(self):
         """Read neutron data and return the SSB array"""
+
         data = fortranRead(self.file)
         if self.mcnp6:
                 size = len(data)
-                # if self.debug:
-                #         print("* size: ",size)
                 size = size/8
                 ssb = struct.unpack("=%dd" % int(size), data)
         else:
-                ssb = struct.unpack("=%dd" % int(self.nrcd+1), data) # ??? why +1 Esben does not have it
+                ssb = struct.unpack("=%dd" % int(self.nrcd+1), data)
+
         return ssb
