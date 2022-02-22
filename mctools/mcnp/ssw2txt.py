@@ -42,6 +42,8 @@ def main():
 
     ssw = SSW(args.wssa, args.verbose)
 
+    weightsum=0
+
     print("history id weight energy time x y z wx wy k", file=fout)
 
     for i in range(ssw.nevt):
@@ -49,6 +51,7 @@ def main():
         history = ssb[0] # >0 = with collision, <0 = without collision
         id = ssb[1] # surface + particle type + multigroup problem info
         weight = ssb[2]
+        weightsum=weightsum+ssb[2]
         energy = ssb[3] # [MeV]
         time = ssb[4] # [shakes]
         x = ssb[5] # [cm]
@@ -58,7 +61,9 @@ def main():
         wy = ssb[9] # y-direction cosine
         k = ssb[10] # cosine of angle between track and normal to surface jsu (in MCNPX it is called cs)
         print(history, id, weight, energy, time, x, y, z, wx, wy, k, file=fout)
-
+ 
+    print("Sum of weights","{:.6f}".format(weightsum),"\nNumber of recorded tracks",ssw.nevt, file=fout) # appending sum of all weights and number of recorded tracks
+    
     ssw.file.close()
     fout.close()
 
