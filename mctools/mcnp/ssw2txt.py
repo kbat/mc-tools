@@ -8,9 +8,10 @@ from os import path
 from mctools.mcnp.ssw import SSW
 
 def main():
-    """
-    WSSA to ASCII converter.
-    The particle type (IPT) and surface number (surface) can be derived as shown below:
+    """WSSA to ASCII converter.
+
+    In the case of MCNPX (not MCNP6) the particle type (IPT) and
+    the surface number can be derived as shown below:
 
     i   = TMath::Nint(TMath::Abs(id/1E+6)); # tmp for particle type
     JGP = -TMath::Nint(i/200.0);            # energy group
@@ -18,6 +19,9 @@ def main():
     IPT = i-100*JC+200*JGP;                 # particle type: 1=neutron, 2=photon, 3=electron
     wz  = TMath::Sqrt(TMath::Max(0, 1-wx*wx-wy*wy)) * id/TMath::Abs(id) # z-direction cosine
     surface = TMath::Abs(id) % 1000000        # surface crossed
+
+    In MCNP6 the particle type is abs(id)/8 and the surface number is in the 'k' variable.
+
     """
 
     parser = argparse.ArgumentParser(description=main.__doc__,
