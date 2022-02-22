@@ -49,7 +49,7 @@ def main():
     for i in range(ssw.getNTracks()):
         ssb = ssw.readHit()
         history = ssb[0] # >0 = with collision, <0 = without collision
-        id = ssb[1] # surface + particle type + multigroup problem info
+        id = ssb[1] # MCNP6: packed variable 'b' in la-ur-16-20109 section 4.7 (z-direction sign+particle type); MCNPX: surface + particle type + multigroup problem info
         weight = ssb[2]
         weightsum += weight
         energy = ssb[3] # [MeV]
