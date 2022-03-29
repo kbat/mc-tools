@@ -40,13 +40,14 @@ class Arguments {
   const char **argv;
   po::variables_map vm;
   bool help;
+  bool errors; // true if called with -errors
   bool CheckMinMax(const float &vmin, const float &vmax, const std::string &title) const;
   bool CheckSlice() const;
  public:
   Arguments(int ac, const char **av);
   po::variables_map GetMap() const { return &vm; }
   bool IsBatch() const;
-  bool IsErrors() const { return vm.count("errors"); }
+  bool IsErrors() const { return errors; }
   bool IsFlipped() const { return vm.count("flip"); }
   bool IsHelp() const { return help; }
   bool IsLogz() const { return !vm.count("no-logz"); }

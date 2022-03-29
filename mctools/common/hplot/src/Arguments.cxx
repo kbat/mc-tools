@@ -40,7 +40,7 @@ void conflicting_options(const boost::program_options::variables_map & vm,
 }
 
 Arguments::Arguments(int ac, const char **av) :
-  argc(ac), argv(av), help(false)
+  argc(ac), argv(av), help(false), errors(false)
 {
   Plane xy("xy");
   const size_t inan = std::numeric_limits<size_t>::quiet_NaN();
@@ -175,7 +175,9 @@ Arguments::Arguments(int ac, const char **av) :
       exit(1);
     }
 
-    if (vm.count("errors") && (IsMaxErr()))
+    errors = vm.count("errors");
+
+    if (errors && (IsMaxErr()))
       {
 	std::cerr << "Error: -errors and -maxerror can not be used together" << std::endl;
 	exit(1);
