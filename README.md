@@ -39,9 +39,7 @@ Project homepage: https://github.com/kbat/mc-tools
 
 ## PHITS
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
-* ANGEL to [ROOT](http://root.cern) converter (converts the PHITS
-    output to ROOT) - most of the tallies are supported, but there are
-    known bugs and limitations, should be used with care.
+* ANGEL to [ROOT](http://root.cern) converter (converts the PHITS output into ROOT). Most of the tallies are supported with PHITS 2, but it does not really work with PHITS 3.
 * A script
     [rotate3dshow.py](https://github.com/kbat/mc-tools/blob/master/mctools/phits/rotate3dshow.py)
     which allows to animate the output of the **t-3dshow** tally. It
