@@ -176,9 +176,9 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
    // TGFileInfo fi;
    // Char_t  strtmp[250];
 
-  std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
-  std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
-  std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
+  // std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
+  // std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
+  // std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
 
   switch (GET_MSG(msg)) {
   case kC_COMMAND:
@@ -188,7 +188,7 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
       gApplication->Terminate();
       break;
     case M_HELP_ABOUT:
-      std::cout << "Help" << std::endl;
+      // std::cout << "Help" << std::endl;
       break;
 
     default:
@@ -216,6 +216,8 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
       biny = gh2->GetYaxis()->FindFixBin(y);
       fStatusBar->SetText(Form("Material: %d", static_cast<int>(gh2->GetBinContent(binx, biny))),1);
     }
+  else if (plotgeom)
+    fStatusBar->SetText("Geometry: PLOTGEOM",1);
   else
     fStatusBar->SetText("Geometry file not specified",1);
 
@@ -224,7 +226,7 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    if (event == kKeyPress)
      sprintf(text2, "%c %c", (char) px, (char) py);
    else
-      sprintf(text2, "%d,%d", px, py);
+     sprintf(text2, "%d,%d", px, py);
 
    fStatusBar->SetText(text2,2);
 
@@ -239,7 +241,10 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    if (std::abs(val)>0)
      relerr = err/val * 100.0;
 
-   fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
+   if (data->GetArgs()->IsErrors())
+     fStatusBar->SetText(Form("%g %%", val),3);
+   else
+     fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
 
    if (slice)
      slice->Draw(dh2, gPad->GetCanvas()->GetPad(1), gPad->GetCanvas()->GetPad(2));
