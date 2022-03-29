@@ -163,6 +163,8 @@ void MainFrame::DoSlider()
 
   if (geo3)
     gh2 = geo3->Draw(y);
+  else if (plotgeom)
+    plotgeom->Draw();
 
   pad1->Update();
 }
