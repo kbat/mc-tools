@@ -17,7 +17,8 @@ enum MainFrameMessageTypes {
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data) :
-  TGMainFrame(p,w,h), data(data), geo3(nullptr), plotgeom(nullptr), gh2(nullptr), slice(nullptr)
+  TGMainFrame(p,w,h), data(data), geo3(nullptr), plotgeom(nullptr),
+  gh2(nullptr), slice(nullptr), profile(nullptr)
 {
 
   // Menu bar
@@ -103,6 +104,8 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   if (data->GetArgs()->IsSlice())
     slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice());
+  else if (data->GetArgs()->IsProfile())
+    profile = std::make_unique<Profile>(data);
 }
 
 void MainFrame::SetGeometry(const std::shared_ptr<Geometry3> g)
@@ -132,23 +135,23 @@ TVirtualPad *MainFrame::GetHistogramPad() const
  */
 {
   TVirtualPad *c1 = GetCanvas();
-  if (data->GetArgs()->IsSlice())
+  if (data->GetArgs()->IsSlice() || data->GetArgs()->IsProfile())
     return c1->GetPad(1);
   else
     return c1;
 }
 
-TVirtualPad *MainFrame::GetSlicePad() const
-/*!
-  Return the canvas pad with the slice (if any)
- */
-{
-  TVirtualPad *c1 = GetCanvas();
-  if (data->GetArgs()->IsSlice())
-    return c1->GetPad(2);
-  else
-    return nullptr;
-}
+// TVirtualPad *MainFrame::GetSlicePad() const
+// /*!
+//   Return the canvas pad with the slice (if any)
+//  */
+// {
+//   TVirtualPad *c1 = GetCanvas();
+//   if (data->GetArgs()->IsSlice())
+//     return c1->GetPad(2);
+//   else
+//     return nullptr;
+// }
 
 void MainFrame::DoSlider()
 {
@@ -250,4 +253,6 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 
    if (slice)
      slice->Draw(dh2, gPad->GetCanvas()->GetPad(1), gPad->GetCanvas()->GetPad(2));
+   else if (profile)
+     profile->Draw(dh2, gPad->GetCanvas()->GetPad(1), gPad->GetCanvas()->GetPad(2));
 }

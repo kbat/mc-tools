@@ -14,6 +14,7 @@
 #include "GeometryMultiGraph.h"
 #include "Geometry3.h"
 #include "DynamicSlice.h"
+#include "Profile.h"
 
 class MainFrame : public TGMainFrame {
  private:
@@ -31,6 +32,7 @@ class MainFrame : public TGMainFrame {
   std::shared_ptr<TH2> gh2; // current geometry histogram
 
   std::unique_ptr<DynamicSlice> slice;
+  std::unique_ptr<Profile> profile;
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 	    const std::shared_ptr<Data3> data);
@@ -41,7 +43,7 @@ class MainFrame : public TGMainFrame {
 
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   TVirtualPad *GetHistogramPad() const;
-  TVirtualPad *GetSlicePad() const;
+  //  TVirtualPad *GetSlicePad() const;
   void DoSlider();
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 

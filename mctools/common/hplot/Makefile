@@ -31,7 +31,7 @@ obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
 	@rootcling -f MainFrameDict.cxx -c $^
 	@$(GCC) -c $(CXXFLAGS) -I./ MainFrameDict.cxx $(ROOTCFLAGS) -o $@
 
-hplot: obj/hplot.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Data3.o obj/Geometry.o obj/GeometryMultiGraph.o obj/Geometry3.o obj/DynamicSlice.o
+hplot: obj/hplot.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Data3.o obj/Geometry.o obj/GeometryMultiGraph.o obj/Geometry3.o obj/DynamicSlice.o obj/Profile.o
 	@echo "Linking $@"
 	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
 

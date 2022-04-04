@@ -15,8 +15,6 @@ class Data3 : public Data {
  private:
   mutable std::shared_ptr<TGaxis> yrev; // reversed Y axis [if flipped]
 
-  TAxis *GetHorizontalAxis() const;
-  TAxis *GetVerticalAxis() const;
   char   GetNormalAxisName() const;
   void Flip();
   void ErrorHist(std::shared_ptr<TH2> h) const;
@@ -47,6 +45,8 @@ class Data3 : public Data {
   virtual std::shared_ptr<TH2> Draw(const std::string val="") const;
   void SetOffset(Float_t val) { offset=val; }
   Float_t GetOffset() const { return offset; }
+  TAxis *GetHorizontalAxis() const;
+  TAxis *GetVerticalAxis() const;
   TAxis *GetNormalAxis() const;
   Bool_t Check(TAxis *normal) const;
   virtual data_t GetType() const { return kData3; }

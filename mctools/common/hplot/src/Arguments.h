@@ -54,14 +54,15 @@ class Arguments {
   bool IsMax() const { return vm.count("max"); }
   bool IsRebin() const { return vm.count("rebin"); }
   bool IsVerbose() const { return vm.count("v"); }
-  bool  IsXmin() const { return GetXmin()>std::numeric_limits<float>::lowest(); }
-  bool  IsXmax() const { return GetXmax()<std::numeric_limits<float>::max(); }
-  bool  IsYmin() const { return GetYmin()>std::numeric_limits<float>::lowest(); }
-  bool  IsYmax() const { return GetYmax()<std::numeric_limits<float>::max(); }
-  bool  IsZmin() const { return GetZmin()>std::numeric_limits<float>::lowest(); }
-  bool  IsZmax() const { return GetZmax()<std::numeric_limits<float>::max(); }
-  bool  IsZTitle() const;
-  bool        IsSlice() const;
+  bool IsXmin() const { return GetXmin()>std::numeric_limits<float>::lowest(); }
+  bool IsXmax() const { return GetXmax()<std::numeric_limits<float>::max(); }
+  bool IsYmin() const { return GetYmin()>std::numeric_limits<float>::lowest(); }
+  bool IsYmax() const { return GetYmax()<std::numeric_limits<float>::max(); }
+  bool IsZmin() const { return GetZmin()>std::numeric_limits<float>::lowest(); }
+  bool IsZmax() const { return GetZmax()<std::numeric_limits<float>::max(); }
+  bool IsZTitle() const;
+  bool IsSlice() const;
+  bool IsProfile() const { return vm.count("profile"); }
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   std::string GetDoption() const { return vm["doption"].as<std::string>(); }
   std::string GetGoption() const { return vm["goption"].as<std::string>(); }

@@ -268,8 +268,8 @@ void Data3::BuildMaxH2()
 		     {
 		       const Double_t val = h3->GetBinContent(ii,jj,kk);
 		       const Double_t e = h3->GetBinError(ii,jj,kk);
-		       if ((args->IsMaxErr(val,e)) && (max<val)) {
-			 //if ((args->IsMaxErr(val,e)) && (max+err<val-e)) {
+		       //		       if ((args->IsMaxErr(val,e)) && (max<val)) {
+			 if ((args->IsMaxErr(val,e)) && (max+err<val-e)) {
 			 max = val;
 			 err = e;
 		       }

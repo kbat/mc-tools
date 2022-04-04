@@ -187,11 +187,15 @@ int main(int argc, const char **argv)
 
   TVirtualPad *h2pad  = c1;
 
-  if ((args->IsSlice()) && (!args->IsBatch())) {
-    c1->Divide(1,2);
-    c1->cd(1);
-    h2pad = c1->GetPad(1);
-  }
+  if (!args->IsBatch())
+    {
+      if (args->IsSlice() || args->IsProfile())
+	{
+	  c1->Divide(1,2);
+	  c1->cd(1);
+	  h2pad = c1->GetPad(1);
+	}
+    }
 
   if (args->IsZTitle())
       c1->SetRightMargin(vm["right_margin"].as<float>());
