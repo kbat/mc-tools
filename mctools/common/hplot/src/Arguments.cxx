@@ -308,12 +308,12 @@ std::string Arguments::GetWindowTitle() const
 
 size_t Arguments::GetHeight() const
 {
-  size_t width = GetWidth();
   size_t height = vm["height"].as<size_t>();
 
   if (height==0) {
-    constexpr float sqrt5 = 2.236068;
-    height = round(width*2.0/(1.0+sqrt5)); // golden ratio
+    constexpr float scale = 0.61803399; // 2.0/(1.0+sqrt(5.0)) - golden ratio
+    const size_t width = GetWidth();
+    height = round(width*scale);
   }
 
   return height;
