@@ -4,7 +4,7 @@ Some Monte Carlo tools for MCNP, MCNPX, PHITS and FLUKA
 Project homepage: https://github.com/kbat/mc-tools
 
 ## MСNР
-* Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for MCNP.
+* Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for [MCNP](https://mcnp.lanl.gov).
 * An implementation of application programming interface (API) to
     read data from **mctal** files. It allows to convert **mctal**
     files into any format. Known issue: tallies with perturbation
