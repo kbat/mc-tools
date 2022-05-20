@@ -91,34 +91,35 @@ void Profile::DrawProfile(const std::shared_ptr<TH2> histo,
   if (hprofile->Integral()<epsilon)
     return;
 
-  int n=2;
-  TF1 *f = nullptr;
-  std::string fname;
-  double chi2ndf = 0.0;
-  const double zmin = -130.0;
-  const double zmax = 230.0;
+  // int n=2;
+  // TF1 *f = nullptr;
+  // std::string fname;
+  // double chi2ndf = 0.0;
+  // const double zmin = -130.0;
+  // const double zmax = 230.0;
 
-  for (n=2; n<=9; ++n) {
-    //    fname = "chebyshev" + std::to_string(n);
-    fname = "pol" + std::to_string(n);
-    hprofile->Fit(fname.data(), "", "", zmin, zmax);
-    f = hprofile->GetFunction(fname.data());
-    chi2ndf = f->GetChisquare()/f->GetNDF();
-    if (chi2ndf<1.0)
-      break;
-  }
+  // for (n=2; n<=9; ++n) {
+  //   //    fname = "chebyshev" + std::to_string(n);
+  //   fname = "pol" + std::to_string(n);
+  //   hprofile->Fit(fname.data(), "", "", zmin, zmax);
+  //   f = hprofile->GetFunction(fname.data());
+  //   chi2ndf = f->GetChisquare()/f->GetNDF();
+  //   if (chi2ndf<1.0)
+  //     break;
+  // }
 
-  const double maxfit = f->GetMaximum(zmin, zmax);
-  const double maxdata = histo->GetBinContent(biny, binx);
+  // const double maxfit = f->GetMaximum(zmin, zmax);
+  // const double maxdata = histo->GetBinContent(biny, binx);
 
-  hprofile->SetTitle(Form("%s,%s=(%d,%d) #bullet %s #bullet #chi^{2}/ndf = %.1f #bullet max(fit) = %g #bullet max(fit)/max(data) = %g ;%s",
-			  data->GetVerticalAxis()->GetName(),data->GetHorizontalAxis()->GetName(),
-			  y, x, fname.data(), chi2ndf, maxfit, maxfit/maxdata,
-			  data->GetNormalAxis()->GetTitle()));
+  // hprofile->SetTitle(Form("%s,%s=(%d,%d) #bullet %s #bullet #chi^{2}/ndf = %.1f #bullet max(fit) = %g #bullet max(fit)/max(data) = %g ;%s",
+  // 			  data->GetVerticalAxis()->GetName(),data->GetHorizontalAxis()->GetName(),
+  // 			  y, x, fname.data(), chi2ndf, maxfit, maxfit/maxdata,
+  // 			  data->GetNormalAxis()->GetTitle()));
 
+  hprofile->SetTitle("");
   hprofile->Draw("hist,e");
-  if (f)
-    f->Draw("same");
+  // if (f)
+  //   f->Draw("same");
 
 
   TAxis *yaxis = hprofile->GetYaxis();
