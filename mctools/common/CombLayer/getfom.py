@@ -153,8 +153,8 @@ def getGraph(args, tname, color):
         eytmp = 0.0
         for b in bins:
             thebin = int(b.strip())
-            ytmp += tally.GetBinContent(thebin)
-#            print(b,thebin,ytmp)
+            ytmp += tally.GetBinContent(thebin,0)
+#            print(b,thebin,ytmp,tally.GetBinError(thebin))
             eytmp += pow(tally.GetBinError(thebin), 2)
         eytmp = sqrt(eytmp)
         y.append(eval("%g%s" % (ytmp, args.yscale)))
