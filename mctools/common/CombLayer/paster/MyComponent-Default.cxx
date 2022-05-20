@@ -152,14 +152,14 @@ MyComponent::createSurfaces()
 {
   ELog::RegMethod RegA("MyComponent","createSurfaces");
 
-  ModelSupport::buildPlane(SMap,buildIndex+1,Origin-Y*(length/2.0),Y);
-  ModelSupport::buildPlane(SMap,buildIndex+2,Origin+Y*(length/2.0),Y);
+  SurfMap::makePlane("back",SMap,buildIndex+1,Origin-Y*(length/2.0),Y);
+  SurfMap::makePlane("front",SMap,buildIndex+2,Origin+Y*(length/2.0),Y);
 
-  ModelSupport::buildPlane(SMap,buildIndex+3,Origin-X*(width/2.0),X);
-  ModelSupport::buildPlane(SMap,buildIndex+4,Origin+X*(width/2.0),X);
+  SurfMap::makePlane("left",SMap,buildIndex+3,Origin-X*(width/2.0),X);
+  SurfMap::makePlane("right",SMap,buildIndex+4,Origin+X*(width/2.0),X);
 
-  ModelSupport::buildPlane(SMap,buildIndex+5,Origin-Z*(height/2.0),Z);
-  ModelSupport::buildPlane(SMap,buildIndex+6,Origin+Z*(height/2.0),Z);
+  SurfMap::makePlane("bottom",SMap,buildIndex+5,Origin-Z*(height/2.0),Z);
+  SurfMap::makePlane("top",SMap,buildIndex+6,Origin+Z*(height/2.0),Z);
 
   return;
 }
@@ -192,22 +192,24 @@ MyComponent::createLinks()
   ELog::RegMethod RegA("MyComponent","createLinks");
 
   FixedComp::setConnect(0,Origin-Y*(length/2.0),-Y);
-  FixedComp::setLinkSurf(0,-SMap.realSurf(buildIndex+1));
+  FixedComp::setNamedLinkSurf(0,"Back",SurfMap::getSignedSurf("#back"));
+
+ TODO: Check and use names for the links below:
 
   FixedComp::setConnect(1,Origin+Y*(length/2.0),Y);
-  FixedComp::setLinkSurf(1,SMap.realSurf(buildIndex+2));
+  FixedComp::setNamedLinkSurf(1,"Front",SMap.realSurf(buildIndex+2));
 
   FixedComp::setConnect(2,Origin-X*(width/2.0),-X);
-  FixedComp::setLinkSurf(2,-SMap.realSurf(buildIndex+3));
+  FixedComp::setNamedLinkSurf(2,"Left",-SMap.realSurf(buildIndex+3));
 
   FixedComp::setConnect(3,Origin+X*(width/2.0),X);
-  FixedComp::setLinkSurf(3,SMap.realSurf(buildIndex+4));
+  FixedComp::setNamedLinkSurf(3,"Right",SMap.realSurf(buildIndex+4));
 
   FixedComp::setConnect(4,Origin-Z*(height/2.0),-Z);
-  FixedComp::setLinkSurf(4,-SMap.realSurf(buildIndex+5));
+  FixedComp::setNamedLinkSurf(4,"Bottom",-SMap.realSurf(buildIndex+5));
 
   FixedComp::setConnect(5,Origin+Z*(height/2.0),Z);
-  FixedComp::setLinkSurf(5,SMap.realSurf(buildIndex+6));
+  FixedComp::setNamedLinkSurf(5,"Top",SMap.realSurf(buildIndex+6));
 
   return;
 }
