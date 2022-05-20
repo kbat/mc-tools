@@ -67,10 +67,12 @@ def main():
     for fname in args.sources[1:]:
         f = ROOT.TFile(fname)
         for key in f.GetListOfKeys():
+            hnew = key.ReadObj()
+            if not hnew.Class().InheritsFrom(ROOT.TH1.Class()):
+                continue
             if args.only is not None and key.GetName() != args.only:
                 continue;
             h = getHist(vhist, key.GetName(), fname)
-            hnew = key.ReadObj()
             for i in range(1, hnew.GetNbinsX()+1):
                 for j in range(1, hnew.GetNbinsY()+1):
                     for k in range(1, hnew.GetNbinsZ()+1):
