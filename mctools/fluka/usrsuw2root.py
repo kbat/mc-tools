@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse
+import sys, argparse, struct
 from os import path
 import numpy as np
 from mctools import fluka
@@ -46,7 +46,7 @@ def graphA(det, A, errA):
     return graph(det.name+"A", getType(det)+": Isotope yield as a function of mass number;A;Isotope yield [nuclei/cm^{3}/primary]", A, errA)
 
 def graphZ(det, Z, errZ):
-    return graph(det.name+"Z", getType(det)+": Isotope yield as a function of atomic number;Z;Isotope yield [nuclei/cm^{2}/primary]", Z, errZ)
+    return graph(det.name+"Z", getType(det)+": Isotope yield as a function of atomic number;Z;Isotope yield [nuclei/cm^{3}/primary]", Z, errZ)
 
 def getRegion(det):
     """ Return printable scoring region number or name """
@@ -60,11 +60,21 @@ def hist(det):
 
     """
 
-    title = "%s: %s, volume = %g cm^{3};Z;A;Isotope yield [nuclei/cm^{2}/primary]" % (getType(det), getRegion(det), det.volume)
+    title = "%s (excluding isomers): %s, volume = %g cm^{3};Z;A;Isotope yield [nuclei/cm^{3}/primary]" % (getType(det), getRegion(det), det.volume)
 
     nz = det.zhigh-1
     na = det.mhigh+det.nmzmin+det.zhigh
+
     return ROOT.TH2F(det.name, title, nz, 1, nz+1, na, 1, na+1)
+
+def histIso(det, val, err):
+    """Create TH1 with isomer data"""
+    n = len(val)
+    assert n == len(err), "histIso: different lengths of values and errors"
+
+    title = "Isomers of %s: %s, volume = %g cm^{3};bin number;Isomer yield [nuclei/cm^{3}/primary]" % (getType(det), getRegion(det), det.volume)
+
+    return ROOT.TH1F(det.name+"iso", title, n, 1, n+1)
 
 
 def main():
@@ -105,11 +115,30 @@ def main():
     for i in range(ND):
         val = Data.unpackArray(b.readData(i))
         stat = b.readStat(i)
-        total, A, errA, Z, errZ, err, iso = map(Data.unpackArray, stat)
-#        print(i,iso) - isomers(?)
+        total, A, errA, Z, errZ, err, isoErr = map(Data.unpackArray, stat)
+        # isoErr = errors for the isomer data
+
+#        print("isomers: ", b.nisomers, i)
 
         det = b.detector[i]
 #        print(det.nb, det.name, det.type, det.region, det.mhigh, det.zhigh, det.nmzmin)
+
+        if b.nisomers:
+            iso = b.readIso(i)
+            isoHead = iso[0]
+            L = struct.unpack("=10xi", isoHead)
+            assert L[0] == len(isoErr), "Isomers: different size of Data and Error arrays"
+            isoData = struct.unpack("=%df" % L[0], iso[1])
+
+            hIso = histIso(det, isoData, isoErr)
+            for j in range(1,L[0]):
+                hIso.SetBinContent(j, isoData[j])
+                hIso.SetBinError(j, isoErr[j]*isoData[j])
+
+            # if det.name == "res126":
+            #     print("L",L)
+            #     print(len(isoData))
+            #     print(i, len(isoErr))
 
         h = hist(det)
 
@@ -126,6 +155,8 @@ def main():
                     h.SetBinError(z,a,err[gbin]*val[gbin])
 
         h.Write()
+        if b.nisomers:
+            hIso.Write()
         grA.Write()
         grZ.Write()
 
