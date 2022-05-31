@@ -62,7 +62,9 @@ def hist(det):
 
     title = "%s: %s, volume = %g cm^{3};Z;A;Isotope yield [nuclei/cm^{2}/primary]" % (getType(det), getRegion(det), det.volume)
 
-    return ROOT.TH2F(det.name, title, det.zhigh-1, 1, det.zhigh, det.mhigh-1, 1, det.mhigh)
+    nz = det.zhigh-1
+    na = det.mhigh+det.nmzmin+det.zhigh
+    return ROOT.TH2F(det.name, title, nz, 1, nz+1, na, 1, na+1)
 
 
 def main():
@@ -103,11 +105,8 @@ def main():
     for i in range(ND):
         val = Data.unpackArray(b.readData(i))
         stat = b.readStat(i)
-        total, A, errA, Z, errZ, err = map(Data.unpackArray, stat[:-1])
-
-        iso = stat[-1]
-        if iso:
-            print("isomeric:",iso)
+        total, A, errA, Z, errZ, err, iso = map(Data.unpackArray, stat)
+#        print(i,iso) - isomers(?)
 
         det = b.detector[i]
 #        print(det.nb, det.name, det.type, det.region, det.mhigh, det.zhigh, det.nmzmin)
@@ -121,13 +120,14 @@ def main():
             for j in range(1,det.mhigh+1):
                 gbin = z-1+(j-1)*(det.zhigh)
                 if val[gbin]>0.0:
+                    # See the RDRESN program from the RESNUCLEi section of the Manual
                     a = j+det.nmzmin+2*z
                     h.SetBinContent(z,a,val[gbin])
                     h.SetBinError(z,a,err[gbin]*val[gbin])
 
         h.Write()
-        grA.Write() # same as h.ProjectionY()
-        grZ.Write() # same as h.ProjectionX()
+        grA.Write()
+        grZ.Write()
 
     fout.Close()
 
