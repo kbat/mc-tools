@@ -53,7 +53,7 @@ Project homepage: https://github.com/kbat/mc-tools
 
 ## FLUKA
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org).
-* [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA **binary** output into a [ROOT](https://root.cern) file. In order to understand how it works, run ```$FLUTIL/rfluka -N0 -M3 $FLUPRO/exmixed.inp``` and then execute ```fluka2root exmixed.inp```. It creates a single ROOT file out of all FLUKA-produced data files converted into the ROOT histograms or trees.
+* [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA binary output into a [ROOT](https://root.cern) file. In order to understand how it works, run ```$FLUTIL/rfluka -N0 -M3 $FLUPRO/exmixed.inp``` and then execute ```fluka2root exmixed.inp```. It creates a single ROOT file out of all FLUKA-produced data files converted into the ROOT histograms or trees.
   * A more detailed tutorial is available in the [wiki section](https://github.com/kbat/mc-tools/wiki/FLUKA).
   * Internally, `fluka2root` uses the following convertes which can be called individually:
     * [usbsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usbsuw2root.py) script to convert the USRBIN results into a TH3F histogram. Note that this tool does not directly convert the files produced by the USRBIN card, but these files must first be averaged by the $FLUTIL/usbsuw program. The resulting averaged file can be converted into ROOT by usbsuw2root. The $FLUTIL/usbsuw call is done automatically if the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) general converter is used.
@@ -70,7 +70,7 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
 * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE (a compact ENDF) to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
-* [hplot](https://github.com/kbat/mc-tools/tree/master/mctools/common/hplot), an advanced [TH3](https://root.cern.ch/doc/v608/classTH3.html) histogram plotter. We use it to visualise data maps and superimpose them with Monte Carlo geometry. Detailed manual can be generted with the ```-h``` argument.
+* [hplot](https://github.com/kbat/mc-tools/tree/master/mctools/common/hplot), an advanced [TH3](https://root.cern.ch/doc/v608/classTH3.html) histogram plotter. We use it to visualise data maps and superimpose them with Monte Carlo geometry. A detailed manual can be generted with the ```-h``` argument.
 
 ## Requirements ##
 * The ROOT-related scripts (file names end with ```*2root```), require [ROOT](http://root.cern) to be compiled with Python 3 support.
