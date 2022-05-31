@@ -22,17 +22,21 @@ def getType(det):
         return "unknown RESNUCLEI detector type"
 
 def graph(name, title, val, err):
-    N = len(val)
-    assert N == len(err), "graph: length of val and err differ"
+    n = len(val)
+    assert n == len(err), "graph: length of val and err differ"
+
+    N = np.count_nonzero(val) # number of points in the graph
 
     ge = ROOT.TGraphErrors(N)
-    for i in range(N):
-        # if val[i] > 0.0 or err[i] > 0.0:
+    j = 0 # ge point index
+    for i in range(n):
         x = i+1
         y = val[i]
         ey = err[i]*val[i]
-        ge.SetPoint(i, x, y)
-        ge.SetPointError(i, 0, ey)
+        if y>0.0:
+            ge.SetPoint(j, x, y)
+            ge.SetPointError(j, 0.0, ey)
+            j = j+1
 
     ge.SetNameTitle(name, title)
 
