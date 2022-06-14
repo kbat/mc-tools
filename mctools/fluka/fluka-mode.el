@@ -62,7 +62,7 @@
     ("^*.*" . 'font-lock-comment-face)         ;; star sign comment indicator
     ("\\<\\(BME\\|DPMJET\\|MYRQMD\\|OPEN\\|RQMD\\|SOURCE\\|ERDUMP\\|USRGCALL\\|USRICALL\\|USROCALL\\)\\>" . 'font-lock-keyword-face)
     ("\\<\\(COMBNAME\\|DEFAULTS\\|DELTARAY\\|ELECTNUC\\|ELPO-THR\\|END\\|FREE\\|GLOBAL\\|GEOBEGIN\\|GEOEND\\|PLOTGEOM\\|RANDOMIZE?\\|ROT-DEFI\\|START\\|STOP\\|TITLE\\)\\>" . 'font-lock-keyword-face)
-    ("\\<\\(BIASING\\|DISCARD\\|DPMJET\\|EMF-BIAS\\|EMFF-OFF\\|EMFCUT\\|EMFFIX\\|EMFFLUO\\|EMFRAY\\|EMXPTRANS\\|FLUKAFIX\\|HI-PROPE\\|IONFLUCT\\|LAM-BIAS\\|LOW-BIAS\\|LOW-DOWN\\|MCSTHRES\\|MULSOPT\\|MUMUPAIR\\|MUPHOTON\\|OPT-PROD\\|PAIRBREM\\|PHOTONUC\\|WW-FACTO\\|WW-PROFI\\|WW-THRES\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(BIASING\\|DISCARD\\|DPMJET\\|EMF-BIAS\\|EMFF-OFF\\|EMFCUT\\|EMFFIX\\|EMFFLUO\\|EMFRAY\\|EMXPTRANS\\|FLUKAFIX\\|HI-PROPE\\|IONFLUCT\\|LAM-BIAS\\|LOW-BIAS\\|LOW-DOWN\\|MCSTHRES\\|MULSOPT\\|MUMUPAIR\\|MUPHOTON\\|OPT-PROD\\|PAIRBREM\\|PHOTONUC\\|SYRASTEP\\|WW-FACTO\\|WW-PROFI\\|WW-THRES\\)\\>" . 'font-lock-keyword-face)
     ("\\<\\(BEAMAXES\\|BEAMPOS\\|BEAM\\|COALESCE\\|ELCFIELD\\|EMF\\|EVAPORAT\\|EVENTYPE\\|IONSPLIT\\|LAMBBREM\\|LOW-NEUT\\|MGNFIELD\\|PART-THR\\|PHO2-THR\\|PHOT-THR\\|PHYSICS\\|POLARIZA\\|PROD-CUT\\|STEPSIZE\\|THRESHOL\\|TIME-CUT\\)\\>" . 'font-lock-keyword-face)
 
     ("\\<\\(^\\(ARB\\|BOX\\|ELL\\|PLA\\|R\\(AW\\|CC\\|EC\\|PP\\)\\|SPH\\|TRC\\|WED\\|X\\(CC\\|EC\\|YP\\|ZP\\)\\|Y\\(CC\\|EC\\|ZP\\)\\|Z\\(CC\\|EC\\)\\|QUA\\)\\)\\>" . 'font-lock-surface-face)
