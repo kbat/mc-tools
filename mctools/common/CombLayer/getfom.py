@@ -46,7 +46,7 @@ def printGraph(gr):
     print("# format: x ex y ey")
     N = gr.GetN()
     for i in range(N):
-        print("case%03d:" % (i+1), gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i])
+        print("case%03d: %3.5e %3.5e %3.5e %3.5e" % (i+1, gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i]))
 
 def getHistAxis(obj, i):
         """Return TH3 axis based on its number
@@ -154,14 +154,16 @@ def getGraph(args, tname, color):
         for b in bins:
             thebin = int(b.strip())
             ytmp += tally.GetBinContent(thebin,0)
+            # if mctal == "case001/mctal.root":
+            #         print(thebin,ytmp)
 #            print(b,thebin,ytmp,tally.GetBinError(thebin))
             eytmp += pow(tally.GetBinError(thebin), 2)
         eytmp = sqrt(eytmp)
         y.append(eval("%g%s" % (ytmp, args.yscale)))
         ey.append(eval("%g%s" % (eytmp, args.yscale)))
         f.Close()
-#    print(x)
-#    print(y)
+#   print(x)
+#   print(y)
 
 # sort all arrays
     x,y,ex,ey = list(zip(*sorted(zip(x,y,ex,ey))))
