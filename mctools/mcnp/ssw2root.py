@@ -58,9 +58,9 @@ def main():
     ssw = SSW(fin_name, args.verbose, args.debug)
 
     if ssw.mcnp6 and ssw.isMacroBody:
-        hits = ROOT.fhit_t()
-    else:
         hits = ROOT.ihit_t()
+    else:
+        hits = ROOT.fhit_t()
 
     fout = ROOT.TFile(fout_name, "recreate", ssw.getTitle())
     T = ROOT.TTree("T", ssw.probs)
