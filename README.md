@@ -108,8 +108,10 @@ e-mail: `batkov [аt] gmail.com`
 List of authors: Nicolò Borghi, Kazuyoshi Furutaka, Konstantin Batkov
 
 ## See also ##
-http://pyne.io
+https://github.com/lanl/mcnptools
 
 https://github.com/SAnsell/CombLayer
+
+http://pyne.io
 
 https://github.com/Lindt8/DCHAIN-Tools

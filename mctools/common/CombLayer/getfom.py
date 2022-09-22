@@ -46,7 +46,7 @@ def printGraph(gr):
     print("# format: x ex y ey")
     N = gr.GetN()
     for i in range(N):
-        print("case%03d: %3.5e %3.5e %3.5e %3.5e" % (i+1, gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i]))
+        print("%3.5e %3.5e %3.5e %3.5e" % (gr.GetX()[i], gr.GetEX()[i], gr.GetY()[i], gr.GetEY()[i]))
 
 def getHistAxis(obj, i):
         """Return TH3 axis based on its number
