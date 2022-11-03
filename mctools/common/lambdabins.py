@@ -53,9 +53,9 @@ def main():
     ebins = LambdaBins(args.nbins, args.lmin, args.lmax, edgesE) # energy bins
 
     if args.width:
-        print(textwrap.fill(" ".join(map(str, ebins)), width=80, subsequent_indent=" "*7))
+        print(textwrap.fill(" ".join(map(lambda n: "%.5e" % n, ebins)), width=args.width, subsequent_indent=" "*7))
     else:
-        print(" ".join(map(str, ebins)))
+        print(" ".join(map(lambda n: "%.5e" % n, ebins)))
 
 if __name__=="__main__":
     sys.exit(main())
