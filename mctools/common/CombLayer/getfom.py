@@ -222,9 +222,9 @@ def main():
     parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter,epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-tally', dest='tally', type=str, default="f5", help='Tally name')
     parser.add_argument('-axis', dest='axis', type=int, default=6, help='axis to project THnSparse on. If<0, the absolute value of BIN must be specified (see next argument). This option make sence only for THnSparse objects.')
+    parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin number to use as the figure of merit. Plus-sign-separated list of bins is allowed: the result will be the sum over all bins. Hint for the MCNP case: the bin number is the serial number of the bin in the outp file provided that no FQ print hierarhy card was used.')
     parser.add_argument('-range', dest='rangebin', action="append", nargs=3, type=int, help='axis number followed by range of bins to set its range (e.g. 6 1 10 will call GetAxis(6)->SetRange(1,10)). +see also description of -range-user',default=[])
     parser.add_argument('-range-user', dest='rangeuser', action="append", nargs=3, help='axis number followed by range of values to set its user range (e.g. 6 0.5 100.5 will call GetAxis(6)->SetRangeUser(0.5,100.5)). This option can be repeated for several axes. If both -range and -range-user are specified for the same axis, the latter takes precedence. For the TH[123] histograms the [XYZ] axes are called by integer counting from zero.', default=[])
-    parser.add_argument('-bin', dest='bin', type=str, default="1", help='bin number to use as the figure of merit. Plus-sign-separated list of bins is allowed: the result will be the sum over all bins. Hint for the MCNP case: the bin number is the serial number of the bin in the outp file provided that no FQ print hierarhy was used.')
     parser.add_argument('-title', dest='title', type=str, default="", help='graph title')
     parser.add_argument('-xtitle', dest='xtitle', type=str, default="par [cm]", help='x-axis title')
     parser.add_argument('-ytitle', dest='ytitle', type=str, default="Figure of Merit [a.u.]", help='y-axis title')
@@ -239,13 +239,17 @@ def main():
     parser.add_argument('-no-footer', dest='nofooter', action='store_true', help='Do not draw footer')
     parser.add_argument('-dump', dest='dump', action='store_true', help='Dump the values in stdout')
     parser.add_argument('-save', dest='save', type=str, help='Saves resulting graph into a ROOT file', default="")
+    parser.add_argument('-batch', dest='batch', action='store_true', default=False, help='activates the batch mode in ROOT')
     parser.add_argument('-varpos', dest='varpos', default=2, help='position of the variable\'s value in the input file')
     parser.add_argument('-mctal', dest='mctal', default="case*/mctal.root", help='list of mctal files to use')
     parser.add_argument('-inp', dest='inp', default="inp", help='input file name')
-    parser.add_argument('-comment', dest='comment', default=None, help="input file comment symbol. Default value: if file extension is 'inp' then comment is set to '*', otherwise to 'c' ")
+    parser.add_argument('-comment', dest='comment', default=None, help="input file comment symbol. Default value: if file extension is 'inp' then comment is set to '*' (FLUKA style), otherwise to 'c' (MCNP style)")
     parser.add_argument('var', type=str, help='CombLayer variable to plot (see also -varpos). It must be written as a commented string in the MCNP input deck.')
 
     args = parser.parse_args()
+
+    if args.batch:
+            ROOT.gROOT.SetBatch(1)
 
     if args.comment is None:
             if os.path.splitext(args.inp)[1] == ".inp": # assume FLUKA
