@@ -2,6 +2,8 @@
 #
 # https://github.com/kbat/mc-tools
 #
+# ValueError: could not convert string to float: '1.30000E+01-0.0000'
+# sed -i -e "s;0\([0-9]\)-0.0000;0\1 0.0000;g" mctal
 
 import sys, argparse
 from os import path
