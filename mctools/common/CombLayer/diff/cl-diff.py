@@ -40,7 +40,8 @@ def main():
             exeindex += 1
         root1 = f"exe0_z{zindex}.root"
         root2 = f"exe1_z{zindex}.root"
-        print(f"./hist-diff.py {root1} h3 {root2} h3 > hist-diff{zindex}.log") # " && rm -f {root1} {root2}"
+#        print(f"$MCTOOLS/mctools/common/CombLayer/diff/hist-diff.py {root1} h3 {root2} h3 > hist-diff{zindex}.log") # " && rm -f {root1} {root2}"
+        print(f"$MCTOOLS/mctools/common/CombLayer/diff/hist-diff.py {root1} h3 {root2} h3 > /dev/null") # > hist-diff{zindex}.log") # " && rm -f {root1} {root2}"
         zindex += 1
 
 if __name__ == "__main__":

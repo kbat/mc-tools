@@ -56,7 +56,11 @@ def main():
                     dx = h1.GetXaxis().GetBinWidth(i)
                     dy = h1.GetYaxis().GetBinWidth(j)
                     dz = h1.GetZaxis().GetBinWidth(k)
-                    hdiff.SetBinContent(i,j,k,1.0)
+                    if val1 > val2:
+                        hdiff.SetBinContent(i,j,k,1.0)
+                    else:
+                        hdiff.SetBinContent(i,j,k,2.0)
+
                     print(f"ERROR: {x:.2f} {y:.2f} {z:.2f}:\t{val1} {val2}\t\tbin size: {dx:.2f} {dy:.2f} {dz:.2f}")
                     retval += 1
 
