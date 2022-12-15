@@ -44,6 +44,10 @@ sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' $inp
 # insert void if not there
 grep -i "^void *$" $inp || echo void >> $inp
 
+# allow one lost particle only
+sed -i "s;^lost;c lost;i" $inp
+echo "lost 1" >> $inp
+
 sed -i -n '/^[sS][dD][eE][fF]/{p;:a;N;/c ++++/!ba;s/.*\n//};p' $inp
 sed -i "s/^sdef.*/sdef x=$x y=$y z=$z/i" $inp
 
@@ -65,6 +69,7 @@ if grep "particle histories were done" > /dev/null $out; then
 else
     tail $out
     echo "geometry check failed"
+    echo "(!!! but be sure you did not put sdef directly on a surface!!!)"
     echo "input file: " $inp
     echo "output file:" $out
     exit 1
