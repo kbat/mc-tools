@@ -23,7 +23,12 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
 
   pad = slicepad;
 
-  h2pad->GetCanvas()->FeedbackMode(kTRUE);
+  // Fix to draw the mouse position lines:
+  // https://root-forum.cern.ch/t/gvirtualx-drawtext/3081/2
+  //  h2pad->GetCanvas()->FeedbackMode(kTRUE);
+  h2pad->SetDoubleBuffer(0);
+  gVirtualX->SetDrawMode(TVirtualX::kCopy);
+
   Int_t event = h2pad->GetEvent();
   if (event==kButton1Down)
     projection = !projection;
