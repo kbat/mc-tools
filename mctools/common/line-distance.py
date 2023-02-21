@@ -73,6 +73,9 @@ def GetDistance(verbose, r1, s1, r2, s2):
 
 
 def main():
+    '''
+    Return distance between two lines defined by a point and a vector
+    '''
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
