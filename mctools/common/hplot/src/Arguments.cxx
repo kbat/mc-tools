@@ -93,7 +93,8 @@ Arguments::Arguments(int ac, const char **av) :
       ("right_margin", po::value<float>()->default_value(0.12),
        "Right margin of the canvas in order to allocate enough space for the TH2 z-axis title. "
        "Used only if ZTITLE is set and DOPTION is \"colz\".")
-      ("flip", "Flip the vertical axis.")
+      ("flip", "Flip the geometry/data histograms vertically. This option does not filp the y-axis, so that the y-coordinates in the flipped data will not correspond to those in the original histogram. An advantage of this is that the user can zoom the y-range with the mouse.")
+      ("flipwithaxis", "Same as the 'flip' option but the y-axis is also flipped with drawback that the mouse zoom along the y-axis does not work.")
       //      ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(""),
        "Output file name. If given then the canvas is not shown.")

@@ -134,9 +134,9 @@ void Data3::Flip()
 
   if (plane[0]=='x')
     f(i,j,k,nx,i,ii,ii,j,k);
-  if (plane[0]=='y')
+  else if (plane[0]=='y')
     f(i,j,k,ny,j,ii,i,ii,k);
-  if (plane[0]=='z')
+  else if (plane[0]=='z')
     f(i,j,k,nz,k,ii,i,j,ii);
 
   h3 = std::move(flipped);
@@ -590,7 +590,7 @@ std::shared_ptr<TH2> Data3::Draw(const Float_t val) const
 
   h2->Draw();
 
-  if (args->IsFlipped())
+  if (args->IsFlippedAxis())
     ReverseYAxis(h2);
 
   if (args->IsVerbose())

@@ -48,7 +48,8 @@ class Arguments {
   po::variables_map GetMap() const { return &vm; }
   bool IsBatch() const;
   bool IsErrors() const { return errors; }
-  bool IsFlipped() const { return vm.count("flip"); }
+  bool IsFlipped() const { return vm.count("flip") + vm.count("flipwithaxis"); }
+  bool IsFlippedAxis() const { return vm.count("flipwithaxis"); }
   bool IsHelp() const { return help; }
   bool IsLogz() const { return !vm.count("no-logz"); }
   bool IsMax() const { return vm.count("max"); }
