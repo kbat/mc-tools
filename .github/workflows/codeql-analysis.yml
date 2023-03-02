@@ -89,7 +89,7 @@ jobs:
        export MCTOOLS=$(pwd)
        export PATH=$MCTOOLS/bin:$PATH
        make
-       ls -l hplot
+       ls -l mctools/common/hplot/hplot
       shell: bash
 
     - name: Test hplot
