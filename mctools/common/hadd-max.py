@@ -50,13 +50,14 @@ def main():
 
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite',
                         help='overwrite the target output ROOT file')
-    parser.add_argument("-errmax",   type=float, dest='errmax', help='Max relative error [%] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
+    parser.add_argument("-errmax",   type=float, dest='errmax', help='Max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
                         default=101.0, required=False)
     parser.add_argument("-only", type=str, default=None, help="Take into account only the given histogram name")
     parser.add_argument('target', type=str, help='Target file')
     parser.add_argument('sources', type=str, help='Source files', nargs='+')
 
     args = parser.parse_args()
+    return 0
 
     if not args.overwrite and os.path.exists(args.target):
         logging.critical("File %s exists. Use -f to overwrite" % args.target)
