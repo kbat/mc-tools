@@ -89,6 +89,7 @@ jobs:
        export MCTOOLS=$(pwd)
        export PATH=$MCTOOLS/bin:$PATH
        make
+       ls -l hplot
       shell: bash
 
     - name: Test hplot
@@ -97,10 +98,13 @@ jobs:
       shell: bash
       run: |
        source ~/root/bin/thisroot.sh
+       which root
        export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
        export MCTOOLS=$(pwd)
        ls $MCTOOLS
        export PATH=$MCTOOLS/bin:$PATH
+       echo $PYTHONPATH
+       ls $ROOTSYS/lib
        cd tests/hplot
        python3 test.py
 
