@@ -57,7 +57,6 @@ def main():
     parser.add_argument('sources', type=str, help='Source files', nargs='+')
 
     args = parser.parse_args()
-    return 0
 
     if not args.overwrite and os.path.exists(args.target):
         logging.critical("File %s exists. Use -f to overwrite" % args.target)
