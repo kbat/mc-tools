@@ -53,9 +53,9 @@ def main():
     parser.add_argument("-errmax",   type=float, dest='errmax', help='max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
                         default=101.0, required=False)
     parser.add_argument("-only", type=str, default=None, help="take into account only the given histogram name")
-    parser.add_argument('target', type=str, help='Target file')
-    parser.add_argument('sources', type=str, help='Source files', nargs='+')
-    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print the file names as they are processed.')
+    parser.add_argument('target', type=str, help='target file')
+    parser.add_argument('sources', type=str, help='source files', nargs='+')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print the file names as they are processed')
 
     args = parser.parse_args()
 
