@@ -50,11 +50,12 @@ def main():
 
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite',
                         help='overwrite the target output ROOT file')
-    parser.add_argument("-errmax",   type=float, dest='errmax', help='Max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
+    parser.add_argument("-errmax",   type=float, dest='errmax', help='max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
                         default=101.0, required=False)
-    parser.add_argument("-only", type=str, default=None, help="Take into account only the given histogram name")
+    parser.add_argument("-only", type=str, default=None, help="take into account only the given histogram name")
     parser.add_argument('target', type=str, help='Target file')
     parser.add_argument('sources', type=str, help='Source files', nargs='+')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print the file names as they are processed.')
 
     args = parser.parse_args()
 
@@ -65,6 +66,8 @@ def main():
     vhist = getHistograms(args.sources[0], args.only)
 
     for fname in args.sources[1:]:
+        if args.verbose:
+            print(fname)
         f = ROOT.TFile(fname)
         for key in f.GetListOfKeys():
             hnew = key.ReadObj()
@@ -82,6 +85,7 @@ def main():
                         if val > h.GetBinContent(i,j,k) and relerr*100.0 < args.errmax:
                             h.SetBinContent(i,j,k, val)
                             h.SetBinError(i,j,k, err)
+        f.Close()
 
     f = ROOT.TFile(args.target, "RECREATE")
     for h in vhist:
