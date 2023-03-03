@@ -67,6 +67,8 @@ jobs:
       shell: bash
       run: |
        gcc --version
+       apt-cache search ROOT | grep ROOT
+       asd
        cd ~/
        sudo apt-get install dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev python3 libssl-dev
        wget --quiet https://root.cern/download/root_v6.28.00.Linux-ubuntu20-x86_64-gcc9.4.tar.gz
