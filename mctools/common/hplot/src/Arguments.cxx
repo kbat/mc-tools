@@ -67,12 +67,13 @@ Arguments::Arguments(int ac, const char **av) :
       ("plane", po::value<Plane>()->default_value(xy, "xy"),
        "Projection plane. Allowed values: xy, xz, yx, yz, zx, zy. The ROOT notation is used, i.e. the first symbol corresponds to the verical axis and the second symbol - to the horizontal axis of TH2.")
       ("offset", po::value<std::string>()->default_value("0.0"),
-       "Offset of projection plane from origin. "
-       " Either a float number or min/max/centre strings can be used. "
-       "centre = (max+min)/2, min corresponds to the centre of the first bin, "
-       "and max - to the last bin of the axis perpendicular to the projection plane. "
-       "With the '-max' option offset applies to the geometry histogram only which allows to select "
-       "the representative geometry view.")
+       "This parameter specifies the offset of the projection plane from the origin. "
+       "It can be defined as a float number or as the strings 'min', 'max', or 'centre'. "
+       "When 'centre' is used, the offset is set to the midpoint between the 'min' and 'max' values. "
+       "If 'min' is used, the offset corresponds to the center of the first bin of the axis that is perpendicular to the projection plane, "
+       "while 'max' corresponds to the last bin of that axis. "
+       "When the '-max' option is used, the offset applies to the geometry histogram only, "
+       "which allows the selection of the representative geometry view.")
       ("title", po::value<std::string>()->default_value("None"), "Plot title.")
       ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title.")
       ("ytitle", po::value<std::string>()->default_value("None"), "Vertical axis title.")
@@ -103,7 +104,7 @@ Arguments::Arguments(int ac, const char **av) :
        "Show live slice averaging the given number of bins. "
        "Left mouse click on the 2D histogram swaps axes, middle button click swaps logy. "
        "Two integer numbers are required: the first one is the number of bins "
-       "to average the slice on 2D histogrm, the second one indicates how many bins "
+       "to average the slice on 2D histogram, the second one indicates how many bins "
        "of this have to be merged into one bin in the 1D histogram.")
       ("errors", "Plot the histogram with relative errors instead of data. This option is not compatible with -maxerror.")
       ("max","Plot the histogram where each bin content is the max value "
