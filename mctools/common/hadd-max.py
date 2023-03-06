@@ -40,6 +40,28 @@ def getHist(vhist, hname, fname):
     logging.error("%s contains a histogram %s which does not exist in vhist" % (fname, hname))
     return 0
 
+def checkAxes(h1, h2):
+    """ Check if the axes of both histograms are the same
+    """
+
+    a1 = (h1.GetXaxis(), h1.GetYaxis(), h1.GetZaxis())
+    a2 = (h2.GetXaxis(), h2.GetYaxis(), h2.GetZaxis())
+    name = ('x', 'y', 'z')
+
+    for i in range(3):
+        n1 = a1[i].GetNbins()
+        n2 = a2[i].GetNbins()
+        if n1 != n2:
+            print("Number of %s axis bins differ: %d, %d" % (name[i], n1, n2))
+            exit(1)
+        # if a1[i].GetBinLowEdge[1] != a2[i].GetBinLowEdge[1]:
+        #     print("Low edge of the first bins along the %s axis are different", name[i])
+        #     exit(1)
+        # if a1[i].GetBinLowEdge[n-1] != a2[i].GetBinLowEdge[n-1]:
+        #     print("Low edge of the last bins along the %s axis are different", name[i])
+        #     exit(1)
+
+
 def main():
     """ Merges files and writes histograms with max bin value in each pixel
     """
@@ -76,6 +98,7 @@ def main():
             if args.only is not None and key.GetName() != args.only:
                 continue;
             h = getHist(vhist, key.GetName(), fname)
+            checkAxes(h, hnew)
             for i in range(1, hnew.GetNbinsX()+1):
                 for j in range(1, hnew.GetNbinsY()+1):
                     for k in range(1, hnew.GetNbinsZ()+1):
