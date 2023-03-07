@@ -87,6 +87,9 @@ def main():
 
     vhist = getHistograms(args.sources[0], args.only)
 
+    if args.verbose:
+        print(args.sources[0])
+
     for fname in args.sources[1:]:
         if args.verbose:
             print(fname)
