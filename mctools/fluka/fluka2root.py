@@ -188,7 +188,7 @@ class Converter:
                             if not unit in e.units:
                                 e.addUnit(unit)
                         else:
-                            print("Warning: ascii files not supported", unit, name, file=sys.stderr)
+                            print("Warning: text output files are not supported", unit, name, file=sys.stderr)
         inp.close()
 
     def assignFileNames(self):
@@ -197,7 +197,7 @@ class Converter:
         for e in self.estimators:
             for u in e.units:
                 for inp in self.inp:
-                    for f in glob.glob("%s*_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
+                    for f in glob.glob("%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
                         if f not in e.units[u]: # TODO: this can be done smarter
                             e.addFile(u,f)
 
