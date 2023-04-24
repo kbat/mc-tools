@@ -10,7 +10,23 @@ import os
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-def getHistograms(fname, only):
+def fixFirstHisto(h, errmax):
+    """ Set bins values with relative errors above the given one to zero
+
+        This function is designed to be used with the first histogram, which is compared with the others.
+    """
+    for i in range(1, h.GetNbinsX()+1):
+        for j in range(1, h.GetNbinsY()+1):
+            for k in range(1, h.GetNbinsZ()+1):
+                val = h.GetBinContent(i,j,k)
+                err = h.GetBinError(i,j,k)
+                relerr = err/val if val != 0.0 else 0.0
+                if relerr*100.0 > errmax:
+                    h.SetBinContent(i,j,k, 0.0)
+                    h.SetBinError(i,j,k, 0.0)
+
+
+def getHistograms(fname, only, errmax):
     """ Return list of histograms found in the given file
     """
     logging.info("getHistograms")
@@ -28,6 +44,9 @@ def getHistograms(fname, only):
                 vhist.append(obj)
 
     f.Close()
+
+    for h in vhist:
+        fixFirstHisto(h, errmax)
 
     return vhist
 
@@ -52,7 +71,7 @@ def checkAxes(h1, h2):
         n1 = a1[i].GetNbins()
         n2 = a2[i].GetNbins()
         if n1 != n2:
-            print("Number of %s axis bins differ: %d, %d" % (name[i], n1, n2))
+            print("Number of %s axis bins differ in %s: %d, %d" % (name[i], h1.GetName(), n1, n2))
             exit(1)
         # if a1[i].GetBinLowEdge[1] != a2[i].GetBinLowEdge[1]:
         #     print("Low edge of the first bins along the %s axis are different", name[i])
@@ -60,7 +79,6 @@ def checkAxes(h1, h2):
         # if a1[i].GetBinLowEdge[n-1] != a2[i].GetBinLowEdge[n-1]:
         #     print("Low edge of the last bins along the %s axis are different", name[i])
         #     exit(1)
-
 
 def main():
     """ Merges files and writes histograms with max bin value in each pixel
@@ -73,7 +91,7 @@ def main():
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite',
                         help='overwrite the target output ROOT file')
     parser.add_argument("-errmax",   type=float, dest='errmax', help='max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
-                        default=101.0, required=False)
+                        default=1000.0, required=False)
     parser.add_argument("-only", type=str, default=None, help="take into account only the given histogram name")
     parser.add_argument('target', type=str, help='target file')
     parser.add_argument('sources', type=str, help='source files', nargs='+')
@@ -85,7 +103,7 @@ def main():
         logging.critical("File %s exists. Use -f to overwrite" % args.target)
         exit(1)
 
-    vhist = getHistograms(args.sources[0], args.only)
+    vhist = getHistograms(args.sources[0], args.only, args.errmax)
 
     if args.verbose:
         print(args.sources[0])
