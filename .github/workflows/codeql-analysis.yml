@@ -67,8 +67,8 @@ jobs:
       shell: bash
       run: |
        which conda
-       conda create -c conda-forge --name ROOT root python=3.8
        conda init bash
+       conda create -c conda-forge --name ROOT root python=3.8
        conda activate ROOT
        echo $ROOTSYS
        export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
