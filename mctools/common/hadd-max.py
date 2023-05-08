@@ -92,7 +92,7 @@ def main():
                         help='overwrite the target output ROOT file')
     parser.add_argument("-maxerror",   type=float, dest='maxerror', help='max relative error of bin content (<1). The bin will be skipped if the relative error exceeds this value. The default value is negative, indicating that all errors are accepted.',
                         default=-1, required=False)
-    parser.add_argument("-only", type=str, default=None, help="take into account only the given histogram name")
+    parser.add_argument("-only", type=str, default=[], help="take into account only the given histogram name(s)",nargs='+')
     parser.add_argument('target', type=str, help='target file')
     parser.add_argument('sources', type=str, help='source files', nargs='+')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print the file names as they are processed')
