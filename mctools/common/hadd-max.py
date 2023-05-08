@@ -90,9 +90,9 @@ def main():
 
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite',
                         help='overwrite the target output ROOT file')
-    parser.add_argument("-errmax",   type=float, dest='errmax', help='max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
-                        default=1000.0, required=False)
-    parser.add_argument("-only", type=str, default=[], help="take into account only the given histogram name(s)",nargs='+')
+    parser.add_argument("-maxerror",   type=float, dest='maxerror', help='max relative error of bin content (<1). The bin will be skipped if the relative error exceeds this value. The default value is negative, indicating that all errors are accepted.',
+                        default=-1, required=False)
+    parser.add_argument("-only", type=str, default=None, help="take into account only the given histogram name")
     parser.add_argument('target', type=str, help='target file')
     parser.add_argument('sources', type=str, help='source files', nargs='+')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print the file names as they are processed')
@@ -126,7 +126,7 @@ def main():
                         val = hnew.GetBinContent(i,j,k)
                         err = hnew.GetBinError(i,j,k)
                         relerr = err/val if val != 0.0 else 0.0
-                        if val > h.GetBinContent(i,j,k) and relerr*100.0 < args.errmax:
+                        if val > h.GetBinContent(i,j,k) and (args.maxerror<0.0 or relerr < args.maxerror):
                             h.SetBinContent(i,j,k, val)
                             h.SetBinError(i,j,k, err)
         f.Close()
