@@ -38,9 +38,9 @@ def getHistograms(fname, only, errmax):
         obj = key.ReadObj()
         if obj.Class().InheritsFrom(ROOT.TH1.Class()):
             obj.SetDirectory(0)
-            if only is None:
+            if not only:
                 vhist.append(obj)
-            elif obj.GetName() == only:
+            elif obj.GetName() in only:
                 vhist.append(obj)
 
     f.Close()
@@ -92,7 +92,7 @@ def main():
                         help='overwrite the target output ROOT file')
     parser.add_argument("-errmax",   type=float, dest='errmax', help='max relative error [percent] of bin content. If relative error of the bin is greater than this value, this bin is skipped',
                         default=1000.0, required=False)
-    parser.add_argument("-only", type=str, default=None, help="take into account only the given histogram name")
+    parser.add_argument("-only", type=str, default=[], help="take into account only the given histogram name(s)",nargs='+')
     parser.add_argument('target', type=str, help='target file')
     parser.add_argument('sources', type=str, help='source files', nargs='+')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print the file names as they are processed')
@@ -116,7 +116,7 @@ def main():
             hnew = key.ReadObj()
             if not hnew.Class().InheritsFrom(ROOT.TH1.Class()):
                 continue
-            if args.only is not None and key.GetName() != args.only:
+            if args.only and key.GetName() not in args.only:
                 continue;
             h = getHist(vhist, key.GetName(), fname)
             checkAxes(h, hnew)
