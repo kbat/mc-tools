@@ -5,10 +5,27 @@
 
 import argparse
 import logging
+import math
 from sys import exit
 import os
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+def relative_error_type(arg):
+    """ Type function for argparse - a float within some predefined bounds """
+    try:
+        f = float(arg)
+    except ValueError:
+        raise argparse.ArgumentTypeError("Must be a floating point number")
+
+    if math.isclose(f, -1): # the default value of -1 is acceptable
+        return f
+
+    MIN_VAL = 0.0
+    MAX_VAL = 1.0
+    if f < MIN_VAL or f > MAX_VAL:
+        raise argparse.ArgumentTypeError(f"Argument must be in the range [{MIN_VAL}, {MAX_VAL}]")
+    return f
 
 def fixFirstHisto(h, maxerror):
     """ Set bins values with relative errors above the given one to zero
@@ -90,7 +107,7 @@ def main():
 
     parser.add_argument('-f', '--force', action='store_true', default=False, dest='overwrite',
                         help='overwrite the target output ROOT file')
-    parser.add_argument("-maxerror",   type=float, dest='maxerror', help='max relative error of bin content (<1). The bin will be skipped if the relative error exceeds this value. The default value is negative, indicating that all errors are accepted.',
+    parser.add_argument("-maxerror",   type=relative_error_type, dest='maxerror', help='max relative error of bin content (<1). The bin will be skipped if the relative error exceeds this value. The default value is negative, indicating that all errors are accepted.',
                         default=-1, required=False)
     parser.add_argument("-only", type=str, default=[], help="take into account only the given histogram name(s)",nargs='+')
     parser.add_argument('target', type=str, help='target file')
@@ -102,6 +119,8 @@ def main():
     if not args.overwrite and os.path.exists(args.target):
         logging.critical("File %s exists. Use -f to overwrite" % args.target)
         exit(1)
+
+
 
     vhist = getHistograms(args.sources[0], args.only, args.maxerror)
 
