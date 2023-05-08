@@ -70,6 +70,7 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     can be found in
     [mixtures.py](https://github.com/kbat/mc-tools/blob/master/mctools/common/mixtures.py).
 * [ace2root](https://github.com/kbat/mc-tools/blob/master/mctools/common/ace2root.py), a converter from ACE (a compact ENDF) to ROOT formats. It loops through all available cross-sections in an ACE file and saves them as TGraph objects. We use this simple script to visualise [ENDF](http://www.nndc.bnl.gov/exfor/endf00.jsp) cross sections. Requires the [PyNE](http://pyne.io) toolkit to be installed.
+  * See also: [ACEtk](https://github.com/njoy/ACEtk)
 * [hplot](https://github.com/kbat/mc-tools/tree/master/mctools/common/hplot), an advanced [TH3](https://root.cern.ch/doc/v608/classTH3.html) histogram plotter. We use it to visualise data maps and superimpose them with Monte Carlo geometry. A detailed manual can be generted with the ```-h``` argument.
 
 ## Requirements ##
