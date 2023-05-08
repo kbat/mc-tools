@@ -10,7 +10,7 @@ import os
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-def fixFirstHisto(h, errmax):
+def fixFirstHisto(h, maxerror):
     """ Set bins values with relative errors above the given one to zero
 
         This function is designed to be used with the first histogram, which is compared with the others.
@@ -21,12 +21,12 @@ def fixFirstHisto(h, errmax):
                 val = h.GetBinContent(i,j,k)
                 err = h.GetBinError(i,j,k)
                 relerr = err/val if val != 0.0 else 0.0
-                if relerr*100.0 > errmax:
+                if relerr > maxerror:
                     h.SetBinContent(i,j,k, 0.0)
                     h.SetBinError(i,j,k, 0.0)
 
 
-def getHistograms(fname, only, errmax):
+def getHistograms(fname, only, maxerror):
     """ Return list of histograms found in the given file
     """
     logging.info("getHistograms")
@@ -46,7 +46,7 @@ def getHistograms(fname, only, errmax):
     f.Close()
 
     for h in vhist:
-        fixFirstHisto(h, errmax)
+        fixFirstHisto(h, maxerror)
 
     return vhist
 
@@ -103,7 +103,7 @@ def main():
         logging.critical("File %s exists. Use -f to overwrite" % args.target)
         exit(1)
 
-    vhist = getHistograms(args.sources[0], args.only, args.errmax)
+    vhist = getHistograms(args.sources[0], args.only, args.maxerror)
 
     if args.verbose:
         print(args.sources[0])
