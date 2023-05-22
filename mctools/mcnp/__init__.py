@@ -14,7 +14,7 @@ def getPar(masterfile, parname, pos=3):
             val = float(line.split()[pos])
 #            print(line.strip(), val)
     f.close()
-    if val is "":
+    if val == "":
         raise IOError("Value of %s not found in %s" % (parname, masterfile))
     return val
 
