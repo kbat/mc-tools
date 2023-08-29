@@ -5,6 +5,15 @@ import argparse, os, re, sys
 import fileinput
 from mctools import checkPaths
 
+def checkNameTitle(n,t):
+    """ Check if name/title is consistent with CombLayer logic """
+    if n == "airMat":
+        print("ERROR: use 'voidMat' for the air material name", file=sys.stderr)
+        sys.exit(5)
+    if t == "AirMat":
+        print("ERROR: use 'VoidMat' for the air material title", file=sys.stderr)
+        sys.exit(5)
+
 def checkTitle(n, t):
     """ Check if title can be omitted for the given type.
     Normally, title can be omitted for the variables which are not populated in the *Variables.cxx file
@@ -153,6 +162,7 @@ def main():
 
     args = parser.parse_args()
 
+    checkNameTitle(args.name,args.title)
     checkTitle(args.title, args.type)
 
     cxxDir = args.model

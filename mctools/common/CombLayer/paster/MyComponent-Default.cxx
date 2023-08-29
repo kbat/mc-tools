@@ -186,7 +186,7 @@ MyComponent::createObjects(Simulation& System)
 void
 MyComponent::createLinks()
   /*!
-    Create all the linkes
+    Create all the links
   */
 {
   ELog::RegMethod RegA("MyComponent","createLinks");
