@@ -71,7 +71,7 @@
     ("\\<\\(ASSIGNMAT?\\|MATERIAL\\)\\>" . 'font-lock-material-face)
     ("\\<\\(COMPOUND\\|CORRFACT\\|LOW-MAT\\|MAT-PROP\\|OPT-PROP\\|STERNHEI\\)\\>" . 'font-lock-material-face)
 
-    ("\\<\\(ALL-PART\\|BEAMPART\\|DOSE-EQ\\|ELECTRON\\|ENERGY\\|MUON\+\\|MUON-\\|NEUTRON\\|PIONS\\|PHOTON\\|PROTON\\)\\>" . 'font-lock-particle-face)
+    ("\\<\\(ALL-PART\\|BEAMPART\\|DOSE-EQ\\|ELECTRON\\|ENERGY\\|MUON\+\\|MUON-\\|NEUTRON\\|OPTIPHOT\\|PIONS\\|PHOTON\\|PROTON\\)\\>" . 'font-lock-particle-face)
     ("\\<\\(EAP74\\|ERT74\\|EWT74\\|EAPMP\\|ERTMP\\|EWTMP\\|AMB74\\|AMBGS\\)\\>" . 'font-lock-flux2dose-face)
 
     ("\\<\\(CALORIME\\|EET\/TRANS\\|EM-CASCA\\|ICARUS\\|HADRONTHE\\|NEW-DEFA\\|PRECISION\\|SHIELDING\\)\\>" . 'font-lock-defaults-face)
