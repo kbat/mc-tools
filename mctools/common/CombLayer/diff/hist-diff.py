@@ -3,6 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
+import math
 import sys, argparse
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -36,8 +37,6 @@ def main():
     assert ny == h2.GetNbinsY()
     assert nz == h2.GetNbinsZ()
 
-    print(args.h1, args.h2)
-
     hdiff = h1.Clone("hdiff")
     hdiff.Reset()
     hdiff.SetTitle(f"{args.h1[0]} vs {args.h2[0]}")
@@ -49,7 +48,7 @@ def main():
             for k in range(1,nz+1):
                 val1 = h1.GetBinContent(i,j,k)
                 val2 = h2.GetBinContent(i,j,k)
-                if val1 != val2:
+                if not math.isclose(val1,val2):
                     x = h1.GetXaxis().GetBinCenter(i)
                     y = h1.GetYaxis().GetBinCenter(j)
                     z = h1.GetZaxis().GetBinCenter(k)
@@ -61,7 +60,7 @@ def main():
                     else:
                         hdiff.SetBinContent(i,j,k,2.0)
 
-                    print(f"ERROR: {x:.2f} {y:.2f} {z:.2f}:\t{val1} {val2}\t\tbin size: {dx:.2f} {dy:.2f} {dz:.2f}")
+                    print(f"ERROR: {x:.2f} {y:.2f} {z:.2f}:\t{val1} != {val2}\t\tbin size: {dx:.2f} {dy:.2f} {dz:.2f}")
                     retval += 1
 
     if retval == 0:
