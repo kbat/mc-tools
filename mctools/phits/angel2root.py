@@ -30,14 +30,14 @@ def isData(line):
 """
 
 #        SUBT = re.compile('prot*')
-SUBT = re.compile("""
+SUBT = re.compile(r"""
 \(
 (?P<subtitle>.*)\s*?
 \)
 """, re.VERBOSE)
 
 #: a regular expression which describes the page-separating line.
-pageSepRE = re.compile("^[\s#]newpage:$")
+pageSepRE = re.compile(r"^[\s#]newpage:$")
 
 DEBUG = False
 #DEBUG = True
@@ -608,7 +608,7 @@ def main():
     args = parser.parse_args()
 
     fname_in = args.infilename[0]
-    fname_out = re.sub("\....$", ".root", fname_in)
+    fname_out = re.sub(r"\....$", ".root", fname_in)
     if fname_in == fname_out:
         fname_out = fname_in + ".root"
     print(fname_in, "->" ,fname_out)
