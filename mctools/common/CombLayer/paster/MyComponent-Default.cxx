@@ -173,11 +173,11 @@ MyComponent::createObjects(Simulation& System)
 {
   ELog::RegMethod RegA("MyComponent","createObjects");
 
-  HeadRule Out;
-  Out=ModelSupport::getHeadRule(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
-  makeCell("MainCell",System,cellIndex++,mainMat,0.0,Out);
+  HeadRule HR;
+  HR=ModelSupport::getHeadRule(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
+  makeCell("MainCell",System,cellIndex++,mainMat,0.0,HR);
 
-  addOuterSurf(Out);
+  addOuterSurf(HR);
 
   return;
 }
@@ -186,7 +186,7 @@ MyComponent::createObjects(Simulation& System)
 void
 MyComponent::createLinks()
   /*!
-    Create all the linkes
+    Create all the links
   */
 {
   ELog::RegMethod RegA("MyComponent","createLinks");

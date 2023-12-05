@@ -42,8 +42,10 @@ class MyComponentGenerator
   double length;                ///< Total length including void
   double width;                 ///< Width
   double height;                ///< Height
+  double wallThick;             ///< Wall thickness
 
-  int mainMat;                  ///< Main material
+  std::string mainMat;          ///< Main material
+  std::string wallMat;          ///< Wall material
 
  public:
 

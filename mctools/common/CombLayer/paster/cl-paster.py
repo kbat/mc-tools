@@ -84,8 +84,8 @@ def main():
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('-model', dest='model', type=str, help='model name (= folder with .cxx file)', required=True)
-    parser.add_argument('-namespace', dest='namespace', type=str, help='namespace name', required=False, default='essSystem')
+    parser.add_argument('-model', dest='model', type=str, help='path to the folder with the .cxx file (e.g. Model/MaxIV/Linac)', required=True)
+    parser.add_argument('-namespace', dest='namespace', type=str, help='namespace name', required=True)
     parser.add_argument('-author', dest='author', type=str, help='author', required=False, default=defauthor)
     parser.add_argument('-m', dest='description', type=str, help='class description', required=True)
     parser.add_argument('-t', dest='template', type=str, help='template name', required=False, default="Default", choices=['Default','FrontBackCut'])
