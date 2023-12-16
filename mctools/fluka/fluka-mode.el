@@ -45,8 +45,8 @@
 (make-face 'font-lock-distribution-type-face)
 (set-face-foreground 'font-lock-distribution-type-face "yellow")
 
-(make-face 'font-lock-flux2dose-face)
-(set-face-foreground 'font-lock-flux2dose-face "yellow")
+(make-face 'font-lock-fluence2dose-face)
+(set-face-foreground 'font-lock-fluence2dose-face "yellow")
 
 (make-face 'font-lock-preprocessor-face)
 (set-face-foreground 'font-lock-preprocessor-face "green")
@@ -72,7 +72,7 @@
     ("\\<\\(COMPOUND\\|CORRFACT\\|LOW-MAT\\|MAT-PROP\\|OPT-PROP\\|STERNHEI\\)\\>" . 'font-lock-material-face)
 
     ("\\<\\(ALL-PART\\|BEAMPART\\|DOSE-EQ\\|ELECTRON\\|ENERGY\\|MUON\+\\|MUON-\\|NEUTRON\\|OPTIPHOT\\|PIONS\\|PHOTON\\|PROTON\\)\\>" . 'font-lock-particle-face)
-    ("\\<\\(EAP74\\|ERT74\\|EWT74\\|EAPMP\\|ERTMP\\|EWTMP\\|AMB74\\|AMBGS\\)\\>" . 'font-lock-flux2dose-face)
+    ("\\<\\(AMB74\\|AMBDS\\|AMBGS\\|EAP116\\|EAP74\\|EIS116\\|EPA116\\|ERT74\\|EWT74\\|EAPMP\\|ERTMP\\|EWTMP\\)\\>" . 'font-lock-fluence2dose-face)
 
     ("\\<\\(CALORIME\\|EET\/TRANS\\|EM-CASCA\\|ICARUS\\|HADRONTHE\\|NEW-DEFA\\|PRECISION\\|SHIELDING\\)\\>" . 'font-lock-defaults-face)
 
