@@ -12,9 +12,11 @@
 
 ;;; License:
 
-;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 2.
+;; You can redistribute this program and/or modify it under the terms
+;; of this license:
+;; https://github.com/kbat/mc-tools/blob/master/LICENSE
 
-;;; Commentary:
+;; Commentary:
 ;; In order to autoload this mode for the *.inp files
 ;; your .emacs configuration file should contain something like:
 ;;
@@ -23,8 +25,8 @@
 ;;     (setq auto-mode-alist
 ;;     (cons '("\\.inp$" . fluka-mode) auto-mode-alist)))
 ;;
-;; Re-evaluate the buffer after editing this file: M-x eval-buffer
-;; Update mode in the input file buffer: M-x fluka-mode
+;; In order to re-evaluate this buffer after editing it: M-x eval-buffer
+;; then update the mode in the input file buffer: M-x fluka-mode
 
 ;; full doc on how to use here
 
@@ -84,7 +86,6 @@
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP" "ERTMP" "EWTMP"))
 	     (defaults
 	       '("CALORIME" "EM-CASCA" "ICARUS" "HADRONTHE" "NEW-DEFA" "PRECISION" "SHIELDING"))
-
 	     (preprocessor
 	      '("if" "elif" "else" "endif" "define"))
 
@@ -100,7 +101,7 @@
 	    )
 
         `(
-	  ("^*.*" . 'font-lock-comment-face)         ;; star sign comment indicator
+	  ("^*.*" . 'font-lock-comment-face)
           (,keywords-regexp . 'font-lock-keyword-face)
           (,surfaces-regexp . 'font-lock-surface-face)
           (,tallies-regexp . 'font-lock-tally-face)
@@ -138,6 +139,5 @@
 			  )
     )
   )
-
 
 ;;; fluka-mode.el ends here
