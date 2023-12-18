@@ -25,6 +25,7 @@ def getLogBins(nbins, low, high):
 
 def getLinBins(nbins, low, high):
     """ Return array of bins with linearly equal widths """
+
     x = float(low)
     dx = float(high-low)/nbins
 
@@ -41,6 +42,11 @@ def getEbins(det):
 def hist(det):
     """ Create histogram for the given detector """
 
+    if det.ne == 0:
+        print(f"WARNING: Not saving detector {det.name} into ROOT file since it has 0 energy bins: {det.elow} < E < {det.ehigh}")
+        print("         This happens for neutron-contributing estimators if max scoring energy is below groupwise max energy, 20 MeV.")
+        return None
+
     title = fluka.particle.get(det.dist, "undefined")
     title += " #diamond "
     title += "reg %d" % det.reg
@@ -49,6 +55,7 @@ def hist(det):
     title += " #diamond "
     title += "%g < E < %g GeV" % (det.elow, det.ehigh)
     title += getAxesTitle(det)
+
     return ROOT.TH1F(det.name, title, det.ne, getEbins(det))
 
 def histN(det):
@@ -112,7 +119,7 @@ class Usrtrack(Data.Usrxxx):
                 data = fortran.read(f)
                 det.ngroup = struct.unpack("=i",data[:4])[0]
                 det.egroup = struct.unpack("=%df"%(det.ngroup+1), data[4:])
-                print("Low energy neutrons scored with %d groups" % det.ngroup)
+                print(f"{det.name}: Low energy neutrons scored with {det.ngroup} groups")
             else:
                 det.ngroup = 0
                 det.egroup = []
@@ -198,15 +205,16 @@ def main():
         h = hist(det)
         hn = histN(det) # filled only if det.lowneu
 
-        n = h.GetNbinsX()
-        assert n == det.ne, "n != det.ne"
+        if h:
+            n = h.GetNbinsX()
+            assert n == det.ne, "n != det.ne"
 
-        for i in range(n):
-            h.SetBinContent(i+1, val[i])
-            h.SetBinError(i+1,   err[n-i-1]*val[i])
+            for i in range(n):
+                h.SetBinContent(i+1, val[i])
+                h.SetBinError(i+1,   err[n-i-1]*val[i])
 
-        h.SetEntries(b.weight)
-        h.Write()
+                h.SetEntries(b.weight)
+                h.Write()
 
         if det.lowneu:
             # val_lowneu = val[det.ne::][::-1]
