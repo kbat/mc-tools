@@ -159,6 +159,7 @@ def main():
     parser.add_argument('-value', dest='value', type=str,default="", required=False,
                         help='default value (if set, the generator for variables is created and this value is set as default)')
     parser.add_argument('-indent', dest='indent', type=int, help='number of initial spaces', default=2, required=False)
+    parser.add_argument('-generator', dest='generator', type=str, help='path to file with generator implementation (.cxx)', default="", required=False)
 
     args = parser.parse_args()
 
@@ -168,14 +169,22 @@ def main():
     cxxDir = args.model
     hDir   = cxxDir+'Inc'
 
-    cxxGenDir = os.path.join('/'.join(cxxDir.split('/')[:-1]), "commonGenerator")
-    hGenDir = cxxGenDir + 'Inc'
 
     cxx = os.path.join(cxxDir, args.className + ".cxx")
     h   = os.path.join(hDir,   args.className + ".h")
 
-    cxxGen = os.path.join(cxxGenDir, args.className + "Generator.cxx")
-    hGen   = os.path.join(hGenDir,   args.className + "Generator.h")
+    if args.generator == "":
+        cxxGenDir = os.path.join('',*cxxDir.split('/')[:-1], "commonGenerator")
+        hGenDir = cxxGenDir + 'Inc'
+        cxxGen = os.path.join(cxxGenDir, args.className + "Generator.cxx")
+        hGen   = os.path.join(hGenDir,   args.className + "Generator.h")
+    else:
+        t = args.generator.split('/')
+        cxxGenDir = os.path.join(*t[:-1])
+        hGenDir = cxxGenDir + 'Inc'
+        cxxGen = args.generator
+        hGen = re.sub("cxx", "h", t[-1])
+        hGen = os.path.join(hGenDir, hGen)
 
     if checkPaths([hDir, cxxDir], [h,cxx]) > 0:
         sys.exit(1)

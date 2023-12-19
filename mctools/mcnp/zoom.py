@@ -25,7 +25,7 @@ def main():
     with open(args.com) as f:
         for line in f.readlines():
             words = line.strip().split()
-            if len(words) is 0:
+            if len(words) == 0:
                 continue
 
             for i,w in enumerate(words):
