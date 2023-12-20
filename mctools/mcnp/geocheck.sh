@@ -36,7 +36,23 @@ name=$(mktemp -u --suffix=.geocheck.)
 out="${name}o"
 runtpe="${name}r"
 
-trap "rm -f $runtpe $tmp" EXIT
+cleanup() {
+    if [ -n "$1" ]; then
+#	echo "Aborted by $1"
+	rm -fv $runtpe $tmp $out
+    elif [ $status -ne 0 ]; then
+#	echo "Failure (status $status)"
+	rm -fv $runtpe $tmp
+    else
+#	echo "Success"
+	rm -f $runtpe $tmp $out
+    fi
+}
+
+trap 'status=$?; cleanup; exit $status' EXIT
+trap 'trap - HUP; cleanup SIGHUP; kill -HUP $$' HUP
+trap 'trap - INT; cleanup SIGINT; kill -INT $$' INT
+trap 'trap - TERM; cleanup SIGTERM; kill -TERM $$' TERM
 
 /bin/cp -f $inp $tmp
 inp=$tmp
