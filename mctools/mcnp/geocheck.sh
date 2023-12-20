@@ -14,6 +14,7 @@ if [ $# != 1 -a $# != 4 ]; then
     echo "Usage: geocheck inp x y z"
     echo "       inp - MCNP(X) geometry to check"
     echo "       x y z - sdef coordinates"
+    echo "       Typical usage to check several locations in parallel: parallel geocheck inp {} y z ::: x1 x2 x3"
     exit 2
 fi
 
@@ -30,8 +31,15 @@ if [ $# == 4 ]; then
     z=$4
 fi
 
-/bin/cp -f $inp /tmp
-inp=/tmp/$(basename $inp)
+tmp=$(mktemp -u --suffix=.geocheck)
+name=$(mktemp -u --suffix=.geocheck.)
+out="${name}o"
+runtpe="${name}r"
+
+trap "rm -f $runtpe $tmp" EXIT
+
+/bin/cp -f $inp $tmp
+inp=$tmp
 
 N=$(printf "%.0f" $N)
 #echo "nps: " $N
@@ -58,9 +66,8 @@ sed -i "s/^rand/c rand/i" $inp
 sed -i "s/^REFLE/c REFLE/" $inp
 sed -i "s/^REFF/c REFF/" $inp
 
-rm -f /tmp/geocheck.*
-mcnpx i=$inp name=/tmp/geocheck. > /dev/null
-out=/tmp/geocheck.o
+#rm -f /tmp/geocheck.*
+mcnpx i=$inp name=$name > /dev/null
 
 # if grep "run terminated when [[:space:]]* $N particle histories were done"  $out; then
 if grep "particle histories were done" > /dev/null $out; then
@@ -70,7 +77,7 @@ else
     tail $out
     echo "geometry check failed"
     echo "(!!! but be sure you did not put sdef directly on a surface!!!)"
-    echo "input file: " $inp
+#    echo "input file: " $inp
     echo "output file:" $out
     exit 1
 fi
