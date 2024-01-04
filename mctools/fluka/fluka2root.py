@@ -287,8 +287,14 @@ class Converter:
                         sys.exit(2)
             self.datafiles.append(datafiles)
 
+        if len(self.datafiles) == 0:
+            print("fluka2root: no datafiles found -> exit")
+            print("            Have you defined any estimators?")
+            sys.exit(3)
+
         if self.verbose:
             print("ROOT files produced: ", self.out_root_files)
+
 
         f = "-f" if self.overwrite else ""
         command = "hadd %s %s %s" % (f, self.root, ' '.join(self.out_root_files)) + ("" if self.verbose else " > /dev/null")
