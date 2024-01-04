@@ -43,7 +43,7 @@
 (set-face-foreground 'font-lock-tally-face "olive")
 
 (make-face 'font-lock-material-face)
-(set-face-foreground 'font-lock-material-face "red")
+(set-face-foreground 'font-lock-material-face "orange")
 
 (make-face 'font-lock-transformation-face)
 (set-face-foreground 'font-lock-transformation-face "yellow")
@@ -67,6 +67,9 @@
 (make-face 'font-lock-preprocessor-face)
 (set-face-foreground 'font-lock-preprocessor-face "green")
 
+(make-face 'font-lock-last-face)
+(set-face-foreground 'font-lock-last-face "red")
+
 
 ;; create the list for font-lock.
 ;; each category of keyword is given a particular face
@@ -76,13 +79,13 @@
 	     (keywords
 	     '("BME" "DPMJET" "MYRQMD" "OPEN" "RQMD" "SOURCE" "ERDUMP" "USRGCALL" "USRICALL"
 	     "USROCALL" "COMBNAME" "DEFAULTS" "DELTARAY" "ELECTNUC" "ELPO-THR" "END" "FREE" "GLOBAL"
-	     "GEOBEGIN" "GEOEND" "PLOTGEOM" "RANDOMIZE" "ROT-DEFI" "START" "STOP" "TITLE" "BIASING"
+	     "GEOBEGIN" "GEOEND" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "START" "STOP" "TITLE" "BIASING"
 	     "DISCARD" "DPMJET" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
-	     "FLUKAFIX" "HI-PROPE" "IONFLUCT" "LAM-BIAS" "LOW-BIAS" "LOW-DOWN" "MCSTHRES" "MULSOPT"
-	     "MUMUPAIR" "MUPHOTON" "OPT-PROD" "PAIRBREM" "PHOTONUC" "SYRASTEP" "WW-FACTO" "WW-PROFI"
+	     "FLUKAFIX" "HI-PROPE" "IONFLUCT" "LAM-BIAS" "LOW-PWXS" "LOW-BIAS" "LOW-DOWN" "MCSTHRES" "MULSOPT"
+	     "MUMUPAIR" "MUPHOTON" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "SYRASTEP" "TSL-PWXS" "WW-FACTO" "WW-PROFI"
 	     "WW-THRES" "BEAMAXES" "BEAMPOS" "BEAM" "COALESCE" "ELCFIELD" "EMF" "EVAPORAT" "EVENTYPE"
-	     "IONSPLIT" "LAMBBREM" "LOW-NEUT" "MGNFIELD" "PART-THR" "PHO2-THR" "PHOT-THR" "PHYSICS"
-	     "POLARIZA" "PROD-CUT" "STEPSIZE" "THRESHOL" "TIME-CUT"))
+	     "INFLDCAY" "IONSPLIT" "IONTRANS" "ISOMERS" "LAMBBREM" "LOW-NEUT" "MGNFIELD" "PART-THR" "PHO2-THR" "PHOT-THR" "PHYSICS"
+	     "POLARIZA" "PROD-CUT" "QUASI-EL" "QMDTHRES" "STEPSIZE" "THRESHOL" "TIME-CUT"))
 	     (surfaces
 	      '("ARB" "BOX" "ELL" "PLA" "RAW" "RCC" "REC" "RPP" "SPH" "TRC" "WED" "XCC" "XEC" "XYP"
 	      "XZP" "YCC" "YEC" "YZP" "ZCC" "ZEC" "QUA"))
@@ -91,18 +94,20 @@
 	      "RESNUCLE" "ROTPRBIN" "SCORE" "TCQUENCH" "USERWEIG" "USRBDX" "USRBIN" "USRCOLL"
 	      "USRTRACK" "USRYIELD"))
 	     (materials
-	      '("ASSIGNMAT" "MATERIAL" "COMPOUND" "CORRFACT" "LOW-MAT" "MAT-PROP" "OPT-PROP"
-	      "STERNHEI"))
+	      '("ASSIGNMA" "ASSIGNMAT" "BLCKHOLE" "CARBON" "COMPOUND" "CORRFACT" "HYDROGEN" "LOW-MAT" "MATERIAL" "MAT-PROP" "OPT-PROP"
+	      "STERNHEI" "VACUUM" "WATER"))
 	     (particles
-	      '("ALL-PART" "BEAMPART" "DOSE-EQ" "ELECTRON" "ENERGY" "MUONS" "MUON+" "MUON-" "NEUTRON"
+	      '("4-HELIUM" "ALL-PART" "BEAMPART" "DOSE-EQ" "ELECTRON" "ENERGY" "MUONS" "MUON+" "MUON-" "NEUTRON"
 	      "OPTIPHOT" "PIONS" "PHOTON" "PROTON"))
 	     (fluence2dose
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
 	      "ERTMP" "EWTMP"))
 	     (defaults
-	       '("CALORIME" "EM-CASCA" "ICARUS" "HADRONTHE" "NEW-DEFA" "PRECISION" "SHIELDING"))
+	       '("CALORIME" "EM-CASCA" "ICARUS" "HADROTHE" "NEW-DEFA" "PRECISION" "SHIELDING"))
 	     (preprocessor
 	      '("if" "elif" "else" "endif" "define"))
+	     (last
+	      '("LASTMAT" "LASTPAR" "LASTREG"))
 
             ;; generate regex string for each category of keywords
             (keywords-regexp (regexp-opt keywords 'words))
@@ -113,6 +118,7 @@
             (fluence2dose-regexp (regexp-opt fluence2dose 'words))
             (defaults-regexp (regexp-opt defaults 'words))
             (preprocessor-regexp (regexp-opt preprocessor 'words))
+            (last-regexp (regexp-opt last 'words))
 	    )
 
         `(
@@ -125,6 +131,7 @@
           (,fluence2dose-regexp . 'font-lock-fluence2dose-face)
           (,defaults-regexp . 'font-lock-defaults-face)
           (,preprocessor-regexp . 'font-lock-preprocessor-face)
+          (,last-regexp . 'font-lock-last-face)
           ;; note: order above matters, because once colored, that part won't change.
           ;; in general, put longer words first
           )))
