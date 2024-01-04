@@ -196,6 +196,10 @@ class SSW:
         if self.debug:
                 print("* for loop length (total number of surfaces): ",njsw+niwr)
 
+        # Major version check is required for the fromstring/frombytes call below
+        if sys.version_info.major != 3:
+                raise IOError("Python version >= 3 is required")
+
         for i in range(njsw+niwr):
             data = fortranRead(self.file)
             size = len(data)
@@ -208,7 +212,14 @@ class SSW:
                     vtpps = array.array('d')
             else:
                     vtpps = array.array('i')
-            vtpps.fromstring(tpps)
+
+            if sys.version_info.minor<9:
+                    vtpps.fromstring(tpps)
+            else:
+                    # array.fromstring have been removed in python 3.9
+                    # (it was an alias to array.frombytes)
+                    # see https://docs.python.org/3/whatsnew/3.9.html
+                    vtpps.frombytes(tpps)
 
             if self.debug:
                     print(f"* surface index: {isurfs}; type: {kstpps}; number of coefficients: {ntppsp}; surface coefficients: ", vtpps)
