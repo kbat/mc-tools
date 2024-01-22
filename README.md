@@ -107,7 +107,7 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
 Konstantin Batkov, `batkov [аt] gmail.com`
 
 ## Thanks to ##
-* Nicolò Borghi, for implementing all my ideas in the ```mctal2root``` converter.
+* Nicolò Borghi, for implementing all my dreams in the ```mctal2root``` converter.
 * Kazuyoshi Furutaka, for adding the [pip](https://pypi.org/project/pip) installer and helping with the PHITS tools debugging.
 * Stuart Ansell, for endless discussions and amazing ideas.
 
