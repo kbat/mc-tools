@@ -104,9 +104,12 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
 ``` export PATH=$MCTOOLS/bin:$PATH ```
 
 ## Contacts ##
-e-mail: `batkov [аt] gmail.com`
+Konstantin Batkov, `batkov [аt] gmail.com`
 
-List of authors: Nicolò Borghi, Kazuyoshi Furutaka, Konstantin Batkov
+## Thanks to ##
+* Nicolò Borghi, for implementing all my dreams in the ```mctal2root``` converter.
+* Kazuyoshi Furutaka, for adding the [pip](https://pypi.org/project/pip) installer and helping with the PHITS tools debugging.
+* Stuart Ansell, for endless discussions and amazing ideas.
 
 ## See also ##
 https://github.com/lanl/mcnptools
