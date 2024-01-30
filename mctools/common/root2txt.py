@@ -29,6 +29,31 @@ def h22ascii(h):
             y = h.GetYaxis()
             print(x.GetBinLowEdge(xbin), x.GetBinLowEdge(xbin+1), y.GetBinLowEdge(ybin), y.GetBinLowEdge(ybin+1), h.GetBinContent(xbin, ybin), h.GetBinError(xbin, ybin))
 
+def h32ascii(h):
+    """ Convert TH3 into text """
+    print("#", h.GetXaxis().GetTitle())
+    print("#", h.GetYaxis().GetTitle())
+    print("#", h.GetZaxis().GetTitle())
+    print("# xmin xmax ymin ymax val err")
+    nbinsx, nbinsy, nbinsz = h.GetNbinsX(), h.GetNbinsY(), h.GetNbinsZ()
+    x = h.GetXaxis()
+    y = h.GetYaxis()
+    z = h.GetZaxis()
+    for xbin in range(1, nbinsx+1):
+        for ybin in range(1, nbinsy+1):
+            for zbin in range(1, nbinsz+1):
+                print(xbin-1,ybin-1,zbin-1,
+                      x.GetBinCenter(xbin),
+                      y.GetBinCenter(ybin),
+                      z.GetBinCenter(zbin),
+                      h.GetBinContent(xbin,ybin,zbin), h
+                      .GetBinError(xbin,ybin,zbin))
+
+                
+##                print(xbin-1,ybin-1,zbin-1,h.GetBinContent(xbin,ybin,zbin), h.GetBinError(xbin,ybin,zbin))
+
+#            print((x.GetBinLowEdge(xbin)+x.GetBinLowEdge(xbin+1), y.GetBinLowEdge(ybin), y.GetBinLowEdge(ybin+1), h.GetBinContent(xbin, ybin), h.GetBinError(xbin, ybin))
+
 def ge2ascii(g):
     """ Convert TGraphErrors into text """
     print("#", g.GetXaxis().GetTitle())
@@ -73,7 +98,9 @@ def main():
 
     print("#", obj.GetName(), obj.GetTitle())
 
-    if obj.InheritsFrom("TH2"):
+    if obj.InheritsFrom("TH3"):
+        h32ascii(obj)
+    elif obj.InheritsFrom("TH2"):
         h22ascii(obj)
     elif obj.InheritsFrom("TH1"):
         h12ascii(obj)

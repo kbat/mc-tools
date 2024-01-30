@@ -120,10 +120,34 @@ int main(int argc, const char **argv)
 
   std::string dfname = vm["dfile"].as<std::string>();
   std::string dhname = vm["dhist"].as<std::string>();
+  std::string rfname = vm["rfile"].as<std::string>();
+  std::string rhname = vm["rhist"].as<std::string>();
   std::string gfname = vm["gfile"].as<std::string>();
   std::string ghname = vm["ghist"].as<std::string>();
 
   std::shared_ptr<Data3> data = std::make_shared<Data3>(dfname, dhname, args);
+  if (!rfname.empty())
+    {
+      std::shared_ptr<Data3> rdata = std::make_shared<Data3>(rfname, rhname, args);
+      const std::shared_ptr<TH3> Ah3=data->GetH3();
+      const std::shared_ptr<TH3> Rh3=rdata->GetH3();
+      const Int_t nx = Ah3->GetNbinsX();
+      const Int_t ny = Ah3->GetNbinsY();
+      const Int_t nz = Ah3->GetNbinsZ();
+      if (nx!=Rh3->GetNbinsX() ||
+	  ny!=Rh3->GetNbinsY() ||
+	  nz!=Rh3->GetNbinsZ())
+	std::cerr<<"Bins do not match"<<std::endl;
+      for(Int_t i=1;i<=nx;i++)
+	for(Int_t j=1;j<=ny;j++)
+	  for(Int_t k=1;k<=nz;k++)
+	    {
+	      Double_t valA = Ah3->GetBinContent(i,j,k);
+	      const Double_t valR = Rh3->GetBinContent(i,j,k);
+	      valA-=valR;
+	      Ah3->SetBinContent(i,j,k,valA);
+	    }
+    }
   auto start = std::chrono::high_resolution_clock::now();
   data->Project();
   data->PrintChrono(start, "Data3::Project: ");
@@ -143,15 +167,20 @@ int main(int argc, const char **argv)
 	std::cerr << "hplot: " << ghname << " not found in " << gfname << std::endl;
 	exit(1);
       }
-      if (obj->InheritsFrom("TH3")) {
-	geo3 = std::make_shared<Geometry3>(gfname, ghname, args);
-	auto start = std::chrono::high_resolution_clock::now();
-	geo3->Project();
-	geo3->PrintChrono(start,"Geometry3::Project: ");
-	data->Check(geo3->GetNormalAxis());
-      } else if (obj->InheritsFrom("TMultiGraph")) {
-	geoMG = std::make_shared<GeometryMultiGraph>(gfname, ghname, args, data);
-      }
+
+      if (obj->InheritsFrom("TH3"))
+	{
+	  geo3 = std::make_shared<Geometry3>(gfname, ghname, args);
+	  auto start = std::chrono::high_resolution_clock::now();
+	  geo3->Project();
+	  geo3->PrintChrono(start,"Geometry3::Project: ");
+	  data->Check(geo3->GetNormalAxis());
+	}
+      else if (obj->InheritsFrom("TMultiGraph"))
+	{
+	  geoMG = std::make_shared<GeometryMultiGraph>(gfname, ghname, args, data);
+	}
+
       df.Close();
     }
 

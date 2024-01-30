@@ -8,7 +8,7 @@
 Data3::Data3(const std::string& fname, const std::string& hname,
 	     const std::shared_ptr<Arguments> args) :
   Data(fname,hname,args),
-  yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr)
+  yrev(nullptr), plane(""), h3(nullptr), h2out(nullptr), h2max(nullptr)
 {
   plane = args->GetPlane();
   TFile df(fname.data());
@@ -98,6 +98,15 @@ void Data3::SetH2(std::shared_ptr<TH2> h2)
     //  std::cout << a->GetXmin() << " " << a->GetXmax() << std::endl;
     //  std::cout << a->GetBinLowEdge(a->GetFirst()) << " "
     // << a->GetBinUpEdge(a->GetLast()) << std::endl;
+
+  if (!h2out)
+    {
+      std::cout<<"Making H2OUT"<<std::endl;
+      std::string name = Form("%s_max", h3->GetName());
+      std::string title = "max";
+      h2out = MakeH2(name, title);
+    }
+
   return;
 }
 
@@ -240,6 +249,19 @@ void Data3::Rebin() const
   return;
 }
 
+void
+Data3::BuildOutH2()
+{
+  std::cout<<"Build OUT H2"<<std::endl;
+  std::string name = Form("%s_sum", h3->GetName());
+  std::string title = "sum";
+  h2out = MakeH2(name, title);
+
+  SetH2(h2out);
+  
+  return;
+}
+
 void Data3::BuildMaxH2()
 {
   //  std::cout << "Data3::BuildMaxH2" << std::endl;
@@ -261,7 +283,6 @@ void Data3::BuildMaxH2()
 	     for (j=1; j<=NJ; ++j)
 	       for (i=1; i<=NI; ++i)
 		 {
-
 		   Double_t max(0.0);
 		   Double_t err(0.0);
 		   for (k=1; k<=NK; ++k)
@@ -313,7 +334,7 @@ void Data3::ReverseYAxis(std::shared_ptr<TH2> h) const
   if (args->IsYmin())
     {
       // TODO: not exactly correct
-      // will cause problems with rought binning
+      // will cause problems with rough binning
       ymin = args->GetYmin();
       ymax = args->GetYmax();
     }
@@ -412,7 +433,8 @@ TAxis *Data3::GetVerticalAxis() const
     }
 }
 
-std::shared_ptr<TH2> Data3::MakeH2(std::string& name, std::string& title)
+std::shared_ptr<TH2>
+Data3::MakeH2(std::string& name, std::string& title)
 /*!
   Create the TH2 histogram from based on the projection plane and TH3 binning
  */
@@ -456,6 +478,8 @@ void Data3::Project()
       PrintChrono(start, " Project: "+GetTypeStr() + " scale ");
     }
 
+
+  BuildOutH2();
   if (args->IsMax())
     {
       BuildMaxH2();
@@ -524,6 +548,54 @@ void Data3::Project()
   return;
 }
 
+void
+Data3::sumBins(const Int_t binA,const Int_t binB) const
+{
+  Int_t  i,j,k;
+  const Int_t n3x = h3->GetNbinsX();
+  const Int_t n3y = h3->GetNbinsY();
+  const Int_t n3z = h3->GetNbinsZ();
+
+  auto f = [&](Int_t &i,  Int_t &j,
+	       Int_t NI,  Int_t NJ,  
+	       Int_t &ii, Int_t &jj, Int_t &kk,
+	       Int_t &x,  Int_t&y)
+  {
+    for (i=1; i<=NI; ++i)
+      for (j=1; j<=NJ; ++j)
+	{
+	  Double_t sum(0.0);
+	  for (k=binA; k<=binB; ++k)
+	    {
+	      const Double_t val = h3->GetBinContent(ii,jj,kk);
+	      // if (val>1e-12)
+	      // 	std::cout<<"i:"<<ii<<" "<<jj<<" "<<kk<<" :"<<val<<std::endl;	      
+	      //	      const Double_t e = h3->GetBinError(ii,jj,kk);
+	      sum+=val;
+	    }
+	  // if (sum>1e-12)
+	  //   std::cout<<"SUM:"<<x<<" "<<y<<" "<<sum<<"\n"<<std::endl;
+	  h2out->SetBinContent(x,y,sum);
+	}
+  };
+      
+  if (plane == "xy")
+    f(i,j,n3y,n3x,i,j,k,i,j);
+  else if (plane == "yx")
+    f(i,j,n3y,n3x,i,j,k,j,i);
+  else if (plane == "yz")
+    f(j,k,n3y,n3z,i,j,k,j,k);
+  else if (plane == "zy")
+    f(j,k,n3y,n3z,i,j,k,k,j);
+  else if (plane == "xz")
+    f(k,i,n3z,n3x,i,j,k,i,k);
+  else if (plane == "zx")
+    f(k,i,n3z,n3x,i,j,k,k,i);
+  
+  return;
+}
+
+
 Float_t Data3::GetOffset(const std::string& val) const
 {
   float v(0.0);
@@ -551,7 +623,8 @@ Float_t Data3::GetOffset(const std::string& val) const
   return v;
 }
 
-std::shared_ptr<TH2> Data3::GetH2(const std::string val) const
+std::shared_ptr<TH2>
+Data3::GetH2(const std::string val)  const
 {
   if (val.empty())
     return GetH2(GetOffset(args->GetOffset()));
@@ -559,7 +632,8 @@ std::shared_ptr<TH2> Data3::GetH2(const std::string val) const
     return GetH2(GetOffset(val));
 }
 
-std::shared_ptr<TH2> Data3::GetH2(const Float_t val) const
+std::shared_ptr<TH2>
+Data3::GetH2(const Float_t val)  const
 {
   if (h2max)
     return h2max;
@@ -581,7 +655,46 @@ std::shared_ptr<TH2> Data3::GetH2(const Float_t val) const
     }
 }
 
-std::shared_ptr<TH2> Data3::Draw(const Float_t val) const
+std::shared_ptr<TH2>
+Data3::GetH2(const Float_t valA,
+	     const Float_t valB) const
+{
+
+  if (h2max)
+    return h2max;
+
+  const TAxis *a = GetNormalAxis();
+  const Int_t nbins = a->GetNbins();
+  Int_t binA = a->FindBin(valA);
+  Int_t binB = a->FindBin(valB);
+  if (binA && binB && binA!=binB &&
+      binA<nbins && binB<nbins)
+    {
+      std::cout<<"HERE "<<valA<<" "<<binA<<" "<<valB<<" "<<binB<<std::endl;
+	
+      sumBins(binA,binB);
+      return h2out;
+    }
+  return h2out;
+  // std::shared_ptr<TH2> Out=
+  //   std::make_shared<TH2>(vh2[binA-1]->Clone());
+  
+  // return Out;
+}
+
+std::shared_ptr<TH2>
+Data3::Draw(const Float_t valA,const Float_t valB)  const
+/*!
+  Draws h2 at the given offset
+ */
+{
+  std::shared_ptr <TH2> h2 = GetH2(valA,valB);
+  h2->Draw();
+  return h2;
+}
+
+std::shared_ptr<TH2>
+Data3::Draw(const Float_t val)  const
 /*!
   Draws h2 at the given offset
  */
@@ -603,7 +716,7 @@ std::shared_ptr<TH2> Data3::Draw(const Float_t val) const
   return h2;
 }
 
-std::shared_ptr<TH2> Data3::Draw(const std::string val) const
+std::shared_ptr<TH2> Data3::Draw(const std::string val)  const
 /*!
   Draws h2 at the given offset
  */

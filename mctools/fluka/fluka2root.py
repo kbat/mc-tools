@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.11
 #
 # alias fluka2root-dir="parallel 'cd {} && fluka2root *.inp' ::: *"
 

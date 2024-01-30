@@ -20,15 +20,19 @@ class Data3 : public Data {
   char   GetNormalAxisName() const;
   void Flip();
   void ErrorHist(std::shared_ptr<TH2> h) const;
- protected:
+
+protected:
+
   std::string plane;
   std::shared_ptr<TH3> h3;
+  std::shared_ptr<TH2> h2out;
   std::shared_ptr<TH2> h2max;
   std::vector< std::shared_ptr<TH2> > vh2;
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
   virtual void SetH2(std::shared_ptr<TH2> h2);
   void Rebin() const;
   std::shared_ptr<TH2> MakeH2(std::string& name, std::string& title);
+  virtual void BuildOutH2();
   virtual void BuildMaxH2();
   Float_t GetOffset(const std::string&) const;
  public:
@@ -41,9 +45,11 @@ class Data3 : public Data {
   void Project();
   const std::shared_ptr<Arguments> GetArgs() const {return args;}
   const std::shared_ptr<TH3> GetH3() const { return h3; };
-  std::shared_ptr <TH2> GetH2(const std::string val="") const;
-  std::shared_ptr <TH2> GetH2(const Float_t val) const;
+  std::shared_ptr<TH2> GetH2(const std::string val="") const;
+  std::shared_ptr<TH2> GetH2(const Float_t val) const;
+  std::shared_ptr<TH2> GetH2(const Float_t,const Float_t) const ;
   virtual std::shared_ptr<TH2> Draw(const Float_t val) const;
+  virtual std::shared_ptr<TH2> Draw(const Float_t,const Float_t) const;
   virtual std::shared_ptr<TH2> Draw(const std::string val="") const;
   void SetOffset(Float_t val) { offset=val; }
   Float_t GetOffset() const { return offset; }
@@ -53,6 +59,9 @@ class Data3 : public Data {
   virtual std::string GetTypeStr() const { return "Data3"; }
   const std::vector<std::shared_ptr<TH2> > GetVH2() const {return vh2;}
   void ReverseYAxis(std::shared_ptr<TH2> h2) const;
+
+  void sumBins(const Int_t,const Int_t) const;
+  void subtract(const Data3&);
 };
 
 #endif

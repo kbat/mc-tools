@@ -112,10 +112,18 @@ Arguments::Arguments(int ac, const char **av) :
        "the bin value is compared with the max value at the 1 sigma level: bin-ebin < max+emax, see the Data3::BuildMaxH2() method. "
        "With this option the '-offset' value applies to geomtry only which allows to select "
        "the representative geometry view.")
+      ("sum","Plot the histogram where each bin content is the sum value "
+       "of all histograms along the normal axis. In order to avoid statistically unsignificant outliers (causing single-particle tracks in the max plots), "
+       "the bin value is compared with the max value at the 1 sigma level: bin-ebin < max+emax, see the Data3::BuildMaxH2() method. "
+       "With this option the '-offset' value applies to geomtry only which allows to select "
+       "the representative geometry view.")
       ("maxerror",po::value<double>()->default_value(-1.0),
        "Bins with relative error above this value will not be shown. With negative value (by default) the bin error is not checked, i.e. all bins are drawn. This option is not compatible with -errors.")
       ("palette",po::value<std::string>()->default_value("MAXIV"),"Set colour palette. ROOT palette names predefined in TColor::EColorPalette are alowed, e.g. kDeepSea."
        " Palette can be inverted if preceeded by a minus sign, e.g. -kDeepSea.")
+      ("rfile", po::value<std::string>()->default_value(""),"ratio file")
+      ("rhist", po::value<std::string>()->default_value("mesh25"),"ratio file histogram")
+      ("r", po::value<std::string>()->default_value(""),"ratio file")      
       ("v", "Explain what is being done.");
 
     po::options_description data("Data options", w.ws_col);
@@ -124,6 +132,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("doption", po::value<std::string>()->default_value("colz"), "Data draw option")
       ("dcont", po::value<size_t>()->default_value(200), "Number of contour levels for data")
       ("no-logz", "Remove log scale for the data colour axis");
+    
 
     po::options_description geom("Geometry options", w.ws_col);
     geom.add_options()

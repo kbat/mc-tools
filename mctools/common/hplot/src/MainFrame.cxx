@@ -154,12 +154,13 @@ void MainFrame::DoSlider()
 {
   float ymin, ymax;
   fSlider->GetPosition(ymin,ymax);
+  std::cout<<"Slide = "<<ymin<<" "<<ymax<<std::endl;
   const float y = (ymin+ymax)/2.0;
 
   TVirtualPad *pad1 = GetHistogramPad();
   pad1->cd();
 
-  dh2 = data->Draw(y);
+  dh2 = data->Draw(ymin,ymax);
 
   if (geo3)
     gh2 = geo3->Draw(y);
