@@ -35,7 +35,11 @@ Project homepage: https://github.com/kbat/mc-tools
 	For example, in order to set the volume of cell 5 to 3.14, cell 7 to 2.71 in a geometry of 10 cells total, run
 ```python $MCTOOLS/mctools/mcnp/vol.py -card vol -ntotal 10 -values "5 3.14 7 2.71" -default j```.
 		This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
-* [mcnpview](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpview.sh): a wrapper around ``mcnp ip`` which allows to return to the selected geometry view in subsequent calls of the viewer. Find the detailed tutorial in the [wiki section](https://github.com/kbat/mc-tools/wiki/mcnpview).
+* [mcnpview](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpview.sh):
+  a wrapper around ```mcnp ip``` which allows to return to the selected
+  geometry view in subsequent calls of the viewer. Find a detailed
+  tutorial in the [wiki
+  section](https://github.com/kbat/mc-tools/wiki/mcnpview).
 
 ## PHITS
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp/).
