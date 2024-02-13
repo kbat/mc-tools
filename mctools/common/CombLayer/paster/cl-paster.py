@@ -76,7 +76,7 @@ class Paster:
 
 def main():
     """
-    Paster for CombLayer
+    New component paster for CombLayer
     """
 
     # get default author name from /etc/passwd:
