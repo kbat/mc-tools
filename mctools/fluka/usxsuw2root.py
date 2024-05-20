@@ -9,12 +9,13 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def getType(n):
-    """ Decrypt what(1) of usrbdx """
+    """ Decrypt what(1) of USRBDX """
     for i1 in (-2,-1,1,2):
         for i2 in (0,1):
             for i3 in (0,1):
-                if (i1+10*i2+100*i3 == n):
-                    return (i1,i2,i3) # i3 is irrelevant - use bin.fluence instead
+                for i4 in (-1,0,1):
+                    if (i1+10*i2+100*i3+10000*i4 == n):
+                        return (i1,i2,i3,i4) # i3 is irrelevant - use bin.fluence instead
     print("usrbdx2root: what(1) == %d undefined" % n, file=sys.stderr)
     sys.exit(1)
 
