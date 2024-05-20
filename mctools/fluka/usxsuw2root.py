@@ -44,6 +44,9 @@ def getAxesTitle(det):
 def getLogBins(nbins, low, high):
     """ Return array of bins with log10 equal widths """
 
+    if nbins == 0:
+        return np.array([])
+
     x = float(low)
     dx = pow(high/low, 1.0/nbins);
 
