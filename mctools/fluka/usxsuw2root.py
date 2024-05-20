@@ -3,7 +3,7 @@
 import sys, argparse
 from os import path
 import numpy as np
-from mctools import fluka
+from mctools import fluka, getLogBins, getLinBins
 from mctools.fluka.flair import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -40,24 +40,6 @@ def getAxesTitle(det):
     #      1 : ";Energy [GeV];#Omega [rad];" + ztitle,
     #      2 : ";Energy [GeV];log10(#Omega/rad);" + ztitle,
     #     }[x]
-
-def getLogBins(nbins, low, high):
-    """ Return array of bins with log10 equal widths """
-
-    if nbins == 0:
-        return np.array([])
-
-    x = float(low)
-    dx = pow(high/low, 1.0/nbins);
-
-    return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
-
-def getLinBins(nbins, low, high):
-    """ Return array of bins with linearly equal widths """
-    x = float(low)
-    dx = float(high-low)/nbins
-
-    return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
 def getNEbins(det):
     """ Return number of energy bins """

@@ -3,7 +3,7 @@
 import sys, argparse, struct
 from os import path
 import numpy as np
-from mctools import fluka
+from mctools import fluka, getLogBins, getLinBins
 from mctools.fluka.flair import Data, fortran
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -14,22 +14,6 @@ def getAxesTitle(det):
     ytitle = fluka.particle.get(det.dist, "undefined")
     ytitle += "[GeV/cm^{2}]"  if int(det.dist) in (208,211) else "[1/GeV/cm^{2}]"
     return ";Energy [GeV];" + ytitle
-
-def getLogBins(nbins, low, high):
-    """ Return array of bins with log10 equal widths """
-
-    x = float(low)
-    dx = pow(high/low, 1.0/nbins);
-
-    return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
-
-def getLinBins(nbins, low, high):
-    """ Return array of bins with linearly equal widths """
-
-    x = float(low)
-    dx = float(high-low)/nbins
-
-    return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
 def getEbins(det):
     """ Return lin or log energy bins depending on the value of i """
@@ -189,6 +173,7 @@ def main():
     b.readHeader(args.usrtrack)
 
     ND = len(b.detector)
+    print("ND:",ND)
 
     if args.verbose:
         #b.sayHeader()
@@ -202,6 +187,10 @@ def main():
         val = Data.unpackArray(b.readData(i, det.lowneu))
         err = Data.unpackArray(b.readStat(i, det.lowneu))
 
+        print("val",val, len(err))
+        print("err",err, len(err))
+        assert len(val) == len(err), "val and err length are different: %d %d" % (len(val), len(err))
+
         h = hist(det)
         hn = histN(det) # filled only if det.lowneu
 
@@ -209,6 +198,7 @@ def main():
             n = h.GetNbinsX()
             assert n == det.ne, "n != det.ne"
 
+            print(i,n, len(val))
             for i in range(n):
                 h.SetBinContent(i+1, val[i])
                 h.SetBinError(i+1,   err[n-i-1]*val[i])
@@ -216,11 +206,13 @@ def main():
                 h.SetEntries(b.weight)
                 h.Write()
 
+# not implemented - bugs with theINFN FLUKA, but it seems works with the CERN FLUKA
         if det.lowneu:
             # val_lowneu = val[det.ne::][::-1]
             # err_lowneu = err[det.ne::][::-1]
             n = hn.GetNbinsX()
             assert n == det.ngroup, "n != det.ngroup"
+            # print(n, len(val_lowneu), len(err_lowneu))
             for i in range(n):
                 hn.SetBinContent(i+1, val[-i-1])
                 hn.SetBinError(i+1,   err[-i-1]*val[-i-1])
