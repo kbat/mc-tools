@@ -96,14 +96,14 @@
 	     (materials
 	      '("ASSIGNMA" "ASSIGNMAT" "BLCKHOLE" "CARBON" "COMPOUND" "CORRFACT" "GRAPHITE" "HYDROGEN" "IRON" "LOW-MAT" "LOW-PWXS" "MATERIAL" "MAT-PROP" "OPT-PROP"
 		"STERNHEI" "TSL-PWXS" "TUNGSTEN" "VACUUM" "WATER" "endfb8r0" "njendfb8r0"))
+	     (defaults
+	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (particles
 	      '("4-HELIUM" "ALL-PART" "BEAMPART" "DOSE-EQ" "ELECTRON" "ENERGY" "MUONS" "MUON+" "MUON-" "NEUTRON"
 	      "OPTIPHOT" "PIONS" "PHOTON" "PROTON"))
 	     (fluence2dose
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
 	      "ERTMP" "EWTMP"))
-	     (defaults
-	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (preprocessor
 	      '("if" "elif" "else" "endif" "define"))
 	     (last
