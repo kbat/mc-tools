@@ -54,8 +54,9 @@ class Converter:
         self.keep       = args.keep
         self.clean      = args.clean
         self.parallel   = find_executable("parallel") is not None
-        self.estimators = [Estimator("USRBIN",   "usbsuw"),
-                           Estimator("USRBDX",   "usxsuw"),
+        self.estimators = [Estimator("USRBDX",   "usxsuw"),
+                           Estimator("USRBIN",   "usbsuw"),
+                           Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
                            Estimator("RESNUCLE", "usrsuw")]
         self.opened = {}         # dict of opened units (if any)
