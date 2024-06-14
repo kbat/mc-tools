@@ -96,5 +96,7 @@ void exfixed()
   gPad->SetLogy();
   gPad->SetGrid();
 
+  c2->Print("c1.pdf");
+
   c1->Print("c1.pdf]");
 }
