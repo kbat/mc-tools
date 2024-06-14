@@ -3,7 +3,7 @@
 all: test
 
 rantest004:
-	$(FLUTIL)/rfluka -e $(FLUPRO)/flukadpm3 -N0 -M3 test.inp
+	$(FLUPRO)/flutil/rfluka -e $(FLUPRO)/flukadpm3 -N0 -M3 test.inp
 	@echo ""
 
 run: rantest004
