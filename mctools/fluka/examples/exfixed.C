@@ -87,7 +87,7 @@ void exfixed()
   hs->Draw("nostack hist e");
   hs->GetXaxis()->SetTitleOffset(1.2);
 
-  const auto leg = new TLegend(0.3, 0.35, 0.6, 0.49);
+  const auto leg = new TLegend(0.3, 0.35, 0.65, 0.49);
   leg->AddEntry(pi3, pi3->GetTitle(), "l");
   leg->AddEntry(pi4, pi4->GetTitle(), "l");
   leg->Draw();
