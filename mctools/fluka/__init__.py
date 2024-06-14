@@ -115,5 +115,6 @@ particle = {
     243: "DOSEQLET",
     244: "RES-NIEL",
     249: "HEHAD-EQ",
-    250: "THNEU-EQ"
+    250: "THNEU-EQ",
+    258: "ANNIHRST"
 }
