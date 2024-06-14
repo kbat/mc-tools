@@ -173,7 +173,7 @@ def main():
     b.readHeader(args.usrtrack)
 
     ND = len(b.detector)
-    print("ND:",ND)
+    # print("ND:",ND)
 
     if args.verbose:
         #b.sayHeader()
@@ -187,8 +187,8 @@ def main():
         val = Data.unpackArray(b.readData(i, det.lowneu))
         err = Data.unpackArray(b.readStat(i, det.lowneu))
 
-        print("val",val, len(err))
-        print("err",err, len(err))
+        # print("val",val, len(err))
+        # print("err",err, len(err))
         assert len(val) == len(err), "val and err length are different: %d %d" % (len(val), len(err))
 
         h = hist(det)
@@ -198,7 +198,7 @@ def main():
             n = h.GetNbinsX()
             assert n == det.ne, "n != det.ne"
 
-            print(i,n, len(val))
+            # print(i,n, len(val))
             for i in range(n):
                 h.SetBinContent(i+1, val[i])
                 h.SetBinError(i+1,   err[n-i-1]*val[i])
