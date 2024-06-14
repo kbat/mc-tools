@@ -3,6 +3,7 @@
 import sys, argparse, struct
 from os import path
 import numpy as np
+from math import isclose
 from mctools import fluka, getLogBins, getLinBins
 from mctools.fluka.flair import Data, fortran
 import ROOT
@@ -10,9 +11,14 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def getAxesTitle(det):
     # differential energy fluence/current
-    # FLUKA manual page 259
+    # FLUKA manual: USRTRACK section
+    energy = (208, 211) # ENERGY or EM-ENERGY
     ytitle = fluka.particle.get(det.dist, "undefined")
-    ytitle += "[GeV/cm^{2}]"  if int(det.dist) in (208,211) else "[1/GeV/cm^{2}]"
+    if int(det.dist) in energy:
+        ytitle += " tracklength [cm]" if isclose(det.volume, 1.0) else " energy fluence [cm^{-2}]"
+    else:
+        ytitle += " tracklength [cm/GeV]" if isclose(det.volume, 1.0) else " fluence [1/GeV/cm^{2}]"
+
     return ";Energy [GeV];" + ytitle
 
 def getEbins(det):
@@ -33,7 +39,7 @@ def hist(det):
 
     title = fluka.particle.get(det.dist, "undefined")
     title += " #diamond "
-    title += "reg %d" % det.reg
+    title += "all regions" if int(det.reg) == -1 else "reg %d" % det.reg
     title += " #diamond "
     title += "%g cm^{3}" % det.volume
     title += " #diamond "
