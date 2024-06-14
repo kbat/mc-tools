@@ -5,7 +5,7 @@
 import sys, re, os, argparse
 import glob
 from tempfile import NamedTemporaryFile
-from distutils.spawn import find_executable
+from shutil import which
 
 def str2int(s):
     try:
@@ -53,7 +53,7 @@ class Converter:
         self.verbose    = args.verbose
         self.keep       = args.keep
         self.clean      = args.clean
-        self.parallel   = find_executable("parallel") is not None
+        self.parallel   = which("parallel") is not None
         self.estimators = [Estimator("USRBDX",   "usxsuw"),
                            Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRCOLL",  "ustsuw"),
