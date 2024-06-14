@@ -8,8 +8,13 @@
 #
 # https://github.com/kbat/mc-tools
 
+if [ -z ${FLUPRO+x} ]; then
+    >&2 echo "Error: FLUPRO variable is unset"
+    exit 1
+fi
+
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 filename.ext"
+    >&2 echo "Usage: $0 filename.ext"
     exit 1
 fi
 
