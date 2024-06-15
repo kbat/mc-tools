@@ -5,7 +5,11 @@ Project homepage: https://github.com/kbat/mc-tools
 
 ## FLUKA
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org) input files.
-* [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA binary output into [ROOT](https://root.cern). It first calls the standard FLUKA tools to merge data files and then converts the merged files into a single ROOT file. To understand how to use it, run a standard example ```$FLUPRO/flutil/rfluka $FLUPRO/exmixed.inp``` and then execute ```fluka2root exmixed.inp```.
+* [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA binary output into [ROOT](https://root.cern). It first calls the standard FLUKA tools to merge data files and then converts the merged files into a single ROOT file. To understand how to use it, run a standard example
+~~~
+  $FLUPRO/flutil/rfluka $FLUPRO/exmixed.inp
+~~~
+and then execute ```fluka2root exmixed.inp```.
   * A more detailed tutorial is available in the [wiki section](https://github.com/kbat/mc-tools/wiki/mc%E2%80%90tools:-FLUKA).
   * Internally, `fluka2root` runs the following convertes which can (but should not) be called individually:
     * [usbsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usbsuw2root.py) script to convert the USRBIN results into a TH3F histogram. Note that this tool does not directly convert the files produced by the USRBIN card, but these files must first be averaged by the $FLUPRO/flutil/usbsuw program. The resulting averaged file can be converted into ROOT by ```usbsuw2root```. The $FLUPRO/flutil/usbsuw call is done automatically if the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) general converter is used.
@@ -46,8 +50,10 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     a tool to facilitate input of volume/importance/probability values
     for all cells in geometry. To be used with cards like **area**, **vol**, **imp**, **pd**, **dxc** etc.
 	For example, in order to set the volume of cell 5 to 3.14, cell 7 to 2.71 in a geometry of 10 cells total, run
-```python $MCTOOLS/mctools/mcnp/vol.py -card vol -ntotal 10 -values "5 3.14 7 2.71" -default j```.
-		This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
+~~~
+python $MCTOOLS/mctools/mcnp/vol.py -card vol -ntotal 10 -values "5 3.14 7 2.71" -default j
+~~~
+This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
 * [mcnpview](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpview.sh):
   a wrapper around ```mcnp ip``` which allows to return to the selected
   geometry view in subsequent calls of the viewer. Find a detailed
