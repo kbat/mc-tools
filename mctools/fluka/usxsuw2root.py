@@ -16,7 +16,7 @@ def getType(n):
                 for i4 in (-1,0,1):
                     if (i1+10*i2+100*i3+10000*i4 == n):
                         return (i1,i2,i3,i4) # i3 is irrelevant - use bin.fluence instead
-    print("usrbdx2root: what(1) == %d undefined" % n, file=sys.stderr)
+    print("usxsuw2root: what(1) == %d undefined" % n, file=sys.stderr)
     sys.exit(1)
 
 def isLogE(x):
@@ -105,7 +105,7 @@ def main():
     args = parser.parse_args()
 
     if not path.isfile(args.usrbdx):
-        print("usrbdx2root: File %s does not exist." % args.usrbdx, file=sys.stderr)
+        print("usxsuw2root: File %s does not exist." % args.usrbdx, file=sys.stderr)
         return 1
 
     if args.root == "":
