@@ -19,6 +19,7 @@ RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for `
     * [ustsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/ustsuw2root.py) script to convert the USRTRACK and USRCOLL results into a TH1F histogram. + see the comments for ```usbsuw2root``` above.
     * [eventdat2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/eventdat2root.py) script to convert the EVENTDAT results into a TTree object.
 * [plotgeom2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/plotgeom2root.py) script to convert the [PLOTGEOM](http://www.fluka.org/fluka.php?id=man_onl&sub=63) binary output into a [TMultiGraph](https://root.cern/root/html606/classTMultiGraph.html) object.
+* [sigma](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/sigma.py) script to plot integral FLUKA cross sections as functions of incident energy.
 
 ## MСNР
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for [MCNP](https://mcnp.lanl.gov) input files.
