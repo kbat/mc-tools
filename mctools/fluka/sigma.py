@@ -53,14 +53,12 @@ def generateInputs(args,tmp):
         E = pow(10, e)
         fname = f"sigma-{i:0>3}.inp"
         fname = os.path.join(tmp,fname);
-#        print(fname, file=sys.stderr)
         with open(fname, "w") as f:
             with redirect_stdout(f):
                 inp(args.projectile, args.material, E, args.include)
 
 def run(tmp):
-    if which("parallel") is None:
-        print("ERROR: GNU parallel is not installed", file=sys.stderr)
+    assert which("parallel"), "GNU parallel is not installed"
 
     command = f"cd {tmp} && parallel --bar $FLUPRO/flutil/rfluka -N0 -M1 ::: sigma*inp"
     return_value = os.system(command)
@@ -99,8 +97,6 @@ def fixEmin(args):
 
     return emin
 
-
-
 def main():
     """ A simple FLUKA cross section plotter """
     parser = argparse.ArgumentParser(description=main.__doc__,
@@ -117,9 +113,8 @@ def main():
 
     args.emin = fixEmin(args)
 
-    if args.emin > args.emax:
-        print("ERROR: emin > emax", file=sys.stderr)
-        return 1
+    assert args.emin < args.emax, "emin > emax"
+    assert args.npoints > 1, "Number of energy points is too small"
 
     data = {}
     with tempfile.TemporaryDirectory(prefix="sigma.") as tmp:
