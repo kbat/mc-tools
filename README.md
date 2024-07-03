@@ -1,5 +1,5 @@
 # mc-tools
-Some Monte Carlo tools for MCNP, MCNPX, PHITS and FLUKA
+ROOT-based tools for FLUKA, PHITS and MCNP Monte Carlo codes
 
 Project homepage: https://github.com/kbat/mc-tools
 
@@ -9,15 +9,7 @@ Project homepage: https://github.com/kbat/mc-tools
 ~~~
   $FLUPRO/flutil/rfluka $FLUPRO/exmixed.inp
 ~~~
-and then execute ```fluka2root exmixed.inp```.
-  * A more detailed tutorial is available in the [wiki section](https://github.com/kbat/mc-tools/wiki/mc%E2%80%90tools:-FLUKA).
-  * Internally, `fluka2root` runs the following convertes which can (but should not) be called individually:
-    * [usbsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usbsuw2root.py) script to convert the USRBIN results into a TH3F histogram. Note that this tool does not directly convert the files produced by the USRBIN card, but these files must first be averaged by the $FLUPRO/flutil/usbsuw program. The resulting averaged file can be converted into ROOT by ```usbsuw2root```. The $FLUPRO/flutil/usbsuw call is done automatically if the [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) general converter is used.
-    * [usxsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usxsuw2root.py) script to convert the USRBDX results into a TH2F histogram. + see the comments for the previous item.
-    * [usrsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/usrsuw2root.py) script to convertert the
-RESNUCLEI results into a TH2F histogram and TGraphError + see the comments for ```usbsuw2root``` above. Known bug: isomer data might be not saved into the ROOT file.
-    * [ustsuw2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/ustsuw2root.py) script to convert the USRTRACK and USRCOLL results into a TH1F histogram. + see the comments for ```usbsuw2root``` above.
-    * [eventdat2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/eventdat2root.py) script to convert the EVENTDAT results into a TTree object.
+and then execute ```fluka2root exmixed.inp```. A more detailed tutorial is available in the [wiki section](https://github.com/kbat/mc-tools/wiki/mc%E2%80%90tools:-FLUKA).
 * [plotgeom2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/plotgeom2root.py) script to convert the [PLOTGEOM](http://www.fluka.org/fluka.php?id=man_onl&sub=63) binary output into a [TMultiGraph](https://root.cern/root/html606/classTMultiGraph.html) object.
 * [sigma](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/sigma.py) script to plot integral FLUKA cross sections as functions of incident energy.
 
@@ -123,9 +115,9 @@ Konstantin Batkov, `batkov [аt] gmail.com`
 * Stuart Ansell, for endless discussions and amazing ideas.
 
 ## See also ##
-https://github.com/lanl/mcnptools
-
 https://github.com/SAnsell/CombLayer
+
+https://github.com/lanl/mcnptools
 
 http://pyne.io
 
