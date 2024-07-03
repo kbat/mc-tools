@@ -77,7 +77,7 @@
       (let* (
              ;; define several category of keywords
 	     (keywords
-	     '("BIASING" "BME" "DPMJET" "MYRQMD" "OPEN" "RQMD" "SOURCE" "ERDUMP" "USRGCALL" "USRICALL"
+	     '("BIASING" "BME" "DPMJET" "D-D" "D-T" "CHARMDEC" "MYRQMD" "OPEN" "RQMD" "SOURCE" "ERDUMP" "USRGCALL" "USRICALL"
 	     "USROCALL" "COMBNAME" "DEFAULTS" "DELTARAY" "ELECTNUC" "ELPO-THR" "END" "FREE" "GLOBAL"
 	     "GEOBEGIN" "GEOEND" "NEGATIVE" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "START" "STOP" "TITLE"
 	     "DISCARD" "DPMJET" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
@@ -105,7 +105,7 @@
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
 	      "ERTMP" "EWTMP"))
 	     (preprocessor
-	      '("if" "elif" "else" "endif" "define"))
+	      '("if" "elif" "else" "endif" "define" "$end_transform" "$end_translat" "$start_transform" "$start_translat"))
 	     (last
 	      '("LASTMAT" "LASTPAR" "LASTREG"))
 
