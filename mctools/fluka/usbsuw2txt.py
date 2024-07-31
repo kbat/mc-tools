@@ -41,7 +41,7 @@ def main():
         outFileName = args.out
 
     if not args.force and path.isfile(outFileName):
-        print("usbsuw2txt: File %s already exists. Use '-f' to overwrite." % args.out, file=sys.stderr)
+        print("usbsuw2txt: File %s already exists. Use '-f' to overwrite." % outFileName, file=sys.stderr)
         return 1
 
     b = Data.Usrbin()
