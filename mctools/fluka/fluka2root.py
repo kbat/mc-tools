@@ -6,6 +6,7 @@ import sys, re, os, argparse
 import glob
 from tempfile import NamedTemporaryFile
 from shutil import which
+from mctools import fluka
 
 def str2int(s):
     try:
@@ -23,10 +24,11 @@ def printincolor(s,col=33):
 
 
 class Estimator:
-    def __init__(self, name, converter):
+    def __init__(self, name, converter, merge = True):
         self.name = name
         self.converter = converter
         self.units = {} # dictionary of units and corresponding files
+        self.merge = merge # true for estimators which need merging, therwise false
 
     def addUnit(self, u):
         """ Adds a key with the given unit in the units dictionary
@@ -58,7 +60,9 @@ class Converter:
                            Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
-                           Estimator("RESNUCLE", "usrsuw")]
+                           Estimator("RESNUCLE", "usrsuw"),
+                           Estimator("EVENTBIN", "eventbin_converter", merge=False),
+                           ]
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
@@ -163,12 +167,17 @@ class Converter:
     def assignUnits(self):
         """Assigns units to estimators
         """
+        if self.verbose:
+            print("Assigning units...")
+
         self.opened = self.getOpenedUnits()
         if len(self.opened):
             sys.exit("Opened units not yet supported")
 
         inp = open(self.inp[0], "r")
         for line in inp.readlines():
+            if fluka.isComment(line):
+                continue
             for e in self.estimators:
                 if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
                     if re.search(r"\A%s" % e.name, line):
@@ -195,6 +204,9 @@ class Converter:
     def assignFileNames(self):
         """Assign file names to units
         """
+        if self.verbose:
+            print("Assigning file names...")
+
         for e in self.estimators:
             for u in e.units:
                 for inp in self.inp:
@@ -212,6 +224,12 @@ class Converter:
         for e in self.estimators:
             if not len(e.units):
                 continue
+            if e.merge is False:
+                if self.verbose:
+                    print(f"{e.name} does not need merging -> skipping")
+                continue
+            if self.verbose:
+                e.Print()
 
             for u in e.units:
                 with NamedTemporaryFile(suffix="."+e.converter, mode="w", delete=False) as tmpfile:
@@ -228,6 +246,9 @@ class Converter:
                     tmpfile.write("%s\n" % suwfile)
 
                     tmpfiles.append(tmpfile.name)
+
+        if len(tmpfiles) == 0:
+            return
 
         verbose = "" if self.verbose else ">/dev/null"
         if self.parallel:
@@ -261,40 +282,57 @@ class Converter:
         for e in self.estimators:
             if not len(e.units):
                 continue
+            if self.verbose:
+                e.Print()
+                print("---")
 
             datafiles = []
-            for u in e.units:
-                suwfile = self.getSuwFileName(e,u)
-                rootfile = suwfile + ".root"
-                self.out_root_files.append(rootfile)
-                datafiles.append(suwfile)
-
-            if self.parallel:
-                command="parallel --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
-                if self.verbose:
-                    printincolor(command)
-                return_value = os.system(command)
-                if return_value:
-                    sys.exit(2)
-            else:
+            if e.merge: # needs merging
                 for u in e.units:
                     suwfile = self.getSuwFileName(e,u)
                     rootfile = suwfile + ".root"
-                    command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
+                    self.out_root_files.append(rootfile)
+                    datafiles.append(suwfile)
+
+                if self.parallel:
+                    command="parallel --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
                     if self.verbose:
                         printincolor(command)
-                    return_value = os.system(command)
+                        return_value = os.system(command)
                     if return_value:
                         sys.exit(2)
-            self.datafiles.append(datafiles)
+                else:
+                    for u in e.units:
+                        suwfile = self.getSuwFileName(e,u)
+                        rootfile = suwfile + ".root"
+                        command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
+                        if self.verbose:
+                            printincolor(command)
+                            return_value = os.system(command)
+                        if return_value:
+                            sys.exit(2)
+            else: # merging not needed
+                print(e.name)
+                for u in e.units:
+                    rootfile = self.getSuwFileName(e,u)+".root"
+                    self.out_root_files.append(rootfile)
+#                    datafiles.append(rootfile) # just to avoid it being empty for later check
+                    command = "%s %s -o %s" % (e.converter, ' '.join(e.units[u]), rootfile)
 
-        if len(self.datafiles) == 0:
+                    print(command)
+#                    sys.exit(1)
+
+        self.datafiles.append(datafiles)
+        print("datafiles: ", self.datafiles, self.out_root_files)
+
+        if len(self.datafiles) == 0 and len(self.out_root_files) == 0:
             print("fluka2root: no datafiles found -> exit")
             print("            Have you defined any estimators?")
             sys.exit(3)
 
         if self.verbose:
             print("ROOT files produced: ", self.out_root_files)
+        sys.exit(1)
 
 
         f = "-f" if self.overwrite else ""

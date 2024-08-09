@@ -118,3 +118,11 @@ particle = {
     250: "THNEU-EQ",
     258: "ANNIHRST"
 }
+
+def isComment(line):
+    """ Checks if the line is commented out
+
+    """
+    if line[0] == '*':
+        return True
+    return False

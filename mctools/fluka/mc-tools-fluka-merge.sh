@@ -9,7 +9,7 @@
 # https://github.com/kbat/mc-tools
 
 if [ -z ${FLUPRO+x} ]; then
-    >&2 echo "Error: FLUPRO variable is unset"
+    >&2 echo "Error: FLUPRO is not set"
     exit 1
 fi
 
