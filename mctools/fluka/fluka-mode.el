@@ -70,6 +70,10 @@
 (make-face 'font-lock-last-face)
 (set-face-foreground 'font-lock-last-face "red")
 
+;; Keywords specific for the FLUKA.CERN fork, the colour is CERN blue
+(make-face 'font-lock-cern-face)
+(set-face-foreground 'font-lock-cern-face "#3871a8")
+
 
 ;; create the list for font-lock.
 ;; each category of keyword is given a particular face
@@ -77,12 +81,12 @@
       (let* (
              ;; define several category of keywords
 	     (keywords
-	     '("BEAMSPOT" "BIASING" "BME" "DPMJET" "D-D" "D-T" "CHARMDEC" "MYRQMD" "OPEN" "RQMD" "SOURCE" "SPECSOUR" "SPOTBEAM" "ERDUMP" "USRGCALL" "USRICALL"
+	     '("BEAMSPOT" "BIASING" "BME" "DPMJET" "D-D" "D-T" "CHARMDEC" "EXPTRANS" "MYRQMD" "OPEN" "RQMD" "SOURCE" "SPECSOUR" "SPOTBEAM" "ERDUMP" "USRGCALL" "USRICALL"
 	     "USROCALL" "COMBNAME" "DEFAULTS" "DELTARAY" "ELECTNUC" "ELPO-THR" "END" "FREE" "GLOBAL"
 	     "GEOBEGIN" "GEOEND" "NEGATIVE" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "START" "STOP" "TITLE"
 	     "DISCARD" "DPMJET" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
 	     "FLUKAFIX" "HI-PROPE" "IONFLUCT" "LAM-BIAS" "LOW-BIAS" "LOW-DOWN" "LPBEMF" "MCSTHRES" "MULSOPT"
-	     "MUMUPAIR" "MUPHOTON" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "SYRASTEP" "WW-FACTO" "WW-PROFI"
+	     "MUMUPAIR" "MUPHOTON" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "WW-FACTO" "WW-PROFI"
 	     "WW-THRES" "BEAMAXES" "BEAMPOS" "BEAM" "COALESCE" "ELCFIELD" "EMF" "EVAPORAT" "EVENTYPE"
 	     "INFLDCAY" "IONSPLIT" "IONTRANS" "ISOMERS" "LAMBBREM" "LOW-NEUT" "MGNFIELD" "PART-THR" "PHO2-THR" "PHOT-THR" "PHYSICS"
 	     "POLARIZA" "PROD-CUT" "QUASI-EL" "QMDTHRES" "STEPSIZE" "THRESHOL" "TIME-CUT" "NEW" "OLD" "UNKNOWN" "SCRATCH"))
@@ -109,6 +113,9 @@
 	     (last
 	      '("LASTMAT" "LASTPAR" "LASTREG"))
 
+	     (cern
+	      '("PROFILE" "SYRASTEP"))
+
             ;; generate regex string for each category of keywords
             (keywords-regexp (regexp-opt keywords 'words))
             (surfaces-regexp (regexp-opt surfaces 'words))
@@ -119,6 +126,7 @@
             (defaults-regexp (regexp-opt defaults 'words))
             (preprocessor-regexp (regexp-opt preprocessor 'words))
             (last-regexp (regexp-opt last 'words))
+            (cern-regexp (regexp-opt cern 'words))
 	    )
 
         `(
@@ -132,6 +140,7 @@
           (,defaults-regexp . 'font-lock-defaults-face)
           (,preprocessor-regexp . 'font-lock-preprocessor-face)
           (,last-regexp . 'font-lock-last-face)
+          (,cern-regexp . 'font-lock-cern-face)
           ;; note: order above matters, because once colored, that part won't change.
           ;; in general, put longer words first
           )))
