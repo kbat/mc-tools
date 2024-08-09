@@ -48,7 +48,7 @@ class Converter:
                            Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
                            Estimator("RESNUCLE", "usrsuw"),
-                           Estimator("EVENTBIN", "eventbin_converter", merge=False),
+                           Estimator("EVENTBIN", "eventbin2root", merge=False),
                            ]
         self.opened = {}         # dict of opened units (if any)
 
