@@ -189,3 +189,17 @@ class Isotope:
         print("\t%s \t A = %g" % (self.name, self.A))
 
 ### END MIXTURES ###
+
+def printincolor(s,col=33):
+    """
+    Print a string with a given color using ANSI/VT100 Terminal Control Escape Sequences
+    http://www.termsys.demon.co.uk/vtansi.htm
+    """
+    print("\033[1;%dm%s\033[0m" % (col, s))
+
+def str2int(s):
+    try:
+        ret = int(s)
+    except ValueError:
+        ret = int(float(s))
+    return ret

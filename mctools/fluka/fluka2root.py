@@ -6,22 +6,9 @@ import sys, re, os, argparse
 import glob
 from tempfile import NamedTemporaryFile
 from shutil import which
-from mctools import fluka
+from mctools import fluka, printincolor, str2int
 
-def str2int(s):
-    try:
-        ret = int(s)
-    except ValueError:
-        ret = int(float(s))
-    return ret
-
-def printincolor(s,col=33):
-    """
-    Print a string with a given color using ANSI/VT100 Terminal Control Escape Sequences
-    http://www.termsys.demon.co.uk/vtansi.htm
-    """
-    print("\033[1;%dm%s\033[0m" % (col, s))
-
+printincolor("***** TODO take into account the cases when two EVENTBIN estimators are written in the same/different units *****")
 
 class Estimator:
     def __init__(self, name, converter, merge = True):
