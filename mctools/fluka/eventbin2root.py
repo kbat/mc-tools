@@ -67,27 +67,39 @@ class EventBin:
 #        data = self.read(True)
 
     def readEvent(self):
-        print("reading an event")
+        print("\n*** reading an event")
         iev = 1
-        while True:
-            etot = 0.0
-            etot1 = 0.0
-            numhits = 0.0
-            for ib in range(self.nbtot):
-                data = self.read(True)
-                mb,ievd,wei,tmp = struct.unpack("=iifi",data)
-                print(mb,ievd,wei,tmp)
-                nb = ib
+
+        etot = 0.0
+        etot1 = 0.0
+        numhits = 0.0
+        hits = {}
+        for ib in range(self.nbtot): # loop over detectors
+            print("*** here ib:",ib)
+            data = self.read(not True)
+            if data is None:
+                return
+            mb,ievd,wei,tmp = struct.unpack("=iifi",data)
+            print(mb,ievd,wei,tmp)
+            nb = ib
 
             if self.lntzer:
                 print("not lntzer")
-                data = self.read(True)
+                data = self.read()
                 size = len(data)
                 nhits = struct.unpack("=i",data[:4])[0]
                 assert(nhits==(size-4)//8) # just a quick format check
                 vals = struct.unpack("=%s" % ("if"*nhits), data[4:]) # ihelp, gmhelp
-                print(vals)
-                return 0
+                etot = 0.0
+                for i in range(0, nhits*2, 2):
+                    hits[vals[i]] = vals[i+1] # global bin number -> value pair
+                    etot += vals[i+1]
+                print(hits)
+                print("Number of hits in this event:", nhits)
+                print("Edep in this event:", etot)
+            else: # all cells are dumped
+                print("TODO: Implement the case where all cells are dumped")
+                pass
 
 
     def __del__(self):
@@ -137,6 +149,9 @@ def main():
     first = True
     for eventbin in args.eventbin:
         data = EventBin(eventbin, args.verbose)
+        data.readEvent()
+        data.readEvent()
+        data.readEvent()
         data.readEvent()
         return 0
 
