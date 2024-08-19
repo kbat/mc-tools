@@ -3,8 +3,114 @@
 import sys, argparse, os, struct
 from array import array
 from mctools.fluka.flair import fortran
+from mctools.fluka import particle
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+class EventBin:
+    def __init__(self, fname, verbose):
+        self.first = True
+        self.fname = fname
+        self.f = open(self.fname, 'rb')
+        self.verbose = verbose
+
+        self.iread = 0
+        self.readHeader()
+        self.iread += 1
+        self.ib0 = 0
+        self.nbtot = 0 # total number of binnings
+
+        self.lntzer = None
+
+        ib=self.ib0+1
+        while True:
+            data = self.read(True)
+            if data is None:
+                break
+
+            mb,titusb,itusbn,idusbn, \
+                xlow,xhigh,nxbin,dxusbn, \
+                ylow,yhigh,nybin,dyusbn, \
+                zlow,zhigh,nzbin,dzusbn, \
+                self.lntzer,bkusbn,b2usbn,tcusbn,tmp = struct.unpack("=i10s2i2fi3fi3fifi3fi",data)
+            titusb = titusb.decode('utf8').strip() # estimator title
+
+            print(f"binning number: {mb}, title: {titusb}, type: {itusbn}")
+            print(f"\tdistribution to be scored: {particle[idusbn]}")
+            print(f"\tx-axis: ",xlow,xhigh,nxbin,dxusbn)
+            print(f"\ty-axis: ",ylow,yhigh,nybin,dyusbn)
+            print(f"\tz-axis: ",zlow,zhigh,nzbin,dzusbn)
+            print(f"\tsave non-zero scores only: {bool(self.lntzer)}")
+            print(f"\tBirk's law parameters: {bkusbn} {b2usbn}")
+            print(f"\tTime cut-off: {tcusbn} sec")
+            print(f"\tpad byte??? (then unpack it as '4x'): {tmp}")
+
+            self.iread += 1
+            self.nbtot=ib
+
+            print("here")
+            data = self.read(True)
+            size = len(data)
+            print("there")
+            if size != 90:
+                break
+
+        print("seek 0")
+        self.f.seek(0)
+
+        for i in range(self.iread):
+            data = self.read(True)
+
+        # a,b,c,d = struct.unpack("=iiff",data)
+        # print(a,b,c,d)
+
+#        data = self.read(True)
+
+    def readEvent(self):
+        print("reading an event")
+        iev = 1
+        while True:
+            etot = 0.0
+            etot1 = 0.0
+            numhits = 0.0
+            for ib in range(self.nbtot):
+                data = self.read(True)
+                mb,ievd,wei,tmp = struct.unpack("=iifi",data)
+                print(mb,ievd,wei,tmp)
+                nb = ib
+
+            if self.lntzer:
+                print("not lntzer")
+                data = self.read(True)
+                size = len(data)
+                nhits = struct.unpack("=i",data[:4])[0]
+                assert(nhits==(size-4)//8) # just a quick format check
+                vals = struct.unpack("=%s" % ("if"*nhits), data[4:]) # ihelp, gmhelp
+                print(vals)
+                return 0
+
+
+    def __del__(self):
+        self.f.close()
+
+    def read(self, debug=False):
+        data = fortran.read(self.f)
+        if debug:
+            size = len(data)
+            print("size: ", size)
+        return data
+
+    def readHeader(self):
+        if not self.first:
+            return False
+        self.first = False
+
+        data = fortran.read(self.f)
+        title, time = struct.unpack("=80s32s", data)
+        title = title.decode('utf8').strip()
+        time = time.decode('utf8').strip()
+        if self.verbose:
+            print(title,time)
 
 
 def main():
@@ -30,6 +136,11 @@ def main():
 
     first = True
     for eventbin in args.eventbin:
+        data = EventBin(eventbin, args.verbose)
+        data.readEvent()
+        return 0
+
+
         with open(eventbin, 'rb') as f:
             print(eventbin)
             data = fortran.read(f)
