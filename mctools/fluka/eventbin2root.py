@@ -7,7 +7,7 @@ from mctools.fluka import particle
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-class EventBin:
+class Reader:
     def __init__(self, fname, verbose):
         self.first = True
         self.fname = fname
@@ -15,7 +15,7 @@ class EventBin:
         self.verbose = verbose
 
         self.iread = 0
-        self.readHeader()
+        self.readTitleTime()
         self.iread += 1
         self.ib0 = 0
         self.nbtot = 0 # total number of binnings
@@ -24,8 +24,11 @@ class EventBin:
 
         ib=self.ib0+1
         while True:
-            data = self.read(True)
+            data = self.read(False)
             if data is None:
+                break
+            size = len(data)
+            if size != 90:
                 break
 
             mb,titusb,itusbn,idusbn, \
@@ -48,18 +51,13 @@ class EventBin:
             self.iread += 1
             self.nbtot=ib
 
-            print("here")
-            data = self.read(True)
-            size = len(data)
-            print("there")
-            if size != 90:
-                break
-
         print("seek 0")
         self.f.seek(0)
 
         for i in range(self.iread):
             data = self.read(True)
+
+        print("here1")
 
         # a,b,c,d = struct.unpack("=iiff",data)
         # print(a,b,c,d)
@@ -78,7 +76,7 @@ class EventBin:
             print("*** here ib:",ib)
             data = self.read(not True)
             if data is None:
-                return
+                return False
             mb,ievd,wei,tmp = struct.unpack("=iifi",data)
             print(mb,ievd,wei,tmp)
             nb = ib
@@ -100,6 +98,7 @@ class EventBin:
             else: # all cells are dumped
                 print("TODO: Implement the case where all cells are dumped")
                 pass
+        return True
 
 
     def __del__(self):
@@ -112,7 +111,7 @@ class EventBin:
             print("size: ", size)
         return data
 
-    def readHeader(self):
+    def readTitleTime(self):
         if not self.first:
             return False
         self.first = False
@@ -148,53 +147,53 @@ def main():
 
     first = True
     for eventbin in args.eventbin:
-        data = EventBin(eventbin, args.verbose)
-        data.readEvent()
-        data.readEvent()
-        data.readEvent()
-        data.readEvent()
-        return 0
+        data = Reader(eventbin, args.verbose)
+        ievent = 0
+        while data.readEvent() != False:
+            ievent += 1
+            print("event ", ievent)
+    return 0
 
 
-        with open(eventbin, 'rb') as f:
-            print(eventbin)
-            data = fortran.read(f)
-            title, time = struct.unpack("=80s32s", data)
-            title = title.decode('utf8').strip()
-            time = time.decode('utf8').strip()
-            print(time)
+        # with open(eventbin, 'rb') as f:
+        #     print(eventbin)
+        #     data = fortran.read(f)
+        #     title, time = struct.unpack("=80s32s", data)
+        #     title = title.decode('utf8').strip()
+        #     time = time.decode('utf8').strip()
+        #     print(time)
 
-            while True:
-                data = fortran.read(f)
-                size = len(data)
-                print("size:",size)
-                if data is None:
-                    break
+        #     while True:
+        #         data = fortran.read(f)
+        #         size = len(data)
+        #         print("size:",size)
+        #         if data is None:
+        #             break
 
-                if first:
-                    first = False
+        #         if first:
+        #             first = False
 
-                mb,titusb,itusbn,idusbn, \
-                    xlow,xhigh,nxbin,dxusbn, \
-                    ylow,yhigh,nybin,dyusbn, \
-                    zlow,zhigh,nzbin,dzusbn, \
-                    lntzer,bkusbn,b2usbn,tcusbn,tmp = struct.unpack("=i10s2i2fi3fi3fifi3fi",data)
-                titusb = titusb.decode('utf8').strip() # estimator title
+        #         mb,titusb,itusbn,idusbn, \
+        #             xlow,xhigh,nxbin,dxusbn, \
+        #             ylow,yhigh,nybin,dyusbn, \
+        #             zlow,zhigh,nzbin,dzusbn, \
+        #             lntzer,bkusbn,b2usbn,tcusbn,tmp = struct.unpack("=i10s2i2fi3fi3fifi3fi",data)
+        #         titusb = titusb.decode('utf8').strip() # estimator title
 
-                print(mb,titusb,itusbn,idusbn,xlow,xhigh,nxbin,dxusbn,ylow,yhigh,nybin,dyusbn,zlow,zhigh,nzbin,dzusbn,lntzer,bkusbn,b2usbn,tcusbn,tmp)
+        #         print(mb,titusb,itusbn,idusbn,xlow,xhigh,nxbin,dxusbn,ylow,yhigh,nybin,dyusbn,zlow,zhigh,nzbin,dzusbn,lntzer,bkusbn,b2usbn,tcusbn,tmp)
 
-                data = fortran.read(f)
-                size = len(data)
-                print("size:",size)
-                a,b,c,d = struct.unpack("=iifi",data)
-                print(a,b,c,d)
+        #         data = fortran.read(f)
+        #         size = len(data)
+        #         print("size:",size)
+        #         a,b,c,d = struct.unpack("=iifi",data)
+        #         print(a,b,c,d)
 
-                data = fortran.read(f)
-                size = len(data)
-                print("size:",size)
+        #         data = fortran.read(f)
+        #         size = len(data)
+        #         print("size:",size)
 
 
-                break
+        #         break
 
 #                    title, time, nregs, nsco, dist = struct.unpack("=80s32siii", data)
 
