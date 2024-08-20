@@ -13,7 +13,7 @@ and then execute ```fluka2root exmixed.inp```. A more detailed tutorial is avail
 * [plotgeom2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/plotgeom2root.py) script to convert the [PLOTGEOM](http://www.fluka.org/fluka.php?id=man_onl&sub=63) binary output into a [TMultiGraph](https://root.cern/root/html606/classTMultiGraph.html) object.
 * [sigma](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/sigma.py) script to plot integral FLUKA cross sections as functions of incident energy.
 
-Attention to the [FLUKA.CERN](https://fluka.cern) users: these tools are primarily designed for the [authentic FLUKA](http://www.fluka.org), with some effort made to support your fork as well. Any assistance in improving this compatibility is greately appreciated. See the [Contacts](https://github.com/kbat/mc-tools/edit/master/README.md#contacts) section below.
+Attention to the [FLUKA.CERN](https://fluka.cern) users: these tools are primarily designed for the [authentic FLUKA](http://www.fluka.org), with some effort made to support your fork as well. Any assistance in improving this compatibility is greately appreciated. See the [Contacts](https://github.com/kbat/mc-tools?tab=readme-ov-file#contacts) section below.
 
 ## MСNР
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for [MCNP](https://mcnp.lanl.gov) input files.
