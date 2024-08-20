@@ -4,7 +4,7 @@ ROOT-based tools for FLUKA, PHITS and MCNP Monte Carlo codes
 Project homepage: https://github.com/kbat/mc-tools
 
 ## FLUKA
-* Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for the [FLUKA](http://www.fluka.org) input files.
+* Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org) input files.
 * [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA binary output into [ROOT](https://root.cern). It first calls the standard FLUKA tools to merge data files and then converts the merged files into a single ROOT file. To understand how to use it, run a standard example
 ~~~
   $FLUPRO/flutil/rfluka $FLUPRO/exmixed.inp
