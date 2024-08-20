@@ -112,7 +112,7 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
 Konstantin Batkov, `batkov [аt] gmail.com`
 
 ## Many thanks to ##
-* Nicolò Borghi, for the careful implementation of all my dreams in the ```mctal2root``` converter.
+* Nicolò Borghi, Thanks to Nicolò for carefully implementing all my ideas in the [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py) converter.
 * Kazuyoshi Furutaka, for adding the [pip](https://pypi.org/project/pip) installer and helping with the PHITS tools debugging.
 * Esben & Troels, for the initial version of the SSW converter.
 * Stuart Ansell, for endless discussions and amazing ideas.
