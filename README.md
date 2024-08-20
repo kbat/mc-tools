@@ -111,10 +111,12 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
 ## Contacts ##
 Konstantin Batkov, `batkov [аt] gmail.com`
 
-## Thanks to ##
-* Nicolò Borghi, for implementing all my dreams in the ```mctal2root``` converter.
+## Many thanks to ##
+* Nicolò Borghi, for the careful implementation of all my dreams in the ```mctal2root``` converter.
 * Kazuyoshi Furutaka, for adding the [pip](https://pypi.org/project/pip) installer and helping with the PHITS tools debugging.
+* Esben & Troels, for the initial version of the SSW converter.
 * Stuart Ansell, for endless discussions and amazing ideas.
+
 
 ## See also ##
 https://github.com/SAnsell/CombLayer
