@@ -4,7 +4,7 @@ ROOT-based tools for FLUKA, PHITS and MCNP Monte Carlo codes
 Project homepage: https://github.com/kbat/mc-tools
 
 ## FLUKA
-* Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org) input files.
+* Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org) input files ([screenshot](https://drive.google.com/file/d/1NI8f6JmqUujQmabod54fpUxuFJFpq0Lt/view?usp=drive_link)).
 * [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA binary output into [ROOT](https://root.cern). It first calls the standard FLUKA tools to merge data files and then converts the merged files into a single ROOT file. To understand how to use it, run a standard example
 ~~~
   $FLUPRO/flutil/rfluka $FLUPRO/exmixed.inp
@@ -12,6 +12,8 @@ Project homepage: https://github.com/kbat/mc-tools
 and then execute ```fluka2root exmixed.inp```. A more detailed tutorial is available in the [wiki section](https://github.com/kbat/mc-tools/wiki/FLUKA).
 * [plotgeom2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/plotgeom2root.py) script to convert the [PLOTGEOM](http://www.fluka.org/fluka.php?id=man_onl&sub=63) binary output into a [TMultiGraph](https://root.cern/root/html606/classTMultiGraph.html) object.
 * [sigma](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/sigma.py) script to plot integral FLUKA cross sections as functions of incident energy.
+
+Attention to the [FLUKA.CERN](https://fluka.cern) users: these tools are primarily designed for the [authentic FLUKA](http://www.fluka.org), with some effort made to support your fork as well. Any assistance in improving this compatibility is greately appreciated. See the [Contacts](https://github.com/kbat/mc-tools?tab=readme-ov-file#contacts) section below.
 
 ## MСNР
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mcnpgen-mode.el) for [MCNP](https://mcnp.lanl.gov) input files.
@@ -109,10 +111,12 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
 ## Contacts ##
 Konstantin Batkov, `batkov [аt] gmail.com`
 
-## Thanks to ##
-* Nicolò Borghi, for implementing all my dreams in the ```mctal2root``` converter.
+## Many thanks to ##
+* Nicolò Borghi, for carefully implementing all my ideas in the [mctal2root](https://github.com/kbat/mc-tools/blob/master/mctools/mcnp/mctal2root.py) converter.
 * Kazuyoshi Furutaka, for adding the [pip](https://pypi.org/project/pip) installer and helping with the PHITS tools debugging.
+* Esben & Troels, for the initial version of the SSW converter.
 * Stuart Ansell, for endless discussions and amazing ideas.
+
 
 ## See also ##
 https://github.com/SAnsell/CombLayer
