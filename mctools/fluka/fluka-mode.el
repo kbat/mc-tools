@@ -1,6 +1,6 @@
 ;;; fluka-mode.el --- major mode for editing FLUKA input files. -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2019-2023 by Konstantin Batkov
+;; Copyright © 2019-2024 by Konstantin Batkov
 
 ;; Author: Konstantin Batkov (batkov at gmail.com)
 ;; Inspired by: http://xahlee.info/emacs/emacs/elisp_syntax_coloring.html
@@ -70,10 +70,12 @@
 (make-face 'font-lock-last-face)
 (set-face-foreground 'font-lock-last-face "red")
 
+(make-face 'font-lock-startstop-face)
+(set-face-foreground 'font-lock-startstop-face "red")
+
 ;; Keywords specific for the FLUKA.CERN fork, the colour is CERN blue
 (make-face 'font-lock-cern-face)
 (set-face-foreground 'font-lock-cern-face "#3871a8")
-
 
 ;; create the list for font-lock.
 ;; each category of keyword is given a particular face
@@ -82,8 +84,8 @@
              ;; define several category of keywords
 	     (keywords
 	     '("BEAMSPOT" "BIASING" "BME" "DPMJET" "D-D" "D-T" "CHARMDEC" "EXPTRANS" "MYRQMD" "OPEN" "RQMD" "SOURCE" "SPECSOUR" "SPOTBEAM" "ERDUMP" "USRGCALL" "USRICALL"
-	     "USROCALL" "COMBNAME" "DEFAULTS" "DELTARAY" "ELECTNUC" "ELPO-THR" "END" "FREE" "GLOBAL"
-	     "GEOBEGIN" "GEOEND" "NEGATIVE" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "START" "STOP" "TITLE"
+	     "USROCALL" "COMBNAME" "DEFAULTS" "DELTARAY" "ELECTNUC" "ELPO-THR" "FREE" "GLOBAL"
+	     "NEGATIVE" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "TITLE"
 	     "DISCARD" "DPMJET" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
 	     "FLUKAFIX" "HI-PROPE" "IONFLUCT" "LAM-BIAS" "LOW-BIAS" "LOW-DOWN" "LPBEMF" "MCSTHRES" "MULSOPT"
 	     "MUMUPAIR" "MUPHOTON" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "WW-FACTO" "WW-PROFI"
@@ -98,7 +100,7 @@
 	      "RESNUCLE" "ROTPRBIN" "SCORE" "TCQUENCH" "USERDUMP" "USERWEIG" "USRBDX" "USRBIN" "USRCOLL"
 	      "USRTRACK" "USRYIELD"))
 	     (materials
-	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "IRON" "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "njendfb8r0" "NICKEL" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "POLYETHY" "PHOSPHO" "SILICON" "SILIC-28" "SILVER"
+	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COBALT" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "IRON" "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "njendfb8r0" "NICKEL" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "PHOSPHO" "POLYETHY" "POTASSIU" "SILICON" "SILIC-28" "SILVER"
 		"SODIUM" "STERNHEI" "SULFUR" "TANTALUM" "TIN" "TITANIUM" "TSL-PWXS" "TUNGSTEN" "VACUUM" "WATER" "ZINC"))
 	     (defaults
 	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
@@ -116,6 +118,9 @@
 	     (cern
 	      '("PROFILE" "SYRASTEP"))
 
+	     (startstop
+	      '("END" "GEOBEGIN" "GEOEND" "START" "STOP"))
+
             ;; generate regex string for each category of keywords
             (keywords-regexp (regexp-opt keywords 'words))
             (surfaces-regexp (regexp-opt surfaces 'words))
@@ -127,6 +132,7 @@
             (preprocessor-regexp (regexp-opt preprocessor 'words))
             (last-regexp (regexp-opt last 'words))
             (cern-regexp (regexp-opt cern 'words))
+            (startstop-regexp (regexp-opt startstop 'words))
 	    )
 
         `(
@@ -141,6 +147,7 @@
           (,preprocessor-regexp . 'font-lock-preprocessor-face)
           (,last-regexp . 'font-lock-last-face)
           (,cern-regexp . 'font-lock-cern-face)
+          (,startstop-regexp . 'font-lock-startstop-face)
           ;; note: order above matters, because once colored, that part won't change.
           ;; in general, put longer words first
           )))
