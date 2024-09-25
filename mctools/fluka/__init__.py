@@ -118,3 +118,20 @@ particle = {
     250: "THNEU-EQ",
     258: "ANNIHRST"
 }
+
+def line(card,w1="",w2="",w3="",w4="",w5="",w6="",sdum=""):
+    if w1 == "-":
+        w1 = ""
+    if w2 == "-":
+        w2 = ""
+    if w3 == "-":
+        w3 = ""
+    if w4 == "-":
+        w4 = ""
+    if w5 == "-":
+        w5 = ""
+    if w6 == "-":
+        w6 = ""
+    if sdum == "-":
+        sdum = ""
+    print(f"{card:10}{w1:>10}{w2:>10}{w3:>10}{w4:>10}{w5:>10}{w6:>10}{sdum:8}")

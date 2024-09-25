@@ -6,14 +6,12 @@ import glob
 import argparse
 import tempfile
 import numpy as np
+from mctools.fluka import line
 from math import log10
 from shutil import which
 from contextlib import redirect_stdout
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-
-def line(card,w1="",w2="",w3="",w4="",w5="",w6="",sdum=""):
-    print(f"{card:10}{w1:>10}{w2:>10}{w3:>10}{w4:>10}{w5:>10}{w6:>10}{sdum:8}")
 
 def inp(projectile, material, energy, include):
     """ Prints a single input file """
