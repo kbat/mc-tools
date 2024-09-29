@@ -40,7 +40,6 @@ SUBT = re.compile(r"""
 pageSepRE = re.compile(r"^[\s#]newpage:$")
 
 DEBUG = False
-#DEBUG = True
 
 def is_float(s):
     """
@@ -100,7 +99,7 @@ class Angel:
         ipage = -1
 
         ##################################################
-        # scan whole the file and count the "^[\s#]newpage:$", 
+        # scan whole the file and count the "^[\s#]newpage:$",
         ##################################################
         for idx,line in enumerate(self.lines):
             modLine = line.rstrip() # strip spaces/newlines at the right
@@ -131,10 +130,12 @@ class Angel:
             if re.search("title = ", line):
                 words = line.split()
                 self.title = ' '.join(words[2:])
+                if DEBUG: print("title: ", self.title)
                 continue
             if re.search("mesh = ", line):
                 words = line.split()
                 self.mesh = words[2]
+                if DEBUG: print("mesh: ", self.mesh)
                 continue
             if re.search("axis = ", line):
                 for a in line.split()[2:]:
@@ -175,7 +176,7 @@ class Angel:
                 self.unit_title = ' '.join(words[6:])
                 if self.output_title != None: self.ztitle = self.output_title + " " + self.unit_title
                 continue
-         
+
         ##################################################
         # scan the remaining data pages one by one
         # book and fill histograms
@@ -213,7 +214,7 @@ class Angel:
                 #: the location of "^[\s#]newpage:$" and therefore '+1'
                 igline = iline + pageSepLineLST[npage-1] + 1
                 if re.search("^h", line):
-                    if re.search("^h: n", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
+                    if re.search("^h: [nx]", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                         if DEBUG: print("one dimentional graph section")
                         self.Read1DHist(igline)
                         continue
@@ -256,7 +257,7 @@ class Angel:
         for key in self.dict_nbins:
             if int(self.dict_nbins[key])>1: nn1 += 1
         if DEBUG: print("nn1:", nn1)
-        
+
         if nn1 <= 1:
             return True
         else:
@@ -341,7 +342,7 @@ class Angel:
         bin_labels = [] # relevant for self.axis == 'reg' only
 
         for ihist in range(nhist):  # create the empty lists, so we could append later
-            data[ihist] = []     
+            data[ihist] = []
             errors[ihist] = []
 
         for line in self.lines[iline+1:]:
@@ -368,7 +369,7 @@ class Angel:
                 for ihist in range(nhist):
                     data[ihist].append(  float(words[(ihist+1)*2  ]))
                     errors[ihist].append(float(words[(ihist+1)*2+1]))
- 
+
         nbins = len(xarray)
         xarray.append(xmax)
 
@@ -393,7 +394,7 @@ class Angel:
                 for i in range(nbins):
                     h.GetXaxis().SetBinLabel(i+1, bin_labels[i])
                 h.GetXaxis().SetTitle("Region number")
-        
+
             self.histos.Add(h)
         del self.subtitles[:]
 
@@ -436,7 +437,7 @@ class Angel:
                 ey = errors[igraph][i]
                 g.SetPoint(i, x, y)
                 g.SetPointError(i, 0, ey*y)
-            
+
             self.histos.Add(g)
         del self.subtitles[:]
 
@@ -504,7 +505,7 @@ class Angel:
                     return # this was a color palette
                 data.append(float(w))
 #        if DEBUG: print(data)
-       
+
         # self.ihist+1 - start from ONE as in Angel - easy to compare
         h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
         self.ihist += 1
@@ -542,7 +543,7 @@ class Angel:
             xarray.append(float(h.GetBinLowEdge(i+1)))
 
         return xarray
-    
+
     def Make2Dfrom1D(self):
         """
         Makes a 2D histogram from a set of 1D !!! works only with 1 set of particles requested !!!
@@ -562,7 +563,7 @@ class Angel:
             if nbins0 != nbins:
                 second_dimention = key
                 second_dimention_nbins = nbins
-        
+
         if second_dimention:
             if DEBUG: print("the second dimention is", second_dimention, second_dimention_nbins)
         else:
@@ -570,7 +571,7 @@ class Angel:
             sys.exit(3)
 
 #        h2 = TH2F("hall%s" % second_dimention, "", nbins0, 0, 1, 20, 0, 1)
-        
+
 #        if DEBUG: print(array('f', self.getXarray(self.histos[0])))
         second_dimention_xarray = []
         for w in self.dict_edges_array[second_dimention]: second_dimention_xarray.append(float(w))
@@ -587,11 +588,11 @@ class Angel:
             for binx in range(nbins0):
                 h2.SetBinContent(binx+1, biny+1, h1.GetBinContent(binx+1))
                 h2.SetBinError(binx+1, biny+1, h1.GetBinError(binx+1))
-            
+
 
         self.histos.Add(h2)
 
-        
+
 
 def main():
     """
@@ -614,7 +615,7 @@ def main():
     print(fname_in, "->" ,fname_out)
 
     angel =  Angel(fname_in, fname_out,avBitSet=args.average)
-    
+
     return angel.return_value
 
 if __name__ == "__main__":
