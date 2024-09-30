@@ -86,7 +86,7 @@
 	     '("BEAMSPOT" "BIASING" "BME" "DPMJET" "D-D" "D-T" "CHARMDEC" "EXPTRANS" "MYRQMD" "OPEN" "RQMD" "SOURCE" "SPECSOUR" "SPOTBEAM" "ERDUMP" "USRGCALL" "USRICALL"
 	     "USROCALL" "COMBNAME" "DEFAULTS" "DELTARAY" "ELECTNUC" "ELPO-THR" "FREE" "GLOBAL"
 	     "NEGATIVE" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "TITLE"
-	     "DISCARD" "DPMJET" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
+	     "DISCARD" "DPMJET" "EM-DISSO" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
 	     "FLUKAFIX" "HI-PROPE" "IONFLUCT" "LAM-BIAS" "LOW-BIAS" "LOW-DOWN" "LPBEMF" "MCSTHRES" "MULSOPT"
 	     "MUMUPAIR" "MUPHOTON" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "WW-FACTO" "WW-PROFI"
 	     "WW-THRES" "BEAMAXES" "BEAMPOS" "BEAM" "COALESCE" "ELCFIELD" "EMF" "EVAPORAT" "EVENTYPE"
@@ -100,12 +100,12 @@
 	      "RESNUCLE" "ROTPRBIN" "SCORE" "TCQUENCH" "USERDUMP" "USERWEIG" "USRBDX" "USRBIN" "USRCOLL"
 	      "USRTRACK" "USRYIELD"))
 	     (materials
-	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COBALT" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "IRON" "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "njendfb8r0" "NICKEL" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "PHOSPHO" "POLYETHY" "POTASSIU" "SILICON" "SILIC-28" "SILVER"
+	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COBALT" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "IRON" "LASTMAT" "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "njendfb8r0" "NICKEL" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "PHOSPHO" "POLYETHY" "POTASSIU" "SILICON" "SILIC-28" "SILVER"
 		"SODIUM" "STERNHEI" "SULFUR" "TANTALUM" "TIN" "TITANIUM" "TSL-PWXS" "TUNGSTEN" "VACUUM" "WATER" "ZINC"))
 	     (defaults
 	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (particles
-	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSE" "DOSE-EQ" "DPA-SCO" "ELECTRON" "ENERGY" "ISOTOPE" "MUONS" "MUON+" "MUON-" "NEUTRON"
+	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSE" "DOSE-EQ" "DPA-SCO" "ELECTRON" "ENERGY" "HEAVYION" "ISOTOPE" "LASTPAR" "MUONS" "MUON+" "MUON-" "NEUTRON"
 	      "OPTIPHOT" "POSITRON" "PIONS" "PHOTON" "PROTON"))
 	     (fluence2dose
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
@@ -113,7 +113,7 @@
 	     (preprocessor
 	      '("if" "elif" "else" "endif" "define" "$end_transform" "$end_translat" "$start_transform" "$start_translat"))
 	     (last
-	      '("LASTMAT" "LASTPAR" "LASTREG"))
+	      '("LASTREG"))
 
 	     (cern
 	      '("PROFILE" "SYRASTEP"))
@@ -181,6 +181,13 @@
 
 (defvar column-marker-1-face 'column-marker-1
     "Face used for WHAT separators. Changing this directly affects only new separators.")
+
+(defface column-marker-last '((t (:background "red")))
+  "Face used for the last column."
+  :group 'faces)
+
+(defvar column-marker-last-face 'column-marker-last
+    "Face used for the last column")
 
 (defvar column-marker-vars ()
   "List of all internal column-marker variables")
@@ -274,6 +281,7 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
 (column-marker-create column-marker-5 column-marker-1-face)
 (column-marker-create column-marker-6 column-marker-1-face)
 (column-marker-create column-marker-7 column-marker-1-face)
+(column-marker-create column-marker-8 column-marker-last-face)
 
 ;;(require 'column-marker)
 (add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-1 10)))
@@ -283,6 +291,7 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
 (add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-5 50)))
 (add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-6 60)))
 (add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-7 70)))
+(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-8 80)))
 
 
 ;;;###autoload
