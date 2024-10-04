@@ -58,6 +58,7 @@ class Converter:
                            Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
+                           Estimator("DETECT",   "detsuw"),
                            Estimator("RESNUCLE", "usrsuw")]
         self.opened = {}         # dict of opened units (if any)
 
@@ -177,6 +178,12 @@ class Converter:
                         if unit<0: # we are interested in binary files only
                             if not unit in self.estimators[e]:
                                 self.estimators[e].addUnit("%s" % unit)
+                elif e.name == "DETECT":
+                    if re.search(r"\A%s" % e.name, line):
+                        unit = 17
+                        name = line[70:80].strip()
+                        if not unit in e.units:
+                            e.addUnit(unit)
                 else:
                     if re.search(r"\A%s" % e.name[:8], line) and not re.search(r"\&", line[70:80]):
                         if e.name[:8] == "RESNUCLE":

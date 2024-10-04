@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import sys, argparse, struct
+import numpy as np
 from os import path
-# from mctools import fluka
 from math import sqrt
 from mctools.fluka.flair import fortran
 import ROOT
@@ -10,7 +10,6 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 class DETECT:
     def __init__(self, fname):
-        print(fname)
         self.f = open(fname, 'rb')
 
         data = fortran.read(self.f)
@@ -19,28 +18,42 @@ class DETECT:
         self.runtit = self.runtit.decode('utf-8').strip()
         self.runtim = self.runtim.decode('utf-8').strip()
         assert self.runtim == "********    Sum file    ********"
+        self.nps = self.nctot + 1.0e9*self.mctot
 
     def __del__(self):
         self.f.close()
 
+    def reset(self):
+        self.chname = None
+        self.nbin   = None
+
+        self.ebins = []
+        self.val   = []
+        self.err   = []
+
     def read(self):
+        self.reset()
+
         data = fortran.read(self.f)
         if data is None:
             return False
         size = len(data)
-        ndet,chname,nbin,emin,ebin,ecut = struct.unpack("=i10si3f", data)
-        chname = chname.decode('utf-8').strip()
-        print(ndet,chname,nbin,emin,ebin,ecut)
+        ndet,self.chname,self.nbin,emin,ebin,self.ecut = struct.unpack("=i10si3f", data)
+        self.chname = self.chname.decode('utf-8').strip()
 
         data = fortran.read(self.f)
         size = len(data)
-        iv = struct.unpack("=%ii" % nbin, data)
-        for i in range(nbin):
-            ebnmin = emin + i * ebin
-            ebnmax = emin + (i+1) * ebin
-            weibin = iv[i] / (self.nctot + 1e9*self.mctot)
+        iv = struct.unpack("=%ii" % self.nbin, data)
+
+        for i in range(self.nbin+1):
+            self.ebins.append(emin + i * ebin)
+
+        for i in range(self.nbin):
+            weibin = iv[i] / self.nps
             weierr = 1.0/sqrt(max(iv[i],1))
-            print(ebnmin,ebnmax,weibin,weierr*100)
+            self.val.append(weibin)
+            self.err.append(weierr*weibin)
+
         return True
 
 def main():
@@ -65,9 +78,17 @@ def main():
     else:
         rootFileName = args.root
 
+    fout = ROOT.TFile(rootFileName, "recreate")
+
     d = DETECT(args.detsuw)
     while d.read():
-        pass
+        h = ROOT.TH1F(d.chname, "nps = %g #bullet E_{cut} = %g GeV;Energy [GeV];Counts/primary" % (d.nps, d.ecut), d.nbin, np.array(d.ebins))
+        for i in range(d.nbin):
+            h.SetBinContent(i+1, d.val[i])
+            h.SetBinError(i+1, d.err[i])
+        h.Write()
+
+    fout.Close()
 
 
 if __name__=="__main__":
