@@ -130,6 +130,20 @@ class Converter:
 
         return 0
 
+    def getRunTitle(self):
+        """ Return the run title as specified in the first provided input file
+
+        """
+
+        found = False
+        with open(self.inp[0]) as f:
+            for line in f:
+                line = line.strip()
+                if found:
+                    return line
+                if line.startswith("TITLE"):
+                    found = True
+
     def getSuwFileName(self, e, u):
         """Reuturn suw file name for the given estimator
         Parameters:
@@ -341,6 +355,8 @@ def main():
     c.Merge()
     val = c.Convert()
     print(c.root)
+
+#    title = c.getRunTitle()
 
     return val
 
