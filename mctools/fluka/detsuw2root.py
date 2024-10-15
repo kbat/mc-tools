@@ -82,7 +82,7 @@ def main():
 
     d = DETECT(args.detsuw)
     while d.read():
-        h = ROOT.TH1F(d.chname, "nps = %g #bullet E_{cut} = %g GeV;Energy [GeV];Counts/primary" % (d.nps, d.ecut), d.nbin, np.array(d.ebins))
+        h = ROOT.TH1F(d.chname, "nps = %g #bullet E_{cut} = %g GeV;Energy deposition [GeV];Counts/primary" % (d.nps, d.ecut), d.nbin, np.array(d.ebins))
         for i in range(d.nbin):
             h.SetBinContent(i+1, d.val[i])
             h.SetBinError(i+1, d.err[i])
