@@ -108,6 +108,8 @@ class Converter:
         root = os.path.splitext(self.inp[0])[0]+".root"
         if len(self.inp)>1:
             root = re.sub(r'[0-9]+\.root','.root', root)
+        if root == '.root':
+            root = self.inp[0][0]+root
         return os.path.basename(root)
 
     def checkInputFiles(self):
