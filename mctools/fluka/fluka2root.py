@@ -127,7 +127,10 @@ class Converter:
         e: estimator
         u: unit
         """
-        return "%s.%d.%s" % (self.basename, abs(u), e.name.lower())
+        if e.name == "EVENTDAT":
+            return "%s.%s.%s" % (self.basename, u, e.name.lower())
+        else:
+            return "%s.%d.%s" % (self.basename, abs(u), e.name.lower())
 
     def getOpenedUnits(self):
         """Get the list of opened (named) units
@@ -229,7 +232,7 @@ class Converter:
             for u in e.units:
                 with NamedTemporaryFile(suffix="."+e.converter, mode="w", delete=False) as tmpfile:
                     if self.verbose:
-                        print("unit=%d" % u, e.name, tmpfile.name)
+                        print(f"unit={u}", e.name, tmpfile.name)
                     suwfile = self.getSuwFileName(e,u)
                     if self.verbose:
                         print(suwfile)
@@ -327,7 +330,7 @@ class Converter:
 
         if self.verbose:
             print("ROOT files produced: ", self.out_root_files)
-        sys.exit(1)
+#        sys.exit(1)
 
 
         f = "-f" if self.overwrite else ""

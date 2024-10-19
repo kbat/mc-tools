@@ -42,7 +42,14 @@ def main():
                 if first:
                     first = False
 
-                    title, time, nregs, nsco, dist = struct.unpack("=80s32siii", data)
+                    n = (size-120)//4
+                    fmt = "=80s32sii"
+                    n = struct.calcsize(fmt)
+                    title, time, nregs, nsco  = struct.unpack(fmt, data[:n])
+                    dist = struct.unpack("=%di"%(len(data[n:])//4),  data[n:])
+
+                    title = title.decode('utf-8').strip()
+                    time  = time.decode('utf-8').strip()
 
                     print("title:", title)
                     print("time:", time)
