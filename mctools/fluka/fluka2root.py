@@ -293,7 +293,7 @@ class Converter:
                     command="parallel --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
                     if self.verbose:
                         printincolor(command)
-                        return_value = os.system(command)
+                    return_value = os.system(command)
                     if return_value:
                         sys.exit(2)
                 else:
@@ -303,7 +303,7 @@ class Converter:
                         command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
                         if self.verbose:
                             printincolor(command)
-                            return_value = os.system(command)
+                        return_value = os.system(command)
                         if return_value:
                             sys.exit(2)
             else: # merging not needed
