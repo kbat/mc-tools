@@ -57,7 +57,7 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
 
 ## PHITS
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp) input files.
-* ANGEL to [ROOT](http://root.cern) converter (converts the PHITS output into ROOT). Most of the tallies are supported with PHITS 2, but it does not really work with PHITS 3.
+* ANGEL to [ROOT](http://root.cern) converter (converts the PHITS output into ROOT).
 * A script
     [rotate3dshow.py](https://github.com/kbat/mc-tools/blob/master/mctools/phits/rotate3dshow.py)
     which allows to animate the output of the **t-3dshow** tally. It
