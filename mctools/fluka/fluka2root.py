@@ -49,6 +49,7 @@ class Converter:
                            Estimator("USRTRACK", "ustsuw"),
                            Estimator("RESNUCLE", "usrsuw"),
                            Estimator("EVENTBIN", "eventbin2root", merge=False),
+                           Estimator("EVENTDAT", "eventdat2root", merge=False),
                            ]
         self.opened = {}         # dict of opened units (if any)
 
@@ -169,10 +170,10 @@ class Converter:
                 if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
                     if re.search(r"\A%s" % e.name, line):
                         unit = str2int(line[10:20].strip())
-                        name = "" #line[0:10].strip() # actually, name for EVENTDAT does not matter - the Tree name will be used
+                        sdum = line[70:80].strip()
                         if unit<0: # we are interested in binary files only
-                            if not unit in self.estimators[e]:
-                                self.estimators[e].addUnit("%s" % unit)
+                            if not sdum in e.units:
+                                e.addUnit(sdum) # data file name uses sdum instead of unit number
                 else:
                     if re.search(r"\A%s" % e.name[:8], line) and not re.search(r"\&", line[70:80]):
                         if e.name[:8] == "RESNUCLE":
@@ -195,11 +196,18 @@ class Converter:
             print("Assigning file names...")
 
         for e in self.estimators:
-            for u in e.units:
-                for inp in self.inp:
-                    for f in glob.glob("%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
-                        if f not in e.units[u]: # TODO: this can be done smarter
-                            e.addFile(u,f)
+            if e.name == "EVENTDAT": # file name does not contain unit
+                for u in e.units:
+                    for inp in self.inp:
+                        for f in glob.glob("%s[0-9][0-9][0-9]_%s" % (os.path.splitext(inp)[0], u)):
+                            if f not in e.units[u]: # TODO: this can be done smarter
+                                e.addFile(u,f)
+            else:
+                for u in e.units:
+                    for inp in self.inp:
+                        for f in glob.glob("%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
+                            if f not in e.units[u]: # TODO: this can be done smarter
+                                e.addFile(u,f)
 
     def Merge(self):
         """ Merge all data with standard FLUKA tools
