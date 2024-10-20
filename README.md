@@ -5,7 +5,7 @@ Project homepage: https://github.com/kbat/mc-tools
 
 ## FLUKA
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka-mode.el) for [FLUKA](http://www.fluka.org) input files ([screenshot](https://drive.google.com/file/d/1NI8f6JmqUujQmabod54fpUxuFJFpq0Lt/view?usp=drive_link)).
-* [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py) tool to convert the FLUKA binary output into [ROOT](https://root.cern). It first calls the standard FLUKA tools to merge data files and then converts the merged files into a single ROOT file. To understand how to use it, run a standard example
+* [fluka2root](https://github.com/kbat/mc-tools/blob/master/mctools/fluka/fluka2root.py): tool that converts FLUKA binary output into [ROOT](https://root.cern) format. It merges the data files using standard FLUKA tools, and then converts the merged files into a single ROOT file. To understand how to use it, try runing a standard example
 ~~~
   $FLUPRO/flutil/rfluka $FLUPRO/exmixed.inp
 ~~~
