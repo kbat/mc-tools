@@ -3,6 +3,7 @@
 import sys, argparse, os, struct
 from array import array
 from mctools.fluka.flair import fortran
+from mctools.fluka import particle
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -37,7 +38,7 @@ def main():
                 if data is None:
                     break
                 size = len(data)
-                print("\nsize:",size)
+#                print("\nsize:",size)
 
                 if first:
                     first = False
@@ -57,22 +58,34 @@ def main():
                     print("number of scoring distributions:", nsco)
                     print("distribution:",dist)
 
-                    DATA = array('f', nsco*nregs*[0.0])
+
+                    data = {}
+                    nbins = nsco*nregs
+                    for d in dist:
+                        data[d] = array('f', nbins*[0.0])
 
                     fout = ROOT.TFile(args.root, "recreate", title)
                     T = ROOT.TTree("EVENTDAT", time)
-                    T.Branch("DATA", DATA, "d%d[%d]/F" % (dist,nsco*nregs))
+                    for d in dist:
+                        T.Branch(particle[d], data[d], f"d{d}[{nbins}]/F")
+
+                elif size == n*4:
+                    print("size:",size)
+                    val = struct.unpack(f"{nbins}f", data)
+                    size = len(val)
+                    print(size)
+                    # for i,v in enumerate(val):
+                    #     DATA[i] = v
+                    T.Fill()
                 elif size == 12:
+                    # print(size)
                     pass
                 elif size == 48:
+                    # print(size)
                     pass
                 elif size == 8:
+                    print(size)
                     pass
-                elif size == nregs*nsco*4:
-                    val = struct.unpack("%df" % nregs*nsco, data)
-                    for i,v in enumerate(val):
-                        DATA[i] = v
-                    T.Fill()
 
     T.Write()
     fout.Close()
