@@ -132,7 +132,7 @@ def source(cxx, args):
             if mat:
                 l = "%s%s=ModelSupport::EvalMat<%s>(Control,keyName+\"%s\");" % (indent, args.name, args.type, args.title)
             elif args.name == "engActive":
-                l = "%s%s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (indent, args.title)
+                l = "%s%s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (indent, args.name)
             else:
                 l = "%s%s=Control.EvalVar<%s>(keyName+\"%s\");" % (indent, args.name, args.type, args.title)
 
@@ -175,9 +175,15 @@ def main():
 
     if args.generator == "":
         cxxGenDir = os.path.join('',*cxxDir.split('/')[:-1], "commonGenerator")
+        if not checkPaths([cxxGenDir],()):
+            cxxGenDir = cxxDir+"Var"
+
         hGenDir = cxxGenDir + 'Inc'
-        cxxGen = os.path.join(cxxGenDir, args.className + "Generator.cxx")
-        hGen   = os.path.join(hGenDir,   args.className + "Generator.h")
+        prefix = args.className
+        if args.className == "Bellows":
+            prefix = "Bellow"
+        cxxGen = os.path.join(cxxGenDir, prefix + "Generator.cxx")
+        hGen   = os.path.join(hGenDir,   prefix + "Generator.h")
     else:
         t = args.generator.split('/')
         cxxGenDir = os.path.join(*t[:-1])
