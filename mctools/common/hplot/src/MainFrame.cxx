@@ -9,11 +9,16 @@
 
 #include "MainFrame.h"
 
+#include <iomanip>
+
 enum MainFrameMessageTypes {
   M_FILE_SAVEAS,
   M_FILE_EXIT,
   M_HELP_ABOUT
 };
+
+const char line_width = getenv("COLUMNS") ? atoi(getenv("COLUMNS"))-1 : 80-1;
+const std::string spaces{line_width, ' '};
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data) :
@@ -264,13 +269,18 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    const Double_t val = dh2->GetBinContent(binx, biny);
    const Double_t err = dh2->GetBinError(binx, biny);
    Double_t relerr = 100.0;
-   if (std::abs(val)>0)
+   if (std::abs(val)>0.0)
      relerr = err/val * 100.0;
 
-   if (data->GetArgs()->IsErrors())
+   std::cout << spaces << '\r';
+   if (data->GetArgs()->IsErrors()) {
      fStatusBar->SetText(Form("%g %%", val),3);
-   else
+     std::cout << val << " % \r" << std::flush;
+   }
+   else {
      fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
+     std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
+   }
 
    if (slice)
      slice->Draw(dh2, GetHistogramPad(), GetSlicePad());
