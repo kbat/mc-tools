@@ -28,7 +28,7 @@ if [ $NJOBS -le 1 ]; then
 fi
 
 for (( j=1; j<=$NJOBS; j++ )); do
-    NEWINP=$(basename $INP .inp)-spawn$j.inp
     R=$((SEED + j))
+    NEWINP=$(basename $INP .inp)-spawn$R.inp
    cat "$INP" | sed "s;^RANDOMI.*;RANDOMIZE        1.0 $R.0;" > $NEWINP
 done
