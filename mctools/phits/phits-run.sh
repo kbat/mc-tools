@@ -32,14 +32,14 @@ else
 fi
 
 if ! grep -Eq "^\s*rseed\s*=\s*0" broomstick.inp; then
-    echo "ERROR: The 'rseed = 0' string is not found in $inp"
+    echo "[phits-run] ERROR: The 'rseed = 0' string is not found in $inp"
     usage
 fi
 
 for ((i=1; i<=$njobs; i++)); do
     d=$prefix$i
-    if [ -d $d ]; then
-	echo "ERROR: $d folder already exists"
+    if [ -e $d ]; then
+	echo "[phits-run] ERROR: $d folder already exists"
 	exit 2
     else
 	mkdir -p $d
@@ -48,11 +48,11 @@ for ((i=1; i<=$njobs; i++)); do
 done
 
 if which parallel > /dev/null; then
-    echo parallel "cd {} && phits.sh phits.inp" ::: $prefix*
+    parallel "cd {} && phits.sh phits.inp" ::: $prefix*
 else
+    echo "[phits-run] INFO: Consider using the GNU Parallel script to optimise scheduling PHITS runs to the cores"
     h=$(pwd)
     for d in $prefix*; do
-	echo $d
 	cd $d
 	phits.sh phits.inp &
 	cd $h
