@@ -31,7 +31,7 @@ else
     njobs=$(nproc)
 fi
 
-rseed=$(grep rseed $inp | xargs | tr -d '[:blank:]')
+rseed=$(grep rseed $inp | tr -d '[:blank:]')
 
 if echo $rseed | grep -qx "rseed=RSEED" 2>/dev/null; then
     true
