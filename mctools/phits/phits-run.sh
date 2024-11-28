@@ -50,7 +50,7 @@ done
 if which parallel > /dev/null; then
     parallel "cd {} && phits.sh phits.inp" ::: $prefix*
 else
-    echo "[phits-run] INFO: Consider using the GNU Parallel script to optimise scheduling PHITS runs to the cores"
+    echo "[phits-run] INFO: Consider using the GNU Parallel script to optimise scheduling the PHITS runs to the CPU cores"
     h=$(pwd)
     for d in $prefix*; do
 	cd $d
