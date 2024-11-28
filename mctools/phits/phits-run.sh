@@ -43,7 +43,7 @@ for ((i=1; i<=$njobs; i++)); do
 	exit 2
     else
 	mkdir -p $d
-	cat $inp | sed "s;rseed *= *0;rseed = $i;" > $d/phits.inp
+	cat $inp | sed "s;rseed *= *0;rseed = $i;" | sed "s; *\$OMP=.*;\$OMP=1;" > $d/phits.inp
     fi
 done
 
