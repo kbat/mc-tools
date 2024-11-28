@@ -58,7 +58,7 @@ else
     for d in $prefix*; do
 	echo $d
 	cd $d
-	phits.sh phits.inp
+	phits.sh phits.inp &
 	cd $h
     done
     wait $(jobs -rp)
