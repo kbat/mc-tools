@@ -31,7 +31,7 @@ else
     njobs=$(nproc)
 fi
 
-if ! grep -Eq "^\s*rseed\s*=\s*0" broomstick.inp; then
+if ! grep -Eq "^\s*rseed\s*=\s*0" $inp; then
     echo "[phits-run] ERROR: The 'rseed = 0' string is not found in $inp"
     usage
 fi
