@@ -8,7 +8,7 @@
 #  Usage: angel2root.py file.dat
 #
 
-import sys, re, argparse
+import sys, re, argparse, os
 from array import array
 from mctools.phits.phits import TallyOutputParser
 import ROOT
@@ -66,6 +66,7 @@ class Angel:
     output_title = None # commented part of output line - for z-title
     unit = None
     unit_title = None # commented part of the unit line - for z-title
+    file = None # file name as defined in the PHITS tally
     part = [] # list of particles
     lines = []
     return_value = 0
@@ -176,6 +177,9 @@ class Angel:
                 self.unit_title = ' '.join(words[6:])
                 if self.output_title != None: self.ztitle = self.output_title + " " + self.unit_title
                 continue
+            if re.search("file = ", line):
+                words = line.split()
+                self.file, ext = os.path.splitext(words[2])
 
         ##################################################
         # scan the remaining data pages one by one
@@ -380,7 +384,8 @@ class Angel:
             else: subtitle = ''
             self.FixTitles()
             # self.ihist+1 - start from ONE as in Angel - easy to compare
-            h = TH1F("h%d" % (self.ihist+1), "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
+            hname=self.file if nhist == 1 else "%s%d" % (self.file, self.ihist+1)
+            h = TH1F(hname, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
             if self.avBitSet:
                 h.SetBit(TH1F.kIsAverage)
             self.ihist += 1
