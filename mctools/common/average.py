@@ -3,9 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
-import argparse, tempfile
-import logging
-import math
+import argparse, tempfile, os, logging
 from sys import exit
 import os
 import ROOT
@@ -35,7 +33,7 @@ def main():
 
     for f in sources:
         if not os.path.exists(f):
-            print(f"WARNING: {f} does not exits - skipping")
+            logging.warning(f"{f} does not exits - skipping")
             sources.remove(f)
 
     if args.verbose:
@@ -45,7 +43,6 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmp:
         unscaled = os.path.join(tmp, "unscaled.root")
-        print(unscaled)
         cmd = "hadd %s %s" % (unscaled, " ".join(sources))
         os.system(cmd)
         cmd = f"scale -n {n} {unscaled} -o {args.target}"
