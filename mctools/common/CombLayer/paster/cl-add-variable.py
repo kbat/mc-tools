@@ -174,9 +174,12 @@ def main():
     h   = os.path.join(hDir,   args.className + ".h")
 
     if args.generator == "":
-        cxxGenDir = os.path.join('',*cxxDir.split('/')[:-1], "commonGenerator")
-        if not checkPaths([cxxGenDir],()):
-            cxxGenDir = cxxDir+"Var"
+        if args.model == "Model/MaxIV/commonBeam":
+            cxxGenDir = "Model/MaxIV/commonGenerator"
+        else:
+            cxxGenDir = os.path.join('',*cxxDir.split('/')[:-1], "commonGenerator")
+            if not checkPaths([cxxGenDir],()):
+                cxxGenDir = cxxDir+"Var"
 
         hGenDir = cxxGenDir + 'Inc'
         prefix = args.className
