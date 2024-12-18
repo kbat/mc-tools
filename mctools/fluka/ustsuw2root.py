@@ -67,7 +67,7 @@ class Usrtrack(Data.Usrxxx):
         """ Reads the file header info
             Based on Data.Usrbdx
         """
-        f = Data.Usrxxx.readHeader(self, filename)
+        f = super().readHeader(self, filename)
 #        self.sayHeader()
 
         while True:
@@ -112,7 +112,7 @@ class Usrtrack(Data.Usrxxx):
                 print(f"{det.name}: Low energy neutrons scored with {det.ngroup} groups")
             else:
                 det.ngroup = 0
-                det.egroup = []
+                det.egroup = ()
 
             size  = (det.ngroup+det.ne) * 4
             if size != fortran.skip(f):
@@ -209,8 +209,8 @@ def main():
                 h.SetBinContent(i+1, val[i])
                 h.SetBinError(i+1,   err[n-i-1]*val[i])
 
-                h.SetEntries(b.weight)
-                h.Write()
+            h.SetEntries(b.weight)
+            h.Write()
 
 # not implemented - bugs with theINFN FLUKA, but it seems works with the CERN FLUKA
         if det.lowneu:

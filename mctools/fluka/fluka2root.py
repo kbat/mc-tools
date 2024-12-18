@@ -59,6 +59,7 @@ class Converter:
                            Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
                            Estimator("DETECT",   "detsuw"),
+                           Estimator("USRYIELD", "usysuw"),
                            Estimator("RESNUCLE", "usrsuw")]
         self.opened = {}         # dict of opened units (if any)
 
@@ -356,7 +357,7 @@ def main():
     c = Converter(args)
     c.Merge()
     val = c.Convert()
-    print(c.root)
+#    print(c.root)
 
 #    title = c.getRunTitle()
 
