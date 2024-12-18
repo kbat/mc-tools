@@ -37,22 +37,51 @@ def getDistTitle(i, var1, var2):
         ixa = i %  100
         ixm = i // 100
 
+    val = "N"
+    if ixa > 52:
+        val = "#sigma"
+        ixa = ixa - 50
+
     match ixa:
      case 1:
       return "#frac{d^{2}#sigma}{d%sd%s}" % (x1, x2)
-     # case 3:
-     #  return f"\#frac{d^{2}N}{d{x1}d{x2}}"
-     # case 6:
-     #  return f"\#frac{1}{cos#theta}#frac{d^{2}N}{d{x1}d{x2}}"
-     # case 9:
-     #  return f"\#frac{d^{2}N}{x_{2}d{x1}d{x2}}"
-     # case 10:
-     #  return f"\#frac{d^{2}N}{{x1}d{x1}d{x2}}"
+     case 2:
+      return "E#frac{d^{3}#sigma}{dp^{3}}"
+     case 3:
+      return "#frac{d^{2}%s}{d%sd%s}" % (val, x1, x2)
+     case 4:
+      return "#frac{d^{2}(%s%s)}{d%sd%s}" % (x2, val, x1, x2)
+     case 5:
+      return "#frac{d^{2}(%s%s)}{d%sd%s}" % (x1, val, x1, x2)
+     case 6:
+      return "#frac{1}{cos#theta} #frac{d^{2}%s}{d%sd%s}" % (val, x1, x2)
+     case 7:
+      return "#frac{d^{2}(%s^{2}%s)}{d%sd%s}" % (x2, val, x1, x2)
+     case 8:
+      return "#frac{d^{2}(%s^{2}%s)}{d%sd%s}" % (x1, val, x1, x2)
+     case 9:
+      return "#frac{d^{2}%s}{%sd%sd%s}" % (val, x2, x1, x2)
+     case 10:
+      return "#frac{d^{2}%s}{%sd%sd%s}" % (val, x1, x1, x2)
+     case 11:
+      return "#frac{d^{2}%s}{d(%s/%s)d%s}" % (val, x1, x2, x2)
+     case 12:
+      return "#frac{d^{2}(%s#sqrt{%s^{2}-%s^{2}}%s)}{d%sd%s}" % (x1, x1, val, x2, x1, x2)
+     case 13:
+      return "#frac{d^{2}((%s^{2}+%s^{2})%s)}{d%sd%s}" % (x1, x2, val, x1, x2)
+     case 14:
+      return "#frac{d^{2}((%s+%s^{2})%s)}{#pid%sd%s}" % (x1, x2, val, x1, x2)
+     case 15:
+      return "#frac{d^{2}((%s^{2}+%s)%s)}{#pid%sd%s}" % (x1, x2, val, x1, x2)
+     case 16:
+      return "#frac{1}{cos#theta} #frac{d^{2}(%s%s)}{d%sd%s}" % (x2, val, x1, x2)
+     case 26:
+      return "#frac{1}{cos#theta} #frac{d^{2}(%s%s)}{d%sd%s}" % (x1, val, x1, x2)
      case _:
-      return "unknown (not implemented)"
+      return "unknown title (not implemented)"
 
 def getVarTitle(i):
-    match i:
+    match abs(i):
      case 1:
       return ("Kinetic energy", "GeV", "E")
      case 2:
@@ -176,7 +205,7 @@ class USYSUW(Data.Usrxxx):
             else:
                 title += "Entering Inelastic yield"
         else:
-            title += "f{det.NR1UYL} #to {det.NR2UYL} #diamond "
+            title += " reg %d #rightarrow %d " % (det.NR1UYL, det.NR2UYL)
         title += " #diamond "
         title += var2[0]
         title += f": {det.AYLLOW:.5g} to {det.AYLHGH:.5g} {var2[1]}"
