@@ -58,6 +58,7 @@ class Converter:
                            Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
+                           Estimator("USRYIELD", "usysuw"),
                            Estimator("RESNUCLE", "usrsuw")]
         self.opened = {}         # dict of opened units (if any)
 

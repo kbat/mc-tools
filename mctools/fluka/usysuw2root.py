@@ -23,10 +23,14 @@ def getType(n):
     print(f"usysuw2root: what(1) == {n} undefined", file=sys.stderr)
     sys.exit(1)
 
-def getDistTitle(i):
+def getDistTitle(i, var1, var2):
     """
     Parse WHAT(6) and return the distribution title
     """
+
+    x1 = var1[2] if len(var1) == 3 else "x_{1}"
+    x2 = var2[2] if len(var2) == 3 else "x_{2}"
+
     ixa = i
     ixm = 0
     if i>100:
@@ -35,32 +39,32 @@ def getDistTitle(i):
 
     match ixa:
      case 1:
-      return "#frac{d^{2}#sigma}{dx_{1}dx_{2}}"
-     case 3:
-      return "#frac{d^{2}N}{dx_{1}dx_{2}}"
-     case 6:
-      return "#frac{1}{cos#theta}#frac{d^{2}N}{dx_{1}dx_{2}}"
-     case 9:
-      return "#frac{d^{2}N}{x_{2}dx_{1}dx_{2}}"
-     case 10:
-      return "#frac{d^{2}N}{x_{1}dx_{1}dx_{2}}"
+      return "#frac{d^{2}#sigma}{d%sd%s}" % (x1, x2)
+     # case 3:
+     #  return f"\#frac{d^{2}N}{d{x1}d{x2}}"
+     # case 6:
+     #  return f"\#frac{1}{cos#theta}#frac{d^{2}N}{d{x1}d{x2}}"
+     # case 9:
+     #  return f"\#frac{d^{2}N}{x_{2}d{x1}d{x2}}"
+     # case 10:
+     #  return f"\#frac{d^{2}N}{{x1}d{x1}d{x2}}"
      case _:
       return "unknown (not implemented)"
 
 def getVarTitle(i):
     match i:
      case 1:
-      return ("Kinetic energy", "GeV")
+      return ("Kinetic energy", "GeV", "E")
      case 2:
-      return ("Total momentum", "GeV/c")
+      return ("Total momentum", "GeV/c", "p")
      case 3:
-      return ("Rapidity in the LAB frame", "")
+      return ("Rapidity in the LAB frame", "", "w")
      case 4:
-      return ("Rapidity in the CMS frame", "")
+      return ("Rapidity in the CMS frame", "", "w")
      case 5:
-      return ("Pseudo-rapidity in the LAB frame", "")
+      return ("Pseudo-rapidity in the LAB frame", "", "#eta")
      case 6:
-      return ("Pseudo-rapidity in the CMS frame", "")
+      return ("Pseudo-rapidity in the CMS frame", "", "#eta")
      case 7:
       return ("Feynman-x in the LAB frame", "")
      case 8:
@@ -76,9 +80,9 @@ def getVarTitle(i):
      case 13:
       return ("Total energy", "GeV")
      case 14:
-      return ("Polar angle in the LAB frame", "rad")
+      return ("Polar angle in the LAB frame", "rad", "#theta")
      case 15:
-      return ("Polar angle in the CMS frame", "rad")
+      return ("Polar angle in the CMS frame", "rad", "#theta")
      case 16:
       return ("Square transverse momentum", "(GeV/c)^{2}")
      case 17:
@@ -96,9 +100,9 @@ def getVarTitle(i):
      case 23:
       return ("Particle LET", "")
      case 24:
-      return ("Polar angle in the LAB frame", "deg")
+      return ("Polar angle in the LAB frame", "deg", "#theta")
      case 25:
-      return ("Polar angle in the CMS frame", "deg")
+      return ("Polar angle in the CMS frame", "deg", "#theta")
      case 26:
       return ("Laboratory kinetic energy per nucleon", "")
      case 27:
@@ -114,7 +118,7 @@ def getVarTitle(i):
      case 32:
       return ("Excited mass squared/s", "")
      case 33:
-      return ("Time", "s")
+      return ("Time", "s", "t")
      case 34:
       return ("sin weighted angle in the LAB frame", "")
      case 35:
@@ -167,7 +171,7 @@ class USYSUW(Data.Usrxxx):
         title = fluka.particle.get(det.IDUSYL, "undefined")
         title += " #diamond "
         if int(det.NR1UYL) == -1 and int(det.NR2UYL) == -2:
-            if det.IDUSYL > 0.0: # see WHAT(2)
+            if det.IDUSYL > -800.0: # see WHAT(2)
                 title += "Emerging Inelastic yield"
             else:
                 title += "Entering Inelastic yield"
@@ -176,10 +180,10 @@ class USYSUW(Data.Usrxxx):
         title += " #diamond "
         title += var2[0]
         title += f": {det.AYLLOW:.5g} to {det.AYLHGH:.5g} {var2[1]}"
-        title += ";%s [%s]" % (var1)
+        title += ";%s [%s]" % (var1[0:2])
 
         # y-axis
-        title += ";" + getDistTitle(det.IXUSYL)
+        title += ";" + getDistTitle(det.IXUSYL, var1, var2)
 
 
         return ROOT.TH1F(det.TITUYL, title, det.NEYLBN, self.getBins(det))
@@ -313,6 +317,8 @@ def main():
         style="{",
         datefmt="%Y-%m-%d %H:%M",
     )#, filename='usysuw2root.log')
+
+    logger.warning("The USRYIELD converter is not thoroughly tested yet. Compare the ROOT histograms (both values and errors) with the FLUKA-generated %s." % args.usryield.replace(".usryield", "_tab.lis"))
 
     if not path.isfile(args.usryield):
         logger.error("File %s does not exist." % args.usryield)
