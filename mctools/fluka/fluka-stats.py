@@ -9,10 +9,11 @@ import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-def Print(vals, ttype):
+def Print(vals, ttype, nps):
     data = np.array(vals)
     n = len(data)
-    print("%s: %.5g ± %.5g sec" % (ttype, np.average(data), np.std(data)/sqrt(n)))
+    scale = n/nps
+    print("%s: %.5g ± %.5g sec" % (ttype, np.average(data)*scale, np.std(data)/sqrt(n)*scale))
 
 def get(fname, ttype):
     if ttype == "average":
@@ -21,6 +22,8 @@ def get(fname, ttype):
         sss = "Maximum CPU time used to follow a primary particle:"
     elif ttype == "total":
         sss = "Total CPU time used to follow all primary particles:"
+    elif ttype == "nps":
+        sss = "Total number of primaries run"
     else:
         raise NameError(f"Unknown ttype argument: {ttype}")
 
@@ -31,7 +34,10 @@ def get(fname, ttype):
             l = line.strip()
             if re.search(f"\A{sss}", l):
                 w = l.split()
-                val = w[-3]
+                if ttype == "nps":
+                    val = w[5]
+                else:
+                    val = w[-3]
                 try:
                     val = float(val)
                     return val
@@ -58,18 +64,20 @@ def main():
 
     avals = []
     mvals = []
-
+    nps = 0
     for fname in args.out:
         aval = get(fname, "average")
         if aval is not None:
             mval = get(fname, "maximum")
             if mval is not None:
-                avals.append(aval)
-                mvals.append(mval)
+                n = get(fname, "nps")
+                avals.append(aval*n)
+                mvals.append(mval*n)
+                nps += n
 
-    Print(avals, "Average")
-    Print(mvals, "Maximum")
-    print("TODO: take into account weight reported in Total number of primaries run")
+    Print(avals, "Average", nps)
+    Print(mvals, "Maximum", nps)
+    print(f"nps:     {nps:e}")
 
     if args.pdf:
 
