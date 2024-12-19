@@ -4,13 +4,15 @@ import argparse
 from sys import exit
 from glob import glob
 import re
+from math import sqrt, log10, floor
 import numpy as np
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def Print(vals, ttype):
     data = np.array(vals)
-    print("%s: %.5g stdev: %.5g" % (ttype, np.average(data), np.std(data)))
+    n = len(data)
+    print("%s: %.5g ± %.5g sec" % (ttype, np.average(data), np.std(data)/sqrt(n)))
 
 def get(fname, ttype):
     if ttype == "average":
@@ -36,31 +38,40 @@ def get(fname, ttype):
                 except ValueError:
                     print(f"Can't convert \"{val}\" to float")
                     raise
-    raise NameError(f"String \"{sss}\" not found in {fname}")
+    return None
 
 def main():
     """ Print/draw the CPU time statistics based on the FLUKA output files"""
 
     parser = argparse.ArgumentParser(description=main.__doc__,
                                      epilog="Homepage: https://github.com/kbat/mc-tools")
-    parser.add_argument('-o', dest="out", type=str, default=None, help='optional output file name', required=False)
+    parser.add_argument('out', type=str, nargs="+", help='List of FLUKA output file(s)')
+    parser.add_argument('-o', dest="pdf", type=str, default=None, help='optional output PDF file name', required=False)
     parser.add_argument('-n', dest="N", type=int, default=10, help='number of histogram bins (make sense with the -o option only)', required=False)
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='explain what is being done')
 
     args = parser.parse_args()
 
+    if args.pdf and not args.pdf.endswith(".pdf"):
+        print(f"Error: PDF file name is expected: {args.pdf}")
+        return 1
+
     avals = []
     mvals = []
 
-    for fname in glob("*.out"):
-        avals.append(get(fname, "average"))
-        mvals.append(get(fname, "maximum"))
+    for fname in args.out:
+        aval = get(fname, "average")
+        if aval is not None:
+            mval = get(fname, "maximum")
+            if mval is not None:
+                avals.append(aval)
+                mvals.append(mval)
 
     Print(avals, "Average")
     Print(mvals, "Maximum")
     print("TODO: take into account weight reported in Total number of primaries run")
 
-    if args.out:
+    if args.pdf:
 
         ha = ROOT.TH1F("ha", "Average;Time [s];Number of runs", args.N, min(avals)*0.99, max(avals)*1.01)
         hm = ROOT.TH1F("hm", "Maximum;Time [s];Number of runs", args.N, min(mvals)*0.99, max(mvals)*1.01)
@@ -72,10 +83,10 @@ def main():
             hm.Fill(v)
 
         ha.Draw("hist e")
-        ROOT.gPad.Print("%s(" % args.out)
+        ROOT.gPad.Print("%s(" % args.pdf)
 
         hm.Draw("hist e")
-        ROOT.gPad.Print("%s)" % args.out)
+        ROOT.gPad.Print("%s)" % args.pdf)
 
 if __name__ == "__main__":
     exit(main())
