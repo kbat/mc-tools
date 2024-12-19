@@ -2,8 +2,13 @@
 __all__ = ["common", "fluka", "mcnp", "phits" ]
 
 import subprocess, os, sys
-from math import sqrt
+from math import sqrt, log10, floor
 import numpy as np
+
+def printValErr(val, err):
+    """ Print value and its error in the () notation """
+    tmp=-floor(log10(err))
+    print('{:.{prec}f}({:.0f})'.format(val, floor(err * (10**tmp)), prec=tmp))
 
 def L2E(l, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0]):
     """
