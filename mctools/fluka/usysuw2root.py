@@ -248,7 +248,7 @@ class USYSUW(Data.Usrxxx):
                 det = Data.Detector()
                 det.NYL = header[0]
                 det.TITUYL = header[1].decode('utf-8').strip() # detector title (sdum)
-                det.ITUSYL = header[2] # sdum
+                det.ITUSYL = header[2] # what(1)
                 det.IXUSYL = header[3] # what(6)
                 det.IDUSYL = header[4]
                 det.NR1UYL = header[5]
@@ -257,7 +257,8 @@ class USYSUW(Data.Usrxxx):
                 det.SGUSYL = header[8]
                 det.LLNUYL = header[9]
                 if det.LLNUYL == 1:
-                    logger.warning(f"{det.TITUYL}: No groupwise low energy neutrons are implemented yet. Their data will be skipped.")
+                    logger.error(f"{det.TITUYL}: No groupwise low energy neutron scoring is implemented yet. Adjust i4 in WHAT(1) in the USRYIELD cards.")
+                    sys.exit(1)
                 det.EYLLOW = header[10]
                 det.EYLHGH = header[11]
                 det.NEYLBN = header[12]
