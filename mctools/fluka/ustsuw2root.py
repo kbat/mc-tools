@@ -67,7 +67,7 @@ class Usrtrack(Data.Usrxxx):
         """ Reads the file header info
             Based on Data.Usrbdx
         """
-        f = super().readHeader(self, filename)
+        f = super().readHeader(filename)
 #        self.sayHeader()
 
         while True:
