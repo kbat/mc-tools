@@ -73,6 +73,10 @@
 (make-face 'font-lock-startstop-face)
 (set-face-foreground 'font-lock-startstop-face "red")
 
+;; Keywords specific for the original FLUKA
+(make-face 'font-lock-orig-face)
+(set-face-foreground 'font-lock-orig-face "#ff0000")
+
 ;; Keywords specific for the FLUKA.CERN fork, the colour is CERN blue
 (make-face 'font-lock-cern-face)
 (set-face-foreground 'font-lock-cern-face "#3871a8")
@@ -88,7 +92,7 @@
 	     "NEGATIVE" "PLOTGEOM" "RANDOMIZ" "RANDOMIZE" "ROT-DEFI" "TITLE"
 	     "DISCARD" "DPMJET" "EM-DISSO" "EMF-BIAS" "EMFF-OFF" "EMFCUT" "EMFFIX" "EMFFLUO" "EMFRAY" "EMXPTRANS"
 	     "FLUKAFIX" "HI-PROPE" "IONFLUCT" "LAM-BIAS" "LOW-BIAS" "LOW-DOWN" "LPBEMF" "MCSTHRES" "MULSOPT"
-	     "MUMUPAIR" "MUPHOTON" "NOPRINT" "NOUSER" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "PRPONLY" "RUNGKUTT" "WW-FACTO" "WW-PROFI"
+	     "MUMUPAIR" "MUPHOTON" "NOPRINT" "NOUSER" "OPT-PROD" "PAIRBREM" "PHOTONUC" "PRINT" "PRPONLY"  "WW-FACTO" "WW-PROFI"
 	     "WW-THRES" "BEAMAXES" "BEAMPOS" "BEAM" "COALESCE" "ELCFIELD" "EMF" "EVAPORAT" "EVENTYPE"
 	     "INFLDCAY" "IONSPLIT" "IONTRANS" "ISOMERS" "LAMBBREM" "LOW-NEUT" "MGNFIELD" "PART-THR" "PHO2-THR" "PHOT-THR" "PHYSICS"
 	     "POLARIZA" "PROD-CUT" "QUASI-EL" "QMDTHRES" "STEPSIZE" "THRESHOL" "TIME-CUT" "NEW" "OLD" "UNKNOWN" "USER" "SCRATCH" "INEPRI"))
@@ -100,12 +104,12 @@
 	      "RESNUCLE" "ROTPRBIN" "SCORE" "TCQUENCH" "USERDUMP" "USERWEIG" "USRBDX" "USRBIN" "USRCOLL"
 	      "USRTRACK" "USRYIELD"))
 	     (materials
-	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "BORON" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COBALT" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "HYDROG-1" "IRON" "LASTMAT" "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "MOLYBDEN" "njendfb8r0" "NICKEL" "NIOBIUM" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "PHOSPHO" "POLYETHY" "POTASSIU" "SILICON" "SILIC-28" "SILVER"
+	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "BORON-10" "BORON-11" "BORON" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COBALT" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "HYDROG-1" "IRON" "LASTMAT" "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "MOLYBDEN" "njendfb8r0" "NEODYMIU" "NICKEL" "NIOBIUM" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "PHOSPHO" "POLYETHY" "POTASSIU" "SILICON" "SILIC-28" "SILVER"
 		"SODIUM" "STERNHEI" "SULFUR" "TANTALUM" "TIN" "TITANIUM" "TSL-PWXS" "TUNGSTEN" "VACUUM" "VANADIUM" "WATER" "ZINC"))
 	     (defaults
 	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (particles
-	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSE" "DOSE-EQ" "DPA-SCO" "ELECTRON" "ENERGY" "HEAVYION" "ISOTOPE" "LASTPAR" "MUONS" "MUON+" "MUON-" "NEUTRON"
+	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSE" "DOSE-EQ" "DPA-SCO" "ELECTRON" "EM-ENRGY" "ENERGY" "HEAVYION" "ISOTOPE" "LASTPAR" "MUONS" "MUON+" "MUON-" "NEUTRON"
 	      "OPTIPHOT" "POSITRON" "PIONS" "PHOTON" "PROTON"))
 	     (fluence2dose
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
@@ -117,6 +121,9 @@
 
 	     (cern
 	      '("PROFILE" "SYRASTEP"))
+
+	     (orig
+	      '("BMAX-REG" "DELAYNEU" "INVCOMPT" "RUNGKUTT" "SYNCRAD" "SYNCROFF" "SYNCRON" "SYPRONLY" ))
 
 	     (startstop
 	      '("END" "GEOBEGIN" "GEOEND" "START" "STOP"))
@@ -131,6 +138,7 @@
             (defaults-regexp (regexp-opt defaults 'words))
             (preprocessor-regexp (regexp-opt preprocessor 'words))
             (last-regexp (regexp-opt last 'words))
+            (orig-regexp (regexp-opt orig 'words))
             (cern-regexp (regexp-opt cern 'words))
             (startstop-regexp (regexp-opt startstop 'words))
 	    )
@@ -146,6 +154,7 @@
           (,defaults-regexp . 'font-lock-defaults-face)
           (,preprocessor-regexp . 'font-lock-preprocessor-face)
           (,last-regexp . 'font-lock-last-face)
+          (,orig-regexp . 'font-lock-orig-face)
           (,cern-regexp . 'font-lock-cern-face)
           (,startstop-regexp . 'font-lock-startstop-face)
           ;; note: order above matters, because once colored, that part won't change.
