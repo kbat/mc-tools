@@ -79,10 +79,12 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
 
 ## Requirements ##
 * The ROOT-related scripts (file names end with ```*2root```), require [ROOT](http://root.cern) to be compiled with Python 3 support.
-  * In order to check whether the Python
-    support in ROOT is set up correctly, say
+  * To verify whether Python support in ROOT is set up correctly, run
     ```import ROOT```
-    in the Python 3 shell. You should not see any error messages.
+    in the Python 3 shell. If no error messages appear, the setup is correct. If errors occur, ensure that:
+    * ```root-config --features``` includes ```pyroot```. To fix it, refer to the ROOT installation documentation.
+    * Your ```$PYTHONPATH``` environment variable contains the ```$ROOTSYS/lib``` directory. To fix it, execute
+      ```export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH``` (and add it in your shell configuration).
 * ```hplot``` requires the [Boost](https://www.boost.org) libraries and ROOT to be compiled with at least ```C++17``` standard.
 * ```ace2root``` needs the [PyNE](http://pyne.io) toolkit.
 * If the [GNU parallel](https://www.gnu.org/software/parallel) tool is
