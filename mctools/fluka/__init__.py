@@ -116,7 +116,9 @@ particle = {
     244: "RES-NIEL",
     249: "HEHAD-EQ",
     250: "THNEU-EQ",
-    258: "ANNIHRST"
+    257: "E+E-GAMM",
+    258: "ANNIHRST",
+    259: "DPA-NRT"
 }
 
 def line(card,w1="",w2="",w3="",w4="",w5="",w6="",sdum=""):
