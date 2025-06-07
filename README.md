@@ -52,7 +52,7 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
   a wrapper around ```mcnp ip``` which allows to return to the selected
   geometry view in subsequent calls of the viewer. Find a detailed
   tutorial in the [wiki
-  section](https://github.com/kbat/mc-tools/wiki/mcnpview).
+  section](https://github.com/kbat/mc-tools/wiki/MCNP).
 
 ## PHITS
 * Emacs [syntax highlighting script](https://github.com/kbat/mc-tools/blob/master/mctools/phits/phits-mode.el) for [PHITS](http://phits.jaea.go.jp) input files.
