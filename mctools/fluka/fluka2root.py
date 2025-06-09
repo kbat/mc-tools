@@ -161,20 +161,21 @@ class Converter:
 
         inp = open(self.inp[0], "r")
         isname = False
-        opened = []
+        opened = {}
         for line in inp.readlines():
             if isname is True:
-                name = line[0:10].strip()
+                name = line.strip()
                 opened[unit] = name
                 isname = False
 
-            if re.search(r"\AOPEN", line):
+            if re.search(r"\AOPEN", line) and line.split()[-1] == "NEW": # NEW: interested only in the newly created files where the estimator output is written
                 unit = str2int(line[11:20].strip())
                 isname = True
 
-            if len(opened):
-                print("Opened (named) units: ", opened)
         inp.close()
+
+        if len(opened):
+            print("Opened (named) units: ", opened)
 
         return opened
 
