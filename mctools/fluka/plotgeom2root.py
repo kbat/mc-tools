@@ -122,8 +122,8 @@ def main():
 
 #                    print ("PLANE[{}] == {} {} {} \n".format(plane,X0,Y0,Z0))
                     if plane=="xy":
-                        x = list(map(lambda x:x+Y0, coord[::2]))
-                        y = list(map(lambda y:y+X0, coord[1::2]))
+                        x = list(map(lambda x:x+X0, coord[::2]))
+                        y = list(map(lambda y:y+Y0, coord[1::2]))
                     elif plane=="zx":
                         y = list(map(lambda x:x+Z0, coord[::2]))
                         x = list(map(lambda y:y+X0, coord[1::2]))
