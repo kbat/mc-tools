@@ -48,12 +48,13 @@ def main():
     nz = round((args.zmax - args.zmin) / args.dz)
 
     # make shure the bin numbers are odd to avoid bins separated by the beam axis at zero
-    if nx % 2 == 0:
-        nx = nx + 1
-    if ny % 2 == 0:
-        ny = ny + 1
-    if nz % 2 == 0:
-        nz = nz + 1
+    # BUT this might break the $MCTOOLS/mctools/fluka/mesh.py alignment along the planes, so comment this out
+    # if nx % 2 == 0:
+    #     nx = nx + 1
+    # if ny % 2 == 0:
+    #     ny = ny + 1
+    # if nz % 2 == 0:
+    #     nz = nz + 1
 
     check("x", nx, args.xmin, args.xmax, args.dx)
     check("y", ny, args.ymin, args.ymax, args.dy)
