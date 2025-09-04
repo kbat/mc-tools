@@ -65,8 +65,7 @@ def get_horizontal_aperture(beamline, insertion_device):
         return 220e-6
     if beamline == "TomoWISE":
         if insertion_device == "CPMU":
-            print("TODO: check", file=sys.stderr)
-            return 1e-3
+            return 0.1e-3 # 0.1 mrad due to MSM in the undulator mode
 
     print("Error: Unknown beamline [get_horizontal_aperture]:", beamline, file=sys.stderr)
     sys.exit(1)
@@ -77,8 +76,7 @@ def get_vertical_aperture(beamline, insertion_device):
         return 220e-6
     if beamline == "TomoWISE":
         if insertion_device == "CPMU":
-            print("TODO: check")
-            return 1e-3
+            return 0.1e-3 # 0.1 mrad due to FM2
 
     print("Error: Unknown beamline [get_vertical_aperture]:", beamline, file=sys.stderr)
     sys.exit(1)
@@ -90,7 +88,7 @@ def parse_arguments():
     )
     parser.add_argument("dc0", type=str, help="Data file from the undulator team")
     parser.add_argument("-beamline", type=str, default="TomoWISE", help="Beamline name")
-    parser.add_argument("-id", type=str, default="", help="Insertion device (only for multi-ID beamlines)")
+    parser.add_argument("-id", type=str, default="", help="Insertion device (only for multi-ID beamlines)0.")
 
     args = parser.parse_args()
 
