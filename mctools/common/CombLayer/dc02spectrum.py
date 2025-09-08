@@ -66,6 +66,8 @@ def get_horizontal_aperture(beamline, insertion_device):
     if beamline == "TomoWISE":
         if insertion_device == "CPMU":
             return 0.1e-3 # 0.1 mrad due to MSM in the undulator mode
+        if insertion_device == "Wiggler":
+            return 1e-3 # 1 mrad due to MSM in the wiggler mode
 
     print("Error: Unknown beamline [get_horizontal_aperture]:", beamline, file=sys.stderr)
     sys.exit(1)
@@ -77,6 +79,8 @@ def get_vertical_aperture(beamline, insertion_device):
     if beamline == "TomoWISE":
         if insertion_device == "CPMU":
             return 0.1e-3 # 0.1 mrad due to FM2
+        if insertion_device == "Wiggler":
+            return 0.1e-3 # 0.1 mrad due to FM2 (square)
 
     print("Error: Unknown beamline [get_vertical_aperture]:", beamline, file=sys.stderr)
     sys.exit(1)
@@ -125,7 +129,7 @@ def process_file(filename, args):
 
             try:
                 energy = float(words[0])
-                flux = float(words[flux_column])
+                flux = float(words[flux_column]) # ph/s/0.1%
                 h_size = float(words[divx_column])
                 v_size = float(words[divy_column])
             except (ValueError, IndexError):
@@ -133,20 +137,23 @@ def process_file(filename, args):
                 continue
 
             e_gap = energy - e_prev # eV
-            y = flux / (energy * 0.001)  # eV/ph/s/0.1%
+            y = flux / (energy * 0.001)  # spectral flux density [ph/s/eV]
             a_scale = 1.0
             if h_size < happ:
                 a_scale *= happ / h_size
             if v_size < vapp:
                 a_scale *= vapp / v_size
 
-            value = y * e_gap * a_scale
+            value = y * e_gap * a_scale # ph/s
             print(f"{energy:.6g} {value:.6e}")
 
-            sum_b += energy * value
-            sum_c += y * e_gap
+            sum_b += energy * value # ev*ph/s
+            sum_c += y * e_gap      # ph/s
 
             e_prev = energy
+
+    sum_b *= Q_E # J *ph/s - SA: integrated total Joules    KB: watts
+    sum_c *= Q_E # integrated step Joule value (what you get if you step the monochromator through the spectrum, i.e. you run Mono in the stepped mode). few Watts = nothing
 
     return sum_b, sum_c
 
@@ -158,9 +165,9 @@ def main():
         print("Error: No valid data processed.", file=sys.stderr)
         return 1
 
-    print(f"Energy: {sum_b * Q_E:.6e}", file=sys.stderr)
-    print(f"Sum: {sum_c * Q_E:.6e}", file=sys.stderr)
-    print(f"Div: {get_power_guess(args.beamline) / (sum_c * Q_E):.6f}", file=sys.stderr)
+    print(f"Energy: {sum_b:.6e}", file=sys.stderr)
+    print(f"Sum: {sum_c:.6e}", file=sys.stderr)
+    print(f"Div: {get_power_guess(args.beamline) / sum_c:.6f}", file=sys.stderr)
     return 0
 
 if __name__ == "__main__":
