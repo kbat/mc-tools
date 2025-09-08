@@ -136,6 +136,9 @@ def process_file(filename, args):
                 print(f"Warning: Skipping malformed line {line_no}", file=sys.stderr)
                 continue
 
+            if not flux>0.0:
+                continue
+
             e_gap = energy - e_prev # eV
             y = flux / (energy * 0.001)  # spectral flux density [ph/s/eV]
             a_scale = 1.0
