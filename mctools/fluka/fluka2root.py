@@ -3,7 +3,7 @@
 # alias fluka2root-dir="parallel 'cd {} && fluka2root *.inp' ::: *"
 
 import sys, re, os, argparse
-import glob
+import glob, fnmatch
 from tempfile import NamedTemporaryFile
 from shutil import which
 
@@ -84,6 +84,8 @@ class Converter:
             print("output ROOT file:", self.root)
 
     def Clean(self):
+        if self.verbose:
+            print("Cleaning tmp files...")
         v = "-v" if self.verbose else ""
         for f in self.inp:
             n = "[0-9][0-9][0-9]"
@@ -114,11 +116,13 @@ class Converter:
         return os.path.basename(root)
 
     def checkInputFiles(self):
-        """Does some checks of the input files
+        """Do some checks of the input files
 
            - check if all input files exist
            - check whether input follows the standard Fluka format (free format is not supported)
         """
+        if self.verbose:
+            print("Checking input files...")
 
         for f in self.inp:
             if not os.path.isfile(f):
@@ -182,6 +186,9 @@ class Converter:
     def assignUnits(self):
         """Assigns units to estimators
         """
+        if self.verbose:
+            print("Assigning units to estimators...")
+
         self.opened = self.getOpenedUnits()
         if len(self.opened):
             sys.exit("Opened units not yet supported")
@@ -220,18 +227,24 @@ class Converter:
     def assignFileNames(self):
         """Assign file names to units
         """
+        if self.verbose:
+            print("Assigning file names to units...")
+
+        all_files = glob.glob("*[0-9][0-9][0-9]_fort.*")
+
         for e in self.estimators:
             for u in e.units:
                 for inp in self.inp:
-                    for f in glob.glob("%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
-                        if f not in e.units[u]: # TODO: this can be done smarter
+                    pattern = "%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))
+                    for f in fnmatch.filter(all_files, pattern):
+                        if f not in e.units[u]: # TODO: why do we need this check?
                             e.addFile(u,f)
 
     def Merge(self):
         """ Merge all data with standard FLUKA tools
         """
         if self.verbose:
-            print("Merging...")
+            print("Merging data files...")
 
         tmpfiles=[]
         for e in self.estimators:
@@ -279,7 +292,7 @@ class Converter:
         """Convert merged files into ROOT
         """
         if self.verbose:
-            print("Converting...")
+            print("Converting to ROOT...")
 
         v = "-v" if self.verbose else ""
 
