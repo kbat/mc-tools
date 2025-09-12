@@ -6,6 +6,7 @@ from glob import glob
 import re
 from math import sqrt, log10, floor
 import numpy as np
+from uncertainties  import ufloat
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
@@ -13,7 +14,12 @@ def Print(vals, ttype, nps):
     data = np.array(vals)
     n = len(data)
     scale = n/nps
-    print("%s: %.5g ± %.5g sec" % (ttype, np.average(data)*scale, np.std(data)/sqrt(n)*scale))
+    val = np.average(data)*scale
+    err = np.std(data)/sqrt(n)*scale
+#    print("%s: %.5g ± %.1e sec" % (ttype, val, err))
+    x = ufloat(val, err)*1000
+    print(f"{ttype}: {x} msec")
+    return (val, err)
 
 def get(fname, ttype):
     if ttype == "average":
@@ -64,6 +70,8 @@ def main():
 
     avals = []
     mvals = []
+    avals1 = [] #  not normalised by nps (for PDF)
+    mvals1 = [] #  not normalised by nps (for PDF)
     nps = 0
     for fname in args.out:
         aval = get(fname, "average")
@@ -73,21 +81,36 @@ def main():
                 n = get(fname, "nps")
                 avals.append(aval*n)
                 mvals.append(mval*n)
+                avals1.append(aval)
+                mvals1.append(mval)
                 nps += n
 
-    Print(avals, "Average", nps)
+    val, err = Print(avals, "Average", nps)
     Print(mvals, "Maximum", nps)
-    print(f"nps:     {nps:e}")
+    print(f"nps:     {nps:g}")
+
+    val *= nps
+    err *= nps
+    print(f"Total time to run all particles on a single core:", end=" ")
+    x = ufloat(val, err)
+    if val<100:
+        print(f"{x} sec")
+    elif val < 3600:
+        x /= 60
+        print(f"{x} min")
+    else:
+        x /= 3600
+        print(f"{x} h")
 
     if args.pdf:
 
-        ha = ROOT.TH1F("ha", "Average;Time [s];Number of runs", args.N, min(avals)*0.99, max(avals)*1.01)
-        hm = ROOT.TH1F("hm", "Maximum;Time [s];Number of runs", args.N, min(mvals)*0.99, max(mvals)*1.01)
+        ha = ROOT.TH1F("ha", "Average;Time [s];Number of runs", args.N, min(avals1)*0.99, max(avals1)*1.01)
+        hm = ROOT.TH1F("hm", "Maximum;Time [s];Number of runs", args.N, min(mvals1)*0.99, max(mvals1)*1.01)
 
-        for v in avals:
+        for v in avals1:
             ha.Fill(v)
 
-        for v in mvals:
+        for v in mvals1:
             hm.Fill(v)
 
         ha.Draw("hist e")
