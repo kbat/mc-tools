@@ -1,3 +1,17 @@
-#! /bin/sh
+#! /usr/bin/env sh
 
-for d in fluka_*; do touch $d/fluka.stop; done
+f=$(basename $0) # either fluka.stop or rfluka.stop
+
+base="."
+
+if [ -d "$1" ]; then
+    base="$1"
+fi
+
+for d in ${base}/fluka_*; do touch $d/$f; done
+
+# A marker indicating that no new jobs should be submitted in the
+# current folder.
+if [ $f = 'rfluka.stop' ]; then
+    touch ${base}/rfluka.stop
+fi

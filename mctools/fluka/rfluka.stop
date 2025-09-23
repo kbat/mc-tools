@@ -1,4 +1,0 @@
-#! /bin/sh
-
-for d in fluka_*; do touch $d/rfluka.stop; done
-touch rfluka.stop
