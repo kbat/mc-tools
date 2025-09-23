@@ -238,7 +238,7 @@ def main():
     if results.outname:
         fname_out = results.outname
     else:
-        fname_out = fname_in.replace(".dat", ".root")
+        fname_out = fname_in.replace(".dat", ".root").replace(".txt", ".root")
 
     if fname_in == fname_out: fname_out = fname_in + ".root"
     print(fname_in, '=>',fname_out)
