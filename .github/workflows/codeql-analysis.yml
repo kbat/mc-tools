@@ -69,8 +69,9 @@ jobs:
        sudo apt-get install dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev python3 libssl-dev
        python3 --version
        ls -l $(dirname $(which python3))/python*
-       wget --quiet https://root.cern/download/root_v6.26.14.Linux-ubuntu22-x86_64-gcc11.4.tar.gz
-       tar zxf root_v6.26.14.Linux-ubuntu22-x86_64-gcc11.4.tar.gz
+#       wget --quiet https://root.cern/download/root_v6.32.10.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+       curl https://root.cern/download/root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz -o root.tar.gz
+       tar zxf root.tar.gz
        source root/bin/thisroot.sh
        echo $ROOTSYS
        export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
