@@ -54,6 +54,7 @@ class Converter:
         self.keep       = args.keep
         self.clean      = args.clean
         self.parallel   = which("parallel") is not None
+        self.njobs      = f" -j {args.njobs} " if args.njobs > 0 else " "
         self.estimators = [Estimator("USRBDX",   "usxsuw"),
                            Estimator("USRBIN",   "usbsuw"),
                            Estimator("USRCOLL",  "ustsuw"),
@@ -269,7 +270,7 @@ class Converter:
 
         verbose = "" if self.verbose else ">/dev/null"
         if self.parallel:
-            command="parallel --max-args=1 mc-tools-fluka-merge ::: " + " ".join(tmpfiles) + verbose
+            command=f"parallel {self.njobs} " + " --max-args=1 mc-tools-fluka-merge ::: " + " ".join(tmpfiles) + verbose
             if self.verbose:
                 printincolor(command)
             return_value = os.system(command)
@@ -308,7 +309,7 @@ class Converter:
                 datafiles.append(suwfile)
 
             if self.parallel:
-                command="parallel --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
+                command=f"parallel {self.njobs} " + " --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
                 if self.verbose:
                     printincolor(command)
                 return_value = os.system(command)
@@ -365,6 +366,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
     parser.add_argument('-keep', '--keep-files', action='store_true', default=False, dest='keep', help='do not delete temporary files')
     parser.add_argument('-clean', action='store_true', default=False, dest='clean', help='remove FLUKA-generated data files')
+    parser.add_argument('-j', default=0, dest='njobs', type=int, help='Run n jobs in parallel (valid only if the GNU parallel script is available)')
 
     args = parser.parse_args()
 
