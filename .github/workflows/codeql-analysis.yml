@@ -66,23 +66,25 @@ jobs:
     - name: Install ROOT
       shell: bash
       run: |
-       sudo apt-get install dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev python3 libssl-dev
+#       sudo apt-get install dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev python3 libssl-dev
        python3 --version
-       ls -l $(dirname $(which python3))/python*
+#       ls -l $(dirname $(which python3))/python*
 #       wget --quiet https://root.cern/download/root_v6.32.10.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
-       curl https://root.cern/download/root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz -o root.tar.gz
-       tar zxf root.tar.gz
-       source root/bin/thisroot.sh
-       echo $ROOTSYS
-       export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
-       export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+#       curl https://root.cern/download/root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz -o root.tar.gz
+#       tar zxf root.tar.gz
+#       source root/bin/thisroot.sh
+#       echo $ROOTSYS
+#       export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
+#       export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+       sudo snap install root-framework
+       which root
        root-config --features
 
     - name: Compile hplot
       # with:
       #   languages: cpp
       run: |
-       source root/bin/thisroot.sh
+#       source root/bin/thisroot.sh
        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
        sudo apt-get install libboost-program-options-dev
        pwd
@@ -96,13 +98,13 @@ jobs:
       #   languages: cpp
       shell: bash
       run: |
-       source root/bin/thisroot.sh
+#       source root/bin/thisroot.sh
        export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
        export MCTOOLS=$(pwd)
        ls $MCTOOLS
        export PATH=$MCTOOLS/bin:$PATH
        cd tests/hplot
-       python3 test.py
+       pyroot test.py
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
