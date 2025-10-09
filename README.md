@@ -87,6 +87,7 @@ This generates the required data card: ```vol 4j 3.1 j 2.7 3j```.
       ```export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH``` (and add it in your shell configuration).
 * ```hplot``` requires the [Boost](https://www.boost.org) libraries and ROOT to be compiled with at least ```C++17``` standard.
 * ```ace2root``` needs the [PyNE](http://pyne.io) toolkit.
+* ```fluka-stats``` needs the [uncertainties](https://pythonhosted.org/uncertainties) and [tqdm](https://github.com/tqdm/tqdm) packages.
 * If the [GNU parallel](https://www.gnu.org/software/parallel) tool is
   installed then the FLUKA merge and ROOT converter tools called by
   the ```fluka2root``` script will use all available cores which makes
