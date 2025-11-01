@@ -8,8 +8,13 @@
 #
 # https://github.com/kbat/mc-tools
 
+if [ -z ${FLUPRO+x} ]; then
+    >&2 echo "Error: FLUPRO variable is unset"
+    exit 1
+fi
+
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 filename.ext"
+    >&2 echo "Usage: $0 filename.ext"
     exit 1
 fi
 
@@ -25,9 +30,9 @@ if [ ${merge} = ${in} ]; then
     exit 3
 fi
 
-if [ ! -e ${FLUTIL}/${merge} ]; then
-    >&2 echo "${FLUTIL}/${merge} does not exist"
+if [ ! -e ${FLUPRO}/flutil/${merge} ]; then
+    >&2 echo "${FLUPRO}/flutil/${merge} does not exist"
     exit 4
 fi
 
-cat ${in} | ${FLUTIL}/${merge}
+cat ${in} | ${FLUPRO}/flutil/${merge}

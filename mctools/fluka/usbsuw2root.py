@@ -48,8 +48,25 @@ def main():
         det = b.detector[i]
 
         title = fluka.particle.get(det.score, "unknown")
-        if det.type % 10 in (0, 3, 4, 5, 6):  # Fluka Manual, pages 250-251
-            title = title +  ";x [cm];y [cm];z [cm]"
+        dt = det.type % 10
+        if   dt == 0:
+            title += ";x [cm];y [cm];z [cm]"
+        elif dt == 1:
+            title += ";R [cm];#Phi [rad];z [cm]"
+        elif dt == 2:
+            title += ";Region"
+        elif dt == 3:
+            title += ";|x| [cm];y [cm];z [cm]"
+        elif dt == 4:
+            title += ";x [cm];|y| [cm];z [cm]"
+        elif dt == 5:
+            title += ";x [cm];y [cm];|z| [cm]"
+        elif dt == 6:
+            title += ";|x| [cm];|y| [cm];|z| [cm]"
+        elif dt == 7:
+            title += ";R [cm];#Phi [rad];|z| [cm]"
+        elif dt == 8:
+            title += ";MUSRBR;LUSRBL;FUSRBV"
 
         h = ROOT.TH3F(det.name, title, det.nx, det.xlow, det.xhigh, det.ny, det.ylow, det.yhigh, det.nz, det.zlow, det.zhigh)
 
@@ -58,7 +75,7 @@ def main():
                 for k in range(det.nz):
                     gbin = i + j * det.nx + k * det.nx * det.ny
                     h.SetBinContent(i+1, j+1, k+1, val[gbin])
-                    h.SetBinError(i+1, j+1, k+1, err[gbin]*val[gbin])
+                    h.SetBinError(  i+1, j+1, k+1, err[gbin]*val[gbin])
         h.SetEntries(b.weight)
         h.Write()
 

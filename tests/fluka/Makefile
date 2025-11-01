@@ -3,7 +3,7 @@
 all: test
 
 rantest004:
-	$(FLUTIL)/rfluka -e $(FLUPRO)/flukadpm3 -N0 -M3 test.inp
+	$(FLUPRO)/flutil/rfluka -e $(FLUPRO)/flukadpm3 -N0 -M3 test.inp
 	@echo ""
 
 run: rantest004
@@ -17,4 +17,4 @@ test: convert
 	./test.py
 
 clean:
-	rm -fv test00* rantest* test*usrbin test*usrbdx test*usrtrack test*resnuclei test.*lis fort.* *.root
+	@rm -fv test00* rantest* test*usrbin test*usrbdx test*usrtrack test*resnuclei test*.lis test*.bnx test*.trk test*.bnn test*.rnc test*.dat test*.resnucle fort.* *.root draw.pdf

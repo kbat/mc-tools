@@ -2,6 +2,10 @@ __all__ = [ "ascii2gr", "ascii2th1", "ascii2th3", "mixtures" ]
 
 import ROOT
 
+def K2MeV(T):
+    """ Convert Kelvin to MeV of neutron kinetic energy """
+    return T*1.72346844e-09/20.0
+
 def FlipTH2(h):
     """ Flip the TH2 along the Y axis """
     flipped = h.Clone(h.GetName()+"_flipped")

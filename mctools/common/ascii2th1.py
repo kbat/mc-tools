@@ -68,10 +68,12 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
     return h
 
 def mcnp(fin, fout, hname, htitle, colx, coly):
-    df = pd.read_csv(fin, header=None, sep=' ', names=["x", "y"]) # data frame
+    df = pd.read_csv(fin, header=None, delim_whitespace=True, names=["x", "y", "ey"]) # data frame
 ##    df.info()
     nrow,ncol = df.shape
     nbins = nrow-1 # number of bins in the histogram
+
+#    print(df)
 
     vx = [0]
     for i in range(nbins):

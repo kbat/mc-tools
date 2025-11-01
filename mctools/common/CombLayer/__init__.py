@@ -27,24 +27,22 @@ def distance(x1, y1, z1, x2, y2, z2 ):
 
 def getPar(masterfile, parname, pos=2, comment="c"):
     """
-    Return parameter 'parname' from MCNP master file 'masterfile' (the syntax of CombLayer is assumed)
-    pos - optional argument, specifies the position of the value in the THEparname string
+    Return the value of the 'parname' variable. The CombLayer syntax is assumed.
+    pos - optional argument, specifies the position of the value in the string
     """
-    f = open(masterfile)
-    val = ""
-    if comment == "*":
-        comment = "\*"
-    for line in f.readlines():
-        if re.search("\A%s %s " % (comment, parname), line, re.IGNORECASE):
+    with open(masterfile) as f:
+        val = ""
+        if comment == "*":
+            comment = "\*"
+        for line in f.readlines():
+            if re.search("\A%s %s " % (comment, parname), line, re.IGNORECASE):
             # print (line.strip(), val)
-            try:
-                val = float(line.split()[pos])
-            except ValueError:
-                val = line.split()[pos] # non-float
-    f.close()
-    if val == "":
-        raise IOError("Value of %s not found in %s" % (parname, masterfile))
-    return val
+                try:
+                    return float(line.split()[pos])
+                except ValueError:
+                    return line.split()[pos] # non-float
+
+    raise IOError("Value of %s not found in %s" % (parname, masterfile))
 
 def getOmega(fname, f5name):
     """Return solid angle of a F5 collimator"""

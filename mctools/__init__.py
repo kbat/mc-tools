@@ -2,7 +2,13 @@
 __all__ = ["common", "fluka", "mcnp", "phits" ]
 
 import subprocess, os, sys
-from math import sqrt
+from math import sqrt, log10, floor
+import numpy as np
+
+def printValErr(val, err):
+    """ Print value and its error in the () notation """
+    tmp=-floor(log10(err))
+    print('{:.{prec}f}({:.0f})'.format(val, floor(err * (10**tmp)), prec=tmp))
 
 def L2E(l, m=1.674927351e-27): #constants.physical_constants['neutron mass'][0]):
     """
@@ -50,6 +56,25 @@ def checkPaths(dirs, files, verbose=True):
             print(f, "does not exist", file=sys.stderr)
             return 2
     return 0
+
+
+def getLogBins(nbins, low, high):
+    """ Return array of bins with log10 equal widths """
+
+    if nbins == 0:
+        return np.array([])
+
+    x = float(low)
+    dx = pow(high/low, 1.0/nbins);
+
+    return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
+
+def getLinBins(nbins, low, high):
+    """ Return array of bins with linearly equal widths """
+    x = float(low)
+    dx = float(high-low)/nbins
+
+    return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
 
 ### MIXTURES ###

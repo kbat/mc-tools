@@ -3,32 +3,23 @@
 import sys, argparse, struct
 from os import path
 import numpy as np
-from mctools import fluka
+from math import isclose
+from mctools import fluka, getLogBins, getLinBins
 from mctools.fluka.flair import Data, fortran
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def getAxesTitle(det):
     # differential energy fluence/current
-    # FLUKA manual page 259
+    # FLUKA manual: USRTRACK section
+    energy = (208, 211) # ENERGY or EM-ENERGY
     ytitle = fluka.particle.get(det.dist, "undefined")
-    ytitle += "[GeV/cm^{2}]"  if int(det.dist) in (208,211) else "[1/GeV/cm^{2}]"
+    if int(det.dist) in energy:
+        ytitle += " tracklength [cm]" if isclose(det.volume, 1.0) else " energy fluence [cm^{-2}]"
+    else:
+        ytitle += " tracklength [cm/GeV]" if isclose(det.volume, 1.0) else " fluence [1/GeV/cm^{2}]"
+
     return ";Energy [GeV];" + ytitle
-
-def getLogBins(nbins, low, high):
-    """ Return array of bins with log10 equal widths """
-
-    x = float(low)
-    dx = pow(high/low, 1.0/nbins);
-
-    return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
-
-def getLinBins(nbins, low, high):
-    """ Return array of bins with linearly equal widths """
-    x = float(low)
-    dx = float(high-low)/nbins
-
-    return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
 def getEbins(det):
     """ Return lin or log energy bins depending on the value of i """
@@ -41,14 +32,20 @@ def getEbins(det):
 def hist(det):
     """ Create histogram for the given detector """
 
+    if det.ne == 0:
+        print(f"WARNING: Not saving detector {det.name} into ROOT file since it has 0 energy bins: {det.elow} < E < {det.ehigh}")
+        print("         This happens for neutron-contributing estimators if max scoring energy is below groupwise max energy, 20 MeV.")
+        return None
+
     title = fluka.particle.get(det.dist, "undefined")
     title += " #diamond "
-    title += "reg %d" % det.reg
+    title += "all regions" if int(det.reg) == -1 else "reg %d" % det.reg
     title += " #diamond "
     title += "%g cm^{3}" % det.volume
     title += " #diamond "
     title += "%g < E < %g GeV" % (det.elow, det.ehigh)
     title += getAxesTitle(det)
+
     return ROOT.TH1F(det.name, title, det.ne, getEbins(det))
 
 def histN(det):
@@ -70,7 +67,7 @@ class Usrtrack(Data.Usrxxx):
         """ Reads the file header info
             Based on Data.Usrbdx
         """
-        f = Data.Usrxxx.readHeader(self, filename)
+        f = super().readHeader(filename)
 #        self.sayHeader()
 
         while True:
@@ -112,10 +109,10 @@ class Usrtrack(Data.Usrxxx):
                 data = fortran.read(f)
                 det.ngroup = struct.unpack("=i",data[:4])[0]
                 det.egroup = struct.unpack("=%df"%(det.ngroup+1), data[4:])
-                print("Low energy neutrons scored with %d groups" % det.ngroup)
+                print(f"{det.name}: Low energy neutrons scored with {det.ngroup} groups")
             else:
                 det.ngroup = 0
-                det.egroup = []
+                det.egroup = ()
 
             size  = (det.ngroup+det.ne) * 4
             if size != fortran.skip(f):
@@ -182,6 +179,7 @@ def main():
     b.readHeader(args.usrtrack)
 
     ND = len(b.detector)
+    # print("ND:",ND)
 
     if args.verbose:
         #b.sayHeader()
@@ -195,24 +193,32 @@ def main():
         val = Data.unpackArray(b.readData(i, det.lowneu))
         err = Data.unpackArray(b.readStat(i, det.lowneu))
 
+        # print("val",val, len(err))
+        # print("err",err, len(err))
+        assert len(val) == len(err), "val and err length are different: %d %d" % (len(val), len(err))
+
         h = hist(det)
         hn = histN(det) # filled only if det.lowneu
 
-        n = h.GetNbinsX()
-        assert n == det.ne, "n != det.ne"
+        if h:
+            n = h.GetNbinsX()
+            assert n == det.ne, "n != det.ne"
 
-        for i in range(n):
-            h.SetBinContent(i+1, val[i])
-            h.SetBinError(i+1,   err[n-i-1]*val[i])
+            # print(i,n, len(val))
+            for i in range(n):
+                h.SetBinContent(i+1, val[i])
+                h.SetBinError(i+1,   err[n-i-1]*val[i])
 
-        h.SetEntries(b.weight)
-        h.Write()
+            h.SetEntries(b.weight)
+            h.Write()
 
+# not implemented - bugs with theINFN FLUKA, but it seems works with the CERN FLUKA
         if det.lowneu:
             # val_lowneu = val[det.ne::][::-1]
             # err_lowneu = err[det.ne::][::-1]
             n = hn.GetNbinsX()
             assert n == det.ngroup, "n != det.ngroup"
+            # print(n, len(val_lowneu), len(err_lowneu))
             for i in range(n):
                 hn.SetBinContent(i+1, val[-i-1])
                 hn.SetBinError(i+1,   err[-i-1]*val[-i-1])

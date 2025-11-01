@@ -32,7 +32,7 @@ def fluka2root(inp):
 
     os.chdir(tmpdir)
 
-    cmd = "$FLUTIL/rfluka -N0 -M2 " + inp
+    cmd = "$FLUPRO/flutil/rfluka -N0 -M2 " + inp
     val = os.system(cmd)
     assert val == 0
 

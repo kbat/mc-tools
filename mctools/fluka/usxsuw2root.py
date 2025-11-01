@@ -3,19 +3,20 @@
 import sys, argparse
 from os import path
 import numpy as np
-from mctools import fluka
+from mctools import fluka, getLogBins, getLinBins
 from mctools.fluka.flair import Data
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def getType(n):
-    """ Decrypt what(1) of usrbdx """
+    """ Decrypt what(1) of USRBDX """
     for i1 in (-2,-1,1,2):
         for i2 in (0,1):
             for i3 in (0,1):
-                if (i1+10*i2+100*i3 == n):
-                    return (i1,i2,i3) # i3 is irrelevant - use bin.fluence instead
-    print("usrbdx2root: what(1) == %d undefined" % n, file=sys.stderr)
+                for i4 in (-1,0,1):
+                    if (i1+10*i2+100*i3+10000*i4 == n):
+                        return (i1,i2,i3,i4) # i3 is irrelevant - use bin.fluence instead
+    print("usxsuw2root: what(1) == %d undefined" % n, file=sys.stderr)
     sys.exit(1)
 
 def isLogE(x):
@@ -39,21 +40,6 @@ def getAxesTitle(det):
     #      1 : ";Energy [GeV];#Omega [rad];" + ztitle,
     #      2 : ";Energy [GeV];log10(#Omega/rad);" + ztitle,
     #     }[x]
-
-def getLogBins(nbins, low, high):
-    """ Return array of bins with log10 equal widths """
-
-    x = float(low)
-    dx = pow(high/low, 1.0/nbins);
-
-    return np.array([x*pow(dx,i) for i in range(nbins+1)], dtype=float)
-
-def getLinBins(nbins, low, high):
-    """ Return array of bins with linearly equal widths """
-    x = float(low)
-    dx = float(high-low)/nbins
-
-    return np.array([x+i*dx for i in range(nbins+1)], dtype=float)
 
 def getNEbins(det):
     """ Return number of energy bins """
@@ -119,7 +105,7 @@ def main():
     args = parser.parse_args()
 
     if not path.isfile(args.usrbdx):
-        print("usrbdx2root: File %s does not exist." % args.usrbdx, file=sys.stderr)
+        print("usxsuw2root: File %s does not exist." % args.usrbdx, file=sys.stderr)
         return 1
 
     if args.root == "":

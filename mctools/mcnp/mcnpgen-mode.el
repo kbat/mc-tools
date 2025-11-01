@@ -80,7 +80,7 @@
     ;; tally comments go before keywords so that tally comment with a keyword is highlighted correctly
     ("^fc[0-9]+ .*" . 'font-lock-comment-face) ;; +tally comment
 
-    ("\\<\\(ara\\|axs\\|cap\\|cel\\|ctme\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|elc\\|ext\\|flux\\|frv\\|geb\\|hlib\\|icd\\|idum\\|imp\\|inc\\|kcode\\|^lc[abc]\\|^le[abt]\\|lost\\|mgopt +[af]\\|mode\\|model\\|mphys\\|nps\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|roc\\|phl\\|print\\|ptrac\\|psc=[0-9]\\|ptt\\|rad\\|rand\\|res\\|seed\\|scd\\|scx\\|sdef\\|stop\\|ssr\\|tag\\|tme\\|tmc\\|xvec\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
+    ("\\<\\(ara\\|axs\\|cap\\|cel\\|ctme\\|cut\\|cyl\\|dbcn\\|dir\\|eff\\|elc\\|ext\\|flux\\|frv\\|geb\\|hlib\\|icd\\|idum\\|imp\\|inc\\|kcode\\|^lc[abc]\\|^le[abt]\\|lost\\|mgopt +[af]\\|mode\\|model\\|mphys\\|nps\\|phys\\|pnlib\\|pos\\|prdmp\\|rec\\|res\\|rdum\\|roc\\|phl\\|print\\|ptrac\\|psc=[0-9]\\|ptt\\|rad\\|rand\\|res\\|seed\\|scd\\|scx\\|sdef\\|stop\\|ssr\\|tag\\|tme\\|tmc\\|tmp\\|xvec\\|vec\\|void\\|wgt\\|[^cpks/]x\\|[^cpks/]y\\|[^cpks/]z\\)\\>" . 'font-lock-keyword-face)
 
     ;; Data cards related to geometry
     ("\\<\\(area\\|fill\\|lat\\|u\\|uran\\|vol\\|\\>" . 'font-lock-keyword-face)

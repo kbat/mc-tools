@@ -3,9 +3,9 @@
 # alias fluka2root-dir="parallel 'cd {} && fluka2root *.inp' ::: *"
 
 import sys, re, os, argparse
-import glob
+import glob, fnmatch
 from tempfile import NamedTemporaryFile
-from distutils.spawn import find_executable
+from shutil import which
 
 def str2int(s):
     try:
@@ -53,10 +53,14 @@ class Converter:
         self.verbose    = args.verbose
         self.keep       = args.keep
         self.clean      = args.clean
-        self.parallel   = find_executable("parallel") is not None
-        self.estimators = [Estimator("USRBIN",   "usbsuw"),
-                           Estimator("USRBDX",   "usxsuw"),
+        self.parallel   = which("parallel") is not None
+        self.njobs      = f" -j {args.njobs} " if args.njobs > 0 else " "
+        self.estimators = [Estimator("USRBDX",   "usxsuw"),
+                           Estimator("USRBIN",   "usbsuw"),
+                           Estimator("USRCOLL",  "ustsuw"),
                            Estimator("USRTRACK", "ustsuw"),
+                           Estimator("DETECT",   "detsuw"),
+                           Estimator("USRYIELD", "usysuw"),
                            Estimator("RESNUCLE", "usrsuw")]
         self.opened = {}         # dict of opened units (if any)
 
@@ -81,6 +85,8 @@ class Converter:
             print("output ROOT file:", self.root)
 
     def Clean(self):
+        if self.verbose:
+            print("Cleaning tmp files...")
         v = "-v" if self.verbose else ""
         for f in self.inp:
             n = "[0-9][0-9][0-9]"
@@ -106,14 +112,18 @@ class Converter:
         root = os.path.splitext(self.inp[0])[0]+".root"
         if len(self.inp)>1:
             root = re.sub(r'[0-9]+\.root','.root', root)
+        if root == '.root':
+            root = self.inp[0][0]+root
         return os.path.basename(root)
 
     def checkInputFiles(self):
-        """Does some checks of the input files
+        """Do some checks of the input files
 
            - check if all input files exist
            - check whether input follows the standard Fluka format (free format is not supported)
         """
+        if self.verbose:
+            print("Checking input files...")
 
         for f in self.inp:
             if not os.path.isfile(f):
@@ -127,6 +137,20 @@ class Converter:
                     return 2
 
         return 0
+
+    def getRunTitle(self):
+        """ Return the run title as specified in the first provided input file
+
+        """
+
+        found = False
+        with open(self.inp[0]) as f:
+            for line in f:
+                line = line.strip()
+                if found:
+                    return line
+                if line.startswith("TITLE"):
+                    found = True
 
     def getSuwFileName(self, e, u):
         """Reuturn suw file name for the given estimator
@@ -142,26 +166,30 @@ class Converter:
 
         inp = open(self.inp[0], "r")
         isname = False
-        opened = []
+        opened = {}
         for line in inp.readlines():
             if isname is True:
-                name = line[0:10].strip()
+                name = line.strip()
                 opened[unit] = name
                 isname = False
 
-            if re.search(r"\AOPEN", line):
+            if re.search(r"\AOPEN", line) and line.split()[-1] == "NEW": # NEW: interested only in the newly created files where the estimator output is written
                 unit = str2int(line[11:20].strip())
                 isname = True
 
-            if len(opened):
-                print("Opened (named) units: ", opened)
         inp.close()
+
+        if len(opened):
+            print("Opened (named) units: ", opened)
 
         return opened
 
     def assignUnits(self):
         """Assigns units to estimators
         """
+        if self.verbose:
+            print("Assigning units to estimators...")
+
         self.opened = self.getOpenedUnits()
         if len(self.opened):
             sys.exit("Opened units not yet supported")
@@ -176,6 +204,12 @@ class Converter:
                         if unit<0: # we are interested in binary files only
                             if not unit in self.estimators[e]:
                                 self.estimators[e].addUnit("%s" % unit)
+                elif e.name == "DETECT":
+                    if re.search(r"\A%s" % e.name, line):
+                        unit = 17
+                        name = line[70:80].strip()
+                        if not unit in e.units:
+                            e.addUnit(unit)
                 else:
                     if re.search(r"\A%s" % e.name[:8], line) and not re.search(r"\&", line[70:80]):
                         if e.name[:8] == "RESNUCLE":
@@ -194,18 +228,24 @@ class Converter:
     def assignFileNames(self):
         """Assign file names to units
         """
+        if self.verbose:
+            print("Assigning file names to units...")
+
+        all_files = glob.glob("*[0-9][0-9][0-9]_fort.*")
+
         for e in self.estimators:
             for u in e.units:
                 for inp in self.inp:
-                    for f in glob.glob("%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))):
-                        if f not in e.units[u]: # TODO: this can be done smarter
+                    pattern = "%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))
+                    for f in fnmatch.filter(all_files, pattern):
+                        if f not in e.units[u]: # TODO: why do we need this check?
                             e.addFile(u,f)
 
     def Merge(self):
         """ Merge all data with standard FLUKA tools
         """
         if self.verbose:
-            print("Merging...")
+            print("Merging data files...")
 
         tmpfiles=[]
         for e in self.estimators:
@@ -230,7 +270,7 @@ class Converter:
 
         verbose = "" if self.verbose else ">/dev/null"
         if self.parallel:
-            command="parallel --max-args=1 mc-tools-fluka-merge ::: " + " ".join(tmpfiles) + verbose
+            command=f"parallel {self.njobs} " + " --max-args=1 mc-tools-fluka-merge ::: " + " ".join(tmpfiles) + verbose
             if self.verbose:
                 printincolor(command)
             return_value = os.system(command)
@@ -253,7 +293,7 @@ class Converter:
         """Convert merged files into ROOT
         """
         if self.verbose:
-            print("Converting...")
+            print("Converting to ROOT...")
 
         v = "-v" if self.verbose else ""
 
@@ -269,7 +309,7 @@ class Converter:
                 datafiles.append(suwfile)
 
             if self.parallel:
-                command="parallel --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
+                command=f"parallel {self.njobs} " + " --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
                 if self.verbose:
                     printincolor(command)
                 return_value = os.system(command)
@@ -287,8 +327,14 @@ class Converter:
                         sys.exit(2)
             self.datafiles.append(datafiles)
 
+        if len(self.datafiles) == 0:
+            print("fluka2root: no datafiles found -> exit")
+            print("            Have you defined any estimators?")
+            sys.exit(3)
+
         if self.verbose:
             print("ROOT files produced: ", self.out_root_files)
+
 
         f = "-f" if self.overwrite else ""
         command = "hadd %s %s %s" % (f, self.root, ' '.join(self.out_root_files)) + ("" if self.verbose else " > /dev/null")
@@ -320,13 +366,16 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', default=False, dest='verbose', help='print what is being done')
     parser.add_argument('-keep', '--keep-files', action='store_true', default=False, dest='keep', help='do not delete temporary files')
     parser.add_argument('-clean', action='store_true', default=False, dest='clean', help='remove FLUKA-generated data files')
+    parser.add_argument('-j', default=0, dest='njobs', type=int, help='Run n jobs in parallel (valid only if the GNU parallel script is available)')
 
     args = parser.parse_args()
 
     c = Converter(args)
     c.Merge()
     val = c.Convert()
-    print(c.root)
+#    print(c.root)
+
+#    title = c.getRunTitle()
 
     return val
 

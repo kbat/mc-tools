@@ -43,7 +43,7 @@ jobs:
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -54,7 +54,7 @@ jobs:
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     # - name: Autobuild
-    #   uses: github/codeql-action/autobuild@v1
+    #   uses: github/codeql-action/autobuild@v2
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
@@ -66,22 +66,25 @@ jobs:
     - name: Install ROOT
       shell: bash
       run: |
-       sudo apt-get install dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev python3 libssl-dev
+#       sudo apt-get install dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev python3 libssl-dev
        python3 --version
-       ls -l $(dirname $(which python3))/python*
-       wget --quiet https://root.cern/download/root_v6.26.14.Linux-ubuntu22-x86_64-gcc11.4.tar.gz
-       tar zxf root_v6.26.14.Linux-ubuntu22-x86_64-gcc11.4.tar.gz
-       source root/bin/thisroot.sh
-       echo $ROOTSYS
-       export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
-       export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+#       ls -l $(dirname $(which python3))/python*
+#       wget --quiet https://root.cern/download/root_v6.32.10.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+#       curl https://root.cern/download/root_v6.34.00.Linux-ubuntu24.04-x86_64-gcc13.2.tar.gz -o root.tar.gz
+#       tar zxf root.tar.gz
+#       source root/bin/thisroot.sh
+#       echo $ROOTSYS
+#       export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
+#       export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+       sudo snap install root-framework
+       which root
        root-config --features
 
     - name: Compile hplot
       # with:
       #   languages: cpp
       run: |
-       source root/bin/thisroot.sh
+#       source root/bin/thisroot.sh
        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
        sudo apt-get install libboost-program-options-dev
        pwd
@@ -95,13 +98,13 @@ jobs:
       #   languages: cpp
       shell: bash
       run: |
-       source root/bin/thisroot.sh
+#       source root/bin/thisroot.sh
        export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
        export MCTOOLS=$(pwd)
        ls $MCTOOLS
        export PATH=$MCTOOLS/bin:$PATH
        cd tests/hplot
-       python3 test.py
+       pyroot test.py
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2

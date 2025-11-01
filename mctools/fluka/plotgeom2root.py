@@ -61,6 +61,7 @@ def main():
                 print("horizontal/vertical axes length:",XAXLEN,YAXLEN)
 #                print(X0,Y0,Z0,X1,Y1,Z1,TYX,TYY,TYZ,TXX,TXY,TXZ,XAXLEN,YAXLEN)
 
+            print(X0, X1, Y0, Y1)
             if args.plane in ("xy", "yx", "xz", "zx", "zy", "yz"):
                 plane=args.plane
             else:
@@ -68,7 +69,7 @@ def main():
                 if abs(X0-X1)<0.001:
                     plane="zx"
                 elif abs(Y0-Y1)<0.001:
-                    plane="zy"
+                    plane="xz"
                 elif abs(Z0-Z1)<0.001:
                     plane="xy"
 
@@ -122,8 +123,8 @@ def main():
 
 #                    print ("PLANE[{}] == {} {} {} \n".format(plane,X0,Y0,Z0))
                     if plane=="xy":
-                        x = list(map(lambda x:x+Y0, coord[::2]))
-                        y = list(map(lambda y:y+X0, coord[1::2]))
+                        x = list(map(lambda x:x+X0, coord[::2]))
+                        y = list(map(lambda y:y+Y0, coord[1::2]))
                     elif plane=="zx":
                         y = list(map(lambda x:x+Z0, coord[::2]))
                         x = list(map(lambda y:y+X0, coord[1::2]))
@@ -134,9 +135,9 @@ def main():
                     elif plane=="yx":
                         y = list(map(lambda x:x+Y0, coord[::2]))
                         x = list(map(lambda y:y+X0, coord[1::2]))
-                    elif plane=="xz": # checked
-                        x = list(map(lambda x:x+Y0, coord[::2]))
-                        y = list(map(lambda y:y+Z0, coord[1::2]))
+                    elif plane=="xz":
+                        x = list(map(lambda x:x+Z0, coord[::2]))
+                        y = list(map(lambda y:y+X0, coord[1::2]))
                     elif plane=="yz":
                         x = list(map(lambda x:x+Y0, coord[::2]))
                         y = list(map(lambda y:y+Z0, coord[1::2]))

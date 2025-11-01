@@ -132,7 +132,7 @@ def source(cxx, args):
             if mat:
                 l = "%s%s=ModelSupport::EvalMat<%s>(Control,keyName+\"%s\");" % (indent, args.name, args.type, args.title)
             elif args.name == "engActive":
-                l = "%s%s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (indent, args.title)
+                l = "%s%s=Control.EvalPair<int>(keyName,\"\",\"EngineeringActive\")'" % (indent, args.name)
             else:
                 l = "%s%s=Control.EvalVar<%s>(keyName+\"%s\");" % (indent, args.name, args.type, args.title)
 
@@ -158,7 +158,7 @@ def main():
     parser.add_argument('-class', dest='className', type=str, help='class name', required=True)
     parser.add_argument('-value', dest='value', type=str,default="", required=False,
                         help='default value (if set, the generator for variables is created and this value is set as default)')
-    parser.add_argument('-indent', dest='indent', type=int, help='number of initial spaces', default=2, required=False)
+    parser.add_argument('-indent', dest='indent', type=int, help='number of initial spaces', default=4, required=False)
     parser.add_argument('-generator', dest='generator', type=str, help='path to file with generator implementation (.cxx)', default="", required=False)
 
     args = parser.parse_args()
@@ -174,10 +174,19 @@ def main():
     h   = os.path.join(hDir,   args.className + ".h")
 
     if args.generator == "":
-        cxxGenDir = os.path.join('',*cxxDir.split('/')[:-1], "commonGenerator")
+        if args.model == "Model/MaxIV/commonBeam":
+            cxxGenDir = "Model/MaxIV/commonGenerator"
+        else:
+            cxxGenDir = os.path.join('',*cxxDir.split('/')[:-1], "commonGenerator")
+            if not checkPaths([cxxGenDir],()):
+                cxxGenDir = cxxDir+"Var"
+
         hGenDir = cxxGenDir + 'Inc'
-        cxxGen = os.path.join(cxxGenDir, args.className + "Generator.cxx")
-        hGen   = os.path.join(hGenDir,   args.className + "Generator.h")
+        prefix = args.className
+        if args.className == "Bellows":
+            prefix = "Bellow"
+        cxxGen = os.path.join(cxxGenDir, prefix + "Generator.cxx")
+        hGen   = os.path.join(hGenDir,   prefix + "Generator.h")
     else:
         t = args.generator.split('/')
         cxxGenDir = os.path.join(*t[:-1])

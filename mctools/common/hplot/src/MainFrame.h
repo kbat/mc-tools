@@ -5,7 +5,7 @@
 #include <TRootEmbeddedCanvas.h>
 #include <TGLayout.h>
 #include <TGMenu.h>
-#include <TGDoubleSlider.h>
+#include <TGSlider.h>
 #include <TGStatusBar.h>
 #include <Buttons.h>
 #include <TVirtualPad.h>
@@ -21,7 +21,7 @@ class MainFrame : public TGMainFrame {
   TGMenuBar           *fMenuBar;
   TGPopupMenu         *fMenuFile;
   TGPopupMenu         *fMenuHelp;
-  TGDoubleVSlider     *fSlider;
+  TGVSlider           *fSlider;
   TGStatusBar         *fStatusBar;
 
   std::shared_ptr<Data3> data;
@@ -31,6 +31,8 @@ class MainFrame : public TGMainFrame {
   std::shared_ptr<TH2> gh2; // current geometry histogram
 
   std::unique_ptr<DynamicSlice> slice;
+
+  void GrabMouseWheel() const;
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 	    const std::shared_ptr<Data3> data);
@@ -43,9 +45,10 @@ class MainFrame : public TGMainFrame {
   TVirtualPad *GetHistogramPad() const;
   TVirtualPad *GetSlicePad() const;
   void DoSlider();
-  Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
+  Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) override;
 
   void EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected);
+  Bool_t HandleButton(Event_t *event) override;
 
   ClassDef(MainFrame,0);
 };

@@ -9,16 +9,22 @@
 
 #include "MainFrame.h"
 
+#include <iomanip>
+
 enum MainFrameMessageTypes {
-			    M_FILE_SAVEAS,
-			    M_FILE_EXIT,
-			    M_HELP_ABOUT
+  M_FILE_SAVEAS,
+  M_FILE_EXIT,
+  M_HELP_ABOUT
 };
+
+const char line_width = getenv("COLUMNS") ? atoi(getenv("COLUMNS"))-1 : 80-1;
+const std::string spaces{line_width, ' '};
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data) :
-  TGMainFrame(p,w,h), data(data), geo3(nullptr), plotgeom(nullptr), gh2(nullptr), slice(nullptr)
+  TGMainFrame(p,w,h), fSlider(nullptr), data(data), geo3(nullptr), plotgeom(nullptr), gh2(nullptr), slice(nullptr)
 {
+  GrabMouseWheel();
 
   // Menu bar
   fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
@@ -68,19 +74,14 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
       else if (bin==0)
 	bin = 1;
 
-      fSlider = new TGDoubleVSlider(hframe,
-				    20, // slider width
-				    kDoubleScaleBoth, // slider type [1 or 2]
-				    -1,
-				    kVerticalFrame,
-				    GetDefaultFrameBackground(),
-				    kTRUE,kTRUE);
+      fSlider = new TGVSlider(hframe, 40, kSlider1 | kScaleBoth);
+      fSlider->Associate(this);
       fSlider->SetRange(a->GetXmin(), a->GetXmax());
-      fSlider->SetPosition(a->GetBinLowEdge(bin), a->GetBinUpEdge(bin));
+      fSlider->SetPosition(a->GetBinCenter(bin));
       fSlider->SetScale(1000.0/nbins);
-      hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsRight | kLHintsExpandY, 10,10,10,1));
-      //      fSlider->Connect("PositionChanged()", "MainFrame", this, "DoSlider()");
-      fSlider->Connect("Released()", "MainFrame", this, "DoSlider()");
+      hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsBottom | kLHintsExpandY, 10,10,10,1));
+      //      fSlider->Connect("Released()", "MainFrame", this, "DoSlider()");
+      //      fSlider->SetObject(this);
     }
 
   AddFrame(hframe,new TGLayoutHints(kLHintsCenterX|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
@@ -103,6 +104,18 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   if (data->GetArgs()->IsSlice())
     slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice());
+}
+
+void MainFrame::GrabMouseWheel() const
+{
+  // Handle only buttons 4 and 5 used by the wheel mouse to scroll
+  // see TileFrame::TileFrame in guitest.cxx
+  gVirtualX->GrabButton(fId, kButton4, kAnyModifier,
+			kButtonPressMask | kButtonReleaseMask,
+			kNone, kNone);
+  gVirtualX->GrabButton(fId, kButton5, kAnyModifier,
+			kButtonPressMask | kButtonReleaseMask,
+			kNone, kNone);
 }
 
 void MainFrame::SetGeometry(const std::shared_ptr<Geometry3> g)
@@ -152,9 +165,8 @@ TVirtualPad *MainFrame::GetSlicePad() const
 
 void MainFrame::DoSlider()
 {
-  float ymin, ymax;
-  fSlider->GetPosition(ymin,ymax);
-  const float y = (ymin+ymax)/2.0;
+  //  std::cout << __PRETTY_FUNCTION__ << ": DoSlider" << std::endl;
+  const float y = fSlider->GetPosition();
 
   TVirtualPad *pad1 = GetHistogramPad();
   pad1->cd();
@@ -178,11 +190,29 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
    // TGFileInfo fi;
    // Char_t  strtmp[250];
 
-  // std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
-  // std::cout << "\t" << GET_MSG(msg) << " " << GET_SUBMSG(msg) << std::endl;
-  // std::cout << "\t" << kC_COMMAND << " " << kCM_MENU << std::endl;
+  if (!false) {
+    std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
+    std::cout << "\tMSG: " << GET_MSG(msg) << " SUBMSG: " << GET_SUBMSG(msg) << std::endl;
+    std::cout << "\t COMMAND: " << kC_COMMAND << " MENU: " << kCM_MENU << std::endl;
+  }
 
   switch (GET_MSG(msg)) {
+  case kC_HSLIDER: // 6, mouse wheel scroll, see gui/gui/inc/WidgetMessageTypes.h
+    switch (GET_SUBMSG(msg)) {
+    case kSL_POS:
+      std::cout << __FUNCTION__ << ": kC_HSLIDER (kSL_POS)" << std::endl;
+      DoSlider();
+      break;
+    }
+    break;
+  case kC_VSLIDER: // 7
+    switch (GET_SUBMSG(msg)) {
+    case kSL_RELEASE:
+      std::cout << __FUNCTION__ << ": Mouse released" << std::endl;
+      DoSlider();
+      break;
+    }
+    break;
   case kC_COMMAND:
     switch (GET_SUBMSG(msg)) {
     case M_FILE_EXIT:
@@ -192,7 +222,6 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
     case M_HELP_ABOUT:
       // std::cout << "Help" << std::endl;
       break;
-
     default:
       break;
     }
@@ -240,14 +269,48 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    const Double_t val = dh2->GetBinContent(binx, biny);
    const Double_t err = dh2->GetBinError(binx, biny);
    Double_t relerr = 100.0;
-   if (std::abs(val)>0)
+   if (std::abs(val)>0.0)
      relerr = err/val * 100.0;
 
-   if (data->GetArgs()->IsErrors())
+   std::cout << spaces << '\r';
+   if (data->GetArgs()->IsErrors()) {
      fStatusBar->SetText(Form("%g %%", val),3);
-   else
+     std::cout << val << " % \r" << std::flush;
+   }
+   else {
      fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
+     std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
+   }
 
    if (slice)
      slice->Draw(dh2, GetHistogramPad(), GetSlicePad());
+}
+
+Bool_t MainFrame::HandleButton(Event_t *event)
+{
+  // Handle wheel mouse to scroll.
+
+  if (!fSlider) return kTRUE; // no slider created (e.g. with the -max option or single bin)
+
+  //std::cout << __PRETTY_FUNCTION__ << ": here" << std::endl;
+
+  if (event->fCode == kButton4 || event->fCode == kButton5) { // 4=up, 5=down
+    const float   y =  fSlider->GetPosition();
+    const TAxis  *a = data->GetNormalAxis();
+    const Int_t bin = a->FindBin(y);
+    Double_t offset;
+    Int_t direction;
+
+    if (event->fCode == kButton4) { // scroll up
+      //      std::cout << __PRETTY_FUNCTION__ << ": Button4 (scroll up)" << std::endl;
+      direction = 1;
+    } else { //if (event->fCode == kButton5) { // scroll down
+      //      std::cout << __PRETTY_FUNCTION__ << ": Button5 (scroll down)" << std::endl;
+      direction = -1;
+    }
+    offset = a->GetBinWidth(bin+direction);
+    fSlider->SetPosition(y+direction*offset/2);
+    DoSlider();
+  }
+  return kTRUE;
 }

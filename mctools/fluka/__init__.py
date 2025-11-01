@@ -1,3 +1,5 @@
+import re, sys
+
 particle = {
     -6: "4-HELIUM",
     -5: "3-HELIUM",
@@ -115,5 +117,38 @@ particle = {
     243: "DOSEQLET",
     244: "RES-NIEL",
     249: "HEHAD-EQ",
-    250: "THNEU-EQ"
+    250: "THNEU-EQ",
+    257: "E+E-GAMM",
+    258: "ANNIHRST",
+    259: "DPA-NRT"
 }
+
+def trim_scientific(number: float, precision: int = 5) -> str:
+    if not isinstance(number, float):
+        return number
+    # Format with high precision to retain all digits
+    s = f"{number:.{precision}e}"
+    # Split into mantissa and exponent
+    mantissa, exponent = s.split('e')
+    # Remove trailing zeros and optional decimal point
+    mantissa = mantissa.rstrip('0').rstrip('.') if '.' in mantissa else mantissa
+    # Remove leading zeros in exponent
+    exponent = re.sub(r'([+-])0*(\d+)', r'\1\2', exponent)
+    return f"{mantissa}e{exponent}"
+
+def line(card,w1="",w2="",w3="",w4="",w5="",w6="",sdum="", f=sys.stdout):
+    if w1 == "-":
+        w1 = ""
+    if w2 == "-":
+        w2 = ""
+    if w3 == "-":
+        w3 = ""
+    if w4 == "-":
+        w4 = ""
+    if w5 == "-":
+        w5 = ""
+    if w6 == "-":
+        w6 = ""
+    if sdum == "-":
+        sdum = ""
+    print(f"{card:10}{trim_scientific(w1):>10}{trim_scientific(w2):>10}{trim_scientific(w3):>10}{trim_scientific(w4):>10}{trim_scientific(w5):>10}{trim_scientific(w6):>10}{sdum:8}", file=f)
