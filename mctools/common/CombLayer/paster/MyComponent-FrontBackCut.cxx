@@ -214,18 +214,18 @@ MyComponent::createObjects(Simulation& System)
   ELog::RegMethod RegA("MyComponent","createObjects");
 
   HeadRule HR;
-  const HeadRule frontStr(frontRule());
-  const HeadRule backStr(backRule());
+  const HeadRule front(frontRule());
+  const HeadRule back(backRule());
 
   HR=ModelSupport::getHeadRule(SMap,buildIndex," 1 -2 3 -4 5 -6 ");
   makeCell("MainCell",System,cellIndex++,mainMat,0.0,HR);
 
   HR=ModelSupport::getHeadRule(SMap,buildIndex,
 				 " 13 -14 15 -16 (-1:2:-3:4:-5:6) ");
-  makeCell("Wall",System,cellIndex++,wallMat,0.0,HR*frontStr*backStr);
+  makeCell("Wall",System,cellIndex++,wallMat,0.0,HR*front*back);
 
   HR=ModelSupport::getHeadRule(SMap,buildIndex," 13 -14 15 -16");
-  addOuterSurf(HR*frontStr*backStr);
+  addOuterSurf(HR*front*back);
 
   return;
 }
