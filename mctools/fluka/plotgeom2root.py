@@ -137,7 +137,7 @@ def main():
                         x = list(map(lambda y:y+X0, coord[1::2]))
                     elif plane=="xz":
                         x = list(map(lambda x:x+Z0, coord[::2]))
-                        y = list(map(lambda y:y+X0, coord[1::2]))
+                        y = list(map(lambda y:y+Z0, coord[1::2]))
                     elif plane=="yz":
                         x = list(map(lambda x:x+Y0, coord[::2]))
                         y = list(map(lambda y:y+Z0, coord[1::2]))

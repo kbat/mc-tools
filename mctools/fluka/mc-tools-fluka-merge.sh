@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env sh
 #
 # This is an auxiliary script for fluka2root.
 # It simplifies calling the FLUKA merge tools

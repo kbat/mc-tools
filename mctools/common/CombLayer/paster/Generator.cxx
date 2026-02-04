@@ -51,7 +51,7 @@ namespace setVariable
 
 MyComponentGenerator::MyComponentGenerator() :
   length(10.0),width(5.0),height(15.0),wallThick(1.0),
-  mainMat("Void"),wallMat("Stainless316L")
+  mainMat("Void"),wallMat("SteelUnknownGrade")
   /*!
     Constructor and defaults
   */
