@@ -13,14 +13,14 @@ from contextlib import redirect_stdout
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-def inp(projectile, material, energy, include):
+def inp(projectile, material, energy, include, f):
     """ Prints a single input file """
     print("TITLE")
     print("FLUKA cross section generator")
-    line("DEFAULTS",sdum="PRECISIO")
-    line("BEAM",w1=f"-{energy:.4f}",sdum=projectile)
-    line("BEAMPOS",w2="5.0e4",w5="1.0")
-    line("GEOBEGIN",sdum="COMBNAME")
+    line("DEFAULTS",sdum="PRECISIO",f=f)
+    line("BEAM",w1=f"-{energy:.4f}",sdum=projectile,f=f)
+    line("BEAMPOS",w2="5.0e4",w5="1.0",f=f)
+    line("GEOBEGIN",sdum="COMBNAME",f=f)
     print("""0    0          Sphere
 SPH sphere 0.0 0.0 0.0 1.0e-8
 END
@@ -29,7 +29,7 @@ Out        3  -sphere
 END
 GEOEND
 ASSIGNMA    BLCKHOLE       Out""")
-    line("ASSIGNMA",material,"Target")
+    line("ASSIGNMA",material,"Target",f=f)
 
     if include:
         with open(include) as f:
@@ -38,9 +38,9 @@ ASSIGNMA    BLCKHOLE       Out""")
                 if len(l)>0:
                     print(l)
 
-    line("RANDOMIZ", w1=1.0, w2=1.0)
-    line("START", w1=1.0)
-    line("STOP")
+    line("RANDOMIZ", w1=1.0, w2=1.0,f=f)
+    line("START", w1=1.0,f=f)
+    line("STOP",f=f)
 
 def generateInputs(args,tmp):
     """ Generate input files """
@@ -53,7 +53,7 @@ def generateInputs(args,tmp):
         fname = os.path.join(tmp,fname);
         with open(fname, "w") as f:
             with redirect_stdout(f):
-                inp(args.projectile, args.material, E, args.include)
+                inp(args.projectile, args.material, E, args.include,f)
 
 def run(tmp):
     assert which("parallel"), "GNU parallel is not installed"
