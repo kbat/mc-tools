@@ -171,7 +171,7 @@ MyComponent::createSurfaces()
       ModelSupport::buildPlane(SMap,buildIndex+1,Origin+Y*(wallThick),Y);
     } else
     {
-      ModelSupport::buildShiftedPlane(SMap, buildIndex+1,
+      ModelSupport::buildShiftedPlane(SMap, buildIndex+11,
 	      SMap.realPtr<Geometry::Plane>(getFrontRule().getPrimarySurface()),
 				      wallThick);
     }
@@ -184,7 +184,7 @@ MyComponent::createSurfaces()
       ModelSupport::buildPlane(SMap,buildIndex+2,Origin+Y*(length),Y);
     } else
     {
-      ModelSupport::buildShiftedPlane(SMap, buildIndex+2,
+      ModelSupport::buildShiftedPlane(SMap, buildIndex+12,
 	      SMap.realPtr<Geometry::Plane>(getBackRule().getPrimarySurface()),
 				      -wallThick);
     }
