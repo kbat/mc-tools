@@ -36,6 +36,48 @@
 (require 'font-lock)
 (require 'generic)
 
+(defconst fluka--field-width 10
+  "Width of one fixed FLUKA input field.")
+
+(defun fluka--make-keyword-table (keywords)
+  "Return a hash table containing KEYWORDS for fixed-column matching."
+  (let ((table (make-hash-table :test 'equal)))
+    (dolist (keyword keywords table)
+      (puthash keyword t table))))
+
+(defun fluka--fixed-column-matcher (keyword-table)
+  "Return a font-lock matcher for KEYWORD-TABLE.
+Matches tokens in 10-column fields on a single line."
+  (lambda (limit)
+    (catch 'found
+      (while (< (point) limit)
+        (let ((start (point))
+              (bol (line-beginning-position))
+              (eol (min (line-end-position) limit)))
+          (unless (or (>= start eol)
+                      (eq (char-after bol) ?*))
+            (let ((field-beg bol))
+              (while (< field-beg eol)
+                (let ((field-end (min (+ field-beg fluka--field-width) eol)))
+                  (let ((token-beg field-beg)
+                        (token-end field-end))
+                    (while (and (< token-beg token-end)
+                                (eq (char-syntax (char-after token-beg)) 32))
+                      (setq token-beg (1+ token-beg)))
+                    (while (and (> token-end token-beg)
+                                (eq (char-syntax (char-before token-end)) 32))
+                      (setq token-end (1- token-end)))
+                    (when (and (>= token-beg start)
+                               (< token-beg token-end)
+                               (gethash (buffer-substring-no-properties token-beg token-end)
+                                        keyword-table))
+                      (set-match-data (list token-beg token-end))
+                      (goto-char token-end)
+                      (throw 'found t)))
+                  (setq field-beg field-end)))))
+          (forward-line 1)))
+      nil)))
+
 (make-face 'font-lock-particle-face)
 (set-face-foreground 'font-lock-particle-face "yellow")
 
@@ -109,7 +151,7 @@
 	     (defaults
 	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (particles
-	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSAVLET" "DOSE" "DOSE-EQ" "DPA-SCO" "E+E-GAMM" "ELECTRON" "EM-ENRGY" "ENERGY" "HAD-CHAR" "HEAVYION" "HVY-IONS" "ISOTOPE"  "LGH-IONS" "MUONS" "MUON+" "MUON-" "NEUTRON" "OPTIPHOT" "PIONS\\+\\-" "POSITRON" "PHOTON" "PROTON" "ALPHA-D" "SQBETA-D"))
+	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSAVLET" "DOSE" "DOSE-EQ" "DPA-SCO" "E+E-GAMM" "ELECTRON" "EM-ENRGY" "ENERGY" "HAD-CHAR" "HEAVYION" "HVY-IONS" "ISOTOPE"  "LGH-IONS" "MUONS" "MUON+" "MUON-" "NEUTRON" "OPTIPHOT" "PIONS+-" "POSITRON" "PHOTON" "PROTON" "ALPHA-D" "SQBETA-D"))
 	     (fluence2dose
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
 	      "ERTMP" "EWTMP"))
@@ -128,38 +170,45 @@
 	      '("END" "GEOBEGIN" "GEOEND" "START" "STOP"))
 
             ;; generate regex string for each category of keywords
-            (keywords-regexp (regexp-opt keywords 'words))
+            (keywords-matcher (fluka--fixed-column-matcher
+                               (fluka--make-keyword-table keywords)))
             (surfaces-regexp (regexp-opt surfaces 'words))
-            (tallies-regexp (regexp-opt tallies 'words))
-            (materials-regexp (regexp-opt materials 'words))
-	    ;; (particles-regexp (regexp-opt particles 'words))
-            ;; * (particles-regexp (concat (regexp-opt (delete "PIONS+-" particles) 'words)
-            ;; *                           "\\|PIONS\\+\\-"))
-            ;; * (particles-regexp (concat (regexp-opt particles 'words)
-            ;; *                           "\\|PIONS\\+\\-"))
-            (fluence2dose-regexp (regexp-opt fluence2dose 'words))
-            (defaults-regexp (regexp-opt defaults 'words))
-            (preprocessor-regexp (regexp-opt preprocessor 'words))
-            (last-regexp (regexp-opt last 'words))
-            (orig-regexp (regexp-opt orig 'words))
-            (cern-regexp (regexp-opt cern 'words))
-            (startstop-regexp (regexp-opt startstop 'words))
+            (tallies-matcher (fluka--fixed-column-matcher
+                              (fluka--make-keyword-table tallies)))
+            (materials-matcher (fluka--fixed-column-matcher
+                                (fluka--make-keyword-table materials)))
+            (particles-matcher (fluka--fixed-column-matcher
+                                (fluka--make-keyword-table particles)))
+            (fluence2dose-matcher (fluka--fixed-column-matcher
+                                   (fluka--make-keyword-table fluence2dose)))
+            (defaults-matcher (fluka--fixed-column-matcher
+                               (fluka--make-keyword-table defaults)))
+            (preprocessor-matcher (fluka--fixed-column-matcher
+                                   (fluka--make-keyword-table preprocessor)))
+            (last-matcher (fluka--fixed-column-matcher
+                           (fluka--make-keyword-table last)))
+            (orig-matcher (fluka--fixed-column-matcher
+                           (fluka--make-keyword-table orig)))
+            (cern-matcher (fluka--fixed-column-matcher
+                           (fluka--make-keyword-table cern)))
+            (startstop-matcher (fluka--fixed-column-matcher
+                                (fluka--make-keyword-table startstop)))
 	    )
 
         `(
 	  ("^\\*.*" . 'font-lock-comment-face)
-          (,keywords-regexp . 'font-lock-keyword-face)
+          (,keywords-matcher 0 'font-lock-keyword-face)
           (,surfaces-regexp . 'font-lock-surface-face)
-          (,tallies-regexp . 'font-lock-tally-face)
-          (,materials-regexp . 'font-lock-material-face)
-          (,particles-regexp . 'font-lock-particle-face)
-          (,fluence2dose-regexp . 'font-lock-fluence2dose-face)
-          (,defaults-regexp . 'font-lock-defaults-face)
-          (,preprocessor-regexp . 'font-lock-preprocessor-face)
-          (,last-regexp . 'font-lock-last-face)
-          (,orig-regexp . 'font-lock-orig-face)
-          (,cern-regexp . 'font-lock-cern-face)
-          (,startstop-regexp . 'font-lock-startstop-face)
+          (,tallies-matcher 0 'font-lock-tally-face)
+          (,materials-matcher 0 'font-lock-material-face)
+          (,particles-matcher 0 'font-lock-particle-face)
+          (,fluence2dose-matcher 0 'font-lock-fluence2dose-face)
+          (,defaults-matcher 0 'font-lock-defaults-face)
+          (,preprocessor-matcher 0 'font-lock-preprocessor-face)
+          (,last-matcher 0 'font-lock-last-face)
+          (,orig-matcher 0 'font-lock-orig-face)
+          (,cern-matcher 0 'font-lock-cern-face)
+          (,startstop-matcher 0 'font-lock-startstop-face)
           ;; note: order above matters, because once colored, that part won't change.
           ;; in general, put longer words first
           )))
@@ -312,18 +361,9 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
 
   ;; FLUKA input uses `*` at the start of a line for comments.
   (setq-local comment-start "*")
-  ;; (setq-local comment-start-skip "^\\*\\s-*")
-  (setq-local comment-start-skip "^\\s-*\\*+\\s-*")
+  (setq-local comment-start-skip "^\\*\\s-*")
   (setq-local comment-end "")
-  ;; (setq-local comment-use-syntax nil)
-  ;; (setq-local syntax-propertize-function
-  ;;             (syntax-propertize-rules
-  ;;              ("^\\(\\*\\)" (1 "<"))))
-  (setq-local comment-use-syntax t)
-  (let ((st (make-syntax-table)))
-    (set-syntax-table st)
-    (modify-syntax-entry ?* "<" st)
-    (modify-syntax-entry ?\n ">" st))
+  (setq-local comment-use-syntax nil)
 
 
   ;; code for syntax highlighting
