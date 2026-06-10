@@ -143,7 +143,7 @@
 	    )
 
         `(
-	  ("^*.*" . 'font-lock-comment-face)
+	  ("^\\*.*" . 'font-lock-comment-face)
           (,keywords-regexp . 'font-lock-keyword-face)
           (,surfaces-regexp . 'font-lock-surface-face)
           (,tallies-regexp . 'font-lock-tally-face)
@@ -305,6 +305,16 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
 ;;;###autoload
 (define-derived-mode fluka-mode fundamental-mode "FLUKA mode"
   "Major mode for editing FLUKA input files"
+
+  ;; FLUKA input uses `*` at the start of a line for comments.
+  (setq-local comment-start "*")
+  (setq-local comment-start-skip "^\\s-*\\*+\\s-*")
+  (setq-local comment-end "")
+  (setq-local comment-use-syntax t)
+  (let ((st (make-syntax-table)))
+    (set-syntax-table st)
+    (modify-syntax-entry ?* "<" st)
+    (modify-syntax-entry ?\n ">" st))
 
   ;; code for syntax highlighting
   (setq font-lock-defaults '((fluka-font-lock-keywords))))
