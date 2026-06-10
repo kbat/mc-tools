@@ -109,7 +109,7 @@
 	     (defaults
 	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (particles
-	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSAVLET" "DOSE" "DOSE-EQ" "DPA-SCO" "E+E-GAMM" "ELECTRON" "EM-ENRGY" "ENERGY" "HAD-CHAR" "HEAVYION" "HVY-IONS" "ISOTOPE"  "LGH-IONS" "MUONS" "MUON+" "MUON-" "NEUTRON" "OPTIPHOT" "POSITRON" "PIONS" "PHOTON" "PROTON" "ALPHA-D" "SQBETA-D"))
+	      '("4-HELIUM" "ALL-PART" "ANNIHRST" "BEAMPART" "DOSAVLET" "DOSE" "DOSE-EQ" "DPA-SCO" "E+E-GAMM" "ELECTRON" "EM-ENRGY" "ENERGY" "HAD-CHAR" "HEAVYION" "HVY-IONS" "ISOTOPE"  "LGH-IONS" "MUONS" "MUON+" "MUON-" "NEUTRON" "OPTIPHOT" "PIONS\\+\\-" "POSITRON" "PHOTON" "PROTON" "ALPHA-D" "SQBETA-D"))
 	     (fluence2dose
 	      '("AMB74" "AMBDS" "AMBGS" "EAP116" "EAP74" "EIS116" "EPA116" "ERT74" "EWT74" "EAPMP"
 	      "ERTMP" "EWTMP"))
@@ -132,7 +132,11 @@
             (surfaces-regexp (regexp-opt surfaces 'words))
             (tallies-regexp (regexp-opt tallies 'words))
             (materials-regexp (regexp-opt materials 'words))
-            (particles-regexp (regexp-opt particles 'words))
+	    ;; (particles-regexp (regexp-opt particles 'words))
+            ;; * (particles-regexp (concat (regexp-opt (delete "PIONS+-" particles) 'words)
+            ;; *                           "\\|PIONS\\+\\-"))
+            ;; * (particles-regexp (concat (regexp-opt particles 'words)
+            ;; *                           "\\|PIONS\\+\\-"))
             (fluence2dose-regexp (regexp-opt fluence2dose 'words))
             (defaults-regexp (regexp-opt defaults 'words))
             (preprocessor-regexp (regexp-opt preprocessor 'words))
@@ -315,6 +319,7 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
     (set-syntax-table st)
     (modify-syntax-entry ?* "<" st)
     (modify-syntax-entry ?\n ">" st))
+
 
   ;; code for syntax highlighting
   (setq font-lock-defaults '((fluka-font-lock-keywords))))
