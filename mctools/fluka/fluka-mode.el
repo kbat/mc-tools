@@ -312,8 +312,13 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
 
   ;; FLUKA input uses `*` at the start of a line for comments.
   (setq-local comment-start "*")
+  ;; (setq-local comment-start-skip "^\\*\\s-*")
   (setq-local comment-start-skip "^\\s-*\\*+\\s-*")
   (setq-local comment-end "")
+  ;; (setq-local comment-use-syntax nil)
+  ;; (setq-local syntax-propertize-function
+  ;;             (syntax-propertize-rules
+  ;;              ("^\\(\\*\\)" (1 "<"))))
   (setq-local comment-use-syntax t)
   (let ((st (make-syntax-table)))
     (set-syntax-table st)
