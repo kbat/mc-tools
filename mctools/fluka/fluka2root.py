@@ -452,6 +452,7 @@ def main():
     parser.add_argument('-keep', '--keep-files', action='store_true', default=False, dest='keep', help='do not delete temporary files')
     parser.add_argument('-clean', action='store_true', default=False, dest='clean', help='remove FLUKA-generated data files')
     parser.add_argument('-j', default=0, dest='njobs', type=int, help='Run n jobs in parallel (valid only if the GNU parallel script is available)')
+    parser.add_argument('-userdump2root', type=str, default=None, help='path to the custom userdump2root converter (since USERDUMP output is managed by the user). The converter should have two arguments: binary userdump file name produced by FLUKA and the corresponding output ROOT file.')
 
     args = parser.parse_args()
 

@@ -9,7 +9,7 @@ rantest004:
 run: rantest004
 
 test.root:
-	fluka2root -f -keep test.inp
+	fluka2root -f -keep -userdump2root /home/kbat/figs/TOMOWISE/sdef/hamed2spectrum.py test.inp
 
 test.53.txt:
 	(echo test.53.usrbin; echo -n ""; echo test.53.txt)| $(FLUPRO)/flutil/usbrea
