@@ -10,6 +10,22 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 _format="%.3E"
 
+def write_userdump_converter(script_path):
+    script_path.write_text("""#!/usr/bin/env python3
+import sys
+import ROOT
+
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+fout = sys.argv[2]
+root_file = ROOT.TFile(fout, "recreate")
+h = ROOT.TH1F("userdump", "userdump", 1, 0.0, 1.0)
+h.Fill(0.5)
+h.Write()
+root_file.Close()
+""")
+    script_path.chmod(0o755)
+
 def test_root():
     """Test whether ROOT is installed and compiled with Python support
 
@@ -52,6 +68,48 @@ def test_fluka2root_rejects_mismatched_input_estimators(tmp_path):
     assert "estimator/unit layout differs" in result.stderr
     assert "test_mismatch.inp" in result.stderr
 
+def test_fluka2root_warns_when_userdump_converter_is_missing(tmp_path):
+    (tmp_path / "userdump.inp").write_text("""TITLE
+userdump only
+USERDUMP       100.0                -1.0                              dump
+START         1.0
+STOP
+""")
+
+    result = run_fluka2root_validation(tmp_path, "userdump.inp")
+
+    assert result.returncode == 3
+    assert "USERDUMP cards found but -userdump2root was not provided" in result.stderr
+
+def test_fluka2root_userdump_roundtrip_and_clean(tmp_path):
+    (tmp_path / "userdump.inp").write_text("""TITLE
+userdump only
+USERDUMP       100.0                -1.0                              dump
+START         1.0
+STOP
+""")
+    for cycle in ("001", "002"):
+        (tmp_path / f"userdump{cycle}_dump").write_bytes(b"dump")
+
+    converter = tmp_path / "userdump2root.py"
+    write_userdump_converter(converter)
+
+    script = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../mctools/fluka/fluka2root.py"))
+    result = subprocess.run([script, "-clean", "-userdump2root", str(converter), "userdump.inp"],
+                            cwd=tmp_path,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True)
+
+    assert result.returncode == 0
+    assert (tmp_path / "userdump.root").is_file()
+    assert (tmp_path / "userdump001_dump").is_file()
+    assert (tmp_path / "userdump002_dump").is_file()
+
+    rootf = ROOT.TFile(str(tmp_path / "userdump.root"))
+    assert rootf.Get("userdump")
+    rootf.Close()
+
 def fluka2root(inp):
     """Run fluka2root converter with the given file
 
@@ -67,7 +125,8 @@ def fluka2root(inp):
     val = os.system(cmd)
     assert val == 0
 
-    cmd = "fluka2root " + inp
+    script = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../mctools/fluka/fluka2root.py"))
+    cmd = script + " " + inp
     val = os.system(cmd)
     assert val == 0
 
@@ -415,6 +474,7 @@ def main():
     usrbin(rootfname, "Edeposit", "test.54.txt")
     usrbin(rootfname, "piFluBin", "test.53.txt")
     resnuclei(rootfname, "resnuc", "test.55_tab.lis")
+    userdump(rootfname)
 
 
     # rootfname = "SpecF1.root"
@@ -433,6 +493,15 @@ def main():
     # usrbdx(rootfname, "surf32", "SpecF1.32_tab.lis")
     # usrbdx(rootfname, "surf30", "SpecF1.30_tab.lis")
     # usrtrack(rootfname, "cell35", "SpecF1.35_tab.lis")
+
+def userdump(rootfname):
+    """Test USERDUMP output in the combined ROOT file.
+
+    """
+    rootf = ROOT.TFile(rootfname)
+    h = rootf.Get("userdump")
+    assert h, f"userdump not found in {rootfname}"
+    rootf.Close()
 
 if __name__ == "__main__":
     sys.exit(main())

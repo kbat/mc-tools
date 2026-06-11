@@ -47,6 +47,14 @@ class Estimator:
     def __str__(self):
         return self.name+" "+self.converter+" "+str(self.units)
 
+class Userdump:
+    def __init__(self, suffix):
+        self.suffix = suffix
+        self.files = []  # raw FLUKA dump files
+
+    def addFile(self, f):
+        self.files.append(f)
+
 ESTIMATORS = (("USRBDX",   "usxsuw"),
               ("USRBIN",   "usbsuw"),
               ("USRCOLL",  "ustsuw"),
@@ -63,8 +71,13 @@ class Converter:
         self.keep       = args.keep
         self.clean      = args.clean
         self.parallel   = which("parallel") is not None
+        self.hadd       = which("hadd")
         self.njobs      = args.njobs
         self.estimators = [Estimator(name, converter) for name, converter in ESTIMATORS]
+        self.userdump2root = args.userdump2root
+        self.userdump_suffixes = []
+        self.userdump = {}
+        self.userdump_enabled = False
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
@@ -82,6 +95,7 @@ class Converter:
 
         self.assignUnits()
         self.assignFileNames()
+        self.assignUserdumpFiles()
         self.validateDataFiles()
         self.validateExecutables()
 
@@ -191,6 +205,20 @@ class Converter:
 
         return opened
 
+    def getUserdumpSuffixesForInput(self, input_file):
+        """Return the USERDUMP suffixes declared in one input file."""
+        suffixes = []
+        with open(input_file, "r") as inp:
+            for line in inp.readlines():
+                if re.search(r"\AUSERDUMP", line):
+                    fields = line.split()
+                    if len(fields) < 2:
+                        sys.exit("Malformed USERDUMP card in %s" % input_file)
+                    suffix = fields[-1]
+                    if suffix not in suffixes:
+                        suffixes.append(suffix)
+        return suffixes
+
     def createEstimators(self):
         return [Estimator(name, converter) for name, converter in ESTIMATORS]
 
@@ -263,9 +291,45 @@ class Converter:
                         if f not in e.units[u]: # TODO: why do we need this check?
                             e.addFile(u,f)
 
+    def assignUserdumpFiles(self):
+        """Assign file names to USERDUMP suffixes."""
+        if self.verbose:
+            print("Assigning file names to USERDUMP cards...")
+
+        reference = self.getUserdumpSuffixesForInput(self.inp[0])
+        for input_file in self.inp[1:]:
+            current = self.getUserdumpSuffixesForInput(input_file)
+            if sorted(current) != sorted(reference):
+                print("Error: USERDUMP layout differs between input files.", file=sys.stderr)
+                print("%s: %s" % (self.inp[0], reference), file=sys.stderr)
+                print("%s: %s" % (input_file, current), file=sys.stderr)
+                sys.exit(4)
+
+        self.userdump_suffixes = reference
+        self.userdump = {suffix: Userdump(suffix) for suffix in self.userdump_suffixes}
+
+        if len(self.userdump_suffixes) and not self.userdump2root:
+            print("Warning: USERDUMP cards found but -userdump2root was not provided; USERDUMP output will be skipped.", file=sys.stderr)
+            return
+
+        if not len(self.userdump_suffixes):
+            return
+
+        self.userdump_enabled = True
+        for e in self.userdump.values():
+            e.files = []
+
+        for inp in self.inp:
+            prefix = os.path.splitext(inp)[0]
+            for suffix in self.userdump_suffixes:
+                pattern = "%s[0-9][0-9][0-9]_%s" % (prefix, glob.escape(suffix))
+                for f in sorted(glob.glob(pattern)):
+                    self.userdump[suffix].addFile(f)
+
     def validateExecutables(self):
         missing = []
-        if which("mc-tools-fluka-merge") is None:
+        has_standard_units = any(len(e.units) for e in self.estimators)
+        if has_standard_units and which("mc-tools-fluka-merge") is None:
             missing.append("mc-tools-fluka-merge")
 
         if "FLUPRO" not in os.environ:
@@ -277,14 +341,15 @@ class Converter:
                 if not os.path.isfile(merge_tool):
                     missing.append(merge_tool)
 
-        if which("hadd") is None:
-            missing.append("hadd")
-
         for converter in sorted(set(e.converter for e in self.estimators if len(e.units))):
             if which(converter + "2root") is None:
                 missing.append(converter + "2root")
 
-        if self.parallel and which("parallel") is None:
+        if self.userdump_enabled:
+            if not os.path.isfile(self.userdump2root) or not os.access(self.userdump2root, os.X_OK):
+                missing.append(self.userdump2root)
+
+        if has_standard_units and self.parallel and which("parallel") is None:
             missing.append("parallel")
 
         if missing:
@@ -301,20 +366,48 @@ class Converter:
                 has_units = True
                 if not e.units[u]:
                     missing.append("%s unit %d" % (e.name, u))
-        if not has_units:
-            print("fluka2root: no datafiles found -> exit")
-            print("            Have you defined any estimators?")
-            sys.exit(3)
+
+        if self.userdump_enabled:
+            for suffix, userdump in self.userdump.items():
+                if not userdump.files:
+                    missing.append("USERDUMP suffix %s" % suffix)
+
         if missing:
             print("Error: no FLUKA binary files found for:", file=sys.stderr)
             for item in missing:
                 print("  %s" % item, file=sys.stderr)
             sys.exit(6)
 
+        if not has_units and not self.userdump_enabled:
+            print("fluka2root: no datafiles found -> exit")
+            print("            Have you defined any estimators?")
+            sys.exit(3)
+
     def runCommand(self, args, stdout=None):
         if self.verbose:
             printincolor(" ".join(args))
         return subprocess.run(args, stdout=stdout).returncode
+
+    def mergeRootFiles(self, rootfiles):
+        """Merge ROOT files into the final output file."""
+        if self.hadd is not None:
+            f = "-f" if self.overwrite else ""
+            command = ["hadd"]
+            if f:
+                command.append(f)
+            command += [self.root] + rootfiles
+            stdout = None if self.verbose else subprocess.DEVNULL
+            return self.runCommand(command, stdout=stdout)
+
+        if self.verbose:
+            print("hadd not available, using ROOT.TFileMerger")
+
+        import ROOT
+        merger = ROOT.TFileMerger()
+        merger.OutputFile(self.root, "RECREATE" if self.overwrite else "CREATE")
+        for f in rootfiles:
+            merger.AddFile(f)
+        return 0 if merger.Merge() else 1
 
     def Merge(self):
         """ Merge all data with standard FLUKA tools
@@ -344,21 +437,22 @@ class Converter:
 
                         tmpfiles.append(tmpfile.name)
 
-            stdout = None if self.verbose else subprocess.DEVNULL
-            if self.parallel:
-                command = ["parallel"]
-                if self.njobs > 0:
-                    command += ["-j", str(self.njobs)]
-                command += ["--max-args=1", "mc-tools-fluka-merge", ":::"]
-                command += tmpfiles
-                return_value = self.runCommand(command, stdout=stdout)
-                if return_value:
-                    sys.exit(2)
-            else:
-                for f in tmpfiles:
-                    return_value = self.runCommand(["mc-tools-fluka-merge", f], stdout=stdout)
+            if tmpfiles:
+                stdout = None if self.verbose else subprocess.DEVNULL
+                if self.parallel:
+                    command = ["parallel"]
+                    if self.njobs > 0:
+                        command += ["-j", str(self.njobs)]
+                    command += ["--max-args=1", "mc-tools-fluka-merge", ":::"]
+                    command += tmpfiles
+                    return_value = self.runCommand(command, stdout=stdout)
                     if return_value:
-                        sys.exit("Could not merge an estimator")
+                        sys.exit(2)
+                else:
+                    for f in tmpfiles:
+                        return_value = self.runCommand(["mc-tools-fluka-merge", f], stdout=stdout)
+                        if return_value:
+                            sys.exit("Could not merge an estimator")
         finally:
             if not self.keep:
                 for f in tmpfiles:
@@ -409,7 +503,17 @@ class Converter:
                         sys.exit(2)
             self.datafiles.append(datafiles)
 
-        if len(self.datafiles) == 0:
+        if self.userdump_enabled:
+            for suffix, userdump in self.userdump.items():
+                for dumpfile in userdump.files:
+                    rootfile = dumpfile + ".root"
+                    self.out_root_files.append(rootfile)
+                    command = [self.userdump2root, dumpfile, rootfile]
+                    return_value = self.runCommand(command)
+                    if return_value:
+                        sys.exit(2)
+
+        if len(self.out_root_files) == 0:
             print("fluka2root: no datafiles found -> exit")
             print("            Have you defined any estimators?")
             sys.exit(3)
@@ -418,13 +522,7 @@ class Converter:
             print("ROOT files produced: ", self.out_root_files)
 
 
-        f = "-f" if self.overwrite else ""
-        command = ["hadd"]
-        if f:
-            command.append(f)
-        command += [self.root] + self.out_root_files
-        stdout = None if self.verbose else subprocess.DEVNULL
-        return_value = self.runCommand(command, stdout=stdout)
+        return_value = self.mergeRootFiles(self.out_root_files)
         if return_value == 0 and not self.keep:
             for f in self.out_root_files + [item for sublist in self.datafiles for item in sublist]:
                 if os.path.exists(f):
