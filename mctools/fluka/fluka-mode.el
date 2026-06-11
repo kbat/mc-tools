@@ -259,8 +259,18 @@ Matches tokens in 10-column fields on a single line."
 
 (defun fluka--make-column-marker-overlay (beg end face)
   "Highlight BEG to END with FACE and remember the overlay."
-  (let ((overlay (make-overlay beg end nil t nil)))
+  (let ((overlay (make-overlay beg end nil nil nil)))
     (overlay-put overlay 'face face)
+    (overlay-put overlay 'priority -100)
+    (push overlay fluka--column-marker-overlays)
+    overlay))
+
+(defun fluka--make-column-separator-overlay (pos)
+  "Display the character at POS with the FLUKA separator face."
+  (let ((overlay (make-overlay pos (1+ pos) nil nil nil)))
+    (overlay-put overlay 'display
+                 (propertize (char-to-string (char-after pos))
+                             'face column-marker-1-face))
     (push overlay fluka--column-marker-overlays)
     overlay))
 
@@ -275,7 +285,7 @@ Matches tokens in 10-column fields on a single line."
 (defun fluka--line-overflows-column-80-p (eol)
   "Return non-nil if the current line has non-space text at column 80 or later."
   (save-excursion
-    (move-to-column 80)
+    (move-to-column 79)
     (and (< (point) eol)
          (not (string-match-p "\\`[[:space:]]*\\'"
                               (buffer-substring-no-properties (point) eol))))))
@@ -291,6 +301,8 @@ Matches tokens in 10-column fields on a single line."
                 (concat string
                         (make-string (max padding 0) ?\s)
                         (propertize " " 'face column-marker-1-face))))))
+    (when (> (length string) 0)
+      (put-text-property 0 1 'cursor t string))
     string))
 
 (defun fluka--add-line-column-markers ()
@@ -299,7 +311,7 @@ Matches tokens in 10-column fields on a single line."
     (dolist (column fluka--column-marker-columns)
       (let ((pos (fluka--column-marker-position column eol)))
         (when (and pos (< pos eol))
-          (fluka--make-column-marker-overlay pos (1+ pos) column-marker-1-face))))
+          (fluka--make-column-separator-overlay pos))))
     (let ((end-column (save-excursion
                         (goto-char eol)
                         (current-column))))
@@ -311,7 +323,7 @@ Matches tokens in 10-column fields on a single line."
               (push overlay fluka--column-marker-overlays))))))
     (when (fluka--line-overflows-column-80-p eol)
       (save-excursion
-        (move-to-column 80)
+        (move-to-column 79)
         (when (< (point) eol)
           (fluka--make-column-marker-overlay
            (point) eol column-marker-last-face))))))
