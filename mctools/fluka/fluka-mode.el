@@ -231,10 +231,6 @@ Matches tokens in 10-column fields on a single line."
 
 
 ;;; Vertical lines to separate WHATs
-;;; Currently, a copy of https://www.emacswiki.org/emacs/column-marker.el
-;;; to avoid depending on additional external file, but the intention is to simplify it
-;;; as much as possible and better adapt for the FLUKA syntax
-;;; (for example, avoid separators in the comment lines).
 
 (defface column-marker-1 '((t (:background "#252525"))) ; my background is #303030
   "Face used for WHAT separators.  Usually close to the background color."
@@ -250,109 +246,92 @@ Matches tokens in 10-column fields on a single line."
 (defvar column-marker-last-face 'column-marker-last
     "Face used for the last column")
 
-(defvar column-marker-vars ()
-  "List of all internal column-marker variables")
-(make-variable-buffer-local 'column-marker-vars) ; Buffer local in all buffers.
+(defconst fluka--column-marker-columns '(10 20 30 40 50 60 70)
+  "One-based columns where FLUKA WHAT separators are displayed.")
 
-(defmacro column-marker-create (var &optional face)
-  "Define a column marker named VAR.
-FACE is the face to use.  If nil, then face `column-marker-1' is used."
-  (setq face (or face 'column-marker-1))
-  `(progn
-     ;; define context variable ,VAR so marker can be removed if desired
-     (defvar ,var ()
-       "Buffer local. Used internally to store column marker spec.")
-     ;; context must be buffer local since font-lock is
-     (make-variable-buffer-local ',var)
-     ;; Define wrapper function named ,VAR to call `column-marker-internal'
-     (defun ,var (arg)
-       ,(concat "Highlight column with face `" (symbol-name face)
-                "'.\nWith no prefix argument, highlight current column.\n"
-                "With non-negative numeric prefix arg, highlight that column number.\n"
-                "With plain `C-u' (no number), turn off this column marker.\n"
-                "With `C-u C-u' or negative prefix arg, turn off all column-marker highlighting.")
-       (interactive "P")
-       (unless (memq ',var column-marker-vars) (push ',var column-marker-vars))
-       (cond ((null arg)          ; Default: highlight current column.
-              (column-marker-internal ',var (1+ (current-column)) ,face))
-             ((consp arg)
-              (if (= 4 (car arg))
-                  (column-marker-internal ',var nil) ; `C-u': Remove this column highlighting.
-                (dolist (var column-marker-vars)
-                  (column-marker-internal var nil)))) ; `C-u C-u': Remove all column highlighting.
-             ((and (integerp arg) (>= arg 0)) ; `C-u 70': Highlight that column.
-              (column-marker-internal ',var (1+ (prefix-numeric-value arg)) ,face))
-             (t           ; `C-u -40': Remove all column highlighting.
-              (dolist (var column-marker-vars)
-                (column-marker-internal var nil)))))))
+(defvar-local fluka--column-marker-overlays nil
+  "Overlays used to display FLUKA column markers in the current buffer.")
 
-(defun column-marker-find (col)
-  "Defines a function to locate a character in column COL.
-Returns the function symbol, named `column-marker-move-to-COL'."
-  (let ((fn-symb  (intern (format "column-marker-move-to-%d" col))))
-    (fset `,fn-symb
-          `(lambda (end)
-             (let ((start (point)))
-               (when (> end (point-max)) (setq end (point-max)))
+(defun fluka--delete-column-marker-overlays ()
+  "Delete all FLUKA column marker overlays in the current buffer."
+  (mapc #'delete-overlay fluka--column-marker-overlays)
+  (setq fluka--column-marker-overlays nil))
 
-               ;; Try to keep `move-to-column' from going backward, though it still can.
-               (unless (< (current-column) ,col) (forward-line 1))
+(defun fluka--make-column-marker-overlay (beg end face)
+  "Highlight BEG to END with FACE and remember the overlay."
+  (let ((overlay (make-overlay beg end nil t nil)))
+    (overlay-put overlay 'face face)
+    (push overlay fluka--column-marker-overlays)
+    overlay))
 
-               ;; Again, don't go backward.  Try to move to correct column.
-               (when (< (current-column) ,col) (move-to-column ,col))
+(defun fluka--column-marker-position (column eol)
+  "Return the buffer position for one-based COLUMN, or nil past EOL."
+  (save-excursion
+    (move-to-column (1- column))
+    (and (<= (point) eol)
+         (= (current-column) (1- column))
+         (point))))
 
-               ;; If not at target column, try to move to it.
-               (while (and (< (current-column) ,col) (< (point) end)
-                           (= 0 (+ (forward-line 1) (current-column)))) ; Should be bol.
-                 (move-to-column ,col))
+(defun fluka--line-overflows-column-80-p (eol)
+  "Return non-nil if the current line has non-space text at column 80 or later."
+  (save-excursion
+    (move-to-column 80)
+    (and (< (point) eol)
+         (not (string-match-p "\\`[[:space:]]*\\'"
+                              (buffer-substring-no-properties (point) eol))))))
 
-               ;; If at target column, not past end, and not prior to start,
-               ;; then set match data and return t.  Otherwise go to start
-               ;; and return nil.
-               (if (and (= ,col (current-column)) (<= (point) end) (> (point) start))
-                   (progn (set-match-data (list (1- (point)) (point)))
-                          t)            ; Return t.
-                 (goto-char start)
-                 nil))))                ; Return nil.
-    fn-symb))
+(defun fluka--virtual-column-markers (end-column)
+  "Return an after-string for separators past END-COLUMN."
+  (let ((string ""))
+    (dolist (column fluka--column-marker-columns)
+      (when (> column end-column)
+        (let* ((target-column (1- column))
+               (padding (- target-column end-column (length string))))
+          (setq string
+                (concat string
+                        (make-string (max padding 0) ?\s)
+                        (propertize " " 'face column-marker-1-face))))))
+    string))
 
-(defun column-marker-internal (sym col &optional face)
-  "SYM is the symbol for holding the column marker context.
-COL is the column in which a marker should be set.
-Supplying nil or 0 for COL turns off the marker.
-FACE is the face to use.  If nil, then face `column-marker-1' is used."
-  (setq face (or face 'column-marker-1))
-  (when (symbol-value sym)   ; Remove any previously set column marker
-    (font-lock-remove-keywords nil (symbol-value sym))
-    (set sym nil))
-  (when (or (listp col) (< col 0)) (setq col nil)) ; Allow nonsense stuff to turn off the marker
-  (when col                             ; Generate a new column marker
-    (set sym `((,(column-marker-find col) (0 ',face prepend t))))
-    (font-lock-add-keywords nil (symbol-value sym) t))
-  (font-lock-fontify-buffer))
+(defun fluka--add-line-column-markers ()
+  "Add FLUKA column marker overlays for the current line."
+  (let ((eol (line-end-position)))
+    (dolist (column fluka--column-marker-columns)
+      (let ((pos (fluka--column-marker-position column eol)))
+        (when (and pos (< pos eol))
+          (fluka--make-column-marker-overlay pos (1+ pos) column-marker-1-face))))
+    (let ((end-column (save-excursion
+                        (goto-char eol)
+                        (current-column))))
+      (when (< end-column (car (last fluka--column-marker-columns)))
+        (let ((after-string (fluka--virtual-column-markers end-column)))
+          (unless (string= after-string "")
+            (let ((overlay (make-overlay eol eol nil t nil)))
+              (overlay-put overlay 'after-string after-string)
+              (push overlay fluka--column-marker-overlays))))))
+    (when (fluka--line-overflows-column-80-p eol)
+      (save-excursion
+        (move-to-column 80)
+        (when (< (point) eol)
+          (fluka--make-column-marker-overlay
+           (point) eol column-marker-last-face))))))
 
-;; If you need more markers you can create your own similarly.
-;; All markers can be in use at once, and each is buffer-local,
-;; so there is no good reason to define more unless you need more
-;; markers in a single buffer.
-(column-marker-create column-marker-1 column-marker-1-face)
-(column-marker-create column-marker-2 column-marker-1-face)
-(column-marker-create column-marker-3 column-marker-1-face)
-(column-marker-create column-marker-4 column-marker-1-face)
-(column-marker-create column-marker-5 column-marker-1-face)
-(column-marker-create column-marker-6 column-marker-1-face)
-(column-marker-create column-marker-7 column-marker-1-face)
-(column-marker-create column-marker-8 column-marker-last-face)
+(defun fluka-refresh-column-markers ()
+  "Refresh FLUKA column markers in the current buffer."
+  (interactive)
+  (fluka--delete-column-marker-overlays)
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (fluka--add-line-column-markers)
+      (forward-line 1))
+    (when (and (= (point) (point-max))
+               (bolp))
+      (fluka--add-line-column-markers))))
 
-;;(require 'column-marker)
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-1 10)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-2 20)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-3 30)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-4 40)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-5 50)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-6 60)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-7 70)))
-(add-hook 'fluka-mode-hook (lambda () (interactive) (column-marker-8 80)))
+(defun fluka--refresh-column-markers-after-change (&rest _args)
+  "Refresh FLUKA column markers after a buffer change."
+  (fluka-refresh-column-markers))
 
 
 ;;;###autoload
@@ -367,7 +346,11 @@ FACE is the face to use.  If nil, then face `column-marker-1' is used."
 
 
   ;; code for syntax highlighting
-  (setq font-lock-defaults '((fluka-font-lock-keywords))))
+  (setq font-lock-defaults '((fluka-font-lock-keywords)))
+
+  (add-hook 'after-change-functions
+            #'fluka--refresh-column-markers-after-change nil t)
+  (fluka-refresh-column-markers))
 
 ;; add the mode to the `features' list
 (provide 'fluka-mode)
