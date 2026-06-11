@@ -3,7 +3,7 @@
 # https://github.com/kbat/mc-tools
 #
 
-import re, sys
+import os, re, shutil, subprocess, sys, tempfile
 from mctools.fluka.usbrea2root import convert as usbrea2root
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -21,6 +21,36 @@ def test_import():
 
     """
     import mctools
+
+def run_fluka2root_validation(tmp_path, *inputs):
+    script = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../mctools/fluka/fluka2root.py"))
+    return subprocess.run([script, *inputs],
+                          cwd=tmp_path,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          text=True)
+
+def test_fluka2root_reports_missing_binary_files(tmp_path):
+    shutil.copyfile(os.path.join(os.path.dirname(__file__), "test.inp"), tmp_path / "test.inp")
+
+    result = run_fluka2root_validation(tmp_path, "test.inp")
+
+    assert result.returncode == 6
+    assert "no FLUKA binary files found" in result.stderr
+    assert "USRBDX unit -47" in result.stderr
+    assert "RESNUCLE unit -55" in result.stderr
+
+def test_fluka2root_rejects_mismatched_input_estimators(tmp_path):
+    with open(os.path.join(os.path.dirname(__file__), "test.inp")) as input_file:
+        source = input_file.read()
+    (tmp_path / "test.inp").write_text(source)
+    (tmp_path / "test_mismatch.inp").write_text(source.replace("-48.0       3.0", "-58.0       3.0", 1))
+
+    result = run_fluka2root_validation(tmp_path, "test.inp", "test_mismatch.inp")
+
+    assert result.returncode == 4
+    assert "estimator/unit layout differs" in result.stderr
+    assert "test_mismatch.inp" in result.stderr
 
 def fluka2root(inp):
     """Run fluka2root converter with the given file

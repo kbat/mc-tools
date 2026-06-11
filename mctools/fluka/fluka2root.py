@@ -3,7 +3,8 @@
 # alias fluka2root-dir="parallel 'cd {} && fluka2root *.inp' ::: *"
 
 import sys, re, os, argparse
-import glob, fnmatch
+import glob
+import subprocess
 from tempfile import NamedTemporaryFile
 from shutil import which
 
@@ -46,6 +47,14 @@ class Estimator:
     def __str__(self):
         return self.name+" "+self.converter+" "+str(self.units)
 
+ESTIMATORS = (("USRBDX",   "usxsuw"),
+              ("USRBIN",   "usbsuw"),
+              ("USRCOLL",  "ustsuw"),
+              ("USRTRACK", "ustsuw"),
+              ("DETECT",   "detsuw"),
+              ("USRYIELD", "usysuw"),
+              ("RESNUCLE", "usrsuw"))
+
 class Converter:
     def __init__(self, args):
         self.inp        = args.inp # all input files
@@ -54,14 +63,8 @@ class Converter:
         self.keep       = args.keep
         self.clean      = args.clean
         self.parallel   = which("parallel") is not None
-        self.njobs      = f" -j {args.njobs} " if args.njobs > 0 else " "
-        self.estimators = [Estimator("USRBDX",   "usxsuw"),
-                           Estimator("USRBIN",   "usbsuw"),
-                           Estimator("USRCOLL",  "ustsuw"),
-                           Estimator("USRTRACK", "ustsuw"),
-                           Estimator("DETECT",   "detsuw"),
-                           Estimator("USRYIELD", "usysuw"),
-                           Estimator("RESNUCLE", "usrsuw")]
+        self.njobs      = args.njobs
+        self.estimators = [Estimator(name, converter) for name, converter in ESTIMATORS]
         self.opened = {}         # dict of opened units (if any)
 
         self.out_root_files = [] # list of output ROOT files
@@ -79,6 +82,8 @@ class Converter:
 
         self.assignUnits()
         self.assignFileNames()
+        self.validateDataFiles()
+        self.validateExecutables()
 
         if self.verbose:
             print("input files:", self.inp)
@@ -87,25 +92,24 @@ class Converter:
     def Clean(self):
         if self.verbose:
             print("Cleaning tmp files...")
-        v = "-v" if self.verbose else ""
         for f in self.inp:
             n = "[0-9][0-9][0-9]"
             inp = os.path.splitext(f)[0]
             basename = inp + n
-            vec = []
-            vec.append("ran"+basename)
-            vec.append(basename + ".err")
-            vec.append(inp + ".error")
-            vec.append(inp + ".output")
-            vec.append(inp + ".slurm")
-            vec.append(basename + ".log")
-            vec.append(basename + ".out")
-            vec.append(basename + "_fort.*")
-            for c in vec:
-                command = "rm -f %s %s " % (v, c)
-                if self.verbose:
-                    printincolor(command)
-                os.system(command)
+            patterns = []
+            patterns.append("ran"+basename)
+            patterns.append(basename + ".err")
+            patterns.append(inp + ".error")
+            patterns.append(inp + ".output")
+            patterns.append(inp + ".slurm")
+            patterns.append(basename + ".log")
+            patterns.append(basename + ".out")
+            patterns.append(basename + "_fort.*")
+            for pattern in patterns:
+                for path in glob.glob(pattern):
+                    if self.verbose:
+                        printincolor("rm -f %s" % path)
+                    os.unlink(path)
 
     def getROOTFileName(self):
         """ Generate the output ROOT file name based on the input files """
@@ -130,11 +134,12 @@ class Converter:
                 print("Error: %s does not exist" % f, file=sys.stderr)
                 return 1
 
-        with open(self.inp[0]) as f:
-            for line in f.readlines():
-                if re.search(r"\AFREE", line):
-                    print("Error:\tFree-format input is not supported.", file=sys.stderr)
-                    return 2
+        for input_file in self.inp:
+            with open(input_file) as f:
+                for line in f.readlines():
+                    if re.search(r"\AFREE", line):
+                        print("Error:\tFree-format input is not supported in %s." % input_file, file=sys.stderr)
+                        return 2
 
         return 0
 
@@ -163,8 +168,10 @@ class Converter:
     def getOpenedUnits(self):
         """Get the list of opened (named) units
         """
+        return self.getOpenedUnitsForInput(self.inp[0])
 
-        inp = open(self.inp[0], "r")
+    def getOpenedUnitsForInput(self, input_file):
+        inp = open(input_file, "r")
         isname = False
         opened = {}
         for line in inp.readlines():
@@ -184,46 +191,63 @@ class Converter:
 
         return opened
 
+    def createEstimators(self):
+        return [Estimator(name, converter) for name, converter in ESTIMATORS]
+
+    def parseEstimators(self, input_file):
+        opened = self.getOpenedUnitsForInput(input_file)
+        if len(opened):
+            units = ", ".join("%s=%s" % (unit, name) for unit, name in opened.items())
+            sys.exit("Opened units not yet supported in %s: %s" % (input_file, units))
+
+        estimators = self.createEstimators()
+        with open(input_file, "r") as inp:
+            for line in inp.readlines():
+                for e in estimators:
+                    if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
+                        if re.search(r"\A%s" % e.name, line):
+                            unit = str2int(line[10:20].strip())
+                            if unit<0: # we are interested in binary files only
+                                if not unit in e.units:
+                                    e.addUnit(unit)
+                    elif e.name == "DETECT":
+                        if re.search(r"\A%s" % e.name, line):
+                            unit = 17
+                            if not unit in e.units:
+                                e.addUnit(unit)
+                    else:
+                        if re.search(r"\A%s" % e.name[:8], line) and not re.search(r"\&", line[70:80]):
+                            if e.name[:8] == "RESNUCLE":
+                                unit = line[20:30]
+                            else:
+                                unit = line[30:40]
+                            unit = str2int(unit.strip())
+                            name = line[70:80].strip()
+                            if unit<0: # we are interested in binary files only
+                                if not unit in e.units:
+                                    e.addUnit(unit)
+                            else:
+                                print("Warning: text output files are not supported", unit, name, file=sys.stderr)
+        return estimators
+
+    def estimatorMap(self, estimators):
+        return {e.name: sorted(e.units.keys()) for e in estimators if len(e.units)}
+
     def assignUnits(self):
         """Assigns units to estimators
         """
         if self.verbose:
             print("Assigning units to estimators...")
 
-        self.opened = self.getOpenedUnits()
-        if len(self.opened):
-            sys.exit("Opened units not yet supported")
-
-        inp = open(self.inp[0], "r")
-        for line in inp.readlines():
-            for e in self.estimators:
-                if e.name == "EVENTDAT": # EVENTDAT card has a different format than the other estimators
-                    if re.search(r"\A%s" % e.name, line):
-                        unit = str2int(line[10:20].strip())
-                        name = "" #line[0:10].strip() # actually, name for EVENTDAT does not matter - the Tree name will be used
-                        if unit<0: # we are interested in binary files only
-                            if not unit in self.estimators[e]:
-                                self.estimators[e].addUnit("%s" % unit)
-                elif e.name == "DETECT":
-                    if re.search(r"\A%s" % e.name, line):
-                        unit = 17
-                        name = line[70:80].strip()
-                        if not unit in e.units:
-                            e.addUnit(unit)
-                else:
-                    if re.search(r"\A%s" % e.name[:8], line) and not re.search(r"\&", line[70:80]):
-                        if e.name[:8] == "RESNUCLE":
-                            unit = line[20:30]
-                        else:
-                            unit = line[30:40]
-                        unit = str2int(unit.strip())
-                        name = line[70:80].strip()
-                        if unit<0: # we are interested in binary files only
-                            if not unit in e.units:
-                                e.addUnit(unit)
-                        else:
-                            print("Warning: text output files are not supported", unit, name, file=sys.stderr)
-        inp.close()
+        self.estimators = self.parseEstimators(self.inp[0])
+        reference = self.estimatorMap(self.estimators)
+        for input_file in self.inp[1:]:
+            current = self.estimatorMap(self.parseEstimators(input_file))
+            if current != reference:
+                print("Error: estimator/unit layout differs between input files.", file=sys.stderr)
+                print("%s: %s" % (self.inp[0], reference), file=sys.stderr)
+                print("%s: %s" % (input_file, current), file=sys.stderr)
+                sys.exit(4)
 
     def assignFileNames(self):
         """Assign file names to units
@@ -231,15 +255,66 @@ class Converter:
         if self.verbose:
             print("Assigning file names to units...")
 
-        all_files = glob.glob("*[0-9][0-9][0-9]_fort.*")
-
         for e in self.estimators:
             for u in e.units:
                 for inp in self.inp:
                     pattern = "%s[0-9][0-9][0-9]_fort.%d" % (os.path.splitext(inp)[0], abs(u))
-                    for f in fnmatch.filter(all_files, pattern):
+                    for f in sorted(glob.glob(pattern)):
                         if f not in e.units[u]: # TODO: why do we need this check?
                             e.addFile(u,f)
+
+    def validateExecutables(self):
+        missing = []
+        if which("mc-tools-fluka-merge") is None:
+            missing.append("mc-tools-fluka-merge")
+
+        if "FLUPRO" not in os.environ:
+            missing.append("FLUPRO environment variable")
+        else:
+            converters = sorted(set(e.converter for e in self.estimators if len(e.units)))
+            for converter in converters:
+                merge_tool = os.path.join(os.environ["FLUPRO"], "flutil", converter)
+                if not os.path.isfile(merge_tool):
+                    missing.append(merge_tool)
+
+        if which("hadd") is None:
+            missing.append("hadd")
+
+        for converter in sorted(set(e.converter for e in self.estimators if len(e.units))):
+            if which(converter + "2root") is None:
+                missing.append(converter + "2root")
+
+        if self.parallel and which("parallel") is None:
+            missing.append("parallel")
+
+        if missing:
+            print("Error: missing required tools:", file=sys.stderr)
+            for item in missing:
+                print("  %s" % item, file=sys.stderr)
+            sys.exit(5)
+
+    def validateDataFiles(self):
+        missing = []
+        has_units = False
+        for e in self.estimators:
+            for u in e.units:
+                has_units = True
+                if not e.units[u]:
+                    missing.append("%s unit %d" % (e.name, u))
+        if not has_units:
+            print("fluka2root: no datafiles found -> exit")
+            print("            Have you defined any estimators?")
+            sys.exit(3)
+        if missing:
+            print("Error: no FLUKA binary files found for:", file=sys.stderr)
+            for item in missing:
+                print("  %s" % item, file=sys.stderr)
+            sys.exit(6)
+
+    def runCommand(self, args, stdout=None):
+        if self.verbose:
+            printincolor(" ".join(args))
+        return subprocess.run(args, stdout=stdout).returncode
 
     def Merge(self):
         """ Merge all data with standard FLUKA tools
@@ -248,46 +323,47 @@ class Converter:
             print("Merging data files...")
 
         tmpfiles=[]
-        for e in self.estimators:
-            if not len(e.units):
-                continue
+        try:
+            for e in self.estimators:
+                if not len(e.units):
+                    continue
 
-            for u in e.units:
-                with NamedTemporaryFile(suffix="."+e.converter, mode="w", delete=False) as tmpfile:
-                    if self.verbose:
-                        print("unit=%d" % u, e.name, tmpfile.name)
-                    suwfile = self.getSuwFileName(e,u)
-                    if self.verbose:
-                        print(suwfile)
+                for u in e.units:
+                    with NamedTemporaryFile(suffix="."+e.converter, mode="w", delete=False) as tmpfile:
+                        if self.verbose:
+                            print("unit=%d" % u, e.name, tmpfile.name)
+                        suwfile = self.getSuwFileName(e,u)
+                        if self.verbose:
+                            print(suwfile)
 
-                    for f in e.units[u]:
-                        tmpfile.write("%s\n" % f)
+                        for f in e.units[u]:
+                            tmpfile.write("%s\n" % f)
 
-                    tmpfile.write("\n")
-                    tmpfile.write("%s\n" % suwfile)
+                        tmpfile.write("\n")
+                        tmpfile.write("%s\n" % suwfile)
 
-                    tmpfiles.append(tmpfile.name)
+                        tmpfiles.append(tmpfile.name)
 
-        verbose = "" if self.verbose else ">/dev/null"
-        if self.parallel:
-            command=f"parallel {self.njobs} " + " --max-args=1 mc-tools-fluka-merge ::: " + " ".join(tmpfiles) + verbose
-            if self.verbose:
-                printincolor(command)
-            return_value = os.system(command)
-            if return_value:
-                sys.exit(2)
-        else:
-            for f in tmpfiles:
-                command = "mc-tools-fluka-merge %s %s" % (f, verbose)
-                if self.verbose:
-                    printincolor(command)
-                return_value = os.system(command)
+            stdout = None if self.verbose else subprocess.DEVNULL
+            if self.parallel:
+                command = ["parallel"]
+                if self.njobs > 0:
+                    command += ["-j", str(self.njobs)]
+                command += ["--max-args=1", "mc-tools-fluka-merge", ":::"]
+                command += tmpfiles
+                return_value = self.runCommand(command, stdout=stdout)
                 if return_value:
-                    sys.exit(printincolor("Coult not convert an estimator"));
-
-        if not self.keep:
-            for f in tmpfiles:
-                os.unlink(f)
+                    sys.exit(2)
+            else:
+                for f in tmpfiles:
+                    return_value = self.runCommand(["mc-tools-fluka-merge", f], stdout=stdout)
+                    if return_value:
+                        sys.exit("Could not merge an estimator")
+        finally:
+            if not self.keep:
+                for f in tmpfiles:
+                    if os.path.exists(f):
+                        os.unlink(f)
 
     def Convert(self):
         """Convert merged files into ROOT
@@ -309,20 +385,26 @@ class Converter:
                 datafiles.append(suwfile)
 
             if self.parallel:
-                command=f"parallel {self.njobs} " + " --max-args=1 %s2root %s {} ::: %s" % (e.converter,v,' '.join(datafiles))
-                if self.verbose:
-                    printincolor(command)
-                return_value = os.system(command)
+                command = ["parallel"]
+                if self.njobs > 0:
+                    command += ["-j", str(self.njobs)]
+                command += ["--max-args=1", e.converter + "2root"]
+                if v:
+                    command.append(v)
+                command += ["{}", ":::"]
+                command += datafiles
+                return_value = self.runCommand(command)
                 if return_value:
                     sys.exit(2)
             else:
                 for u in e.units:
                     suwfile = self.getSuwFileName(e,u)
                     rootfile = suwfile + ".root"
-                    command = "%s2root %s %s %s" % (e.converter, v , suwfile, rootfile)
-                    if self.verbose:
-                        printincolor(command)
-                    return_value = os.system(command)
+                    command = [e.converter + "2root"]
+                    if v:
+                        command.append(v)
+                    command += [suwfile, rootfile]
+                    return_value = self.runCommand(command)
                     if return_value:
                         sys.exit(2)
             self.datafiles.append(datafiles)
@@ -337,15 +419,18 @@ class Converter:
 
 
         f = "-f" if self.overwrite else ""
-        command = "hadd %s %s %s" % (f, self.root, ' '.join(self.out_root_files)) + ("" if self.verbose else " > /dev/null")
-        if self.verbose:
-            printincolor(command)
-        return_value = os.system(command)
+        command = ["hadd"]
+        if f:
+            command.append(f)
+        command += [self.root] + self.out_root_files
+        stdout = None if self.verbose else subprocess.DEVNULL
+        return_value = self.runCommand(command, stdout=stdout)
         if return_value == 0 and not self.keep:
-            command = "rm -f %s %s" % (v, ' '.join(self.out_root_files + [item for sublist in self.datafiles for item in sublist]))
-            if self.verbose:
-                printincolor(command)
-            return_value = os.system(command)
+            for f in self.out_root_files + [item for sublist in self.datafiles for item in sublist]:
+                if os.path.exists(f):
+                    if self.verbose:
+                        printincolor("rm -f %s" % f)
+                    os.unlink(f)
 
         if self.clean:
             if return_value == 0:
