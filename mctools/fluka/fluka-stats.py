@@ -3,13 +3,20 @@
 import argparse
 from sys import exit
 from pathlib import Path
-import re, os
+import os
 from tqdm import tqdm
 from math import sqrt, log10, floor
 import numpy as np
 from uncertainties  import ufloat
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+STAT_PREFIXES = {
+    "average": "Average CPU time used to follow a primary particle:",
+    "maximum": "Maximum CPU time used to follow a primary particle:",
+    "total": "Total CPU time used to follow all primary particles:",
+    "nps": "Total number of primaries run",
+}
 
 def Print(vals, ttype, nps):
     data = np.array(vals)
@@ -22,36 +29,61 @@ def Print(vals, ttype, nps):
     print(f"{ttype}: {x} msec")
     return (val, err)
 
-def get(fname, ttype):
-    if ttype == "average":
-        sss = "Average CPU time used to follow a primary particle:"
-    elif ttype == "maximum":
-        sss = "Maximum CPU time used to follow a primary particle:"
-    elif ttype == "total":
-        sss = "Total CPU time used to follow all primary particles:"
-    elif ttype == "nps":
-        sss = "Total number of primaries run"
-    else:
-        raise NameError(f"Unknown ttype argument: {ttype}")
+def reversed_lines(fname, block_size=64 * 1024):
+    """Yield text lines from the end of a file without loading it all."""
+    with open(fname, "rb") as f:
+        f.seek(0, os.SEEK_END)
+        pos = f.tell()
+        buffer = b""
 
-    with open(fname) as f:
-        val = -1.0
-        for line in reversed(list(f)):
-        #for line in f:
-            l = line.strip()
-            if re.search(f"\A{sss}", l):
-                w = l.split()
-                if ttype == "nps":
-                    val = w[5]
-                else:
-                    val = w[-3]
-                try:
-                    val = float(val)
-                    return val
-                except ValueError:
-                    print(f"Can't convert \"{val}\" to float")
-                    raise
-    return None
+        while pos > 0:
+            read_size = min(block_size, pos)
+            pos -= read_size
+            f.seek(pos)
+
+            lines = (f.read(read_size) + buffer).split(b"\n")
+            buffer = lines[0]
+
+            for line in reversed(lines[1:]):
+                yield line.rstrip(b"\r").decode("utf-8", errors="replace")
+
+        if buffer:
+            yield buffer.rstrip(b"\r").decode("utf-8", errors="replace")
+
+def parse_value(line, ttype):
+    w = line.split()
+    if ttype == "nps":
+        val = w[5]
+    else:
+        val = w[-3]
+    try:
+        return float(val)
+    except ValueError:
+        print(f"Can't convert \"{val}\" to float")
+        raise
+
+def get_stats(fname, ttypes=("average", "maximum", "nps")):
+    unknown = set(ttypes) - set(STAT_PREFIXES)
+    if unknown:
+        raise NameError(f"Unknown ttype argument: {unknown.pop()}")
+
+    pending = set(ttypes)
+    values = {ttype: None for ttype in ttypes}
+
+    for line in reversed_lines(fname):
+        l = line.strip()
+        for ttype in tuple(pending):
+            if l.startswith(STAT_PREFIXES[ttype]):
+                values[ttype] = parse_value(l, ttype)
+                pending.remove(ttype)
+                break
+        if not pending:
+            break
+
+    return values
+
+def get(fname, ttype):
+    return get_stats(fname, (ttype,))[ttype]
 
 def getFiles(out):
     """ Return list of output files.
@@ -98,11 +130,12 @@ def main():
     nps = 0
     for i in tqdm(range(nout)):
         fname = args.out[i]
-        aval = get(fname, "average")
+        stats = get_stats(fname)
+        aval = stats["average"]
         if aval is not None:
-            mval = get(fname, "maximum")
-            if mval is not None:
-                n = get(fname, "nps")
+            mval = stats["maximum"]
+            n = stats["nps"]
+            if mval is not None and n is not None:
                 avals.append(aval*n)
                 mvals.append(mval*n)
                 avals1.append(aval)
