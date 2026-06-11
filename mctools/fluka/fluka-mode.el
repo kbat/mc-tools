@@ -35,6 +35,7 @@
 
 (require 'font-lock)
 (require 'generic)
+(require 'jit-lock)
 
 (defconst fluka--field-width 10
   "Width of one fixed FLUKA input field.")
@@ -147,7 +148,7 @@ Matches tokens in 10-column fields on a single line."
 	      "USRTRACK" "USRYIELD"))
 	     (materials
 	      '("56-FE" "ALUMINUM" "ARGON" "ASSIGNMA" "ASSIGNMAT" "BERYLLIU" "BLCKHOLE" "BORON-10" "BORON-11" "BORON" "CALCIUM" "CARBON" "CHLORINE" "CHROMIUM" "COBALT" "COMPOUND" "COPPER" "CORRFACT" "DEUTERIU" "endfb8r0" "GRAPHITE" "GOLD" "HELIUM" "HYDROGEN" "HYDROG-1" "IRON"  "LEAD" "LOW-MAT" "LOW-PWXS" "MANGANES" "MAGNESIU" "MATERIAL" "MAT-PROP" "MERCURY" "MOLYBDEN" "njendfb8r0" "NEODYMIU" "NICKEL" "NIOBIUM" "NITROGEN" "OPT-PROP" "OXYGEN" "OXYGE-16" "PHOSPHO" "POLYETHY" "POTASSIU" "SILICON" "SILIC-28" "SILVER"
-		"SODIUM" "STERNHEI" "SULFUR" "TANTALUM" "TIN" "TITANIUM" "TSL-PWXS" "TUNGSTEN" "VACUUM" "VANADIUM" "WATER" "ZINC"))
+		"SODIUM" "STERNHEI" "SULFUR" "TANTALUM" "TIN" "TITANIUM" "TSL-PWXS" "TUNGSTEN" "VACUUM" "VANADIUM" "WATER" "YTTRIUM" "ZINC"))
 	     (defaults
 	       '("CALORIME" "DAMAGE" "EET/TRAN" "EM-CASCA" "ICARUS" "HADROTHE" "NEUTRONS" "NEW-DEFA" "PRECISIO" "PRECISION" "SHIELDIN" "SHIELDING"))
 	     (particles
@@ -249,20 +250,26 @@ Matches tokens in 10-column fields on a single line."
 (defconst fluka--column-marker-columns '(10 20 30 40 50 60 70)
   "One-based columns where FLUKA WHAT separators are displayed.")
 
-(defvar-local fluka--column-marker-overlays nil
-  "Overlays used to display FLUKA column markers in the current buffer.")
+(defconst fluka--column-marker-overlay-property 'fluka-column-marker
+  "Overlay property used to identify FLUKA column marker overlays.")
 
 (defun fluka--delete-column-marker-overlays ()
   "Delete all FLUKA column marker overlays in the current buffer."
-  (mapc #'delete-overlay fluka--column-marker-overlays)
-  (setq fluka--column-marker-overlays nil))
+  (remove-overlays (point-min) (point-max)
+                   fluka--column-marker-overlay-property t))
+
+(defun fluka--delete-column-marker-overlays-in-region (beg end)
+  "Delete FLUKA column marker overlays between BEG and END."
+  (dolist (overlay (overlays-in beg end))
+    (when (overlay-get overlay fluka--column-marker-overlay-property)
+      (delete-overlay overlay))))
 
 (defun fluka--make-column-marker-overlay (beg end face)
   "Highlight BEG to END with FACE and remember the overlay."
   (let ((overlay (make-overlay beg end nil nil nil)))
     (overlay-put overlay 'face face)
     (overlay-put overlay 'priority -100)
-    (push overlay fluka--column-marker-overlays)
+    (overlay-put overlay fluka--column-marker-overlay-property t)
     overlay))
 
 (defun fluka--make-column-separator-overlay (pos)
@@ -271,7 +278,7 @@ Matches tokens in 10-column fields on a single line."
     (overlay-put overlay 'display
                  (propertize (char-to-string (char-after pos))
                              'face column-marker-1-face))
-    (push overlay fluka--column-marker-overlays)
+    (overlay-put overlay fluka--column-marker-overlay-property t)
     overlay))
 
 (defun fluka--column-marker-position (column eol)
@@ -285,7 +292,7 @@ Matches tokens in 10-column fields on a single line."
 (defun fluka--line-overflows-column-80-p (eol)
   "Return non-nil if the current line has non-space text at column 80 or later."
   (save-excursion
-    (move-to-column 79)
+    (move-to-column 80)
     (and (< (point) eol)
          (not (string-match-p "\\`[[:space:]]*\\'"
                               (buffer-substring-no-properties (point) eol))))))
@@ -320,10 +327,10 @@ Matches tokens in 10-column fields on a single line."
           (unless (string= after-string "")
             (let ((overlay (make-overlay eol eol nil t nil)))
               (overlay-put overlay 'after-string after-string)
-              (push overlay fluka--column-marker-overlays))))))
+              (overlay-put overlay fluka--column-marker-overlay-property t))))))
     (when (fluka--line-overflows-column-80-p eol)
       (save-excursion
-        (move-to-column 79)
+        (move-to-column 80)
         (when (< (point) eol)
           (fluka--make-column-marker-overlay
            (point) eol column-marker-last-face))))))
@@ -341,9 +348,27 @@ Matches tokens in 10-column fields on a single line."
                (bolp))
       (fluka--add-line-column-markers))))
 
-(defun fluka--refresh-column-markers-after-change (&rest _args)
-  "Refresh FLUKA column markers after a buffer change."
-  (fluka-refresh-column-markers))
+(defun fluka--fontify-column-markers (start end)
+  "Refresh FLUKA column markers between START and END for `jit-lock'."
+  (let ((beg (save-excursion
+               (goto-char start)
+               (line-beginning-position)))
+        (finish (save-excursion
+                  (goto-char end)
+                  (line-end-position))))
+    (fluka--delete-column-marker-overlays-in-region
+     beg (min (point-max) (1+ finish)))
+    (save-excursion
+      (goto-char beg)
+      (while (and (< (point) finish)
+                  (not (eobp)))
+        (fluka--add-line-column-markers)
+        (forward-line 1))
+      (when (and (= (point) (point-max))
+                 (bolp)
+                 (<= (point) finish))
+        (fluka--add-line-column-markers)))
+    `(jit-lock-bounds ,beg . ,finish)))
 
 
 ;;;###autoload
@@ -360,9 +385,10 @@ Matches tokens in 10-column fields on a single line."
   ;; code for syntax highlighting
   (setq font-lock-defaults '((fluka-font-lock-keywords)))
 
-  (add-hook 'after-change-functions
-            #'fluka--refresh-column-markers-after-change nil t)
-  (fluka-refresh-column-markers))
+  (ignore-errors
+    (jit-lock-unregister #'fluka--fontify-column-markers))
+  (fluka--delete-column-marker-overlays)
+  (jit-lock-register #'fluka--fontify-column-markers t))
 
 ;; add the mode to the `features' list
 (provide 'fluka-mode)
