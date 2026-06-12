@@ -148,12 +148,18 @@ class Converter:
                 print("Error: %s does not exist" % f, file=sys.stderr)
                 return 1
 
-        for input_file in self.inp:
-            with open(input_file) as f:
-                for line in f.readlines():
-                    if re.search(r"\AFREE", line):
-                        print("Error:\tFree-format input is not supported in %s." % input_file, file=sys.stderr)
-                        return 2
+        if self.parallel:
+            command = ["parallel"]
+            if self.njobs > 0:
+                command += ["-j", str(self.njobs)]
+            command += ["grep", "-lm1", "^FREE", ":::"] + self.inp
+        else:
+            command = ["grep", "-lm1", "^FREE"] + self.inp
+        result = subprocess.run(command, capture_output=True, text=True)
+        for f in result.stdout.split("\n"):
+            if f:
+                print("Error:\tFree-format input is not supported in %s." % f, file=sys.stderr)
+                return 2
 
         if self.verbose:
             print("done")
