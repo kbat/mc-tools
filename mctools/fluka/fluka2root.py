@@ -273,7 +273,7 @@ class Converter:
         """Assigns units to estimators
         """
         if self.verbose:
-            print("Assigning units to estimators...")
+            print("Assigning units to estimators...", end=" ")
 
         self.estimators = self.parseEstimators(self.inp[0])
         reference = self.estimatorMap(self.estimators)
@@ -285,11 +285,14 @@ class Converter:
                 print("%s: %s" % (input_file, current), file=sys.stderr)
                 sys.exit(4)
 
+        if self.verbose:
+            print("done")
+
     def assignFileNames(self):
         """Assign file names to units
         """
         if self.verbose:
-            print("Assigning file names to units...")
+            print("Assigning file names to units...", end=" ")
 
         for e in self.estimators:
             for u in e.units:
@@ -298,6 +301,9 @@ class Converter:
                     for f in sorted(glob.glob(pattern)):
                         if f not in e.units[u]: # TODO: why do we need this check?
                             e.addFile(u,f)
+
+        if self.verbose:
+            print("done")
 
     def assignUserdumpFiles(self):
         """Assign file names to USERDUMP suffixes."""
