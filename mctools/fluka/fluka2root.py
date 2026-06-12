@@ -141,7 +141,7 @@ class Converter:
            - check whether input follows the standard Fluka format (free format is not supported)
         """
         if self.verbose:
-            print("Checking input files...")
+            print("Checking input files...",end=" ")
 
         for f in self.inp:
             if not os.path.isfile(f):
@@ -155,6 +155,8 @@ class Converter:
                         print("Error:\tFree-format input is not supported in %s." % input_file, file=sys.stderr)
                         return 2
 
+        if self.verbose:
+            print("done")
         return 0
 
     def getRunTitle(self):
