@@ -520,6 +520,9 @@ class Converter:
 
         if self.userdump_enabled:
             for suffix, userdump in self.userdump.items():
+                for dumpfile in userdump.files:
+                    rootfile = dumpfile + ".root"
+                    self.out_root_files.append(rootfile)
                 if self.parallel:
                     command = ["parallel"]
                     if self.njobs > 0:
@@ -531,7 +534,6 @@ class Converter:
                 else:
                     for dumpfile in userdump.files:
                         rootfile = dumpfile + ".root"
-                        self.out_root_files.append(rootfile)
                         command = [self.userdump2root, dumpfile, rootfile]
                         return_value = self.runCommand(command)
                         if return_value:
