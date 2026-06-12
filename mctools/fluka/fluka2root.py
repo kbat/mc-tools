@@ -356,6 +356,7 @@ class Converter:
             print("Error: missing required tools:", file=sys.stderr)
             for item in missing:
                 print("  %s" % item, file=sys.stderr)
+            print("Be sure the necessary tools exist and have +x permission set.", file=sys.stderr)
             sys.exit(5)
 
     def validateDataFiles(self):
@@ -505,13 +506,22 @@ class Converter:
 
         if self.userdump_enabled:
             for suffix, userdump in self.userdump.items():
-                for dumpfile in userdump.files:
-                    rootfile = dumpfile + ".root"
-                    self.out_root_files.append(rootfile)
-                    command = [self.userdump2root, dumpfile, rootfile]
+                if self.parallel:
+                    command = ["parallel"]
+                    if self.njobs > 0:
+                        command += ["-j", str(self.njobs)]
+                    command += [self.userdump2root,"{}","{.}.root",":::"] + userdump.files
                     return_value = self.runCommand(command)
                     if return_value:
                         sys.exit(2)
+                else:
+                    for dumpfile in userdump.files:
+                        rootfile = dumpfile + ".root"
+                        self.out_root_files.append(rootfile)
+                        command = [self.userdump2root, dumpfile, rootfile]
+                        return_value = self.runCommand(command)
+                        if return_value:
+                            sys.exit(2)
 
         if len(self.out_root_files) == 0:
             print("fluka2root: no datafiles found -> exit")
