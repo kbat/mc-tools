@@ -51,8 +51,8 @@ class Zone:
                                 if abs(lo - hi) < eps:
                                         lo, hi = lo - eps, hi + eps
                                 axis.SetRangeUser(lo, hi)
-                val = self.hist.GetMaximum()
                 b = self.hist.GetMaximumBin()
+                val = self.hist.GetBinContent(b)
                 err = self.hist.GetBinError(b)
 
                 for axis in (self.hist.GetXaxis(), self.hist.GetYaxis(), self.hist.GetZaxis()):
@@ -333,7 +333,7 @@ def printRate(confnames, root="."):
         print("%")
         print("% Usage:")
         print("%    (let's assume this file is called 'rates.tex')")
-        print("% 1. Load this file in your document preamble: \input{rates.tex}")
+        print(r"% 1. Load this file in your document preamble: \input{rates.tex}")
         print("% 2. If needed, redefine the 'abovequater' and 'abovehalf' colours as well as the 'bigerror' command after loading rates.tex. For instance:")
         print("% \\definecolor{abovequater}{HTML}{000000}")
         print("% \\definecolor{abovehalf}{HTML}{000000}")
@@ -366,15 +366,15 @@ def printRate(confnames, root="."):
 
                 createMaxConfiguration(s)
 
-                print("  \\ifthenelse{\equal{#1}{%s}}{" % sname, end="%\n")
+                print(r"  \\ifthenelse{\equal"+"{#1}{%s}}{" % sname, end="%\n")
                 for cname in all_confnames:
-                        print("    \\ifthenelse{\equal{#2}{%s}}{" % cname, end="%\n")
+                        print(r"    \\ifthenelse{\equal"+"{#2}{%s}}{" % cname, end="%\n")
 
                         c = s.getConfig(cname)
                         for r in c.regions:
-                                print("      \\ifthenelse{\equal{#3}{%s}}{" % r.name, end="%\n")
+                                print(r"      \\ifthenelse{\equal"+"{#3}{%s}}{" % r.name, end="%\n")
                                 for a in r.area.keys():
-                                        print("        \\ifthenelse{\equal{#4}{%s}}{" % a, end="%\n")
+                                        print(r"        \\ifthenelse{\equal"+"{#4}{%s}}{" % a, end="%\n")
                                         nspace = 10
                                         if a == 'Max':
                                                 value = r.area[a].getValue()
@@ -388,7 +388,7 @@ def printRate(confnames, root="."):
                                                     value = s.getValue(cname, r.name, a, z.name)
                                                     val = value.val
                                                     err = value.err
-                                                    print(" "*nspace,"\\ifthenelse{\equal{#5}{%s}}{%s}{" % (z.name, getPrintedValue(val, err)),
+                                                    print(" "*nspace,r"\\ifthenelse{\equal"+"{#5}{%s}}{%s}{" % (z.name, getPrintedValue(val, err)),
                                                           end=f"% {z.full_name}\n")
                                                     nspace += 1
                                         print(" "*10,"}"*(nspace-10), end="%\n")

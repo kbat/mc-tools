@@ -225,17 +225,20 @@ class Angel:
                 if re.search("^h", line):
                     if re.search("^h: [nx]", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                         if DEBUG: print("one dimentional graph section")
-                        self.Read1DHist(igline)
+                        tmp_h = self.Read1DHist(igline)
+                        self.histos.Add(tmp_h)
                         continue
                     elif re.search("h:              x", line):
-                        self.Read1DGraphErrors(igline)
+                        tmp_g = self.Read1DGraphErrors(igline)
+                        self.histos.Add(tmp_g)
                         continue
                     elif re.search("^h[2dc]:", line):
                         if DEBUG:
                             if re.search("^h2", line): print("h2: two dimentional contour plot section")
                             if re.search("^hd", line): print("hd: two dimentional cluster plot section")
                             if re.search("^hc", line): print("hc: two dimentional colour cluster plot section")
-                        self.Read2DHist(igline)
+                        tmp_h = self.Read2DHist(igline)
+                        self.histos.Add(tmp_h)
                         continue
                     elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                         self.Read1DHist(igline)
@@ -246,7 +249,8 @@ class Angel:
             if DEBUG: print("1D")
         else:
             if DEBUG: print("2D")
-#            self.Make2Dfrom1D()
+#            tmp_h2 = self.Make2Dfrom1D()
+#            self.histos.Add(tmp_h2)
 
 
         if self.histos.GetEntries():
@@ -405,7 +409,7 @@ class Angel:
                     h.GetXaxis().SetBinLabel(i+1, bin_labels[i])
                 h.GetXaxis().SetTitle("Region number")
 
-            self.histos.Add(h)
+            return h
         del self.subtitles[:]
 
     def Read1DGraphErrors(self, iline):
@@ -448,7 +452,7 @@ class Angel:
                 g.SetPoint(i, x, y)
                 g.SetPointError(i, 0, ey*y)
 
-            self.histos.Add(g)
+            return g
         del self.subtitles[:]
 
 
@@ -600,7 +604,7 @@ class Angel:
                 h2.SetBinError(binx+1, biny+1, h1.GetBinError(binx+1))
 
 
-        self.histos.Add(h2)
+        return h2
 
 
 
