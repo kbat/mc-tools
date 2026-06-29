@@ -23,7 +23,7 @@ def getPrintedValue(val=None, err=None, value: Value | None = None):
         color = "[color=abovehalf]"
 
     if abs(val) > epsilon and err / val > 0.2:
-        bigerror = " \\bigerror"
+        bigerror = "\\bigerror"
     return (
         "\\num{0.0}"
         if abs(val) < epsilon
@@ -88,7 +88,7 @@ class Case:
             "\\definecolor{abovehalf}{HTML}{ff0000}   % for dose rates > 0.5 uSv/h\n"
         ]
         if large_error_warnings:
-            buffer.append("\\newcommand\\bigerror{\\textcolor{red}{(BIG ERROR!)}}\n")
+            buffer.append("\\newcommand\\bigerror{\\textcolor{red}{~(BIG ERROR!)}}\n")
         else:
             buffer.append("\\newcommand\\bigerror{}\n")
         buffer.append(
@@ -136,7 +136,7 @@ class Case:
                                 .sub_levels
                             )
                         )
-                        + "\n"
+                        + "%\n"
                     )
                     buffer.append("      }{}%\n")
                 buffer.append("    }{}%\n")
@@ -149,7 +149,7 @@ class Case:
                     f"{self.scenarios[scenario][combo].path}\n"
                     f"{getPrintedValue(value=self.scenarios[scenario][combo].value)}"
                 )
-                buffer.append("}{}\n")
+                buffer.append("}{}%\n")
             buffer.append("}%\n")
         buffer.append("}%\n")
         return "".join(buffer)
