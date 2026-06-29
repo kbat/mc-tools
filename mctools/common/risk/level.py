@@ -17,14 +17,14 @@ class BaseLevel:
         self.path = path
         self.value: Value = UnknownValue()
 
-    def get_max_value(self) -> Value:
+    def get_max_value(self, root_input_cache=None) -> Value:
         """Retrieve the maximum value. If unknown, evaluate it first."""
         if isinstance(self.value, UnknownValue):
-            self.evaluate()
+            self.evaluate(root_input_cache=root_input_cache)
         return self.value
 
     @abstractmethod
-    def evaluate(self):
+    def evaluate(self, root_input_cache=None):
         """Evaluate the maximum value"""
 
     @abstractmethod
@@ -47,10 +47,11 @@ class Level(BaseLevel):
         else:
             self.sub_levels = sub_levels
 
-    def evaluate(self):
+    def evaluate(self, root_input_cache=None):
         """Find the maximum value of all sublevels"""
         self.value = max(
-            self[sub_level].get_max_value() for sub_level in self.sub_levels
+            self[sub_level].get_max_value(root_input_cache=root_input_cache)
+            for sub_level in self.sub_levels
         )
 
     def set_sub_level_paths(self, separator: str = "."):

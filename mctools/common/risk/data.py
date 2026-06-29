@@ -17,13 +17,13 @@ class SourceCombination(BaseLevel):
     def set_sources(self, sources: dict[str, Level]):
         self.sources = sources
 
-    def evaluate(self):
+    def evaluate(self, root_input_cache=None):
         values: list[Value] = []
         for source in self.combination:
             level: BaseLevel = self.sources[source[0]]
             for lvl in source[1:]:
                 level = level[lvl]
-            values.append(level.get_max_value())
+            values.append(level.get_max_value(root_input_cache=root_input_cache))
         self.value = max(values)
 
 
@@ -94,10 +94,10 @@ class Data:
             return self.sources[key]
         return self.arbitrary_level_combos[key]
 
-    def evaluate(self):
+    def evaluate(self, root_input_cache=None):
         for source in self.sources:
-            self.sources[source].evaluate()
+            self.sources[source].evaluate(root_input_cache=root_input_cache)
 
         for combo in self.arbitrary_level_combos:
             self.arbitrary_level_combos[combo].set_sources(self.sources)
-            self.arbitrary_level_combos[combo].evaluate()
+            self.arbitrary_level_combos[combo].evaluate(root_input_cache=root_input_cache)

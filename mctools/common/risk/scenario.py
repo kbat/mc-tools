@@ -2,7 +2,7 @@ from pathlib import Path
 
 from mctools.common.risk.data import Data
 from mctools.common.risk.level import depth_first_search
-from mctools.common.risk.zone import ROOTFileInput, Zone
+from mctools.common.risk.zone import ROOTFileInput, ROOTInputCache, Zone
 
 
 class Scenario:
@@ -52,4 +52,5 @@ class Scenario:
         return self.data[key]
 
     def evaluate(self):
-        self.data.evaluate()
+        with ROOTInputCache() as root_input_cache:
+            self.data.evaluate(root_input_cache=root_input_cache)

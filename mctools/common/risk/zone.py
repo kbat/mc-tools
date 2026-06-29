@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from dataclasses import dataclass
+from uuid import uuid4
 from warnings import warn
 
 import ROOT
@@ -44,6 +45,63 @@ class ROOTFileInput:
     scale_file_name: Path
 
 
+class ROOTInputCache:
+    def __init__(self):
+        self.root_files: dict[str, ROOT.TFile] = {}
+        self.scales: dict[str, float] = {}
+        self.histograms: dict[tuple[str, str, str], ROOT.TH3F | ROOT.TH3D] = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def close(self):
+        self.histograms.clear()
+        self.scales.clear()
+        for root_file in self.root_files.values():
+            root_file.Close()
+        self.root_files.clear()
+
+    def get_histogram(self, root_file_input: ROOTFileInput):
+        root_file_name = str(root_file_input.root_file_name)
+        histogram_name = root_file_input.histogram_name
+        scale_file_name = str(root_file_input.scale_file_name)
+        key = (root_file_name, histogram_name, scale_file_name)
+        if key not in self.histograms:
+            hist = self._get_root_file(root_file_name).Get(histogram_name)
+            if hist is None or not hist:
+                raise KeyError(
+                    f"Histogram '{histogram_name}' missing in ROOT file "
+                    f"'{root_file_name}'."
+                )
+            cached_hist = hist.Clone(f"{histogram_name}_{uuid4().hex}")
+            cached_hist.SetDirectory(0)
+            cached_hist.Scale(self._get_scale(scale_file_name))
+            self.histograms[key] = cached_hist
+        return self.histograms[key]
+
+    def _get_root_file(self, root_file_name: str):
+        if root_file_name not in self.root_files:
+            root_file = ROOT.TFile.Open(root_file_name)
+            if root_file is None or root_file.IsZombie():
+                raise FileNotFoundError(f"Could not open ROOT file '{root_file_name}'.")
+            self.root_files[root_file_name] = root_file
+        return self.root_files[root_file_name]
+
+    def _get_scale(self, scale_file_name: str) -> float:
+        if scale_file_name not in self.scales:
+            with open(scale_file_name, encoding="utf-8") as scale_file:
+                try:
+                    self.scales[scale_file_name] = float(scale_file.readline())
+                except ValueError as exc:
+                    raise ValueError(
+                        f"Could not parse scale factor in '{scale_file_name}'."
+                    ) from exc
+        return self.scales[scale_file_name]
+
+
 def bin_in_range(n_bin: int, axis: ROOT.TAxis, limits: Limits) -> bool:
     if limits.upper < axis.GetBinLowEdge(n_bin) or limits.lower > axis.GetBinUpEdge(
         n_bin
@@ -73,57 +131,59 @@ class Zone(BaseLevel):
         self.hist = hist
         self.lim = lim
 
-    def evaluate(self):
+    def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
 
         if self.hist is not None:
             if isinstance(self.hist, ROOTFileInput):
-                tfile = ROOT.TFile(str(self.hist.root_file_name))
-                hist = tfile.Get(self.hist.histogram_name)
-                with open(self.hist.scale_file_name, encoding="utf-8") as scale_file:
-                    scale = float(scale_file.readline())
-                hist.Scale(scale)
+                if root_input_cache is None:
+                    with ROOTInputCache() as root_input_cache:
+                        hist = root_input_cache.get_histogram(self.hist)
+                        self._evaluate_histogram(hist)
+                    return
+                hist = root_input_cache.get_histogram(self.hist)
             else:
                 hist = self.hist
 
-            max_val = float("-inf")
-            max_err = max_x = max_y = max_z = 0.0
-            for n_x in range(hist.GetNbinsX()):
-                if bin_in_range(
-                    n_bin=n_x + 1, axis=hist.GetXaxis(), limits=self.lim.xlim
-                ):
-                    for n_y in range(hist.GetNbinsY()):
-                        if bin_in_range(
-                            n_bin=n_y + 1, axis=hist.GetYaxis(), limits=self.lim.ylim
-                        ):
-                            for n_z in range(hist.GetNbinsZ()):
-                                if bin_in_range(
-                                    n_bin=n_z + 1,
-                                    axis=hist.GetZaxis(),
-                                    limits=self.lim.zlim,
-                                ):
-                                    if (
-                                        hist.GetBinContent(n_x + 1, n_y + 1, n_z + 1)
-                                        > max_val
-                                    ):
-                                        max_val = hist.GetBinContent(
-                                            n_x + 1, n_y + 1, n_z + 1
-                                        )
-                                        max_err = hist.GetBinError(
-                                            n_x + 1, n_y + 1, n_z + 1
-                                        )
-                                        max_x = hist.GetXaxis().GetBinCenter(n_x + 1)
-                                        max_y = hist.GetYaxis().GetBinCenter(n_y + 1)
-                                        max_z = hist.GetZaxis().GetBinCenter(n_z + 1)
-            self.value = Value(
-                val=max_val,
-                err=max_err,
-                x=max_x,
-                y=max_y,
-                z=max_z,
-            )
+            self._evaluate_histogram(hist)
         else:
-            raise (ValueError(f"Input histogram for Zone '{self.name}' missing."))
+            raise ValueError(f"Input histogram for Zone '{self.name}' missing.")
+
+    def _evaluate_histogram(self, hist):
+        max_val = float("-inf")
+        max_err = max_x = max_y = max_z = 0.0
+        for n_x in range(hist.GetNbinsX()):
+            if bin_in_range(n_bin=n_x + 1, axis=hist.GetXaxis(), limits=self.lim.xlim):
+                for n_y in range(hist.GetNbinsY()):
+                    if bin_in_range(
+                        n_bin=n_y + 1, axis=hist.GetYaxis(), limits=self.lim.ylim
+                    ):
+                        for n_z in range(hist.GetNbinsZ()):
+                            if bin_in_range(
+                                n_bin=n_z + 1,
+                                axis=hist.GetZaxis(),
+                                limits=self.lim.zlim,
+                            ):
+                                if (
+                                    hist.GetBinContent(n_x + 1, n_y + 1, n_z + 1)
+                                    > max_val
+                                ):
+                                    max_val = hist.GetBinContent(
+                                        n_x + 1, n_y + 1, n_z + 1
+                                    )
+                                    max_err = hist.GetBinError(
+                                        n_x + 1, n_y + 1, n_z + 1
+                                    )
+                                    max_x = hist.GetXaxis().GetBinCenter(n_x + 1)
+                                    max_y = hist.GetYaxis().GetBinCenter(n_y + 1)
+                                    max_z = hist.GetZaxis().GetBinCenter(n_z + 1)
+        self.value = Value(
+            val=max_val,
+            err=max_err,
+            x=max_x,
+            y=max_y,
+            z=max_z,
+        )
 
     def set_sub_level_paths(self, path_prefix="", separator="."):
         pass

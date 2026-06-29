@@ -5,7 +5,7 @@ import ROOT
 
 from mctools.common.risk.level import Level
 from mctools.common.risk.test.input_histogram import create_test_histogram
-from mctools.common.risk.zone import ROOTFileInput, Zone
+from mctools.common.risk.zone import Limits, Limits3D, ROOTFileInput, ROOTInputCache, Zone
 
 
 class TestRootInput(unittest.TestCase):
@@ -81,3 +81,103 @@ class TestRootInput(unittest.TestCase):
                 },
             )
             self.assertEqual(lvl.get_max_value().val, 112.0)
+
+    def test_root_input_cache_reuses_scaled_histogram(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            create_test_histogram(name="shared", scale=1.0).Write()
+            tfile.Close()
+
+            with open(tmp_scale.name, "w") as scale_file:
+                scale_file.write("2.0")
+
+            root_input = ROOTFileInput(
+                root_file_name=tmp_root.name,
+                histogram_name="shared",
+                scale_file_name=tmp_scale.name,
+            )
+            low_zone = Zone(
+                hist=root_input,
+                lim=Limits3D(zlim=Limits(upper=-0.1)),
+            )
+            high_zone = Zone(
+                hist=root_input,
+                lim=Limits3D(zlim=Limits(lower=0.1)),
+            )
+
+            with ROOTInputCache() as root_input_cache:
+                low_zone.evaluate(root_input_cache=root_input_cache)
+                high_zone.evaluate(root_input_cache=root_input_cache)
+
+                self.assertEqual(low_zone.value.val, 12.0)
+                self.assertEqual(high_zone.value.val, 14.0)
+                self.assertEqual(len(root_input_cache.root_files), 1)
+                self.assertEqual(len(root_input_cache.scales), 1)
+                self.assertEqual(len(root_input_cache.histograms), 1)
+
+    def test_root_input_cache_keeps_scale_files_distinct(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale_0,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale_1,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            create_test_histogram(name="shared", scale=1.0).Write()
+            tfile.Close()
+
+            with open(tmp_scale_0.name, "w") as scale_file:
+                scale_file.write("2.0")
+            with open(tmp_scale_1.name, "w") as scale_file:
+                scale_file.write("3.0")
+
+            zone_0 = Zone(
+                hist=ROOTFileInput(
+                    root_file_name=tmp_root.name,
+                    histogram_name="shared",
+                    scale_file_name=tmp_scale_0.name,
+                )
+            )
+            zone_1 = Zone(
+                hist=ROOTFileInput(
+                    root_file_name=tmp_root.name,
+                    histogram_name="shared",
+                    scale_file_name=tmp_scale_1.name,
+                )
+            )
+
+            with ROOTInputCache() as root_input_cache:
+                zone_0.evaluate(root_input_cache=root_input_cache)
+                zone_1.evaluate(root_input_cache=root_input_cache)
+
+                self.assertEqual(zone_0.value.val, 14.0)
+                self.assertEqual(zone_1.value.val, 21.0)
+                self.assertEqual(len(root_input_cache.root_files), 1)
+                self.assertEqual(len(root_input_cache.scales), 2)
+                self.assertEqual(len(root_input_cache.histograms), 2)
+
+    def test_root_input_cache_missing_histogram(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            create_test_histogram(name="present", scale=1.0).Write()
+            tfile.Close()
+
+            with open(tmp_scale.name, "w") as scale_file:
+                scale_file.write("1.0")
+
+            zone = Zone(
+                hist=ROOTFileInput(
+                    root_file_name=tmp_root.name,
+                    histogram_name="missing",
+                    scale_file_name=tmp_scale.name,
+                )
+            )
+
+            with ROOTInputCache() as root_input_cache:
+                with self.assertRaisesRegex(KeyError, "missing"):
+                    zone.evaluate(root_input_cache=root_input_cache)
