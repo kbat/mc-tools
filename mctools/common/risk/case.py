@@ -194,17 +194,57 @@ class Case:
                     )
                     buffer.append("      }{}%\n")
                 buffer.append("    }{}%\n")
-            buffer.append("  }{%\n")
             for combo in self.scenarios[scenario].data.arbitrary_level_combos:
-                buffer.append(
-                    r"\ifthenelse{\equal{#1}{"
-                    f"{escape_latex(self.scenarios[scenario][combo].path)}"
-                    "}}{% "
-                    f"{escape_latex(self.scenarios[scenario][combo].path)}\n"
-                    f" {getPrintedValue(value=self.scenarios[scenario][combo].value)}"
+                path = self.scenarios[scenario][combo].path
+                combo_parts = path.split(".")[1:]
+                n = len(combo_parts)
+                escaped_parts = [escape_latex(p) for p in combo_parts]
+                escaped_path = escape_latex(path)
+                value_str = getPrintedValue(
+                    value=self.scenarios[scenario][combo].value
                 )
-                buffer.append("}{}%\n")
-            buffer.append("}%\n")
+                for i, (escaped_part, arg_num) in enumerate(
+                    zip(escaped_parts, range(2, n + 2))
+                ):
+                    indent = "  " * (i + 1)
+                    is_last = i == n - 1
+                    if is_last:
+                        comment = f" {escaped_path}" if n == 1 else ""
+                        buffer.append(
+                            indent
+                            + r"\ifthenelse{\equal{#"
+                            + str(arg_num)
+                            + "}{"
+                            + escaped_part
+                            + "}}{"
+                            + value_str
+                            + "}{}%"
+                            + comment
+                            + "\n"
+                        )
+                    elif i == 0:
+                        buffer.append(
+                            indent
+                            + r"\ifthenelse{\equal{#"
+                            + str(arg_num)
+                            + "}{"
+                            + escaped_part
+                            + "}}{% "
+                            + escaped_path
+                            + "\n"
+                        )
+                    else:
+                        buffer.append(
+                            indent
+                            + r"\ifthenelse{\equal{#"
+                            + str(arg_num)
+                            + "}{"
+                            + escaped_part
+                            + "}}{%\n"
+                        )
+                for i in range(n - 2, -1, -1):
+                    buffer.append("  " * (i + 2) + "}{}%\n")
+            buffer.append("}{}%\n")
         buffer.append("}%\n")
         return "".join(buffer)
 
@@ -278,15 +318,26 @@ class Case:
                             "\n\n"
                         )
             for combo in self.scenarios[scenario].data.arbitrary_level_combos:
+                path = self.scenarios[scenario][combo].path
+                combo_parts = path.split(".")[1:]
+                while len(combo_parts) < 3:
+                    combo_parts.append("")
+                escaped_combo_parts = [escape_latex(p) for p in combo_parts]
                 buffer.append(
                     r"\def\combo{"
-                    f"{escape_latex(self.scenarios[scenario][combo].path)}"
+                    f"{escape_latex(path)}"
                     "}\n"
                 )
                 buffer.append(
                     r"\def\value{\rate{"
-                    f"{escape_latex(self.scenarios[scenario][combo].path)}"
-                    "}{}{}{}}\n"
+                    f"{escaped_scenario}"
+                    "}{"
+                    f"{escaped_combo_parts[0]}"
+                    "}{"
+                    f"{escaped_combo_parts[1]}"
+                    "}{"
+                    f"{escaped_combo_parts[2]}"
+                    "}}\n"
                     r"\printCombo"
                     "\n\n"
                 )
