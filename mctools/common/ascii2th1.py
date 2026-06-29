@@ -3,7 +3,7 @@
 # ASCII to TH1F converter
 
 import sys,time,os,re
-from array import array
+from numpy import array
 import ROOT, argparse
 import pandas as pd
 
@@ -68,7 +68,7 @@ def GetHistogram(colxmin, colxmax, coly, coley, opt, hname, htitle, fname):
     return h
 
 def mcnp(fin, fout, hname, htitle, colx, coly):
-    df = pd.read_csv(fin, header=None, delim_whitespace=True, names=["x", "y", "ey"]) # data frame
+    df = pd.read_csv(fin, header=None, delim_whitespace=True, names=["x", "y", "pl", "pc", "pl45"]) # data frame
 ##    df.info()
     nrow,ncol = df.shape
     nbins = nrow-1 # number of bins in the histogram
@@ -80,10 +80,11 @@ def mcnp(fin, fout, hname, htitle, colx, coly):
         x = df['x'][i]
         vx.append(x)
 
-    h = ROOT.TH1F(hname, htitle, nbins, array('f', vx))
+    h = ROOT.TH1F(hname, htitle, nbins, array(vx,dtype='f'))
 
     for i in range(nbins):
         h.SetBinContent(i+1, df['y'][i])
+        h.SetBinError(i+1, 0.0);
 
     h.Print('a')
 
