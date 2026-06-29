@@ -11,6 +11,44 @@ from mctools.common.risk.test.input_histogram import create_test_histogram
 from mctools.common.risk.zone import Zone
 
 
+def make_test_case(root_file_name, scale_file_name, scenario_names):
+    scenarios = {}
+    for scenario_name in scenario_names:
+        scenarios[scenario_name] = Scenario(
+            name=scenario_name,
+            data=Data(
+                sources={
+                    "Region0": Level(
+                        sub_levels={
+                            "Area0": Level(
+                                sub_levels={
+                                    "Zone0": Zone(hist="Zone0"),
+                                    "Zone1": Zone(hist="Zone1"),
+                                }
+                            ),
+                        }
+                    ),
+                    "Region1": Level(
+                        sub_levels={
+                            "Area0": Level(
+                                sub_levels={
+                                    "Zone2": Zone(hist="Zone2"),
+                                    "Zone3": Zone(hist="Zone3"),
+                                }
+                            ),
+                        }
+                    ),
+                },
+                arbitrary_level_combos={
+                    "Region0.Max": SourceCombination(combination=[["Region0"]])
+                },
+            ),
+            root_file_name=root_file_name,
+            scale_file_name=scale_file_name,
+        )
+    return Case(scenarios=scenarios)
+
+
 class TestCaseClass(unittest.TestCase):
     def test_case(self):
         with (
@@ -90,3 +128,55 @@ class TestCaseClass(unittest.TestCase):
                 command_output_file_name=command_output_file.name,
                 variable_output_file_name=variable_output_file.name,
             )
+
+    def test_parallel_evaluate_matches_sequential(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            histograms = [
+                create_test_histogram(name="Zone0", scale=1.0),
+                create_test_histogram(name="Zone1", scale=2.0),
+                create_test_histogram(name="Zone2", scale=3.0),
+                create_test_histogram(name="Zone3", scale=4.0),
+            ]
+            for hist in histograms:
+                hist.Write()
+            tfile.Close()
+
+            with open(tmp_scale.name, "w") as scale_file:
+                scale_file.write("1.0")
+
+            scenario_names = ["Scenario0", "Scenario1"]
+            sequential_case = make_test_case(
+                root_file_name=tmp_root.name,
+                scale_file_name=tmp_scale.name,
+                scenario_names=scenario_names,
+            )
+            parallel_case = make_test_case(
+                root_file_name=tmp_root.name,
+                scale_file_name=tmp_scale.name,
+                scenario_names=scenario_names,
+            )
+
+            sequential_case.evaluate()
+            parallel_case.evaluate(parallel=True, max_workers=2)
+
+            for scenario_name in scenario_names:
+                self.assertEqual(
+                    parallel_case[scenario_name].data.sources["Region0"].value.val,
+                    sequential_case[scenario_name].data.sources["Region0"].value.val,
+                )
+                self.assertEqual(
+                    parallel_case[scenario_name].data.sources["Region1"].value.val,
+                    sequential_case[scenario_name].data.sources["Region1"].value.val,
+                )
+                self.assertEqual(
+                    parallel_case[scenario_name].data.arbitrary_level_combos[
+                        "Region0.Max"
+                    ].value.val,
+                    sequential_case[scenario_name].data.arbitrary_level_combos[
+                        "Region0.Max"
+                    ].value.val,
+                )
