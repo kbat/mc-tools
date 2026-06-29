@@ -1,6 +1,8 @@
 from mctools.common.risk.level import BaseLevel, depth_first_search_with_path, Level
 from mctools.common.risk.value import Value
 
+Result = tuple[tuple[str, ...], BaseLevel]
+
 
 class SourceCombination(BaseLevel):
     def __init__(
@@ -45,9 +47,7 @@ class Data:
         include_top_level: bool = True,
     ):
         buffer = []
-        results: tuple[tuple[str], BaseLevel] = self.get_results(
-            include_top_level=include_top_level
-        )
+        results = self.get_results(include_top_level=include_top_level)
         for result in results:
             title = result[1].title if result[1].title != "" else result[1].path
             buffer.append(
@@ -70,11 +70,9 @@ class Data:
             self.arbitrary_level_combos[combo].name = combo
             self.arbitrary_level_combos[combo].path = path_prefix + combo
 
-    def get_results(
-        self, include_top_level: bool = True
-    ) -> tuple[tuple[str], BaseLevel]:
+    def get_results(self, include_top_level: bool = True) -> list[Result]:
         """Return the results as a flat list"""
-        data: tuple[tuple[str], Value] = []
+        data: list[Result] = []
         for source in self.sources:
             if include_top_level:
                 data.append(((self.sources[source].path,), self.sources[source]))

@@ -1,6 +1,7 @@
 """Hierarchy of logical levels with associated sublevels"""
 
 from abc import abstractmethod
+from collections.abc import Iterator
 
 from mctools.common.risk.value import UnknownValue, Value
 
@@ -39,11 +40,11 @@ class Level(BaseLevel):
         name: str = "",
         title: str = "",
         path: str = "",
-        sub_levels: dict[str, "Level"] | None = None,
+        sub_levels: dict[str, BaseLevel] | None = None,
     ):
         super().__init__(name=name, title=title, path=path)
         if sub_levels is None:
-            self.sub_levels: dict[str, Level] = {}
+            self.sub_levels: dict[str, BaseLevel] = {}
         else:
             self.sub_levels = sub_levels
 
@@ -54,16 +55,16 @@ class Level(BaseLevel):
             for sub_level in self.sub_levels
         )
 
-    def set_sub_level_paths(self, separator: str = "."):
+    def set_sub_level_paths(self, path_prefix: str = "", separator: str = "."):
         for sub_level in self.sub_levels:
             self[sub_level].path = self.path + separator + sub_level
-            self[sub_level].set_sub_level_paths()
+            self[sub_level].set_sub_level_paths(separator=separator)
 
     def __getitem__(self, key: str):
         return self.sub_levels[key]
 
 
-def depth_first_search(obj: Level | BaseLevel):
+def depth_first_search(obj: BaseLevel) -> Iterator[BaseLevel]:
     if isinstance(obj, Level):
         for level in obj.sub_levels:
             yield from depth_first_search(obj[level])
@@ -71,7 +72,9 @@ def depth_first_search(obj: Level | BaseLevel):
         yield obj
 
 
-def depth_first_search_with_path(obj: Level | BaseLevel, path=()):
+def depth_first_search_with_path(
+    obj: BaseLevel, path: tuple[str, ...] = ()
+) -> Iterator[tuple[tuple[str, ...], BaseLevel]]:
     if isinstance(obj, Level):
         for level in obj.sub_levels:
             new_path = path + (level,)
