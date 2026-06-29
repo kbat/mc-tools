@@ -201,7 +201,7 @@ class Case:
                     f"{escape_latex(self.scenarios[scenario][combo].path)}"
                     "}}{% "
                     f"{escape_latex(self.scenarios[scenario][combo].path)}\n"
-                    f"{getPrintedValue(value=self.scenarios[scenario][combo].value)}"
+                    f" {getPrintedValue(value=self.scenarios[scenario][combo].value)}"
                 )
                 buffer.append("}{}%\n")
             buffer.append("}%\n")
