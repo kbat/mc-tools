@@ -181,3 +181,70 @@ class TestRootInput(unittest.TestCase):
             with ROOTInputCache() as root_input_cache:
                 with self.assertRaisesRegex(KeyError, "missing"):
                     zone.evaluate(root_input_cache=root_input_cache)
+
+    def test_root_input_cache_missing_root_file(self):
+        with (
+            tempfile.TemporaryDirectory() as tmp_dir,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+        ):
+            missing_root = f"{tmp_dir}/missing.root"
+            with open(tmp_scale.name, "w") as scale_file:
+                scale_file.write("1.0")
+
+            zone = Zone(
+                hist=ROOTFileInput(
+                    root_file_name=missing_root,
+                    histogram_name="hist",
+                    scale_file_name=tmp_scale.name,
+                )
+            )
+
+            with ROOTInputCache() as root_input_cache:
+                with self.assertRaisesRegex(FileNotFoundError, "missing.root"):
+                    zone.evaluate(root_input_cache=root_input_cache)
+
+    def test_root_input_cache_missing_scale_file(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.TemporaryDirectory() as tmp_dir,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            create_test_histogram(name="present", scale=1.0).Write()
+            tfile.Close()
+
+            missing_scale = f"{tmp_dir}/missing.txt"
+            zone = Zone(
+                hist=ROOTFileInput(
+                    root_file_name=tmp_root.name,
+                    histogram_name="present",
+                    scale_file_name=missing_scale,
+                )
+            )
+
+            with ROOTInputCache() as root_input_cache:
+                with self.assertRaisesRegex(FileNotFoundError, "missing.txt"):
+                    zone.evaluate(root_input_cache=root_input_cache)
+
+    def test_root_input_cache_invalid_scale_file(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            create_test_histogram(name="present", scale=1.0).Write()
+            tfile.Close()
+
+            with open(tmp_scale.name, "w") as scale_file:
+                scale_file.write("not-a-number")
+
+            zone = Zone(
+                hist=ROOTFileInput(
+                    root_file_name=tmp_root.name,
+                    histogram_name="present",
+                    scale_file_name=tmp_scale.name,
+                )
+            )
+
+            with ROOTInputCache() as root_input_cache:
+                with self.assertRaisesRegex(ValueError, tmp_scale.name):
+                    zone.evaluate(root_input_cache=root_input_cache)
