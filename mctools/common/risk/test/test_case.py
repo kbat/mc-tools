@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from pathlib import Path
 
 import ROOT
 
@@ -180,3 +181,56 @@ class TestCaseClass(unittest.TestCase):
                         "Region0.Max"
                     ].value.val,
                 )
+
+    def test_latex_escapes_special_characters(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+            tempfile.NamedTemporaryFile(suffix=".tex") as command_output_file,
+            tempfile.NamedTemporaryFile(suffix=".tex") as variable_output_file,
+        ):
+            tfile = ROOT.TFile(tmp_root.name, "RECREATE")
+            create_test_histogram(name="Zone_#1%", scale=1.0).Write()
+            tfile.Close()
+
+            with open(tmp_scale.name, "w") as scale_file:
+                scale_file.write("1.0")
+
+            case = Case(
+                scenarios={
+                    "Scenario_#1%": Scenario(
+                        name="Scenario_#1%",
+                        data=Data(
+                            sources={
+                                "Region_&1": Level(
+                                    sub_levels={
+                                        "Area_{1}": Level(
+                                            sub_levels={
+                                                "Zone_#1%": Zone(hist="Zone_#1%")
+                                            }
+                                        )
+                                    }
+                                )
+                            }
+                        ),
+                        root_file_name=Path(tmp_root.name),
+                        scale_file_name=Path(tmp_scale.name),
+                    )
+                }
+            )
+
+            case.evaluate()
+            case.toLaTeX(
+                command_output_file_name=Path(command_output_file.name),
+                variable_output_file_name=Path(variable_output_file.name),
+            )
+
+            commands = Path(command_output_file.name).read_text(encoding="utf-8")
+            variables = Path(variable_output_file.name).read_text(encoding="utf-8")
+
+            self.assertIn(r"\ifthenelse{\equal{#1}{Scenario\_\#1\%}}", commands)
+            self.assertIn(r"\section{Scenario\_\#1\%}", variables)
+            self.assertIn(r"\def\region{Region\_\&1}", variables)
+            self.assertIn(r"\def\area{Area\_\{1\}}", variables)
+            self.assertIn(r"\def\zone{Zone\_\#1\%}", variables)
+            self.assertIn(r"\input{", variables)

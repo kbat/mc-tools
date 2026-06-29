@@ -7,6 +7,25 @@ from mctools.common.risk.scenario import Scenario
 from mctools.common.risk.value import Value
 
 
+def escape_latex(text: str) -> str:
+    replacements = (
+        ("\\", r"\textbackslash{}"),
+        ("{", r"\{"),
+        ("}", r"\}"),
+        ("#", r"\#"),
+        ("$", r"\$"),
+        ("%", r"\%"),
+        ("&", r"\&"),
+        ("_", r"\_"),
+        ("^", r"\textasciicircum{}"),
+        ("~", r"\textasciitilde{}"),
+    )
+    escaped = text
+    for old, new in replacements:
+        escaped = escaped.replace(old, new)
+    return escaped
+
+
 def getPrintedValue(val=None, err=None, value: Value | None = None):
     """Return a string with the value to be printed
 
@@ -128,31 +147,38 @@ class Case:
         )
 
         for scenario in self.scenarios:
+            escaped_scenario = escape_latex(scenario)
             buffer.append(
-                r"\ifthenelse{\equal{#1}{" f"{scenario}" "}}{% " f"{scenario}\n"
+                r"\ifthenelse{\equal{#1}{"
+                f"{escaped_scenario}"
+                "}}{% "
+                f"{escaped_scenario}\n"
             )
             for region in self.scenarios[scenario].data.sources:
+                escaped_region = escape_latex(region)
                 buffer.append(
                     r"  \ifthenelse{\equal{#2}{"
-                    f"{region}"
+                    f"{escaped_region}"
                     "}}{% "
-                    f"{self.scenarios[scenario][region].path}\n"
+                    f"{escape_latex(self.scenarios[scenario][region].path)}\n"
                 )
                 for area in self.scenarios[scenario][region].sub_levels:
+                    escaped_area = escape_latex(area)
                     buffer.append(
                         r"    \ifthenelse{\equal"
-                        "{#3}{" + f"{area}"
+                        "{#3}{" + f"{escaped_area}"
                         "}}{% "
-                        f"{self.scenarios[scenario][region][area].path}\n"
+                        f"{escape_latex(self.scenarios[scenario][region][area].path)}\n"
                     )
                     for zone in self.scenarios[scenario][region][area].sub_levels:
+                        escaped_zone = escape_latex(zone)
                         buffer.append(
                             r"      \ifthenelse{\equal{#4}{"
-                            f"{zone}"
+                            f"{escaped_zone}"
                             "}}{"
                             f"{getPrintedValue(value=self.scenarios[scenario][region][area][zone].value)}"
                             "}{"
-                            f"% {self.scenarios[scenario][region][area][zone].path}\n"
+                            f"% {escape_latex(self.scenarios[scenario][region][area][zone].path)}\n"
                         )
                     buffer.append(
                         "        "
@@ -172,9 +198,9 @@ class Case:
             for combo in self.scenarios[scenario].data.arbitrary_level_combos:
                 buffer.append(
                     r"\ifthenelse{\equal{#1}{"
-                    f"{self.scenarios[scenario][combo].path}"
+                    f"{escape_latex(self.scenarios[scenario][combo].path)}"
                     "}}{% "
-                    f"{self.scenarios[scenario][combo].path}\n"
+                    f"{escape_latex(self.scenarios[scenario][combo].path)}\n"
                     f"{getPrintedValue(value=self.scenarios[scenario][combo].value)}"
                 )
                 buffer.append("}{}%\n")
@@ -207,7 +233,7 @@ class Case:
             r"\setlength\parindent{0pt}"
             "\n\n"
             r"\input{"
-            f"{command_output_file_name}"
+            f"{escape_latex(str(command_output_file_name))}"
             "}\n\n"
             r"\newcommand\print{%"
             "\n"
@@ -224,36 +250,42 @@ class Case:
         ]
 
         for scenario in self.scenarios:
-            buffer.append(r"\section{" f"{scenario}" "}")
-            buffer.append(r"\def\scenario{" f"{scenario}" "}\n")
+            escaped_scenario = escape_latex(scenario)
+            buffer.append(r"\section{" f"{escaped_scenario}" "}")
+            buffer.append(r"\def\scenario{" f"{escaped_scenario}" "}\n")
             for region in self.scenarios[scenario].data.sources:
-                buffer.append(r"\def\region{" f"{region}" "}\n")
+                escaped_region = escape_latex(region)
+                buffer.append(r"\def\region{" f"{escaped_region}" "}\n")
                 for area in self.scenarios[scenario][region].sub_levels:
-                    buffer.append(r"\def\area{" f"{area}" "}\n")
+                    escaped_area = escape_latex(area)
+                    buffer.append(r"\def\area{" f"{escaped_area}" "}\n")
                     for zone in (
                         self.scenarios[scenario][region].sub_levels[area].sub_levels
                     ):
-                        buffer.append(r"\def\zone{" f"{zone}" "}\n")
+                        escaped_zone = escape_latex(zone)
+                        buffer.append(r"\def\zone{" f"{escaped_zone}" "}\n")
                         buffer.append(
                             r"\def\value{\rate{"
-                            f"{scenario}"
+                            f"{escaped_scenario}"
                             "}{"
-                            f"{region}"
+                            f"{escaped_region}"
                             "}{"
-                            f"{area}"
+                            f"{escaped_area}"
                             "}{"
-                            f"{zone}"
+                            f"{escaped_zone}"
                             "}}\n"
                             r"\print"
                             "\n\n"
                         )
             for combo in self.scenarios[scenario].data.arbitrary_level_combos:
                 buffer.append(
-                    r"\def\combo{" f"{self.scenarios[scenario][combo].path}" "}\n"
+                    r"\def\combo{"
+                    f"{escape_latex(self.scenarios[scenario][combo].path)}"
+                    "}\n"
                 )
                 buffer.append(
                     r"\def\value{\rate{"
-                    f"{self.scenarios[scenario][combo].path}"
+                    f"{escape_latex(self.scenarios[scenario][combo].path)}"
                     "}{}{}{}}\n"
                     r"\printCombo"
                     "\n\n"
