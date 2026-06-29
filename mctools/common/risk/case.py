@@ -1,3 +1,5 @@
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from os import cpu_count
 from pathlib import Path
 from time import time
 
@@ -31,14 +33,40 @@ def getPrintedValue(val=None, err=None, value: Value | None = None):
     )
 
 
+def _evaluate_scenario(item: tuple[str, Scenario]) -> tuple[str, Scenario]:
+    name, scenario = item
+    scenario.evaluate()
+    return name, scenario
+
+
 class Case:
     def __init__(self, scenarios: dict[str, Scenario], name: str = ""):
         self.name = name
         self.scenarios = scenarios
 
-    def evaluate(self):
+    def evaluate(self, parallel: bool = False, max_workers: int | None = None):
         t_start = time()
         n_scenarios = len(self.scenarios)
+        if parallel and n_scenarios > 1:
+            if max_workers is None:
+                max_workers = min(n_scenarios, cpu_count() or 1)
+            else:
+                max_workers = min(max_workers, n_scenarios)
+            print(f"Evaluating {n_scenarios} scenarios with {max_workers} workers.")
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                futures = [
+                    executor.submit(_evaluate_scenario, item)
+                    for item in self.scenarios.items()
+                ]
+                for n_scenario, future in enumerate(as_completed(futures)):
+                    scenario_name, scenario = future.result()
+                    self.scenarios[scenario_name] = scenario
+                    print(
+                        f"Scenario {n_scenario+1:3d}/{n_scenarios:3d}: "
+                        f"{(time()-t_start):4.2e} seconds ({scenario_name})"
+                    )
+            return
+
         for n_scenario, scenario in enumerate(self.scenarios):
             self.scenarios[scenario].evaluate()
             print(
