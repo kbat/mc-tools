@@ -107,3 +107,11 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.x, -0.5)
         self.assertEqual(zone.value.y, -0.5)
         self.assertEqual(zone.value.z, 0.5)
+
+    def test_zone_default_limits_are_not_shared(self):
+        zone_0 = Zone(hist=create_test_histogram(name="th3_2"))
+        zone_1 = Zone(hist=create_test_histogram(name="th3_3"))
+
+        zone_0.lim.xlim.lower = 0.0
+
+        self.assertEqual(zone_1.lim.xlim.lower, float("-inf"))

@@ -1,7 +1,7 @@
 """BaseLevel associated with a ROOT TH3 histogram"""
 
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from uuid import uuid4
 from warnings import warn
 
@@ -11,31 +11,29 @@ from mctools.common.risk.level import BaseLevel
 from mctools.common.risk.value import Value
 
 
+@dataclass
 class Limits:
     """Limits for a 1D variable"""
 
-    def __init__(self, lower: float = float("-inf"), upper: float = float("inf")):
-        if upper < lower:
+    lower: float = float("-inf")
+    upper: float = float("inf")
+
+    def __post_init__(self):
+        if self.upper < self.lower:
             warn(
                 "Given lower limit is larger than upper limit."
                 "Assigning Limits.lower = upper and Limits.upper = lower."
             )
-            self.lower = upper
-            self.upper = lower
-        else:
-            self.lower = lower
-            self.upper = upper
+            self.lower, self.upper = self.upper, self.lower
 
 
+@dataclass
 class Limits3D:
     """Box limits for a 3D variable"""
 
-    def __init__(
-        self, xlim: Limits = Limits(), ylim: Limits = Limits(), zlim: Limits = Limits()
-    ):
-        self.xlim = xlim
-        self.ylim = ylim
-        self.zlim = zlim
+    xlim: Limits = field(default_factory=Limits)
+    ylim: Limits = field(default_factory=Limits)
+    zlim: Limits = field(default_factory=Limits)
 
 
 @dataclass
@@ -141,13 +139,13 @@ class Zone(BaseLevel):
     def __init__(
         self,
         hist: ROOT.TH3F | ROOT.TH3D | ROOTFileInput | str,
-        lim: Limits3D = Limits3D(),
+        lim: Limits3D | None = None,
         name: str = "",
         title: str = "",
     ):
         super().__init__(name=name, title=title)
         self.hist = hist
-        self.lim = lim
+        self.lim = Limits3D() if lim is None else lim
 
     def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
