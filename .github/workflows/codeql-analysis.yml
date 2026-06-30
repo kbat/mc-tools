@@ -67,6 +67,7 @@ jobs:
        python3 --version
        sudo snap install root-framework
        which root
+       root --version
        root-config --features
 
     - name: Compile hplot
@@ -75,7 +76,12 @@ jobs:
       run: |
        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
        sudo apt-get update
-       sudo apt-get install -y libboost-program-options-dev build-essential
+       sudo apt-get install -y libboost-program-options-dev build-essential libboost-dev
+       g++ --version
+       which g++
+       ls /usr/include/boost/program_options.hpp
+       g++ -v -c your_file.cpp
+       echo | g++ -E -x c++ - -v
        pwd
        export MCTOOLS=$(pwd)
        export PATH=$MCTOOLS/bin:$PATH
