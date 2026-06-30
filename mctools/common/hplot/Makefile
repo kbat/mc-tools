@@ -15,7 +15,7 @@ CXXFLAGS := -g -std=c++17 -Ofast -fno-math-errno -Wall
 
 obj/%.o: src/%.cxx src/%.h
 	@echo "Compiling $@"
-	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
+	@$(GCC) $(CXXFLAGS) -Isrc/ $(ROOTCFLAGS) -c $< -o $@
 
 obj/hplot.o: src/hplot.cxx
 	@echo "Compiling $@"

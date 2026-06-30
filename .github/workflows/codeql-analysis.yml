@@ -69,7 +69,7 @@ jobs:
        which root
        root --version
        root-config --features
-
+       echo $ROOTCFLAGS
     - name: Compile hplot
       # with:
       #   languages: cpp
@@ -85,7 +85,7 @@ jobs:
        pwd
        export MCTOOLS=$(pwd)
        export PATH=$MCTOOLS/bin:$PATH
-       make
+       make VERBOSE=1
       shell: bash
 
     - name: Test hplot
