@@ -79,8 +79,8 @@ jobs:
        sudo apt-get install -y libboost-program-options-dev build-essential libboost-dev
        g++ --version
        which g++
-       ls /usr/include/boost/program_options.hpp
-       g++ -v -c your_file.cpp
+       ls -l /usr/include/boost/program_options.hpp
+       g++ -v -c mctools/common/hplot/src/Arguments.cxx
        echo | g++ -E -x c++ - -v
        pwd
        export MCTOOLS=$(pwd)
