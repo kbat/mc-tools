@@ -11,7 +11,7 @@ fi
 for d in ${base}/fluka_*; do touch $d/$f; done
 
 # A marker indicating that no new jobs should be submitted in the
-# current folder.
+# current folder. The marker is recognised by submit-fluka.
 if [ $f = 'rfluka.stop' ]; then
     touch ${base}/rfluka.stop
 fi
