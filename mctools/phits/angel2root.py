@@ -39,7 +39,19 @@ SUBT = re.compile(r"""
 #: a regular expression which describes the page-separating line.
 pageSepRE = re.compile(r"^[\s#]newpage:$")
 
-DEBUG = False
+#: a regular expression to search for continuation lines of "reg = "
+regMeshRE = re.compile(r"^ *([,0-9{}<\(\)\[\]\-\+]|all|u *=).*")
+
+#: a regular expression to separate the values in multiplier subsection
+#  ex.1      mat                   mset1
+#            all ( 1.79077E-13 2002 1 -4 )
+#         => ['( 1.79077E-13 2002 1 -4 )']
+#  ex.2      mat         mset1           mset2           mset3
+#            all ( 1.0000 -250 ) ( 1.0000 -200 ) ( 1.0000 -201 )
+#         => ['( 1.0000 -250 )','( 1.0000 -200 )','( 1.0000 -201 )]
+mulDataRE = re.compile(r"(\(.*?\))+") # match non-greedily
+
+DEBUG = 0 # accept integral value. (> 1 to print the data)
 
 def is_float(s):
     """
@@ -131,60 +143,94 @@ class Angel:
         ##################################################
         # scan the first page and extract header information
         ##################################################
-        for iline, line in enumerate(pageLST[0]):
-            line.strip()
+        if DEBUG > 1:
+            # print each tuple element
+            print("Header Page as a tuple of strings: \n", pageLST[0])
+            print("Strings(stripped):")
+            for elNo in range(len(pageLST[0])):
+                print("\t",elNo,pageLST[0][elNo].strip())
+        if DEBUG: print("========== Start processing the header page ==========")
+        iline = 0
+        while iline < len(pageLST[0]):
+            line = pageLST[0][iline].strip()
+            # print("{}: line = \'{}\'".format(iline,line))
             if re.search("title = ", line):
                 words = line.split()
                 self.title = ' '.join(words[2:])
                 if DEBUG: print("title: ", self.title)
-                continue
-            if re.search("mesh = ", line):
+                iline += 1
+            elif re.search("mesh = ", line):
                 words = line.split()
                 self.mesh = words[2]
                 if DEBUG: print("mesh: ", self.mesh)
-                continue
-            if re.search("axis = ", line):
+                if self.mesh == "reg": # process line(s) for region mesh
+                    # The next line should be "reg = ".
+                    # Extract the string between '=' and '#'.
+                    regStr = re.split(r"[=#]", pageLST[0][iline+1].strip())[1]
+                    if DEBUG: print("regStr(1st): ", regStr)
+                    # The region line(s) may continue...
+                    iline += 2 # start from the next of "reg = "
+                    while True:
+                        if regMeshRE.match(pageLST[0][iline]):
+                            regStr += pageLST[0][iline].strip()
+                            iline += 1
+                            if DEBUG: print("\tiline => ",iline)
+                        else:
+                            break
+                    if DEBUG: print("regStr(fin): ", regStr)
+                else: iline += 1
+            elif re.search("axis = ", line):
                 for a in line.split()[2:]:
                     if a == '#': break
                     self.axis.append(a)
                 if DEBUG: print("axis: ", self.axis)
-                continue
-            if re.search("reg = ", line):
-                for r in line.split()[2:]:
-                    if r == '#': break
-                    self.reg.append(r)
-                if DEBUG: print("reg: ", self.reg)
-                continue
-            if re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin width
+                iline += 1
+            elif re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin width
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
                 self.last_nbins_read = words[0]
                 if DEBUG: print("dict_nbins:", self.dict_nbins)
-                continue
-            if re.search("#    data = ", line):
+                iline += 1
+            elif re.search("#    data = ", line):
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
-                continue
-            if re.search("part = ", line):
+                iline += 1
+            elif re.search("part = ", line):
                 words = line.split()
-# this loop is needed in case we define particles in separate lines as shown on page 121 of the Manual. Otherwise we could have used 'self.part = words[2:]'
-                for w in words[2:]: self.part.append(w)
+                # The "part = " line immediately below the "multiplier = all"
+                # solely belongs and applys to the multiplier subsection.
+                self.part = words[2:]
                 if DEBUG: print("particles:", self.part)
-                continue
-            if re.search("output = ", line):
+                iline += 1
+            elif re.search("output = ", line):
                 words = line.split()
                 self.output = words[2]
                 self.output_title = ' '.join(words[4:])
                 if self.unit_title != None: self.ztitle = self.output_title + " " + self.unit_title
-                continue
-            if re.search("unit = ", line):
+                iline += 1
+            elif re.search("unit = ", line):
                 words = line.split()
                 self.unit = words[2]
                 self.unit_title = ' '.join(words[6:])
                 if self.output_title != None: self.ztitle = self.output_title + " " + self.unit_title
-                continue
-            if re.search("file = ", line):
+                iline += 1
+            elif re.search("file = ", line):
                 words = line.split()
                 self.file, ext = os.path.splitext(words[2])
+                iline += 1
+            elif re.search("multiplier = ", line):
+                self.mult_part = pageLST[0][iline+1].strip().split()[2]
+                self.mult_emax = pageLST[0][iline+3].strip().split()[2]
+                self.mult_mat  = pageLST[0][iline+4].strip().split()[1:]
+                self.mult_mul = mulDataRE.findall(pageLST[0][iline+5].strip()) # non-greedy
+                if DEBUG:
+                    print("self.mult_part: ", self.mult_part)
+                    print("self.mult_emax: ", self.mult_emax)
+                    print("self.mult_mat : ", self.mult_mat)
+                    print("self.mult_mul:  ", self.mult_mul)
+                iline += 5
+            else:
+                iline += 1 # just advance one line
+        if DEBUG: print("========== Finish processing the header page ==========")
 
         ##################################################
         # scan the remaining data pages one by one
