@@ -15,7 +15,7 @@ import ROOT
 # The line below is needed to prevent command-line arguments from
 # stolen by PyROOT and handed to TApplication
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from ROOT import ROOT, TH1F, TH2F, TFile, TObjArray, TGraphErrors
+from ROOT import TH1F, TH2F, TFile, TObjArray, TGraphErrors
 
 """
 def isData(line):
@@ -277,7 +277,8 @@ class Angel:
                         self.Read1DHist(igline, npage)
                         continue
                     elif re.search("h:              x", line):
-                        self.Read1DGraphErrors(igline)
+                        if DEBUG: print("calling Read1DGraphErrors()")
+                        self.Read1DGraphErrors(igline, npage)
                         continue
                     elif re.search("^h[2dc]:", line):
                         if DEBUG:
@@ -491,11 +492,12 @@ class Angel:
             self.histos.Add(h)
         del self.subtitles[:]
 
-    def Read1DGraphErrors(self, iline):
+    def Read1DGraphErrors(self, iline, pageNum):
         """
         Read 1D graph section
         """
         ngraphs = self.GetNhist(self.lines[iline]) # graph and hist format is the same
+        if DEBUG: print("ngraphs: ", ngraphs)
         xarray = []
         data = {}
         errors = {}
@@ -509,6 +511,7 @@ class Angel:
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
+            if DEBUG > 2: print("Read1DGraphErrors(): words = ",words)
             xarray.append(float(words[0]))
             for igraph in range(ngraphs):
                 data[igraph].append(  float(words[(igraph+1)*2-1  ]))
@@ -516,14 +519,48 @@ class Angel:
 
         npoints = len(xarray)
 
+        if DEBUG:
+            print("Read1DGraphErrors(): len(xarray) = ", len(xarray))
+            print("Read1DGraphErrors(): ngraphs = ", ngraphs)
+            print("Read1DGraphErrors(): len(data) = ", len(data))
+            print("Read1DGraphErrors(): len(errors) = ", len(errors))
+            for idx in range(ngraphs):
+                print("Read1DGraphErrors(): len(data[{}]) = {}".format(idx, len(data[idx])))
+                print("Read1DGraphErrors(): len(errors[{}]) = {}".format(idx, len(errors[idx])))
+            print("Read1DGraphErrors(): self.numPlotPages = ", self.numPlotPages)
+            if DEBUG > 1:
+                print("Read1DGraphErrors(): xarray = ", xarray)
+                for idx in range(ngraphs):
+                    print("Read1DGraphErrors(): data[{}]= {}".format(idx, data[idx]))
+                    print("Read1DGraphErrors(): errors[{}] = {}".format(idx, errors[idx]))
+
         for igraph in range(ngraphs):
-            if self.subtitles[igraph]: subtitle = ' - ' + self.subtitles[igraph]
+            if self.subtitles[igraph]: subtitle = ' - ' + self.subtitles[igraph+1]
             else: subtitle = ''
+            if DEBUG: print("Read1DGraphErrors(): subtitle = '{}'".format(subtitle))
             self.FixTitles()
             g = TGraphErrors(npoints)
+            ### Releasing the ownership
+            ROOT.SetOwnership(g, False) # old style.
+            # cppyy-based newer PyROOT.
+            # g.SetOwnership(False)
+            # -> AttributeError: 'TGraphErrors' object has no attribute 'SetOwnership'
             # self.ihist+1 - start from ONE as in Angel - easy to compare
-            g.SetNameTitle("g%d" % (self.ihist+1), "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle))
+            if self.numPlotPages == 1:
+                if ngraphs == 1:
+                    gname = self.file
+                else:
+                    gname = "%s_%s" % (self.file, self.subtitles[igraph+1])
+            else:
+                if ngraphs == 1:
+                    gname = "%s_%d" % (self.file, pageNum)
+                else:
+                    gname = "%s_%d_%s" % (self.file, pageNum, self.subtitles[igraph+1])
+            if DEBUG: print("Read1DGraphErrors(): gname = ", gname)
+            g.SetNameTitle(gname, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle))
             self.ihist += 1
+            if DEBUG: print("Read1DGraphErrors(): name = '{}', title = '{}{};{};{}'".format(
+                gname, self.title, subtitle, self.xtitle, self.ytitle))
             for i in range(npoints):
                 x = xarray[i]
                 y = data[igraph][i]
