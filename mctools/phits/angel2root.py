@@ -237,7 +237,9 @@ class Angel:
         # book and fill histograms
         ##################################################
         for npage in range(1, len(pageLST)):
+            if DEBUG: print("========== Page {} ==========".format(npage))
             # first scan: extract header info in advance to the data extraction
+            if DEBUG: print("---------- 1st scan ----------")
             for iline, line in enumerate(pageLST[npage]):
                 line.strip()
                 if re.search("^x:", line):
@@ -262,6 +264,7 @@ class Angel:
             # second scan: extract data.
             #              scan only within the current page, pass the corresponding
             #              global line number for data decoding
+            if DEBUG: print("---------- 2nd scan ----------")
             for iline, line in enumerate(pageLST[npage]):
                 line.strip()
                 #: 'global' line number (not in the current page).
@@ -271,7 +274,7 @@ class Angel:
                 if re.search("^h", line):
                     if re.search("^h: [nx]", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                         if DEBUG: print("one dimentional graph section")
-                        self.Read1DHist(igline)
+                        self.Read1DHist(igline, npage)
                         continue
                     elif re.search("h:              x", line):
                         self.Read1DGraphErrors(igline)
@@ -284,7 +287,8 @@ class Angel:
                         self.Read2DHist(igline)
                         continue
                     elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
-                        self.Read1DHist(igline)
+                        if DEBUG: print("calling Read1DHist() (region mesh)")
+                        self.Read1DHist(igline, npage)
                         continue
 
 #        print(self.dict_edges_array)
@@ -295,6 +299,7 @@ class Angel:
 #            self.Make2Dfrom1D()
 
 
+        if DEBUG: print("self.histos.GetEntries(): ", self.histos.GetEntries())
         if self.histos.GetEntries():
             self.histos.Write()
             fout.Close()
@@ -342,7 +347,7 @@ class Angel:
         for line in self.lines[iline+1:]:
             words =  line.split()
             if line[0] == '#': # if the distribution type is 1 or 2 then '#' is used
-                if DEBUG: print(words[1:])
+                if DEBUG > 1: print(words[1:])
                 for w in words[1:]:
                     edges.append(w)
             elif is_float(words[0]):
@@ -362,12 +367,16 @@ class Angel:
         """
 # Let's remove all spaces between ')'. For some reason line.replace('\s*)', ')') does not work
 # so we do it in this weird way:
+        if DEBUG: print("GetNhist(): line = \'{}\'".format(line))
         line1 = None
         while line1 != line:
             line1 = line
             line = line.replace(' )', ')')
 
         words = line.split()
+        if DEBUG:
+            print("GetNhist(): line = \'{}\'".format(line))
+            if DEBUG > 1: print("GetNhist(): words = ", words)
         nhists = 0
         for w in words:
             if re.search("^y", w):
@@ -381,7 +390,7 @@ class Angel:
         if DEBUG: print("Section Header: 1D histo", nhists, self.subtitles)
         return nhists
 
-    def Read1DHist(self, iline):
+    def Read1DHist(self, iline, pageNum):
         """
         Read 1D histogram section
         """
@@ -406,13 +415,15 @@ class Angel:
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
-#            if DEBUG: print(words)
+            if DEBUG > 1: print("Read1DHist(): words = ",words)
             if isCharge:
+                if DEBUG: print("Read1DHist(): isCharge")
                 xarray.append(float(words[0])-0.5)
                 xmax = float(words[0])+0.5
                 data[0].append(float(words[1]))
                 errors[0].append(float(words[2]))
             elif 'reg' in self.axis:
+                if DEBUG: print("Read1DHist(): reg")
                 xarray.append(   float(words[0])-0.5)
                 xmax =           float(words[0])+0.5
                 bin_labels.append(words[1]) # region number
@@ -420,6 +431,7 @@ class Angel:
                     data[ihist].append(  float(words[(ihist+1)*2+1])    )
                     errors[ihist].append(float(words[(ihist+1)*2+2])    )
             else:
+                if DEBUG > 1: print("Read1DHist(): else")
                 xarray.append(float(words[0]))
                 xmax =        float(words[1])
                 for ihist in range(nhist):
@@ -429,14 +441,38 @@ class Angel:
         nbins = len(xarray)
         xarray.append(xmax)
 
-#        if DEBUG: print("data: ", data)
+        if DEBUG:
+            print("Read1DHist(): len(xarray) = ", len(xarray))
+            print("Read1DHist(): nhist = ", nhist)
+            print("Read1DHist(): len(data) = ", len(data))
+            print("Read1DHist(): len(errors) = ", len(errors))
+            for idx in range(nhist):
+                print("Read1DHist(): len(data[{}]) = {}".format(idx, len(data[idx])))
+                print("Read1DHist(): len(errors[{}]) = {}".format(idx, len(errors[idx])))
+            print("Read1DHist(): self.numPlotPages = ", self.numPlotPages)
+            if DEBUG > 1:
+                print("Read1DHist(): xarray= ", xarray)
+                for idx in range(nhist):
+                    print("Read1DHist(): data[{}]= {}".format(idx, data[idx]))
+                    print("Read1DHist(): errors[{}] = {}".format(idx, errors[idx]))
 
         for ihist in range(nhist):
-            if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist]
+            if self.subtitles[ihist]: subtitle = ' - ' + self.subtitles[ihist+1]
             else: subtitle = ''
+            if DEBUG: print("Read1DHist(): subtitle = '{}'".format(subtitle))
             self.FixTitles()
             # self.ihist+1 - start from ONE as in Angel - easy to compare
-            hname=self.file if self.numPlotPages == 1 else "%s%d" % (self.file, self.ihist+1)
+            if self.numPlotPages == 1:
+                if nhist == 1:
+                    hname = "%s" % (self.file)
+                else:
+                    hname = "%s_%s" % (self.file, self.subtitles[ihist+1])
+            else:
+                if nhist == 1:
+                    hname = "%s_%d" % (self.file, pageNum)
+                else:
+                    hname = "%s_%d_%s" % (self.file, pageNum, self.subtitles[ihist+1])
+            if DEBUG: print("Read1DHist(): hname = '{}'".format(hname))
             h = TH1F(hname, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
             if self.avBitSet:
                 h.SetBit(TH1F.kIsAverage)
