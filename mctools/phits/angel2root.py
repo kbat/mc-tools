@@ -77,9 +77,7 @@ class Angel:
     last_nbins_read = None # last name of binning read (ne, nt, na, ...)
     dict_edges_array = {} # dictionary of arrays with bin edges
 
-    histos = TObjArray()
     ihist = 0 # histogram number - must start from ZERO
-    fname_out = None
     def __init__(self, fname_in, fname_out, **kwargs):
 #        global DEBUG
         #: a python list which contains the numbers of lines which separate
@@ -95,7 +93,9 @@ class Angel:
         self.lines = tuple(file.readlines())
         file.close()
 
-        self.fname_out = fname_out
+        # create the output anyway; remove if nothing to save
+        fout = TFile(fname_out, "recreate")
+        self.histos = TObjArray() # the owner is the output file
         self.avBitSet = kwargs["avBitSet"]
 
         ipage = -1
@@ -225,20 +225,17 @@ class Angel:
                 if re.search("^h", line):
                     if re.search("^h: [nx]", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                         if DEBUG: print("one dimentional graph section")
-                        tmp_h = self.Read1DHist(igline)
-                        self.histos.Add(tmp_h)
+                        self.Read1DHist(igline)
                         continue
                     elif re.search("h:              x", line):
-                        tmp_g = self.Read1DGraphErrors(igline)
-                        self.histos.Add(tmp_g)
+                        self.Read1DGraphErrors(igline)
                         continue
                     elif re.search("^h[2dc]:", line):
                         if DEBUG:
                             if re.search("^h2", line): print("h2: two dimentional contour plot section")
                             if re.search("^hd", line): print("hd: two dimentional cluster plot section")
                             if re.search("^hc", line): print("hc: two dimentional colour cluster plot section")
-                        tmp_h = self.Read2DHist(igline)
-                        self.histos.Add(tmp_h)
+                        self.Read2DHist(igline)
                         continue
                     elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                         self.Read1DHist(igline)
@@ -249,18 +246,18 @@ class Angel:
             if DEBUG: print("1D")
         else:
             if DEBUG: print("2D")
-#            tmp_h2 = self.Make2Dfrom1D()
-#            self.histos.Add(tmp_h2)
+#            self.Make2Dfrom1D()
 
 
         if self.histos.GetEntries():
-            fout = TFile(self.fname_out, "recreate")
             self.histos.Write()
             fout.Close()
             self.return_value = 0
         else:
             print("Have not found any histograms/graphs in this file")
             self.return_value = 1
+            fout.Close()
+            os.remove(fname_out) # Nothing to write, remove the output file
 
     def is1D(self):
         """
@@ -409,7 +406,7 @@ class Angel:
                     h.GetXaxis().SetBinLabel(i+1, bin_labels[i])
                 h.GetXaxis().SetTitle("Region number")
 
-            return h
+            self.histos.Add(h)
         del self.subtitles[:]
 
     def Read1DGraphErrors(self, iline):
@@ -452,7 +449,7 @@ class Angel:
                 g.SetPoint(i, x, y)
                 g.SetPointError(i, 0, ey*y)
 
-            return g
+            self.histos.Add(g)
         del self.subtitles[:]
 
 
@@ -604,7 +601,7 @@ class Angel:
                 h2.SetBinError(binx+1, biny+1, h1.GetBinError(binx+1))
 
 
-        return h2
+        self.histos.Add(h2)
 
 
 
