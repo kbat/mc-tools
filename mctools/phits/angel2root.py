@@ -70,7 +70,7 @@ class Angel:
     part = [] # list of particles
     lines = []
     return_value = 0
-    numPlots = 0 # number of plots <- later deduced from len(pageLST)
+    numPlotPages = 0 # number of plot pages <- later deduced from len(pageLST)
 
 # this group of variables is used to convert a set of 1D histograms to 2D (if necessary):
     dict_nbins = {} # dictionary of number of bins - to guess if 2D histo is needed
@@ -125,8 +125,8 @@ class Angel:
         pageLST.append( tuple( self.lines[pageSepLineLST[-1]+1:] ) )
 
         #   the number of plot pages
-        self.numPlots = len(pageLST) - 1 # one header page
-        if DEBUG: print("numPlots: ", self.numPlots)
+        self.numPlotPages = len(pageLST) - 1 # one header page
+        if DEBUG: print("numPlotPages: ", self.numPlotPages)
 
         ##################################################
         # scan the first page and extract header information
@@ -390,7 +390,7 @@ class Angel:
             else: subtitle = ''
             self.FixTitles()
             # self.ihist+1 - start from ONE as in Angel - easy to compare
-            hname=self.file if self.numPlots == 1 else "%s%d" % (self.file, self.ihist+1)
+            hname=self.file if self.numPlotPages == 1 else "%s%d" % (self.file, self.ihist+1)
             h = TH1F(hname, "%s%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle), nbins, array('f', xarray))
             if self.avBitSet:
                 h.SetBit(TH1F.kIsAverage)
