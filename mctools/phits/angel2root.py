@@ -64,6 +64,33 @@ def is_float(s):
         return False
 
 
+def splitHline(inLine):
+    """split an "h:" line into words w/ "(...)" taking into account
+    """
+    line = inLine.strip() # remove leading/trailing whitespaces
+    if DEBUG: print("splitHline: stripped line = '{}'".format(line),len(line))
+    staPos = [0] # start position of a word (the first should be 0)
+    endPos = []
+    inWord  = True  # True if in a word
+    inParen = False # True if between '(' and ')'
+    for idx in range(1,len(line)):
+        if line[idx] == '(': inParen = True
+        elif line[idx] == ')': inParen = False
+        elif line[idx] == ' ' and line[idx-1] != ' ' and not inParen:
+            endPos.append(idx)
+        elif line[idx] != ' ' and line[idx-1] == ' ' and not inParen:
+            staPos.append(idx)
+    endPos.append(len(line))
+    if DEBUG > 1:
+        print("splitHline: staPos: ", staPos,len(staPos))
+        print("splitHline: endPos: ", endPos,len(endPos))
+    words = []
+    for idx in range(len(staPos)):
+        words.append(line[staPos[idx]:endPos[idx]])
+    if DEBUG > 1: print("splitHline: words = :", words)
+    return words
+
+
 class Angel:
     fname = None
     title  = None
@@ -374,7 +401,7 @@ class Angel:
             line1 = line
             line = line.replace(' )', ')')
 
-        words = line.split()
+        words = splitHline(line)
         if DEBUG:
             print("GetNhist(): line = \'{}\'".format(line))
             if DEBUG > 1: print("GetNhist(): words = ", words)
