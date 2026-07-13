@@ -307,13 +307,13 @@ class Angel:
                         if DEBUG: print("calling Read1DGraphErrors()")
                         self.Read1DGraphErrors(igline, npage)
                         continue
-                    elif re.search("^h[2dc]:", line):
+                    elif re.search("^h([2d]|c2?):", line):
                         if DEBUG:
                             if re.search("^h2", line): print("h2: two dimentional contour plot section")
                             if re.search("^hd", line): print("hd: two dimentional cluster plot section")
                             if re.search("^hc", line): print("hc: two dimentional colour cluster plot section")
                         self.Read2DHist(igline)
-                        continue
+                        break # no need to scan further, only to find color palette etc.
                     elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                         if DEBUG: print("calling Read1DHist() (region mesh)")
                         self.Read1DHist(igline, npage)
@@ -614,8 +614,10 @@ class Angel:
         Read 2D histogram section
         """
 
+        if DEBUG: print("Read2DHist(): invoked with iline = ", iline)
         line = self.lines[iline].replace(" =", "=") # sometimes Angel writes 'y=' and sometimes 'y ='
         words = line.split()
+        if DEBUG: print("Read2DHist(): words = ", words)
         if len(words) != 15:
             print(words)
             print(len(words))
@@ -637,7 +639,7 @@ class Angel:
             else:
                 ymin,ymax = ymax+dy/2.0, ymin-dy/2.0
         ny = abs(int(round((ymax-ymin)/dy)))
-        if DEBUG: print("y:", dy, ymin, ymax, ny)
+        if DEBUG: print("Read2DHsit(): y: (ymin,ymax,dy,ny) = ({},{},{},{})".format(ymin,ymax,dy,ny))
 
         dx = float(words[13])
         xmin = float(words[9])
@@ -647,21 +649,22 @@ class Angel:
         else:
             xmin,xmax = xmax-dx/2.0, xmin+dx/2.0
         nx = int(round((xmax-xmin)/dx))
-        if DEBUG: print("x:", dx, xmin, xmax, nx)
+        if DEBUG: print("Read2DHist(): x: (xmin,xmax,dx,nx) = ({},{},{},{})".format(xmin,xmax,dx,nx))
 
         data = []
         for line in self.lines[iline+1:]:
             line = line.strip()
+            if DEBUG > 1: print("Read2DHist(): line = '{}'".format(line))
             if line == '': break
             elif re.search("^#", line): continue
             words = line.split()
-#            if DEBUG: print("words: ", words)
+            if DEBUG > 1: print("Read2DHist(): words = ", words)
             for w in words:
                 if w == 'z:':
-#                    if DEBUG: print("this is a color palette -> exit")
+                    if DEBUG: print("Read2DHist(): this is a color palette -> exit")
                     return # this was a color palette
                 data.append(float(w))
-#        if DEBUG: print(data)
+        if DEBUG > 1: print("Read2DHist(): data = ", data)
 
         # self.ihist+1 - start from ONE as in Angel - easy to compare
         h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
