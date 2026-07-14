@@ -190,7 +190,8 @@ class Angel:
                 words = line.split()
                 self.mesh = words[2]
                 if DEBUG: print("mesh: ", self.mesh)
-                if self.mesh == "reg": # process line(s) for region mesh
+                if self.mesh == "reg" or self.mesh == "tet":
+                    # process line(s) for region/tetra mesh
                     # The next line should be "reg = ".
                     # Extract the string between '=' and '#'.
                     regStr = re.split(r"[=#]", pageLST[0][iline+1].strip())[1]
@@ -306,6 +307,12 @@ class Angel:
                     elif re.search("h:              x", line):
                         if DEBUG: print("calling Read1DGraphErrors()")
                         self.Read1DGraphErrors(igline, npage)
+                        continue
+                    elif re.search("h:   x      n     n", line) and \
+                    re.search("#    num    tetra   volume",
+                              pageLST[npage][iline+1].strip()): # tetra mesh
+                        if DEBUG: print("calling Read1DGraphErrors() for tetra mesh")
+                        self.Read1DGraphErrors(igline, npage, tet=True)
                         continue
                     elif re.search("^h([2d]|c2?):", line):
                         if DEBUG:
@@ -519,7 +526,7 @@ class Angel:
             self.histos.Add(h)
         del self.subtitles[:]
 
-    def Read1DGraphErrors(self, iline, pageNum):
+    def Read1DGraphErrors(self, iline, pageNum, tet=False):
         """
         Read 1D graph section
         """
@@ -528,6 +535,7 @@ class Angel:
         xarray = []
         data = {}
         errors = {}
+        tetShift = 2 if tet else 0 # column shift for tetra mesh
 
         for igraph in range(ngraphs):
             data[igraph] = []
@@ -541,8 +549,8 @@ class Angel:
             if DEBUG > 2: print("Read1DGraphErrors(): words = ",words)
             xarray.append(float(words[0]))
             for igraph in range(ngraphs):
-                data[igraph].append(  float(words[(igraph+1)*2-1  ]))
-                errors[igraph].append(float(words[(igraph+1)*2    ]))
+                data[igraph].append(  float(words[(igraph+1)*2-1+tetShift]))
+                errors[igraph].append(float(words[(igraph+1)*2  +tetShift]))
 
         npoints = len(xarray)
 
