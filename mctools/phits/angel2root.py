@@ -212,7 +212,7 @@ class Angel:
                     self.axis.append(a)
                 if DEBUG: print("axis: ", self.axis)
                 iline += 1
-            elif re.search("^n[eartxyz] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin width
+            elif re.search("^n[eartxyzl] = ", line.strip()): # !!! make sence if we specify number of bins but not the bin width
                 words = line.split()
                 self.dict_nbins[words[0]] = int(words[2])
                 self.last_nbins_read = words[0]
