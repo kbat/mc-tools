@@ -136,6 +136,7 @@ class Angel:
         fout = TFile(fname_out, "recreate")
         self.histos = TObjArray() # the owner is the output file
         self.avBitSet = kwargs["avBitSet"]
+        self.sangel = False # existence of additional angel instruction w/ "sangel = "
 
         ipage = -1
 
@@ -256,6 +257,10 @@ class Angel:
                     print("self.mult_mat : ", self.mult_mat)
                     print("self.mult_mul:  ", self.mult_mul)
                 iline += 5
+            elif re.search("sangel =", line):
+                self.sangel = True
+                if DEBUG: print("sangel = True: '{}'".format(pageLST[0][iline].strip()))
+                iline += 1
             else:
                 iline += 1 # just advance one line
         if DEBUG: print("========== Finish processing the header page ==========")
@@ -268,6 +273,7 @@ class Angel:
             if DEBUG: print("========== Page {} ==========".format(npage))
             # first scan: extract header info in advance to the data extraction
             if DEBUG: print("---------- 1st scan ----------")
+            hLST = [] # list of 'H-tuples', (Line#OfH,"typeOfH"). ("typeOfH" is redundant)
             for iline, line in enumerate(pageLST[npage]):
                 line.strip()
                 if re.search("^x:", line):
@@ -288,12 +294,18 @@ class Angel:
                 elif re.search("'no. =", line): # subtitles of 2D histogram
                     self.subtitles.append(' '.join(line[line.find(',')+1:].split()).replace("\'", '').strip())
                     if DEBUG: print("subtitle:", self.subtitles)
+                elif re.search("^h", line):
+                    if DEBUG: print("h-line found: '{}'".format(line))
+                    hLST.append( (iline,line.split()[0]) ) # H-tuple
+            if DEBUG: print("hLST: ", hLST)
 
             # second scan: extract data.
             #              scan only within the current page, pass the corresponding
             #              global line number for data decoding
             if DEBUG: print("---------- 2nd scan ----------")
             for iline, line in enumerate(pageLST[npage]):
+                # skip to the last histogram in this page
+                if self.sangel and iline < hLST[-1][0]: continue
                 line.strip()
                 #: 'global' line number (not in the current page).
                 #: The counting of local line number (iline) start just after
