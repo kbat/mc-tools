@@ -68,6 +68,7 @@ setup(
             "root2txt     = mctools.common.root2txt:main",
             # FLUKA
             "fluka2root    = mctools.fluka.fluka2root:main",
+            "fluka-add-card = mctools.fluka.fluka_add_card:main",
             "eventdat2root = mctools.fluka.eventdat2root:main",
             "plotgeom2root = mctools.fluka.plotgeom2root:main",
             "usbsuw2root   = mctools.fluka.usbsuw2root:main",
