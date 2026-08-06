@@ -18,8 +18,8 @@ def main():
 
     for card in args.card:
         n = len(card.split())
-        if n != 8:
-            parser.error(f"'{card}': card must contain 8 words, got {n}")
+        if n > 8:
+            parser.error(f"'{card}': card must contain <= 8 words, got {n}")
 
     pattern = args.before if args.regex else re.escape(args.before)
 
