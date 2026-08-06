@@ -474,6 +474,17 @@ class Converter:
                     if os.path.exists(f):
                         os.unlink(f)
 
+    def saveInputAsMacro(self):
+        """Save the input file with the shortest name into the output ROOT file as a TMacro."""
+        shortest = min(self.inp, key=lambda f: len(os.path.basename(f)))
+        if self.verbose:
+            print("Saving %s as TMacro" % shortest)
+        import ROOT
+        macro = ROOT.TMacro(shortest)
+        f = ROOT.TFile(self.root, "UPDATE")
+        macro.Write()
+        f.Close()
+
     def Convert(self):
         """Convert merged files into ROOT
         """
@@ -549,12 +560,14 @@ class Converter:
 
 
         return_value = self.mergeRootFiles(self.out_root_files)
-        if return_value == 0 and not self.keep:
-            for f in self.out_root_files + [item for sublist in self.datafiles for item in sublist]:
-                if os.path.exists(f):
-                    if self.verbose:
-                        printincolor("rm -f %s" % f)
-                    os.unlink(f)
+        if return_value == 0:
+            self.saveInputAsMacro()
+            if not self.keep:
+                for f in self.out_root_files + [item for sublist in self.datafiles for item in sublist]:
+                    if os.path.exists(f):
+                        if self.verbose:
+                            printincolor("rm -f %s" % f)
+                        os.unlink(f)
 
         if self.clean:
             if return_value == 0:
