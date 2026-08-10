@@ -4,20 +4,16 @@
 #include <TCanvas.h>
 #include "DynamicSlice.h"
 
-DynamicSlice::DynamicSlice(const std::vector<unsigned short>& slice) :
-  h2(nullptr), nbins(slice[0]), ngroup(slice[1]), projection(kTRUE), logy(kFALSE),
-  range(0.0, 0.0), old(0, 0)
+DynamicSlice::DynamicSlice(size_t nbins, size_t ngroup) :
+  nbins(nbins), ngroup(ngroup), projection(kTRUE), logy(kFALSE),
+  range(0.0, 0.0), old(0, 0), pad(nullptr)
 {
-
 }
 
 void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
 			TVirtualPad *h2pad,
 			TVirtualPad *slicepad)
 {
-  // if ((!h2) || (!h2.get()->InheritsFrom(TH2::Class())))
-  //   return;
-
   if (gPad!=h2pad)
     return;
 
@@ -92,10 +88,9 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
 }
 
 std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> histo,
-						  const Int_t value, const std::string& xy)
+						  const Double_t value, const std::string& xy)
 {
   const std::string yx = xy == "X" ? "Y" : "X";
-  const std::string vert_axis = yx;
 
   pad->SetGrid();
   pad->cd();
@@ -113,7 +108,8 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   hp->SetFillStyle(3001);
   hp->SetLineColor(kBlack);
 
-  hname = Form("%s Projection of %ld %s bins: %g < %s < %g (#Delta %s = %g)", xy.data(), nbins, vert_axis.data(), vmin, vert_axis.data(), vmax, vert_axis.data(), vmax-vmin);
+  hname = Form("%s Projection of %zu %s bins: %g < %s < %g (#Delta %s = %g)",
+		       xy.data(), nbins, yx.data(), vmin, yx.data(), vmax, yx.data(), vmax-vmin);
   hp->SetTitle(hname);
 
   if (ngroup>=1)

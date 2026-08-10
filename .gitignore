@@ -1,2 +1,12 @@
 *.o
+*.d
 *.pcm
+*.gch
+*~
+
+# hplot build products
+mctools/common/hplot/hplot
+mctools/common/hplot/minimal
+*Dict.cxx
+perf.data*
+perf.hist*

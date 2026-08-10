@@ -3,55 +3,62 @@
 #include <TFile.h>
 #include <TGaxis.h>
 #include <TCanvas.h>
+#include "Chrono.h"
 #include "Data3.h"
+#include "Error.h"
 
-Data3::Data3(const std::string& fname, const std::string& hname,
-	     const std::shared_ptr<Arguments> args) :
-  Data(fname,hname,args),
-  yrev(nullptr), plane(""), h3(nullptr), h2max(nullptr)
+TH3 *Data3::ReadTH3(const std::string& fname, const std::string& hname)
 {
-  plane = args->GetPlane();
   TFile df(fname.data());
   if (df.IsZombie()) {
     df.Close();
-    exit(1);
-  }
-  TH3 *h3tmp(nullptr);
-  df.GetObject<TH3>(hname.data(),h3tmp);
-  if (!h3tmp) {
-    std::cerr << "Error: Can't find " << hname << " in " << fname << std::endl;
-    exit(1);
+    throw HPlotError("can not open " + fname);
   }
 
-  h3 = std::shared_ptr<TH3>(static_cast<TH3*>(h3tmp));
-  h3->SetDirectory(0);
+  TH3 *h3(nullptr);
+  df.GetObject<TH3>(hname.data(), h3);
+  if (!h3) {
+    df.Close();
+    throw HPlotError("can not find the TH3 " + hname + " in " + fname);
+  }
+
+  h3->SetDirectory(nullptr); // detach from the file we are about to close
   df.Close();
 
+  return h3;
+}
+
+Data3::Data3(const std::string& fname, const std::string& hname,
+	     const std::shared_ptr<Arguments> args) :
+  Data3(ReadTH3(fname, hname), args)
+{
+}
+
+Data3::Data3(TH3 *h3, const std::shared_ptr<Arguments> args) :
+  yrev(nullptr), args(args), plane(args->GetPlane()), h3(h3), h2max(nullptr)
+{
   if (args->IsRebin())
     {
-      auto start = std::chrono::high_resolution_clock::now();
+      Chrono t(args->IsVerbose(), " "+GetTypeStr()+"::Rebin");
       Rebin();
-      PrintChrono(start, " "+GetTypeStr()+": Rebin");
     }
 
   if (args->IsFlipped())
     {
-      auto start = std::chrono::high_resolution_clock::now();
+      Chrono t(args->IsVerbose(), " "+GetTypeStr()+"::Flip");
       Flip();
-      PrintChrono(start, " "+GetTypeStr()+"::Flip: ");
     }
-
-  h3tmp = nullptr;
 
   offset = GetOffset(args->GetOffset());
 }
 
-void Data3::SetH2(std::shared_ptr<TH2> h2)
+void Data3::SetH2(std::shared_ptr<TH2> h2) const
 {
   if (args->GetTitle() != "None")
     h2->SetTitle(args->GetTitle().data());
   else
-    h2->SetTitle(Form("%s %s projection: %s", h3->GetTitle(), plane.data(), h2->GetTitle()));
+    h2->SetTitle(Form("%s %s projection: %s", h3->GetTitle(),
+		      plane.GetValue().data(), h2->GetTitle()));
 
   if (args->GetXTitle() != "None")
      h2->SetXTitle(args->GetXTitle().data());
@@ -66,7 +73,7 @@ void Data3::SetH2(std::shared_ptr<TH2> h2)
   if (args->GetZTitle() != "None")
     h2->SetZTitle(args->GetZTitle().data());
 
-  h2->SetContour(args->GetMap()["dcont"].as<size_t>());
+  h2->SetContour(args->GetDcont());
   h2->SetOption(args->GetDoption().data());
 
   if (args->IsZmin())
@@ -108,36 +115,25 @@ void Data3::Flip()
   */
   const std::string hname(Form("%s_%s", h3->GetName(), "flipped"));
   std::shared_ptr<TH3> flipped = std::shared_ptr<TH3>(static_cast<TH3*>(h3->Clone(hname.data())));
+  flipped->SetDirectory(nullptr); // owned by the shared_ptr, not by ROOT
   flipped->Reset();
 
-  const Int_t nx = h3->GetNbinsX();
-  const Int_t ny = h3->GetNbinsY();
-  const Int_t nz = h3->GetNbinsZ();
+  const Int_t nv = GetVerticalAxis()->GetNbins();
+  const Int_t nh = GetHorizontalAxis()->GetNbins();
+  const Int_t nn = GetNormalAxis()->GetNbins();
 
-  Int_t i, j, k, ii;
+  for (Int_t v=1; v<=nv; ++v)
+    for (Int_t h=1; h<=nh; ++h)
+      for (Int_t n=1; n<=nn; ++n)
+	{
+	  const std::array<Int_t,3> from = plane.Bin3(v, h, n);
+	  const std::array<Int_t,3> to   = plane.Bin3(nv+1-v, h, n);
 
-  auto f = [&](Int_t& i, Int_t& j, Int_t& k,
-	       Int_t n, const Int_t& m, Int_t& q,
-	       const Int_t& a, const Int_t& b, const Int_t& c)
-	   {
-	     for (i=1; i<=nx; ++i)
-	       for (j=1; j<=ny; ++j)
-		 for (k=1; k<=nz; ++k)
-		   {
-		     const Double_t val = h3->GetBinContent(i,j,k);
-		     const Double_t err = h3->GetBinError(i,j,k);
-		     q = n+1-m;
-		     flipped->SetBinContent(a, b, c, val);
-		     flipped->SetBinError(a,   b, c, err);
-		   }
-	   };
-
-  if (plane[0]=='x')
-    f(i,j,k,nx,i,ii,ii,j,k);
-  else if (plane[0]=='y')
-    f(i,j,k,ny,j,ii,i,ii,k);
-  else if (plane[0]=='z')
-    f(i,j,k,nz,k,ii,i,j,ii);
+	  flipped->SetBinContent(to[0], to[1], to[2],
+				 h3->GetBinContent(from[0], from[1], from[2]));
+	  flipped->SetBinError(to[0], to[1], to[2],
+			       h3->GetBinError(from[0], from[1], from[2]));
+	}
 
   h3 = std::move(flipped);
 
@@ -181,7 +177,7 @@ void Data3::ErrorHist(std::shared_ptr<TH2> h) const
   return;
 }
 
-void Data3::Rebin() const
+void Data3::Rebin()
 {
   /*!
     Rebin the histogram so that it is not larger than width x height
@@ -190,111 +186,76 @@ void Data3::Rebin() const
   const Int_t width = args->GetWidth();
   const Int_t height = args->GetHeight();
 
-  const Int_t nx = GetHorizontalAxis()->GetNbins();
-  const Int_t ny = GetVerticalAxis()->GetNbins();
+  const Int_t nh = GetHorizontalAxis()->GetNbins();
+  const Int_t nv = GetVerticalAxis()->GetNbins();
 
-  const Int_t scaleX =
-    TMath::Ceil(nx/static_cast<float>(width));
-  if (scaleX==0)
-    {
-      std::cerr << "hplot: ERROR: scaleX = 0" << std::endl;
-      exit(1);
-    }
+  const Int_t scaleH =
+    TMath::Ceil(nh/static_cast<float>(width));
+  if (scaleH==0)
+    throw HPlotError("horizontal rebin factor = 0");
 
-  const Int_t scaleY =
-    TMath::Ceil(ny/static_cast<float>(height));
-  if (scaleY==0)
-    {
-      std::cerr << "hplot: ERROR: scaleY = 0" << std::endl;
-      exit(1);
-    }
+  const Int_t scaleV =
+    TMath::Ceil(nv/static_cast<float>(height));
+  if (scaleV==0)
+    throw HPlotError("vertical rebin factor = 0");
 
-  if ((scaleX>=2) || (scaleY>=2)) {
-    if (plane == "xy")
-      h3->Rebin3D(scaleY, scaleX, 1);
-    else if (plane == "yx")
-      h3->Rebin3D(scaleX, scaleY, 1);
-    else if (plane == "yz")
-      h3->Rebin3D(1, scaleY, scaleX);
-    else if (plane == "zy")
-      h3->Rebin3D(1, scaleX, scaleY);
-    else if (plane == "xz")
-      h3->Rebin3D(scaleY, 1, scaleX);
-    else if (plane == "zx")
-      h3->Rebin3D(scaleX, 1, scaleY);
+  if ((scaleH>=2) || (scaleV>=2)) {
+    const std::array<Int_t,3> f = plane.RebinFactors(scaleV, scaleH);
+    h3->Rebin3D(f[0], f[1], f[2]);
 
     if (GetType() == kData3) // we do not need to scale geometry
       {
-	auto start = std::chrono::high_resolution_clock::now();
-	h3->Scale(1.0/(scaleX*scaleY));
-	PrintChrono(start, " Rebin: "+GetTypeStr() + " scale after rebin: ");
+	Chrono t(args->IsVerbose(), " Rebin: "+GetTypeStr()+" scale after rebin");
+	h3->Scale(1.0/(scaleH*scaleV));
       }
   }
 
   if (args->IsVerbose())
     {
-      std::cout << "Rebinning " << h3->GetName() << ": before: " << nx << " x " << ny;
+      std::cout << "Rebinning " << h3->GetName() << ": before: " << nh << " x " << nv;
       std::cout << "\t after: " << GetHorizontalAxis()->GetNbins() << " x " << GetVerticalAxis()->GetNbins();
-      std::cout << "\t by factor " << scaleX << " x " << scaleY << std::endl;
+      std::cout << "\t by factor " << scaleH << " x " << scaleV << std::endl;
     }
   return;
 }
 
 void Data3::BuildMaxH2()
 {
-  //  std::cout << "Data3::BuildMaxH2" << std::endl;
-  const Int_t n3x = h3->GetNbinsX();
-  const Int_t n3y = h3->GetNbinsY();
-  const Int_t n3z = h3->GetNbinsZ();
-
+  /*!
+    Build the TH2 where each bin holds the largest value found along the normal
+    axis, together with the error of that bin.  Bins failing the -maxerror cut
+    are ignored.
+  */
   std::string name = Form("%s_max", h3->GetName());
   std::string title = "max";
   h2max = MakeH2(name, title);
 
-  Int_t i,j,k;
+  const Int_t nv = GetVerticalAxis()->GetNbins();
+  const Int_t nh = GetHorizontalAxis()->GetNbins();
+  const Int_t nn = GetNormalAxis()->GetNbins();
 
-  auto f = [&](Int_t &i,  Int_t &j,  Int_t &k,
-	       Int_t NI,  Int_t NJ,  Int_t NK,
-	       Int_t &ii, Int_t &jj, Int_t &kk,
-	       Int_t &x,  Int_t&y)
-	   {
-	     for (j=1; j<=NJ; ++j)
-	       for (i=1; i<=NI; ++i)
-		 {
-
-		   Double_t max(0.0);
-		   Double_t err(0.0);
-		   for (k=1; k<=NK; ++k)
-		     {
-		       const Double_t val = h3->GetBinContent(ii,jj,kk);
-		       const Double_t e = h3->GetBinError(ii,jj,kk);
-		       if ((args->IsMaxErr(val,e)) && (max<val)) {
-			 //if ((args->IsMaxErr(val,e)) && (max+err<val-e)) {
-			 max = val;
-			 err = e;
-		       }
-		     }
-		   if (max>0.0)
-		     {
-		       h2max->SetBinContent(x,y,max);
-		       h2max->SetBinError(x,y,err);
-		     }
-		 }
-	   };
-
-
-  if (plane == "xy")
-    f(j,i,k,n3y,n3x,n3z,i,j,k,j,i);
-  else if (plane == "yx")
-    f(j,i,k,n3y,n3x,n3z,i,j,k,i,j);
-  else if (plane == "yz")
-    f(j,k,i,n3y,n3z,n3x,i,j,k,k,j);
-  else if (plane == "zy")
-    f(j,k,i,n3y,n3z,n3x,i,j,k,j,k);
-  else if (plane == "xz")
-    f(k,i,j,n3z,n3x,n3y,i,j,k,k,i);
-  else if (plane == "zx")
-    f(k,i,j,n3z,n3x,n3y,i,j,k,i,k);
+  for (Int_t v=1; v<=nv; ++v)
+    for (Int_t h=1; h<=nh; ++h)
+      {
+	Double_t max(0.0);
+	Double_t err(0.0);
+	for (Int_t n=1; n<=nn; ++n)
+	  {
+	    const std::array<Int_t,3> b = plane.Bin3(v, h, n);
+	    const Double_t val = h3->GetBinContent(b[0], b[1], b[2]);
+	    const Double_t e   = h3->GetBinError(b[0], b[1], b[2]);
+	    if ((args->IsMaxErr(val,e)) && (max<val)) {
+	      //if ((args->IsMaxErr(val,e)) && (max+err<val-e)) {
+	      max = val;
+	      err = e;
+	    }
+	  }
+	if (max>0.0)
+	  {
+	    h2max->SetBinContent(h, v, max);
+	    h2max->SetBinError(h, v, err);
+	  }
+      }
 
   SetH2(h2max);
   if (args->IsErrors())
@@ -341,119 +302,101 @@ void Data3::ReverseYAxis(std::shared_ptr<TH2> h) const
 }
 
 
-Data3::~Data3()
-{
-
-}
-
 TAxis *Data3::GetNormalAxis() const
 {
-  /*!
-    Return the plane normal axis
-   */
-
-  if (plane.find("x")==std::string::npos)
-    return h3->GetXaxis();
-  else if (plane.find("y")==std::string::npos)
-    return h3->GetYaxis();
-  else if (plane.find("z")==std::string::npos)
-    return h3->GetZaxis();
-  else {
-    std::cerr << "Error: wrong plane " << plane << std::endl;
-    return nullptr;
-  }
-}
-
-char Data3::GetNormalAxisName() const
-{
-  /*!
-    Return the plane normal axis
-   */
-
-  if (plane.find("x")==std::string::npos)
-    return 'x';
-  else if (plane.find("y")==std::string::npos)
-    return 'y';
-  else if (plane.find("z")==std::string::npos)
-    return 'z';
-  else {
-    std::cerr << "Error: wrong plane " << plane << std::endl;
-    return '?';
-  }
+  return GetAxis(*h3, plane.Normal());
 }
 
 TAxis *Data3::GetHorizontalAxis() const
 {
-  if (plane[1] == 'x')
-    return h3->GetXaxis();
-  else if (plane[1] == 'y')
-    return h3->GetYaxis();
-  else if (plane[1] == 'z')
-    return h3->GetZaxis();
-  else
-    {
-      std::cerr << "Error in Data3::GetHorizontalAxis()" << std::endl;
-      return nullptr;
-    }
+  return GetAxis(*h3, plane.Horizontal());
 }
 
 TAxis *Data3::GetVerticalAxis() const
 {
-  if (plane[0] == 'x')
-    return h3->GetXaxis();
-  else if (plane[0] == 'y')
-    return h3->GetYaxis();
-  else if (plane[0] == 'z')
-    return h3->GetZaxis();
-  else
-    {
-      std::cerr << "Error in Data3::GetVerticalAxis()" << std::endl;
-      return nullptr;
-    }
+  return GetAxis(*h3, plane.Vertical());
 }
 
-std::shared_ptr<TH2> Data3::MakeH2(std::string& name, std::string& title)
+std::shared_ptr<TH2> Data3::MakeH2(std::string& name, std::string& title) const
 /*!
-  Create the TH2 histogram from based on the projection plane and TH3 binning
+  Create the TH2 histogram based on the projection plane and TH3 binning.
+  The TH2 x axis is the horizontal axis of the plane, its y axis the vertical one.
  */
 {
   const TAxis *va = GetVerticalAxis();
   const TAxis *ha = GetHorizontalAxis();
 
-  const Float_t xmin = va->GetXmin();
-  const Float_t xmax = va->GetXmax();
-  const Float_t ymin = ha->GetXmin();
-  const Float_t ymax = ha->GetXmax();
+  const Int_t   nh = ha->GetNbins();
+  const Float_t hmin = ha->GetXmin();
+  const Float_t hmax = ha->GetXmax();
 
-  const Int_t nx = va->GetNbins();
-  const Int_t ny = ha->GetNbins();
+  const Int_t   nv = va->GetNbins();
+  const Float_t vmin = va->GetXmin();
+  const Float_t vmax = va->GetXmax();
 
   std::shared_ptr<TH2> h2(nullptr);
 
   if (h3->IsA() == TH3F::Class())      // data
-    h2 = std::make_shared<TH2F>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2F>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
   else if (h3->IsA() == TH3D::Class()) // also data
-    h2 = std::make_shared<TH2D>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2D>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
   else if (h3->IsA() == TH3S::Class()) // geometry
-    h2 = std::make_shared<TH2S>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
+    h2 = std::make_shared<TH2S>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
   else if (h3->IsA() == TH3I::Class()) // also geometry
-    h2 = std::make_shared<TH2I>(name.data(), title.data(), ny, ymin, ymax, nx, xmin, xmax);
-  else {
-    std::cerr << "ERROR: unknown TH3 class name, " << h3->ClassName() << std::endl;
-    exit(1);
-  }
+    h2 = std::make_shared<TH2I>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
+  else
+    throw HPlotError(std::string("unsupported histogram class ") + h3->ClassName());
+
+  // the shared_ptr owns the histogram - keep ROOT from deleting it as well
+  h2->SetDirectory(nullptr);
 
   return h2;
 }
 
 
+std::shared_ptr<TH2> Data3::BuildH2(Int_t bin) const
+/*!
+  Project the TH3 onto the plane at the given bin of the normal axis
+ */
+{
+  const TAxis *na = GetNormalAxis();
+
+  std::string h2name  = Form("%s_%d", h3->GetName(), bin);
+  std::string h2title = Form("%g< %c < %g",
+			     na->GetBinLowEdge(bin), AxisName(plane.Normal()),
+			     na->GetBinUpEdge(bin));
+
+  std::shared_ptr<TH2> h2 = MakeH2(h2name, h2title);
+
+  const Int_t nv = GetVerticalAxis()->GetNbins();
+  const Int_t nh = GetHorizontalAxis()->GetNbins();
+
+  for (Int_t v=1; v<=nv; ++v)
+    for (Int_t h=1; h<=nh; ++h)
+      {
+	const std::array<Int_t,3> b = plane.Bin3(v, h, bin);
+	const Double_t val = h3->GetBinContent(b[0], b[1], b[2]);
+	const Double_t err = h3->GetBinError(b[0], b[1], b[2]);
+	if (args->IsMaxErr(val,err)) {
+	  h2->SetBinContent(h, v, val);
+	  h2->SetBinError(h, v, err);
+	}
+      }
+
+  SetH2(h2);
+
+  if (args->IsErrors())
+    ErrorHist(h2);
+
+  return h2;
+}
+
 void Data3::Project()
 {
   if (GetType() == kData3) // we do not need to scale geometry
     {
-      auto start = std::chrono::high_resolution_clock::now();
+      Chrono t(args->IsVerbose(), " Project: "+GetTypeStr()+" scale");
       h3->Scale(args->GetScale());
-      PrintChrono(start, " Project: "+GetTypeStr() + " scale ");
     }
 
   if (args->IsMax())
@@ -461,65 +404,10 @@ void Data3::Project()
       BuildMaxH2();
       return;
     }
-  else
-    {
-      const TAxis *na = GetNormalAxis();
-      const Int_t nbins = na->GetNbins();
-      vh2.reserve(nbins);
 
-      const Int_t n3x = h3->GetNbinsX();
-      const Int_t n3y = h3->GetNbinsY();
-      const Int_t n3z = h3->GetNbinsZ();
-
-      std::shared_ptr<TH2> h2(nullptr);
-
-      Int_t  i,j;
-      auto f = [&](Int_t &i,  Int_t &j,
-		   Int_t NI,  Int_t NJ,
-		   Int_t &xx, Int_t &yy, Int_t &kk,
-		   Int_t &x,  Int_t &y)
-	       {
-		 for (i=1; i<=NI; ++i)
-		   for (j=1; j<=NJ; ++j) {
-		     const Double_t val = h3->GetBinContent(xx,yy,kk);
-		     const Double_t err = h3->GetBinError(xx,yy,kk);
-		     if (args->IsMaxErr(val,err)) {
-		       h2->SetBinContent(x,y,val);
-		       h2->SetBinError(x,y,err);
-		     }
-		   }
-	       };
-
-      for (Int_t bin=1; bin<=nbins; ++bin)
-	{
-	  std::string h2name  = Form("%s_%d", h3->GetName(), bin);
-	  std::string h2title = Form("%g< %c < %g",
-				     na->GetBinLowEdge(bin), GetNormalAxisName(),
-				     na->GetBinUpEdge(bin));
-
-	  h2 = MakeH2(h2name, h2title);
-
-	  if (plane == "xy")
-	    f(i,j,n3y,n3x,j,i,bin,i,j);
-	  else if (plane == "yx")
-	    f(i,j,n3y,n3x,j,i,bin,j,i);
-	  else if (plane == "yz")
-	    f(i,j,n3y,n3z,bin,i,j,j,i);
-	  else if (plane == "zy")
-	    f(i,j,n3y,n3z,bin,i,j,i,j);
-	  else if (plane == "xz")
-	    f(i,j,n3z,n3x,j,bin,i,i,j);
-	  else if (plane == "zx")
-	    f(i,j,n3z,n3x,j,bin,i,j,i);
-
-	  SetH2(h2);
-
-	  if (args->IsErrors())
-	    ErrorHist(h2);
-
-	  vh2.push_back(h2);
-	}
-    }
+  // The individual projections are built by GetH2() when they are first
+  // asked for - only one of them is on screen at any time.
+  vh2.assign(GetNormalAxis()->GetNbins(), nullptr);
 
   return;
 }
@@ -560,25 +448,30 @@ std::shared_ptr<TH2> Data3::GetH2(const std::string val) const
 }
 
 std::shared_ptr<TH2> Data3::GetH2(const Float_t val) const
+/*!
+  Return the projection at the given offset along the normal axis, building it
+  on the first request.
+ */
 {
   if (h2max)
     return h2max;
-  else
-    {
-      const TAxis *a = GetNormalAxis();
-      const Int_t nbins = a->GetNbins();
-      Int_t bin = a->FindBin(val);
 
-      if (bin>nbins) {
-	std::cerr << "Data3::GetH2: bin>a->GetNbins() why? " << bin << " " << nbins << std::endl;
-	bin = nbins;
-      } else if (bin==0) {
-	std::cerr << "Data3:GetH2: bin = 0! why?" << std::endl;
-	bin = 1;
-      }
+  const TAxis *a = GetNormalAxis();
+  const Int_t nbins = a->GetNbins();
+  Int_t bin = a->FindBin(val);
 
-      return vh2[bin-1];
-    }
+  // the offset may fall into the underflow/overflow bin, e.g. when the slider
+  // sits exactly on the edge of the axis
+  if (bin>nbins)
+    bin = nbins;
+  else if (bin<1)
+    bin = 1;
+
+  std::shared_ptr<TH2>& h2 = vh2[bin-1];
+  if (!h2)
+    h2 = BuildH2(bin);
+
+  return h2;
 }
 
 std::shared_ptr<TH2> Data3::Draw(const Float_t val) const

@@ -1,49 +1,17 @@
+#include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <sys/ioctl.h>
+
 #include "Arguments.h"
-
-void validate(boost::any &v,
-	      std::vector<std::string> const& values,
-	      Plane*, int)
-{
-  using namespace boost::program_options;
-
-  // Make sure no previous assignment to 'v' was made.
-  validators::check_first_occurrence(v);
-
-  // Extract the first string from 'values'. If there is more than
-  // one string, it's an error, and exception will be thrown.
-  std::string const& s = validators::get_single_string(values);
-
-  const std::array<std::string,6> planes{"xy", "xz", "yx", "yz", "zx", "zy"};
-
-  if (std::find(planes.begin(), planes.end(), s)!=planes.end()) {
-    v = boost::any(Plane(s));
-  } else {
-    std::cerr << "plane: " << s << std::endl;
-    throw validation_error(validation_error::invalid_option_value);
- }
-}
-
-void conflicting_options(const boost::program_options::variables_map & vm,
-                         const std::string & opt1, const std::string & opt2)
-/*!
-  Function used to check that 'opt1' and 'opt2' are not specified at the same time.
-  https://www.boost.org/doc/libs/1_55_0/libs/program_options/example/real.cpp
- */
-{
-  if (vm.count(opt1) && !vm[opt1].defaulted() &&
-      vm.count(opt2) && !vm[opt2].defaulted())
-    {
-      throw std::logic_error(std::string("Conflicting options '") +
-      			     opt1 + "' and '" + opt2 + "'.");
-    }
-}
+#include "Error.h"
 
 Arguments::Arguments(int ac, const char **av) :
-  argc(ac), argv(av), help(false), errors(false)
+  help(false)
 {
-  Plane xy("xy");
-  const size_t inan = std::numeric_limits<size_t>::quiet_NaN();
+  const Plane xy("xy");
+  // GetHeight() derives the height from the width when it is left at zero
+  constexpr size_t unset_height = 0;
 
   const float flowest = std::numeric_limits<float>::lowest();
   const float fmax = std::numeric_limits<float>::max();
@@ -85,7 +53,7 @@ Arguments::Arguments(int ac, const char **av) :
       ("zmin", po::value<float>()->default_value(flowest), "Colour axis min value.")
       ("zmax", po::value<float>()->default_value(fmax), "Colour axis max value.")
       ("width", po::value<size_t>()->default_value(800), "Canvas width.")
-      ("height", po::value<size_t>()->default_value(inan),
+      ("height", po::value<size_t>()->default_value(unset_height),
        "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
       ("rebin", "Rebin the 2D histograms such that they are not larger than width x height "
        "(specified by the above arguments). This argument drastically speeds up histogram drawing, "
@@ -142,7 +110,7 @@ Arguments::Arguments(int ac, const char **av) :
     all_options.add(generic).add(data).add(geom).add(hidden);
 
     //    po::store(po::parse_command_line(argc, argv, desc), vm);
-    auto parsed = po::command_line_parser(argc, argv).options(all_options).positional(p)
+    auto parsed = po::command_line_parser(ac, av).options(all_options).positional(p)
       .style(po::command_line_style::allow_short |
 	     po::command_line_style::short_allow_adjacent |
 	     po::command_line_style::short_allow_next |
@@ -154,47 +122,31 @@ Arguments::Arguments(int ac, const char **av) :
 	     po::command_line_style::allow_long_disguise)
       .run();
 
-    for (const std::string& pa : positional_args)
-      {
-	auto it = std::find_if(parsed.options.begin(), parsed.options.end(),
-			       [&pa](po::option const& o) {
-				 return o.string_key == pa;
-			       });
-	if ((it == parsed.options.end()) && (pa!="gfile") && (pa!="ghist") ) // gfile and ghist are optional
-	  {
-	    std::cerr << "Error: Missing positional argument \"" <<
-	      pa << "\"\n" << std::endl;
-	    help=true;
-	    break;
-	  }
-      }
+    // an explicit -h must not complain about the missing positional arguments
+    help = std::any_of(parsed.options.begin(), parsed.options.end(),
+		       [](po::option const& o) { return o.string_key == "help"; });
+
+    if (!help)
+      for (const std::string& pa : positional_args)
+	{
+	  auto it = std::find_if(parsed.options.begin(), parsed.options.end(),
+				 [&pa](po::option const& o) {
+				   return o.string_key == pa;
+				 });
+	  if ((it == parsed.options.end()) && (pa!="gfile") && (pa!="ghist") ) // gfile and ghist are optional
+	    {
+	      std::cerr << "Error: Missing positional argument \"" <<
+		pa << "\"\n" << std::endl;
+	      help=true;
+	      break;
+	    }
+	}
 
     po::store(parsed, vm);
-    try {
-      po::notify(vm);
-    } catch (boost::program_options::error& e) {
-      std::cout << "Error: " << e.what() << "\n";
-      exit(1);
-    }
+    po::notify(vm);
 
-    errors = vm.count("errors");
-
-    if (errors && (IsMaxErr()))
+    if (help)
       {
-	std::cerr << "Error: -errors and -maxerror can not be used together" << std::endl;
-	exit(1);
-      }
-
-    if (GetMaxErr()>1.0)
-      {
-	std::cerr << "Error: -maxerror must be <= 1.0" << std::endl;
-	exit(1);
-      }
-
-
-    if (help || vm.count("help"))
-      {
-	help = true;
 	std::stringstream stream;
 	stream << all_options;
 	std::string helpMsg = stream.str();
@@ -207,31 +159,29 @@ Arguments::Arguments(int ac, const char **av) :
 	return;
       }
   }
-  catch(std::exception& e) {
-    std::cerr << "hplot ERROR: " << e.what() << "\n";
-    exit(1);
+  catch(const po::error& e) {
+    throw HPlotError(e.what());
   }
-  catch(...) {
-    std::cerr << "Exception of unknown type!\n";
-    exit(2);
-  }
+
+  // these need the parsed values, so they run outside the block above
+  if (IsErrors() && IsMaxErr())
+    throw HPlotError("-errors and -maxerror can not be used together");
+
+  if (GetMaxErr()>1.0)
+    throw HPlotError("-maxerror must be <= 1.0");
 
   return;
 }
 
 bool Arguments::IsBatch() const
 {
-  return !vm["o"].as<std::string>().empty();
+  return !GetOutputFile().empty();
 }
 
 bool Arguments::test() const
 {
-  const float xmin = vm["xmin"].as<float>();
-  const float xmax = vm["xmax"].as<float>();
-  const float ymin = vm["ymin"].as<float>();
-  const float ymax = vm["ymax"].as<float>();
-
-  bool val = CheckMinMax(xmin, xmax, "x") && CheckMinMax(ymin, ymax, "y");
+  bool val = CheckMinMax(GetXmin(), GetXmax(), "x") &&
+             CheckMinMax(GetYmin(), GetYmax(), "y");
 
   val = val & CheckSlice();
 
@@ -295,16 +245,15 @@ bool Arguments::CheckSlice() const
 
 std::string Arguments::GetWindowTitle() const
 {
-  const std::string title = "hplot: " + vm["dfile"].as<std::string>() + " " +
-    vm["dhist"].as<std::string>() + " " +
-    vm["plane"].as<Plane>().GetValue();
+  const std::string title = "hplot: " + GetDataFile() + " " +
+    GetDataHist() + " " + GetPlane().GetValue();
 
   return title;
 }
 
 size_t Arguments::GetHeight() const
 {
-  size_t width = GetWidth();
+  const size_t width = GetWidth();
   size_t height = vm["height"].as<size_t>();
 
   if (height==0) {

@@ -11,8 +11,7 @@
 #include <TVirtualPad.h>
 
 #include "Data3.h"
-#include "GeometryMultiGraph.h"
-#include "Geometry3.h"
+#include "Geometry.h"
 #include "DynamicSlice.h"
 
 class MainFrame : public TGMainFrame {
@@ -25,10 +24,8 @@ class MainFrame : public TGMainFrame {
   TGStatusBar         *fStatusBar;
 
   std::shared_ptr<Data3> data;
-  std::shared_ptr<Geometry3> geo3;
-  std::shared_ptr<GeometryMultiGraph> plotgeom;
+  std::shared_ptr<Geometry> geo;
   std::shared_ptr<TH2> dh2; // current data histogram
-  std::shared_ptr<TH2> gh2; // current geometry histogram
 
   std::unique_ptr<DynamicSlice> slice;
 
@@ -38,8 +35,7 @@ class MainFrame : public TGMainFrame {
 	    const std::shared_ptr<Data3> data);
   virtual ~MainFrame();
 
-  void SetGeometry(const std::shared_ptr<Geometry3>);
-  void SetGeometry(const std::shared_ptr<GeometryMultiGraph>);
+  void SetGeometry(const std::shared_ptr<Geometry>);
 
   TCanvas *GetCanvas() const { return fEcanvas->GetCanvas(); }
   TVirtualPad *GetHistogramPad() const;
@@ -50,7 +46,7 @@ class MainFrame : public TGMainFrame {
   void EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected);
   Bool_t HandleButton(Event_t *event) override;
 
-  ClassDef(MainFrame,0);
+  ClassDefOverride(MainFrame,0);
 };
 
 #endif

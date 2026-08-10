@@ -17,12 +17,17 @@ enum MainFrameMessageTypes {
   M_HELP_ABOUT
 };
 
-const char line_width = getenv("COLUMNS") ? atoi(getenv("COLUMNS"))-1 : 80-1;
-const std::string spaces{line_width, ' '};
+/*!
+  Blanks used to wipe the line before reprinting the value under the cursor.
+  A char would overflow on terminals wider than 128 columns, making the
+  std::string construction below undefined.
+*/
+const int line_width = getenv("COLUMNS") ? std::max(1, atoi(getenv("COLUMNS"))-1) : 80-1;
+const std::string spaces(line_width, ' ');
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data) :
-  TGMainFrame(p,w,h), fSlider(nullptr), data(data), geo3(nullptr), plotgeom(nullptr), gh2(nullptr), slice(nullptr)
+  TGMainFrame(p,w,h), fSlider(nullptr), data(data), geo(nullptr), slice(nullptr)
 {
   GrabMouseWheel();
 
@@ -63,9 +68,11 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   hframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX |
 				       kLHintsExpandY, 10,10,10,1));
 
-  if (data->GetVH2().size()>1)
+  // there is nothing to slide through with the -max option, which collapses
+  // the normal axis, or when that axis has a single bin
+  const TAxis *a  = data->GetNormalAxis();
+  if (!data->GetArgs()->IsMax() && (a->GetNbins()>1))
     {
-      const TAxis *a  = data->GetNormalAxis();
       const Int_t nbins = a->GetNbins();
 
       Int_t bin = a->FindBin(data->GetOffset());
@@ -103,7 +110,8 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   dh2 = data->GetH2(); // default data histogram
 
   if (data->GetArgs()->IsSlice())
-    slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice());
+    slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice(0),
+					   data->GetArgs()->GetSlice(1));
 }
 
 void MainFrame::GrabMouseWheel() const
@@ -118,16 +126,9 @@ void MainFrame::GrabMouseWheel() const
 			kNone, kNone);
 }
 
-void MainFrame::SetGeometry(const std::shared_ptr<Geometry3> g)
+void MainFrame::SetGeometry(const std::shared_ptr<Geometry> g)
 {
-  geo3 = g;
-  if (geo3)
-    gh2 = geo3->GetH2();
-}
-
-void MainFrame::SetGeometry(const std::shared_ptr<GeometryMultiGraph> g)
-{
-  plotgeom = g;
+  geo = g;
 }
 
 
@@ -173,24 +174,17 @@ void MainFrame::DoSlider()
 
   dh2 = data->Draw(y);
 
-  if (geo3)
-    gh2 = geo3->Draw(y);
-  else if (plotgeom)
-    plotgeom->Draw();
+  if (geo)
+    geo->Draw(y);
 
   pad1->Update();
 }
 
 Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 {
-  // Window_t wdummy;
-  //  int ax, ay;
-   // TRootHelpDialog *hd;
-   // TGListTreeItem *item;
-   // TGFileInfo fi;
-   // Char_t  strtmp[250];
+  const bool verbose = data->GetArgs()->IsVerbose();
 
-  if (!false) {
+  if (verbose) {
     std::cout << "Process: " << msg << " " << parm1 << " " << parm2 << std::endl;
     std::cout << "\tMSG: " << GET_MSG(msg) << " SUBMSG: " << GET_SUBMSG(msg) << std::endl;
     std::cout << "\t COMMAND: " << kC_COMMAND << " MENU: " << kCM_MENU << std::endl;
@@ -200,7 +194,6 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
   case kC_HSLIDER: // 6, mouse wheel scroll, see gui/gui/inc/WidgetMessageTypes.h
     switch (GET_SUBMSG(msg)) {
     case kSL_POS:
-      std::cout << __FUNCTION__ << ": kC_HSLIDER (kSL_POS)" << std::endl;
       DoSlider();
       break;
     }
@@ -208,7 +201,6 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
   case kC_VSLIDER: // 7
     switch (GET_SUBMSG(msg)) {
     case kSL_RELEASE:
-      std::cout << __FUNCTION__ << ": Mouse released" << std::endl;
       DoSlider();
       break;
     }
@@ -216,11 +208,9 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
   case kC_COMMAND:
     switch (GET_SUBMSG(msg)) {
     case M_FILE_EXIT:
-      std::cout << "file -> exit" << std::endl;
       gApplication->Terminate();
       break;
     case M_HELP_ABOUT:
-      // std::cout << "Help" << std::endl;
       break;
     default:
       break;
@@ -235,36 +225,27 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 {
 //  Writes the event status in the status bar parts
 
-  Int_t binx(0), biny(0);
+  (void)selected;
+
   const Double_t x  = gPad->PadtoX(gPad->AbsPixeltoX(px));
   const Double_t y  = gPad->PadtoY(gPad->AbsPixeltoY(py));
 
   fStatusBar->SetText(Form("%s: %s", dh2->GetName(), dh2->GetTitle()),0);
 
-  if (gh2)
-    {
-      binx = gh2->GetXaxis()->FindFixBin(x);
-      biny = gh2->GetYaxis()->FindFixBin(y);
-      fStatusBar->SetText(Form("Material: %d", static_cast<int>(gh2->GetBinContent(binx, biny))),1);
-    }
-  else if (plotgeom)
-    fStatusBar->SetText("Geometry: PLOTGEOM",1);
+  if (geo)
+    fStatusBar->SetText(geo->StatusText(x, y).data(), 1);
   else
-    fStatusBar->SetText("Geometry file not specified",1);
+    fStatusBar->SetText("Geometry file not specified", 1);
 
-
-   char text2[50];
    if (event == kKeyPress)
-     sprintf(text2, "%c %c", (char) px, (char) py);
+     fStatusBar->SetText(Form("%c %c", static_cast<char>(px), static_cast<char>(py)), 2);
    else
-     sprintf(text2, "%d,%d", px, py);
-
-   fStatusBar->SetText(text2,2);
+     fStatusBar->SetText(Form("%d,%d", px, py), 2);
 
    // data value and error
 
-   binx = dh2->GetXaxis()->FindFixBin(x);
-   biny = dh2->GetYaxis()->FindFixBin(y);
+   const Int_t binx = dh2->GetXaxis()->FindFixBin(x);
+   const Int_t biny = dh2->GetYaxis()->FindFixBin(y);
 
    const Double_t val = dh2->GetBinContent(binx, biny);
    const Double_t err = dh2->GetBinError(binx, biny);

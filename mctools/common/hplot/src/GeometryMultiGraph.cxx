@@ -1,61 +1,52 @@
-#include "GeometryMultiGraph.h"
-#include "TFile.h"
+#include <iostream>
+
 #include "TList.h"
 #include "TGraph.h"
 #include "TColor.h"
-#include <iostream>
 
-GeometryMultiGraph::GeometryMultiGraph(const std::string& fname, const std::string& mgname,
+#include "Chrono.h"
+#include "GeometryMultiGraph.h"
+
+GeometryMultiGraph::GeometryMultiGraph(TMultiGraph *mg,
 				       const std::shared_ptr<Arguments> args,
 				       const std::shared_ptr<Data3> d) :
-  Geometry(fname,mgname,args), data(d)
+  mg(mg), data(d)
 {
-  TFile df(fname.data());
-  if (df.IsZombie()) {
-    df.Close();
-    exit(1);
-  }
-  mg = df.Get<TMultiGraph>(mgname.data());
-  df.Close();
+  const Int_t col = TColor::GetColor(args->GetGlcolor().data());
+  const Float_t alpha = args->GetGlalpha();
 
   TGraph *obj(nullptr);
   const TList *l = mg->GetListOfGraphs();
   TIter next(l);
   while ((obj = dynamic_cast<TGraph*>(next())))
     {
-      // move this to SetH2 as in Geometry3
-      obj->SetLineWidth(args->GetMap()["glwidth"].as<size_t>());
-      const Int_t col = TColor::GetColor(args->GetMap()["glcolor"].as<std::string>().data());
-      const Float_t alpha = args->GetMap()["glalpha"].as<float>();
+      obj->SetLineWidth(args->GetGlwidth());
       obj->SetLineColorAlpha(col, alpha);
       obj->SetMarkerColorAlpha(col, alpha);
     }
 
   if (args->IsFlipped())
     {
-      //      auto start = std::chrono::high_resolution_clock::now();
+      Chrono t(args->IsVerbose(), " GeometryMultiGraph::Flip");
       Flip();
-      //      PrintChrono(start, " "+GetTypeStr()+"::Flip: ");
     }
 }
 
-void GeometryMultiGraph::Draw() const
+void GeometryMultiGraph::Draw()
 {
   mg->Draw("l");
+}
+
+std::string GeometryMultiGraph::StatusText(Double_t x, Double_t y) const
+{
+  (void)x; (void)y;
+  return "Geometry: PLOTGEOM";
 }
 
 void GeometryMultiGraph::Flip()
 {
   const auto h3 = data->GetH3();
-  const std::string plane = data->GetArgs()->GetPlane();
-  TAxis *a(nullptr);
-
-  if (plane[0] == 'x')
-    a = h3->GetXaxis();
-  else if (plane[0] == 'y')
-    a = h3->GetYaxis();
-  else
-    a = h3->GetZaxis();
+  const TAxis *a = GetAxis(*h3, data->GetPlane().Vertical());
 
   const Double_t offset = a->GetXmin() + a->GetXmax();
 

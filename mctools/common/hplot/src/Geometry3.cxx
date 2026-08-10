@@ -1,58 +1,66 @@
+#include <array>
+#include <cmath>
+#include <iostream>
+
 #include "TColor.h"
 #include "Geometry3.h"
 
-Geometry3::Geometry3(const std::string& fname, const std::string& hname,
-		   const std::shared_ptr<Arguments> args) :
-  Geometry(fname, hname, args), Data3(fname, hname, args)
+Geometry3::Geometry3(TH3 *h3, const std::shared_ptr<Arguments> args) :
+  Data3(h3, args), drawn(nullptr)
 {
-
 }
 
-void Geometry3::SetH2(std::shared_ptr<TH2> h2)
+void Geometry3::SetH2(std::shared_ptr<TH2> h2) const
 {
-  h2->SetLineWidth(args->GetMap()["glwidth"].as<size_t>());
+  h2->SetLineWidth(args->GetGlwidth());
 
-  const Int_t col = TColor::GetColor(args->GetMap()["glcolor"].as<std::string>().data());
-  h2->SetLineColorAlpha(col, args->GetMap()["glalpha"].as<float>());
+  const Int_t col = TColor::GetColor(args->GetGlcolor().data());
+  h2->SetLineColorAlpha(col, args->GetGlalpha());
 
-  h2->SetContour(args->GetMap()["gcont"].as<size_t>());
+  h2->SetContour(args->GetGcont());
 
-  const std::string opt = "same " + args->GetMap()["goption"].as<std::string>();
+  const std::string opt = "same " + args->GetGoption();
   h2->SetOption(opt.data());
 
   return;
 }
 
-Geometry3::~Geometry3()
+void Geometry3::Draw(Float_t offset)
 {
+  drawn = GetH2(offset);
+  drawn->Draw(GetGOption().data());
 }
 
-std::shared_ptr<TH2> Geometry3::Draw(const Float_t val) const
+std::string Geometry3::StatusText(Double_t x, Double_t y) const
 {
-  std::shared_ptr <TH2> h2 = GetH2(val);
-  h2->Draw(GetGOption().data());
+  const std::shared_ptr<TH2> h2 = drawn ? drawn : GetH2(Data3::GetOffset());
+  if (!h2)
+    return "";
 
-  return h2;
+  const Int_t binx = h2->GetXaxis()->FindFixBin(x);
+  const Int_t biny = h2->GetYaxis()->FindFixBin(y);
+
+  return Form("Material: %d", static_cast<int>(h2->GetBinContent(binx, biny)));
 }
 
 void Geometry3::BuildMaxH2()
 {
-  //  std::cout << "Geometry3::BuildMaxH2" << std::endl;
-  const Int_t n3x = h3->GetNbinsX();
-  const Int_t n3y = h3->GetNbinsY();
-  const Int_t n3z = h3->GetNbinsZ();
-
+  /*!
+    The geometry has no "max" - with the -max option the data histogram loses
+    its normal axis, so the geometry is simply shown at the requested offset,
+    which gives a representative view.
+  */
   std::string name = Form("%s_max", h3->GetName());
   std::string title = "max";
   h2max = MakeH2(name, title);
 
-  const TAxis *zAxis = h3->GetZaxis();
+  const TAxis *na = GetNormalAxis();
   Float_t ofs = offset;
-  const Double_t zmin = zAxis->GetBinLowEdge(1);
-  const Double_t zmax = zAxis->GetBinUpEdge(zAxis->GetLast());
+  const Double_t nmin = na->GetBinLowEdge(1);
+  const Double_t nmax = na->GetBinUpEdge(na->GetLast());
 
-  if ((ofs<zmin) || (ofs>=zmax)) {
-    ofs = (std::abs(ofs-zmin) < std::abs(ofs-zmax)) ? GetOffset("min") : GetOffset("max");
+  if ((ofs<nmin) || (ofs>=nmax)) {
+    ofs = (std::abs(ofs-nmin) < std::abs(ofs-nmax)) ? GetOffset("min") : GetOffset("max");
     if (args->IsVerbose()) {
       std::cout << "Info: Setting geometry offset to " << ofs <<
 	" because the original value (" << offset << ") is outside the geometry histogram range. ";
@@ -60,66 +68,16 @@ void Geometry3::BuildMaxH2()
     }
   }
 
-  if (plane == "xy")
-    {
-      const Int_t k = zAxis->FindBin(ofs);
-      for (Int_t j=1; j<=n3y; ++j)
-	for (Int_t i=1; i<=n3x; ++i)
-	  {
-	    Double_t val = h3->GetBinContent(i,j,k);
-	    h2max->SetBinContent(j,i,val);
-	  }
-    }
-  else if (plane == "yx")
-    {
-      Int_t k = zAxis->FindBin(ofs);
-      for (Int_t j=1; j<=n3y; ++j)
-	for (Int_t i=1; i<=n3x; ++i)
-	  {
-	    Double_t val = h3->GetBinContent(i,j,k);
-	    h2max->SetBinContent(i,j,val);
-	  }
-    }
-  else if (plane == "yz")
-    {
-      const Int_t i = h3->GetXaxis()->FindBin(ofs);
-      for (Int_t j=1; j<=n3y; ++j)
-	for (Int_t k=1; k<=n3z; ++k)
-	  {
-	    Double_t val = h3->GetBinContent(i,j,k);
-	    h2max->SetBinContent(k,j,val);
-	  }
-    }
-  else if (plane == "zy")
-    {
-      const Int_t i = h3->GetXaxis()->FindBin(ofs);
-      for (Int_t j=1; j<=n3y; ++j)
-	for (Int_t k=1; k<=n3z; ++k)
-	  {
-	    Double_t val = h3->GetBinContent(i,j,k);
-	    h2max->SetBinContent(j,k,val);
-	  }
-    }
-  else if (plane == "xz")
-    {
-      const Int_t j = h3->GetYaxis()->FindBin(ofs);
-      for (Int_t k=1; k<=n3z; ++k)
-	for (Int_t i=1; i<=n3x; ++i)
-	  {
-	    Double_t val = h3->GetBinContent(i,j,k);
-	    h2max->SetBinContent(k,i,val);
-	  }
-    }
-  else if (plane == "zx")
-    {
-      const Int_t j = h3->GetYaxis()->FindBin(ofs);
-      for (Int_t k=1; k<=n3z; ++k)
-	for (Int_t i=1; i<=n3x; ++i)
-	  {
-	    Double_t val = h3->GetBinContent(i,j,k);
-	    h2max->SetBinContent(i,k,val);
-	  }
-    }
+  const Int_t n = na->FindBin(ofs);
+  const Int_t nv = GetVerticalAxis()->GetNbins();
+  const Int_t nh = GetHorizontalAxis()->GetNbins();
+
+  for (Int_t v=1; v<=nv; ++v)
+    for (Int_t h=1; h<=nh; ++h)
+      {
+	const std::array<Int_t,3> b = plane.Bin3(v, h, n);
+	h2max->SetBinContent(h, v, h3->GetBinContent(b[0], b[1], b[2]));
+      }
 
   SetH2(h2max);
 }

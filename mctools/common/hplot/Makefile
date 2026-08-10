@@ -1,54 +1,55 @@
-.PHONY: all clean perf
+.PHONY: all clean test perf helgrind valgrind sloc
 
 all: hplot
 
 ROOTCONFIG := root-config
-#ARCH       := $(shell $(ROOTCONFIG) --arch)
-#PLATFORM   := $(shell $(ROOTCONFIG) --platform)
-
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTGLIBS  := $(shell $(ROOTCONFIG) --glibs)
 ROOTLIBS   := $(shell $(ROOTCONFIG) --libs)
-GCC         = g++
+CXX         = g++
 
-CXXFLAGS := -g -std=c++17 -Ofast -fno-math-errno -Wall
+# -Ofast would enable -ffast-math, which we do not want in a tool that
+# computes and thresholds relative errors.  Override with e.g. make OPT=-O0
+OPT       ?= -O2
+CXXFLAGS  := -g $(OPT) -std=c++17 -fno-math-errno -Wall -Wextra -Isrc/ -MMD -MP
+LDLIBS    := $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options
 
-obj/%.o: src/%.cxx src/%.h
+# Data used by the valgrind/minimal targets.  Override on the command line:
+#   make valgrind TESTDATA=/path/to/file.root TESTHIST=mesh25
+TESTDATA  ?= ../../../tests/hplot/test.root
+TESTHIST  ?= h3
+
+SRCS := $(wildcard src/*.cxx)
+OBJS := $(patsubst src/%.cxx,obj/%.o,$(SRCS)) obj/MainFrameDict.o
+DEPS := $(OBJS:.o=.d)
+
+obj:
+	@mkdir -p $@
+
+obj/%.o: src/%.cxx | obj
 	@echo "Compiling $@"
-	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
+	@$(CXX) -c $(CXXFLAGS) $(ROOTCFLAGS) $< -o $@
 
-obj/hplot.o: src/hplot.cxx
-	@echo "Compiling $@"
-	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
-
-obj/minimal.o: src/minimal.cxx
-	@echo "Compiling $@"
-	@$(GCC) -c $(CXXFLAGS) -Isrc/ $< $(ROOTCFLAGS) -o $@
-
-obj/MainFrameDict.o: src/MainFrame.h src/MainFrameLinkDef.h
+# The generated _rdict.pcm must sit next to the executable for the interpreter
+# to find it at run time, so the dictionary is generated here rather than in obj/
+MainFrameDict.cxx: src/MainFrame.h src/MainFrameLinkDef.h
 	@echo "Generating dictionary $@"
-# use rootcint if going to run on travis. otherwise rootcline is better/newer
-	@rootcling -f MainFrameDict.cxx -c $^
-	@$(GCC) -c $(CXXFLAGS) -I./ MainFrameDict.cxx $(ROOTCFLAGS) -o $@
+	@rootcling -f $@ -c -Isrc/ $^
 
-hplot: obj/hplot.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Data3.o obj/Geometry.o obj/GeometryMultiGraph.o obj/Geometry3.o obj/DynamicSlice.o
-	@echo "Linking $@"
-	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
+obj/MainFrameDict.o: MainFrameDict.cxx | obj
+	@echo "Compiling $@"
+	@$(CXX) -c $(CXXFLAGS) $(ROOTCFLAGS) $< -o $@
 
-minimal: obj/minimal.o obj/Arguments.o obj/MainFrame.o obj/MainFrameDict.o obj/Data.o obj/Data3.o obj/Geometry.o obj/GeometryMultiGraph.o obj/Geometry3.o
+hplot: $(OBJS)
 	@echo "Linking $@"
-	@$(GCC) $^ $(ROOTLIBS) $(ROOTGLIBS) -lGeom -lboost_program_options -o $@
-	valgrind --show-leak-kinds=all --leak-check=full --error-limit=no --gen-suppressions=all \
-		./minimal /home/kbat/figs/TDC/runs/SpecF1.root 3>&1 1>&2 2>&3 | \
-		grindmerge  > root-minimal.supp
-	valgrind --show-leak-kinds=all --leak-check=full \
-	        --suppressions=root-minimal.supp \
-	        ./minimal /home/kbat/figs/TDC/runs/SpecF1.root
+	@$(CXX) $^ $(LDLIBS) -o $@
+
+test: hplot
+	@cd ../../../tests/hplot && PATH=$(CURDIR):$$PATH python3 test.py
 
 clean:
-	@rm -fv hplot obj/*.o perf.data* perf.hist* obj/MainFrameDict.cxx obj/MainFrameDict_rdict.pcm minimal \
-		MainFrameDict.cxx MainFrameDict_rdict.pcm \
-		root-minimal.supp
+	@rm -fv hplot obj/*.o obj/*.d perf.data* perf.hist* \
+		MainFrameDict.cxx MainFrameDict_rdict.pcm
 
 perf: hplot
 	rm -f perf.data
@@ -60,20 +61,15 @@ perf: hplot
 helgrind: hplot
 	valgrind --tool=helgrind \
 		--suppressions=$(shell root-config --etcdir)/helgrind-root.supp \
-		./hplot a b c d
+		./hplot $(TESTDATA) $(TESTHIST)
 
-valgrind: hplot minimal
+valgrind: hplot
 	valgrind --show-leak-kinds=all --leak-check=full \
-		--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \
-	        --suppressions=root-minimal.supp \
+		--suppressions=$(shell root-config --etcdir)/valgrind-root.supp \
 		--track-origins=yes \
-		./hplot /home/kbat/figs/TDC/runs/SpecF1-do-not-exist.root mesh25 c d
-#	valgrind --tool=memcheck --track-origins=yes --show-leak-kinds=all \
-
-	# valgrind --num-callers=30 --leak-check=full \
-	# 	--suppressions=$(ROOTSYS)/etc/valgrind-root.supp \
-	# 	root.exe myscript.C
-
+		./hplot $(TESTDATA) $(TESTHIST) -o /dev/null
 
 sloc:
 	sloccount src
+
+-include $(DEPS)
