@@ -41,6 +41,7 @@ class MainFrame : public TGMainFrame {
   TVirtualPad *GetHistogramPad() const;
   TVirtualPad *GetSlicePad() const;
   void DoSlider();
+  void CloseWindow() override;
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) override;
 
   void EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected);

@@ -105,8 +105,6 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   Resize(GetDefaultSize());
   MapWindow();
 
-  fEcanvas->Connect("TCanvas", "Closed()", "TApplication", gApplication, "Terminate()");
-
   dh2 = data->GetH2(); // default data histogram
 
   if (data->GetArgs()->IsSlice())
@@ -132,8 +130,34 @@ void MainFrame::SetGeometry(const std::shared_ptr<Geometry> g)
 }
 
 
+void MainFrame::CloseWindow()
+/*!
+  Called when the window manager closes the window.
+
+  The default implementation deletes the frame, which would leave the event
+  loop running without a window - and delete an object owned by Application.
+  Leaving the event loop instead unwinds the normal way, through Run().
+ */
+{
+  gApplication->Terminate(0);
+}
+
 MainFrame::~MainFrame()
 {
+  TCanvas *c1 = GetCanvas();
+
+  /*
+    The embedded canvas does not own the TCanvas handed to it, so the canvas
+    would outlive this window and be deleted by TROOT::EndOfProcessCleanups()
+    at exit - after the interpreter globals have been reset, and with its
+    container window already gone.  Take it down here, while it is still
+    consistent, and drop the connection to this frame first: EventInfo() must
+    not be called on a half-destructed MainFrame.
+  */
+  c1->Disconnect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)", this,
+		 "EventInfo(EEventType,Int_t,Int_t,TObject*)");
+  delete c1;
+
   // .help TGMainFrame::Cleanup
   // Cleanup and delete all objects contained in this composite frame.
   // This will delete all objects added via AddFrame().
