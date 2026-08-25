@@ -277,11 +277,11 @@ class Case:
             "}\n\n"
             r"\newcommand\print{%"
             "\n"
-            r"  \scenario.\region.\area.\zone : \value"
+            r"  \scenario.\region.\area.\zone : \rateval"
             "\n}\n"
             r"\newcommand\printCombo{%"
             "\n"
-            r"  \combo : \value"
+            r"  \combo : \rateval"
             "\n}\n\n"
             r"\begin{document}"
             "\n"
@@ -305,7 +305,7 @@ class Case:
                         escaped_zone = escape_latex(zone)
                         buffer.append(r"\def\zone{" f"{escaped_zone}" "}\n")
                         buffer.append(
-                            r"\def\value{\rate{"
+                            r"\def\rateval{\rate{"
                             f"{escaped_scenario}"
                             "}{"
                             f"{escaped_region}"
@@ -329,7 +329,7 @@ class Case:
                     "}\n"
                 )
                 buffer.append(
-                    r"\def\value{\rate{"
+                    r"\def\rateval{\rate{"
                     f"{escaped_scenario}"
                     "}{"
                     f"{escaped_combo_parts[0]}"
