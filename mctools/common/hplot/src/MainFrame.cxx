@@ -287,6 +287,22 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
    }
 
+   /*!
+     The middle mouse button pops the object under the cursor - usually the
+     data histogram - to the end of the list of primitives of its pad
+     (TCanvas::HandleInput), so that it is painted last, hiding the geometry
+     drawn on top of it.  Put the geometry back in front.
+   */
+   if (geo && ((event == kButton2Down) || (event == kButton2Up))) {
+     TVirtualPad *h2pad = GetHistogramPad();
+     if (gPad == h2pad) {
+       geo->Pop();
+       h2pad->Modified();
+       h2pad->Update();
+       h2pad->cd(); // Update() may leave another pad current
+     }
+   }
+
    if (slice)
      slice->Draw(dh2, GetHistogramPad(), GetSlicePad());
 }

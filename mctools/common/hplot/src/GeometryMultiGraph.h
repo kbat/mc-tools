@@ -29,6 +29,7 @@ class GeometryMultiGraph : public Geometry {
 
   void Draw() override;
   void Draw(Float_t offset) override { (void)offset; Draw(); }
+  void Pop() override { mg->Pop(); }
   std::string StatusText(Double_t x, Double_t y) const override;
 };
 

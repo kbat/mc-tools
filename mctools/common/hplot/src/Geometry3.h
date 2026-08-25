@@ -32,6 +32,7 @@ class Geometry3 : public Geometry, private Data3 {
 
   void Draw() override { Draw(Data3::GetOffset()); }
   void Draw(Float_t offset) override;
+  void Pop() override { if (drawn) drawn->Pop(); }
   std::string StatusText(Double_t x, Double_t y) const override;
 };
 

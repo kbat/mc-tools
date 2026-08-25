@@ -24,6 +24,12 @@ class Geometry {
   virtual void Draw(Float_t offset) = 0;
 
   /*!
+    Move the geometry to the end of the list of primitives of the current pad,
+    so that it is painted last, on top of the data.
+  */
+  virtual void Pop() = 0;
+
+  /*!
     One line describing the geometry at the given position of the plot, shown
     in the status bar of the GUI.
   */
