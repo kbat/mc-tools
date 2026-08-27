@@ -115,6 +115,26 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.y, -0.5)
         self.assertEqual(zone.value.z, 0.5)
 
+    def test_box_limits_3d_inverted(self):
+        hist = create_test_histogram(name="th3_4")
+
+        box = BoxLimits3D(zlim=Limits(upper=-0.1))
+        inverted_box = BoxLimits3D(zlim=Limits(upper=-0.1), inverted=True)
+        for n_x in (1, 2):
+            for n_y in (1, 2):
+                for n_z in (1, 2):
+                    self.assertEqual(
+                        inverted_box.bin_in_range(n_x, n_y, n_z, hist),
+                        not box.bin_in_range(n_x, n_y, n_z, hist),
+                    )
+
+        zone = Zone(hist=hist, lim=inverted_box)
+        zone.evaluate()
+        self.assertEqual(zone.value.val, 7.0)
+        self.assertEqual(zone.value.x, 0.5)
+        self.assertEqual(zone.value.y, 0.5)
+        self.assertEqual(zone.value.z, 0.5)
+
     def test_zone_default_limits_are_not_shared(self):
         zone_0 = Zone(hist=create_test_histogram(name="th3_2"))
         zone_1 = Zone(hist=create_test_histogram(name="th3_3"))

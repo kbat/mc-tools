@@ -40,35 +40,37 @@ class Limits3D(ABC):
 
 
 class BoxLimits3D(Limits3D):
-    """Box limits for a 3D variable"""
+    """Box limits for a 3D variable
+
+    If inverted is True, a bin is in range if it lies outside the box instead of
+    inside it.
+    """
 
     def __init__(
         self,
         xlim: Limits | None = None,
         ylim: Limits | None = None,
         zlim: Limits | None = None,
+        inverted: bool = False,
     ):
         self.xlim = Limits() if xlim is None else xlim
         self.ylim = Limits() if ylim is None else ylim
         self.zlim = Limits() if zlim is None else zlim
+        self.inverted = inverted
 
     def bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
         x_axis = hist.GetXaxis()
-        if self.xlim.upper < x_axis.GetBinLowEdge(n_x) or self.xlim.lower > (
-            x_axis.GetBinUpEdge(n_x)
-        ):
-            return False
         y_axis = hist.GetYaxis()
-        if self.ylim.upper < y_axis.GetBinLowEdge(n_y) or self.ylim.lower > (
-            y_axis.GetBinUpEdge(n_y)
-        ):
-            return False
         z_axis = hist.GetZaxis()
-        if self.zlim.upper < z_axis.GetBinLowEdge(n_z) or self.zlim.lower > (
-            z_axis.GetBinUpEdge(n_z)
-        ):
-            return False
-        return True
+        in_box = (
+            self.xlim.upper >= x_axis.GetBinLowEdge(n_x)
+            and self.xlim.lower <= x_axis.GetBinUpEdge(n_x)
+            and self.ylim.upper >= y_axis.GetBinLowEdge(n_y)
+            and self.ylim.lower <= y_axis.GetBinUpEdge(n_y)
+            and self.zlim.upper >= z_axis.GetBinLowEdge(n_z)
+            and self.zlim.lower <= z_axis.GetBinUpEdge(n_z)
+        )
+        return in_box != self.inverted
 
 
 @dataclass
