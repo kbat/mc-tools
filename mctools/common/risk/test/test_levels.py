@@ -2,7 +2,7 @@ import unittest
 
 from mctools.common.risk.level import Level
 from mctools.common.risk.test.input_histogram import create_test_histogram
-from mctools.common.risk.zone import Limits, Limits3D, Zone
+from mctools.common.risk.zone import BoxLimits3D, Limits, Zone
 
 
 class TestLevels(unittest.TestCase):
@@ -50,13 +50,13 @@ class TestLevels(unittest.TestCase):
                     sub_levels={
                         "L0_0": Zone(
                             hist=create_test_histogram("L1_0", 3.0),
-                            lim=Limits3D(
+                            lim=BoxLimits3D(
                                 zlim=Limits(upper=-0.1),
                             ),
                         ),
                         "L0_1": Zone(
                             hist=create_test_histogram("L1_1", 4.0),
-                            lim=Limits3D(
+                            lim=BoxLimits3D(
                                 xlim=Limits(upper=-0.1),
                                 ylim=Limits(lower=0.1),
                                 zlim=Limits(upper=-0.1),

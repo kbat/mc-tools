@@ -98,4 +98,6 @@ class Data:
 
         for combo in self.arbitrary_level_combos:
             self.arbitrary_level_combos[combo].set_sources(self.sources)
-            self.arbitrary_level_combos[combo].evaluate(root_input_cache=root_input_cache)
+            self.arbitrary_level_combos[combo].evaluate(
+                root_input_cache=root_input_cache
+            )
