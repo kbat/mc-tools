@@ -107,11 +107,11 @@ class TestRootInput(unittest.TestCase):
             )
             low_zone = Zone(
                 hist=root_input,
-                lim=BoxLimits3D(zlim=Limits(upper=-0.1)),
+                lim=[BoxLimits3D(zlim=Limits(upper=-0.1))],
             )
             high_zone = Zone(
                 hist=root_input,
-                lim=BoxLimits3D(zlim=Limits(lower=0.1)),
+                lim=[BoxLimits3D(zlim=Limits(lower=0.1))],
             )
 
             with ROOTInputCache() as root_input_cache:

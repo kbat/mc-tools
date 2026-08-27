@@ -83,7 +83,7 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.z, 0.5)
 
         # 2) Single Condition
-        zone = Zone(hist=hist, lim=BoxLimits3D(zlim=Limits(upper=-0.1)))
+        zone = Zone(hist=hist, lim=[BoxLimits3D(zlim=Limits(upper=-0.1))])
         zone.evaluate()
         self.assertEqual(zone.value.val, 6.0)
         self.assertAlmostEqual(zone.value.err, 0.6, places=15)
@@ -91,9 +91,10 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.y, 0.5)
         self.assertEqual(zone.value.z, -0.5)
 
-        # 3) Multiple conditions
+        # 3) Multiple conditions on the same BoxLimits3D
         zone = Zone(
-            hist=hist, lim=BoxLimits3D(xlim=Limits(upper=-0.1), zlim=Limits(lower=0.1))
+            hist=hist,
+            lim=[BoxLimits3D(xlim=Limits(upper=-0.1), zlim=Limits(lower=0.1))],
         )
         zone.evaluate()
         self.assertEqual(zone.value.val, 3.0)
@@ -104,9 +105,13 @@ class TestZone(unittest.TestCase):
 
         zone = Zone(
             hist=hist,
-            lim=BoxLimits3D(
-                xlim=Limits(upper=-0.1), ylim=Limits(upper=-0.1), zlim=Limits(lower=0.1)
-            ),
+            lim=[
+                BoxLimits3D(
+                    xlim=Limits(upper=-0.1),
+                    ylim=Limits(upper=-0.1),
+                    zlim=Limits(lower=0.1),
+                )
+            ],
         )
         zone.evaluate()
         self.assertEqual(zone.value.val, 1.0)
@@ -128,17 +133,36 @@ class TestZone(unittest.TestCase):
                         not box.bin_in_range(n_x, n_y, n_z, hist),
                     )
 
-        zone = Zone(hist=hist, lim=inverted_box)
+        zone = Zone(hist=hist, lim=[inverted_box])
         zone.evaluate()
         self.assertEqual(zone.value.val, 7.0)
         self.assertEqual(zone.value.x, 0.5)
         self.assertEqual(zone.value.y, 0.5)
         self.assertEqual(zone.value.z, 0.5)
 
+    def test_zone_combined_limits(self):
+        # Inner box, inverted: everywhere except the (0.5, 0.5, 0.5) corner bin.
+        # Excludes the global maximum.
+        # Outer box: only the z = 0.5 slice. Excludes the next-highest value.
+        hist = create_test_histogram(name="th3_5")
+        outer = BoxLimits3D(zlim=Limits(lower=0.1))
+        inner_excluded = BoxLimits3D(
+            xlim=Limits(lower=0.1),
+            ylim=Limits(lower=0.1),
+            zlim=Limits(lower=0.1),
+            inverted=True,
+        )
+        zone = Zone(hist=hist, lim=[outer, inner_excluded])
+        zone.evaluate()
+        self.assertEqual(zone.value.val, 5.0)
+        self.assertEqual(zone.value.x, 0.5)
+        self.assertEqual(zone.value.y, -0.5)
+        self.assertEqual(zone.value.z, 0.5)
+
     def test_zone_default_limits_are_not_shared(self):
         zone_0 = Zone(hist=create_test_histogram(name="th3_2"))
         zone_1 = Zone(hist=create_test_histogram(name="th3_3"))
 
-        zone_0.lim.xlim.lower = 0.0
+        zone_0.lim[0].xlim.lower = 0.0
 
-        self.assertEqual(zone_1.lim.xlim.lower, float("-inf"))
+        self.assertEqual(zone_1.lim[0].xlim.lower, float("-inf"))

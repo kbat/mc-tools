@@ -160,21 +160,23 @@ class ROOTInputCache:
 class Zone(BaseLevel):
     """BaseLevel associated with a ROOT TH3 histogram
 
-    A Limits3D instance can be given to restrict the bins that are searched for the
-    maximum value to a certain region of the histogram. By default, a BoxLimits3D
-    with no constraints is used, i.e. the whole histogram is searched.
+    A list of Limits3D instances can be given to restrict the bins that are searched
+    for the maximum value to a certain region of the histogram. A bin is only
+    included in the search if it is in range of every Limits3D in the list (i.e. the
+    limits are combined with a logical AND). By default, a single BoxLimits3D with no
+    constraints is used, i.e. the whole histogram is searched.
     """
 
     def __init__(
         self,
         hist: ROOT.TH3F | ROOT.TH3D | ROOTFileInput | str,
-        lim: Limits3D | None = None,
+        lim: list[Limits3D] | None = None,
         name: str = "",
         title: str = "",
     ):
         super().__init__(name=name, title=title)
         self.hist = hist
-        self.lim = BoxLimits3D() if lim is None else lim
+        self.lim = [BoxLimits3D()] if lim is None else lim
 
     def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
@@ -200,7 +202,10 @@ class Zone(BaseLevel):
         for n_x in range(hist.GetNbinsX()):
             for n_y in range(hist.GetNbinsY()):
                 for n_z in range(hist.GetNbinsZ()):
-                    if self.lim.bin_in_range(n_x + 1, n_y + 1, n_z + 1, hist):
+                    if all(
+                        lim.bin_in_range(n_x + 1, n_y + 1, n_z + 1, hist)
+                        for lim in self.lim
+                    ):
                         bin_content = hist.GetBinContent(n_x + 1, n_y + 1, n_z + 1)
                         if bin_content > max_val:
                             max_val = bin_content
