@@ -140,6 +140,14 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.y, 0.5)
         self.assertEqual(zone.value.z, 0.5)
 
+    def test_zone_accepts_single_limits3d(self):
+        hist = create_test_histogram(name="th3_6")
+        box = BoxLimits3D(zlim=Limits(upper=-0.1))
+
+        zone = Zone(hist=hist, lim=box)
+
+        self.assertEqual(zone.lim, [box])
+
     def test_zone_combined_limits(self):
         # Inner box, inverted: everywhere except the (0.5, 0.5, 0.5) corner bin.
         # Excludes the global maximum.

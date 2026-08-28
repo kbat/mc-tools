@@ -170,13 +170,18 @@ class Zone(BaseLevel):
     def __init__(
         self,
         hist: ROOT.TH3F | ROOT.TH3D | ROOTFileInput | str,
-        lim: list[Limits3D] | None = None,
+        lim: Limits3D | list[Limits3D] | None = None,
         name: str = "",
         title: str = "",
     ):
         super().__init__(name=name, title=title)
         self.hist = hist
-        self.lim = [BoxLimits3D()] if lim is None else lim
+        if lim is None:
+            self.lim: list[Limits3D] = [BoxLimits3D()]
+        elif isinstance(lim, Limits3D):
+            self.lim = [lim]
+        else:
+            self.lim = lim
 
     def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
