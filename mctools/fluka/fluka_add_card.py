@@ -26,7 +26,7 @@ def main():
     nmatches = 0
     for l in fileinput.input(args.inp, inplace=True, backup='.bak'):
         l = l.strip()
-        if re.search(f"\A{pattern}", l):
+        if re.search(rf"\A{pattern}", l):
             nmatches += 1
             for card in args.card:
                 line(*card.split(), f=sys.stdout)
