@@ -26,8 +26,10 @@ Arguments::Arguments(int ac, const char **av) :
     hidden.add_options()
       ("dfile", "Data file name")
       ("dhist", "Data histogram name")
-      ("gfile", po::value<std::string>()->default_value(""), "Geometry file name")
-      ("ghist", po::value<std::string>()->default_value("h3"), "Geometry histogram name");
+      ("gfile", po::value<std::string>()->default_value(""),
+       "Geometry: the FLUKA, MCNP or PHITS input file to cut. If no file of that name exists, "
+       "the name without its extension is taken to be the name of a TMacro holding the input "
+       "file inside dfile - the copy fluka2root writes there.");
 
     po::options_description generic("Generic options", w.ws_col);
     generic.add_options()
@@ -40,7 +42,7 @@ Arguments::Arguments(int ac, const char **av) :
        "When 'centre' is used, the offset is set to the midpoint between the 'min' and 'max' values. "
        "If 'min' is used, the offset corresponds to the center of the first bin of the axis that is perpendicular to the projection plane, "
        "while 'max' corresponds to the last bin of that axis. "
-       "When the '-max' option is used, the offset applies to the geometry histogram only, "
+       "When the '-max' option is used, the offset applies to the geometry only, "
        "which allows the selection of the representative geometry view.")
       ("title", po::value<std::string>()->default_value("None"), "Plot title.")
       ("xtitle", po::value<std::string>()->default_value("None"), "Horizontal axis title.")
@@ -57,12 +59,11 @@ Arguments::Arguments(int ac, const char **av) :
        "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
       ("rebin", "Rebin the 2D histograms such that they are not larger than width x height "
        "(specified by the above arguments). This argument drastically speeds up histogram drawing, "
-       "especially in the case when the data or geometry histograms are larger "
-       "than the screen resolution.")
+       "especially in the case when the data histogram is larger than the screen resolution.")
       ("right_margin", po::value<float>()->default_value(0.12),
        "Right margin of the canvas in order to allocate enough space for the TH2 z-axis title. "
        "Used only if ZTITLE is set and DOPTION is \"colz\".")
-      ("flip", "Flip the geometry/data histograms vertically. This option does not filp the y-axis, so that the y-coordinates in the flipped data will not correspond to those in the original histogram. An advantage of this is that the user can zoom the y-range with the mouse.")
+      ("flip", "Flip the data and the geometry vertically. This option does not filp the y-axis, so that the y-coordinates in the flipped data will not correspond to those in the original histogram. An advantage of this is that the user can zoom the y-range with the mouse.")
       ("flipwithaxis", "Same as the 'flip' option but the y-axis is also flipped with drawback that the mouse zoom along the y-axis does not work.")
       //      ("bgcolor", "Set the frame background colour to some hard-coded value")
       ("o", po::value<std::string>()->default_value(""),
@@ -95,18 +96,21 @@ Arguments::Arguments(int ac, const char **av) :
 
     po::options_description geom("Geometry options", w.ws_col);
     geom.add_options()
-      ("goption", po::value<std::string>()->default_value("cont3"), "Geometry draw option")
-      ("gcont", po::value<size_t>()->default_value(25), "Number of contour levels for geometry")
+      ("gres", po::value<size_t>()->default_value(1000),
+       "Number of geometry samples across the horizontal axis. The vertical axis gets as many "
+       "as the canvas aspect ratio calls for, so that the sampling is uniform in the picture. "
+       "A boundary thinner than a sample cell can be missed, and the time the cut takes grows "
+       "with the square of this number.")
       ("glwidth", po::value<size_t>()->default_value(2), "Geometry line width")
       ("glcolor", po::value<std::string>()->default_value("#000000"), "Geometry line colour specified by hex code, e.g. \"#rrggbb\"")
       ("glalpha", po::value<float>()->default_value(0.4), "Geometry line transparency");
 
-    std::array<std::string, 4> positional_args{"dfile", "dhist", "gfile", "ghist"};
+    std::array<std::string, 3> positional_args{"dfile", "dhist", "gfile"};
     po::positional_options_description p;
     for (const std::string& pa : positional_args)
       p.add(pa.data(), 1);
 
-    po::options_description all_options("Usage: hplot [options] dfile dhist [gfile [ghist]]");
+    po::options_description all_options("Usage: hplot [options] dfile dhist [gfile]");
     all_options.add(generic).add(data).add(geom).add(hidden);
 
     //    po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -133,7 +137,7 @@ Arguments::Arguments(int ac, const char **av) :
 				 [&pa](po::option const& o) {
 				   return o.string_key == pa;
 				 });
-	  if ((it == parsed.options.end()) && (pa!="gfile") && (pa!="ghist") ) // gfile and ghist are optional
+	  if ((it == parsed.options.end()) && (pa!="gfile")) // gfile is optional
 	    {
 	      std::cerr << "Error: Missing positional argument \"" <<
 		pa << "\"\n" << std::endl;
@@ -154,7 +158,6 @@ Arguments::Arguments(int ac, const char **av) :
 	boost::algorithm::replace_all(helpMsg, "-dfile", " dfile");
 	boost::algorithm::replace_all(helpMsg, "-dhist", " dhist");
 	boost::algorithm::replace_all(helpMsg, "-gfile", " gfile");
-	boost::algorithm::replace_all(helpMsg, "-ghist", " ghist");
 	std::cout << helpMsg << std::endl;
 	return;
       }

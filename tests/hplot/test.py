@@ -88,17 +88,50 @@ def buildFloat(fname, hname, relerr=None):
     h.SaveAs(fname)
 
 
-def buildGeometry(fname, hname):
-    """Material-index geometry sharing the binning of build()."""
+# A FLUKA geometry sized for the binning of build(): a TARGET box
+# x = [-1,1], y = [-2,2], z = [-3,3] inside a vacuum box reaching well beyond
+# the histogram, so that the only boundary in the picture is the target's.
+BOX = {"x": 1.0, "y": 2.0, "z": 3.0}
 
-    h = ROOT.TH3S(hname, ";x;y;z", nx, xmin, xmax, ny, ymin, ymax, nz, zmin, zmax)
+GEOMETRY = """TITLE
+hplot geometry test
+GEOBEGIN                                                              COMBNAME
+    0    0
+RPP world     -100.0 100.0 -100.0 100.0 -100.0 100.0
+RPP outer      -10.0  10.0  -10.0  10.0  -10.0  10.0
+RPP inner       -1.0   1.0   -2.0   2.0   -3.0   3.0
+END
+BLKHOLE      5 +world -outer
+VOID         5 +outer -inner
+TARGET       5 +inner
+END
+GEOEND
+ASSIGNMA    BLCKHOLE   BLKHOLE
+ASSIGNMA      VACUUM      VOID
+ASSIGNMA        IRON    TARGET
+STOP
+"""
 
-    for i in range(1,nx+1):
-        for j in range(1,ny+1):
-            for k in range(1,nz+1):
-                h.SetBinContent(i,j,k, i+j)
 
-    h.SaveAs(fname)
+def buildGeometry(fname):
+    """The FLUKA input file hplot cuts to get the outlines."""
+
+    with open(fname, "w") as f:
+        f.write(GEOMETRY)
+
+
+def addMacro(fname, macro):
+    """Store the same input file as a TMacro inside the data file, the way
+    fluka2root does - hplot reads it from there when no file of that name
+    exists."""
+
+    m = ROOT.TMacro(macro, macro+".inp")
+    for line in GEOMETRY.splitlines():
+        m.AddLine(line)
+
+    f = ROOT.TFile(fname, "UPDATE")
+    m.Write()
+    f.Close()
 
 
 def buildUniform(fname, hname, n1, n2, n3):
@@ -140,6 +173,49 @@ def run(args, nprim=1):
     prims = [p for p in c1.GetListOfPrimitives() if isinstance(p, ROOT.TH2)]
     prims += [None] * (nprim-len(prims))
     return f, prims[:nprim]
+
+
+def multigraph(f):
+    """The geometry outlines drawn on the canvas of the file run() returned,
+    as the list of their (x,y) point lists.  None if no TMultiGraph was drawn,
+    an empty list if it holds no outline."""
+
+    c1 = f.Get("hplot")
+    for p in c1.GetListOfPrimitives():
+        if isinstance(p, ROOT.TMultiGraph):
+            graphs = p.GetListOfGraphs()
+            if not graphs:
+                return []
+            return [[(g.GetX()[i], g.GetY()[i]) for i in range(g.GetN())]
+                    for g in graphs]
+    return None
+
+
+def checkOutline(points, hhalf, vhalf, tol=0.02):
+    """Every point must sit on the outline of the rectangle
+    [-hhalf,hhalf] x [-vhalf,vhalf], and the outline must reach all four of
+    its sides."""
+
+    nerrors = 0
+    for h, v in points:
+        onh = abs(abs(h)-hhalf) < tol and abs(v) <= vhalf+tol
+        onv = abs(abs(v)-vhalf) < tol and abs(h) <= hhalf+tol
+        if not (onh or onv):
+            print("Outline point (%g, %g) is not on the %gx%g rectangle"
+                  % (h, v, hhalf, vhalf))
+            nerrors += 1
+
+    if not points:
+        print("The outline has no points")
+        return nerrors+1
+
+    for what, expected, actual in (("outline xmin", -hhalf, min(h for h,v in points)),
+                                   ("outline xmax",  hhalf, max(h for h,v in points)),
+                                   ("outline ymin", -vhalf, min(v for h,v in points)),
+                                   ("outline ymax",  vhalf, max(v for h,v in points))):
+        nerrors += checkClose(what, expected, actual, tol)
+
+    return nerrors
 
 
 def testXY(fname="test.root", hname="h3"):
@@ -364,70 +440,115 @@ def testRebin(fname="uniform.root", hname="h3"):
     return nerrors
 
 
-def testGeometry(fname="test.root", hname="h3",
-                 gname="geometry.root", ghname="h3"):
-    """With a geometry file the canvas holds two histograms: the data drawn
-    with the data option and the geometry drawn on top with 'same'."""
+def testGeometry(fname="test.root", hname="h3", gname="geometry.inp"):
+    """With a geometry file hplot cuts it on the plane the data are projected
+    on and draws the material boundaries as a TMultiGraph on top.
+
+    Plane "xy" puts y on the horizontal axis and x on the vertical one, so the
+    target box shows up as a 4x2 rectangle - but only where the cut crosses
+    it, which is what the offset selects."""
 
     nerrors = 0
     print("Testing  geometry overlay")
-    offset = bins(nz, zmin, zmax)
-    for k,off in enumerate(offset[:2],1):
-        f, (data, geo) = run("%s %s %s %s -plane xy -offset %g" %
-                             (fname, hname, gname, ghname, off), nprim=2)
-        if not f:
-            nerrors += 1
-            continue
 
-        if not geo:
-            print("Geometry histogram was not drawn")
-            f.Close()
-            nerrors += 1
-            continue
+    # a cut through the target: the outline is its y-x cross section
+    f, (data,) = run("%s %s %s -plane xy -offset 0" % (fname, hname, gname))
+    if not f:
+        return 1
 
-        if "same" not in geo.GetOption():
-            print("Geometry draw option lacks 'same':", geo.GetOption())
-            nerrors += 1
+    outlines = multigraph(f)
+    if not outlines:
+        print("Geometry outlines were not drawn:", outlines)
+        nerrors += 1
+    else:
+        for points in outlines:
+            nerrors += checkOutline(points, BOX["y"], BOX["x"])
 
-        for i in range(1,nx+1):
-            for j in range(1,ny+1):
-                nerrors += check(i,j,k, content(i,j,k), data.GetBinContent(j,i),
-                                 error(i,j,k), data.GetBinError(j,i))
-                nerrors += checkClose("material (%d,%d)" % (i,j),
-                                      i+j, geo.GetBinContent(j,i))
-        f.Close()
+    # the data must still be the projection at that offset
+    for i in range(1,nx+1):
+        for j in range(1,ny+1):
+            nerrors += check(i,j,5, content(i,j,5), data.GetBinContent(j,i),
+                             error(i,j,5), data.GetBinError(j,i))
+    f.Close()
+
+    # a cut past the end of the target (z = 3.5): nothing to outline
+    f, _ = run("%s %s %s -plane xy -offset 3.5" % (fname, hname, gname))
+    if not f:
+        return nerrors+1
+
+    outlines = multigraph(f)
+    if outlines is None or outlines:
+        print("Outlines drawn for a cut outside the target:", outlines)
+        nerrors += 1
+    f.Close()
 
     return nerrors
 
 
-def testGeometryMax(fname="test.root", hname="h3",
-                    gname="geometry.root", ghname="h3"):
-    """With -max the geometry is shown at the requested offset.  An offset
-    outside the geometry is clamped to the nearest edge of the axis normal to
-    the plane - which for plane "yz" is x, not z."""
+def testGeometryMacro(fname="test.root", hname="h3", gname="geo.inp"):
+    """When no file of that name exists, the geometry comes from the TMacro
+    named after it inside the data file, and gives the same outlines."""
 
     nerrors = 0
-    print("Testing  geometry with -max")
-    # 3.0 lies outside the x range [-2,2] but inside the z range [-4,4], so it
-    # must be clamped to the centre of the last x bin
-    f, (data, geo) = run("%s %s %s %s -plane yz -max -offset 3.0" %
-                         (fname, hname, gname, ghname), nprim=2)
+    print("Testing  geometry from a TMacro")
+
+    if exists(gname):
+        print(gname, "exists - the test would read the file, not the TMacro")
+        return 1
+
+    f, _ = run("%s %s %s -plane xy -offset 0" % (fname, hname, gname))
     if not f:
         return 1
 
-    if not geo:
-        print("Geometry histogram was not drawn")
-        f.Close()
+    outlines = multigraph(f)
+    if not outlines:
+        print("Geometry outlines were not drawn:", outlines)
+        nerrors += 1
+    else:
+        for points in outlines:
+            nerrors += checkOutline(points, BOX["y"], BOX["x"])
+    f.Close()
+
+    return nerrors
+
+
+def testGeometryMax(fname="test.root", hname="h3", gname="geometry.inp"):
+    """With -max the data lose their normal axis and the offset applies to the
+    geometry alone, which is how a representative cut is chosen.  For plane
+    "yz" the normal axis is x, not z."""
+
+    nerrors = 0
+    print("Testing  geometry with -max")
+
+    # x = 0.5 crosses the target: the outline is its z-y cross section
+    f, (data,) = run("%s %s %s -plane yz -max -offset 0" % (fname, hname, gname))
+    if not f:
         return 1
+
+    outlines = multigraph(f)
+    if not outlines:
+        print("Geometry outlines were not drawn:", outlines)
+        nerrors += 1
+    else:
+        for points in outlines:
+            nerrors += checkOutline(points, BOX["z"], BOX["y"])
 
     for j in range(1,ny+1):
         for k in range(1,nz+1):
-            # data: largest value along x is the one at i = nx
+            # the largest value along x is the one at i = nx
             nerrors += checkClose("max data (%d,%d)" % (j,k),
                                   content(nx,j,k), data.GetBinContent(k,j))
-            # geometry: clamped to i = nx, where the material index is nx+j
-            nerrors += checkClose("clamped material (%d,%d)" % (j,k),
-                                  nx+j, geo.GetBinContent(k,j))
+    f.Close()
+
+    # x = 1.5 is past the end of the target: nothing to outline
+    f, _ = run("%s %s %s -plane yz -max -offset 1.5" % (fname, hname, gname))
+    if not f:
+        return nerrors+1
+
+    outlines = multigraph(f)
+    if outlines is None or outlines:
+        print("Outlines drawn for a cut outside the target:", outlines)
+        nerrors += 1
     f.Close()
 
     return nerrors
@@ -437,8 +558,9 @@ def main():
     build("test.root", "h3")
     buildFloat("testf.root", "h3")
     buildFloat("testerr.root", "h3", relerr=lambda i: 0.01 if i % 2 else 0.5)
-    buildGeometry("geometry.root", "h3")
+    buildGeometry("geometry.inp")
     buildUniform("uniform.root", "h3", 40, 60, 2)
+    addMacro("test.root", "geo")
 
     nerrors = 0
     nerrors += testXY()
@@ -450,10 +572,11 @@ def main():
     nerrors += testMaxError()
     nerrors += testRebin()
     nerrors += testGeometry()
+    nerrors += testGeometryMacro()
     nerrors += testGeometryMax()
 
     if nerrors == 0:
-        system("rm -f hplot.root test.root testf.root testerr.root geometry.root uniform.root")
+        system("rm -f hplot.root test.root testf.root testerr.root geometry.inp uniform.root")
         print("OK")
     else:
         print(nerrors, " errors found")

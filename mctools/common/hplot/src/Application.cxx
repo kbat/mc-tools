@@ -4,7 +4,7 @@
 
 #include "Application.h"
 #include "Chrono.h"
-#include "GeometryFactory.h"
+#include "GeometryCSG.h"
 #include "Palette.h"
 
 Application::Application(const std::shared_ptr<Arguments>& args) :
@@ -14,12 +14,24 @@ Application::Application(const std::shared_ptr<Arguments>& args) :
   SetColourMap(args->GetPalette());
 
   data = std::make_shared<Data3>(args->GetDataFile(), args->GetDataHist(), args);
+
+  /*
+    Reading the geometry and cutting it does not touch ROOT, so the cut runs on
+    a worker thread while the data are projected here - by the time the first
+    picture is drawn it is usually waiting rather than the other way round.
+  */
+  if (!args->GetGeoFile().empty())
+    {
+      Chrono t(args->IsVerbose(), "GeometryCSG");
+      auto g = std::make_shared<GeometryCSG>(args, data);
+      g->Prefetch(data->GetOffset());
+      geo = g;
+    }
+
   {
     Chrono t(args->IsVerbose(), "Data3::Project");
     data->Project();
   }
-
-  geo = MakeGeometry(args, data);
 }
 
 TVirtualPad *Application::SetUpCanvas(int& argc, const char **argv)

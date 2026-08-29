@@ -50,7 +50,6 @@ class Arguments {
   std::string GetDataFile() const { return vm["dfile"].as<std::string>(); }
   std::string GetDataHist() const { return vm["dhist"].as<std::string>(); }
   std::string GetGeoFile()  const { return vm["gfile"].as<std::string>(); }
-  std::string GetGeoHist()  const { return vm["ghist"].as<std::string>(); }
 
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   size_t      GetHeight() const;
@@ -80,8 +79,7 @@ class Arguments {
   float       GetScale()   const { return vm["scale"].as<float>(); }
 
   // geometry options
-  std::string GetGoption() const { return vm["goption"].as<std::string>(); }
-  size_t      GetGcont()   const { return vm["gcont"].as<size_t>(); }
+  size_t      GetGres()    const { return vm["gres"].as<size_t>(); }
   size_t      GetGlwidth() const { return vm["glwidth"].as<size_t>(); }
   std::string GetGlcolor() const { return vm["glcolor"].as<std::string>(); }
   float       GetGlalpha() const { return vm["glalpha"].as<float>(); }

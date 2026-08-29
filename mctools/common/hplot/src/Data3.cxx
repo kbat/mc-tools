@@ -39,13 +39,13 @@ Data3::Data3(TH3 *h3, const std::shared_ptr<Arguments> args) :
 {
   if (args->IsRebin())
     {
-      Chrono t(args->IsVerbose(), " "+GetTypeStr()+"::Rebin");
+      Chrono t(args->IsVerbose(), " Data3::Rebin");
       Rebin();
     }
 
   if (args->IsFlipped())
     {
-      Chrono t(args->IsVerbose(), " "+GetTypeStr()+"::Flip");
+      Chrono t(args->IsVerbose(), " Data3::Flip");
       Flip();
     }
 
@@ -203,11 +203,10 @@ void Data3::Rebin()
     const std::array<Int_t,3> f = plane.RebinFactors(scaleV, scaleH);
     h3->Rebin3D(f[0], f[1], f[2]);
 
-    if (GetType() == kData3) // we do not need to scale geometry
-      {
-	Chrono t(args->IsVerbose(), " Rebin: "+GetTypeStr()+" scale after rebin");
-	h3->Scale(1.0/(scaleH*scaleV));
-      }
+    {
+      Chrono t(args->IsVerbose(), " Rebin: Data3 scale after rebin");
+      h3->Scale(1.0/(scaleH*scaleV));
+    }
   }
 
   if (args->IsVerbose())
@@ -336,13 +335,13 @@ std::shared_ptr<TH2> Data3::MakeH2(std::string& name, std::string& title) const
 
   std::shared_ptr<TH2> h2(nullptr);
 
-  if (h3->IsA() == TH3F::Class())      // data
+  if (h3->IsA() == TH3F::Class())
     h2 = std::make_shared<TH2F>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
-  else if (h3->IsA() == TH3D::Class()) // also data
+  else if (h3->IsA() == TH3D::Class())
     h2 = std::make_shared<TH2D>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
-  else if (h3->IsA() == TH3S::Class()) // geometry
+  else if (h3->IsA() == TH3S::Class())
     h2 = std::make_shared<TH2S>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
-  else if (h3->IsA() == TH3I::Class()) // also geometry
+  else if (h3->IsA() == TH3I::Class())
     h2 = std::make_shared<TH2I>(name.data(), title.data(), nh, hmin, hmax, nv, vmin, vmax);
   else
     throw HPlotError(std::string("unsupported histogram class ") + h3->ClassName());
@@ -393,11 +392,10 @@ std::shared_ptr<TH2> Data3::BuildH2(Int_t bin) const
 
 void Data3::Project()
 {
-  if (GetType() == kData3) // we do not need to scale geometry
-    {
-      Chrono t(args->IsVerbose(), " Project: "+GetTypeStr()+" scale");
-      h3->Scale(args->GetScale());
-    }
+  {
+    Chrono t(args->IsVerbose(), " Project: Data3 scale");
+    h3->Scale(args->GetScale());
+  }
 
   if (args->IsMax())
     {
@@ -505,36 +503,4 @@ std::shared_ptr<TH2> Data3::Draw(const std::string val) const
     return Draw(GetOffset(args->GetOffset()));
   else
     return Draw(GetOffset(val));
-}
-
-Bool_t Data3::Check(TAxis *normal) const
-{
-  /*!
-    Checks if data and geometry histograms can be used together
-   */
-  Bool_t val = kTRUE;
-  const TAxis *myA = GetNormalAxis();
-
-  if (myA->GetNbins() != normal->GetNbins())
-    {
-      std::cerr << "Data3::Check(): geometry/data normal axes nbins are different:" << std::endl;
-      std::cerr << "\t" << myA->GetNbins() << " " << normal->GetNbins() << std::endl;
-      val = kFALSE;
-    }
-
-  if (std::abs(myA->GetXmin()-normal->GetXmin())>std::numeric_limits<double>::epsilon())
-    {
-      std::cerr << "Data3::Check(): geometry/data normal axes have different min values:" << std::endl;
-      std::cerr << "\t" << myA->GetXmin() << " " << normal->GetXmin() << std::endl;
-      val = kFALSE;
-    }
-
-  if (std::abs(myA->GetXmax()-normal->GetXmax())>std::numeric_limits<double>::epsilon())
-    {
-      std::cerr << "Data3::Check(): geometry/data normal axes have different max values:" << std::endl;
-      std::cerr << "\t" << myA->GetXmax() << " " << normal->GetXmax() << std::endl;
-      val = kFALSE;
-    }
-
-  return val;
 }

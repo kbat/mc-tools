@@ -9,9 +9,9 @@
   Something drawn on top of the data histogram to show where the material
   boundaries are.
 
-  Two kinds exist: a TH3 of material indices (Geometry3) and the set of
-  contours produced by the FLUKA PLOTGEOM card (GeometryMultiGraph).  The rest
-  of the program only ever talks to them through this interface.
+  GeometryCSG, which cuts a Monte Carlo input file on the plane the data are
+  projected on, is the only implementation; the rest of the program talks to it
+  through this interface.
 */
 class Geometry {
  public:
