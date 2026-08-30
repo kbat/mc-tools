@@ -46,7 +46,9 @@ struct CSGCut {
 
   Load() is the expensive part of the file, Contours() the expensive part of
   every view; both are safe to run on a worker thread as long as it is the only
-  one using this object, and Contours() is itself threaded.
+  one using this object, and Contours() is itself threaded.  RegionAt() is not:
+  it keeps the buffers it culls into between calls, so that following the mouse
+  does not allocate, and only the main thread ever asks it anything.
 */
 class CSGEngine {
  public:

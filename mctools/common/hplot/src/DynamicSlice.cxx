@@ -7,7 +7,8 @@
 
 DynamicSlice::DynamicSlice(size_t nbins, size_t ngroup) :
   nbins(nbins), ngroup(ngroup), projection(kTRUE), logy(kFALSE),
-  range(0.0, 0.0), old(0, 0), pad(nullptr)
+  range(0.0, 0.0), old(0, 0), pad(nullptr),
+  lastbin(-1), lasth2(nullptr), dirty(kTRUE)
 {
 }
 
@@ -27,10 +28,14 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
   gVirtualX->SetDrawMode(TVirtualX::kCopy);
 
   Int_t event = h2pad->GetEvent();
-  if (event==kButton1Down)
+  if (event==kButton1Down) {
     projection = !projection;
-  else if (event == kButton2Up)
+    dirty = kTRUE;
+  }
+  else if (event == kButton2Up) {
     logy = !logy;
+    dirty = kTRUE;
+  }
 
   const Int_t px = h2pad->GetEventX();
   const Int_t py = h2pad->GetEventY();
@@ -93,11 +98,25 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
 {
   const std::string yx = xy == "X" ? "Y" : "X";
 
+  const TAxis *axis = xy == "X" ? histo->GetXaxis() : histo->GetYaxis();
+  const Int_t bin1 = axis->FindBin(value);
+
+  /*
+    Projecting the slice and repainting its pad costs far more than the
+    feedback lines the caller draws on every motion event, and shows the same
+    picture until the cursor crosses into another bin.  range is a member, so
+    returning it unchanged keeps the width of those lines right.
+  */
+  if (!dirty && (bin1 == lastbin) && (histo.get() == lasth2))
+    return range;
+
+  dirty = kFALSE;
+  lastbin = bin1;
+  lasth2 = histo.get();
+
   pad->SetGrid();
   pad->cd();
 
-  const TAxis *axis = xy == "X" ? histo->GetXaxis() : histo->GetYaxis();
-  const Int_t bin1 = axis->FindBin(value);
   const Int_t bin2 = bin1+nbins-1;
   const Double_t vmin = axis->GetBinLowEdge(bin1);
   const Double_t vmax = axis->GetBinUpEdge(bin2);

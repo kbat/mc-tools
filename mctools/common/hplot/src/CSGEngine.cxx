@@ -61,6 +61,15 @@ struct CSGEngine::Impl {
   FlukaGeometry g;
   std::string fname;
   bool loaded = false;
+
+  /*!
+    Scratch space for RegionAt(), kept between calls so that moving the mouse
+    does not allocate three vectors per event.  Only the main thread ever looks
+    a region up, while Contours() keeps its working set in its own locals and
+    so stays safe to run on a worker.
+  */
+  std::vector<char> bit;
+  std::vector<int> activeBodies, candRegions;
 };
 
 CSGEngine::CSGEngine() :
@@ -147,12 +156,13 @@ std::string CSGEngine::RegionAt(unsigned haxis, unsigned vaxis, double offset,
     Culling to the single point leaves only the handful of bodies that can
     possibly matter there, so this costs one pass over the body bounding boxes
     rather than a full classification - cheap enough to run on every mouse move.
+    The buffers it fills are members, so only the first call allocates them.
   */
-  std::vector<char> bit;
-  std::vector<int> activeBodies, candRegions;
-  impl->g.cullToWindow(pl, h, v, h, v, bit, activeBodies, candRegions);
+  impl->g.cullToWindow(pl, h, v, h, v,
+		       impl->bit, impl->activeBodies, impl->candRegions);
 
-  const int r = regionAtXYculled(impl->g, bit, P, activeBodies, candRegions);
+  const int r = regionAtXYculled(impl->g, impl->bit, P,
+				 impl->activeBodies, impl->candRegions);
   if (r < 0 || r >= static_cast<int>(impl->g.regions.size()))
     return "";
 

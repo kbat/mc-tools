@@ -28,7 +28,8 @@ const std::string spaces(line_width, ' ');
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data) :
-  TGMainFrame(p,w,h), fSlider(nullptr), data(data), geo(nullptr), slice(nullptr)
+  TGMainFrame(p,w,h), fSlider(nullptr), data(data), geo(nullptr), slice(nullptr),
+  lastpixel(-1,-1), lastbin(-1,-1)
 {
   GrabMouseWheel();
 
@@ -109,6 +110,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 
   dh2 = data->GetH2(); // default data histogram
   data->Prefetch(data->GetOffset()); // the first move of the slider is then free
+  ShowH2Name();
 
   if (data->GetArgs()->IsSlice())
     slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice(0),
@@ -130,6 +132,27 @@ void MainFrame::GrabMouseWheel() const
 void MainFrame::SetGeometry(const std::shared_ptr<Geometry> g)
 {
   geo = g;
+
+  // without a geometry this part of the status bar never says anything else
+  if (!geo)
+    fStatusBar->SetText("Geometry file not specified", 1);
+}
+
+void MainFrame::ShowH2Name()
+/*!
+  Put the name and the title of the histogram now on the canvas into the status
+  bar.
+
+  It only changes when another slice is drawn, so it is written from there
+  rather than from EventInfo(), which runs on every motion event.  What the
+  pointer was last seen over goes with it: the value EventInfo() showed was
+  read from the slice that has just been replaced.
+ */
+{
+  fStatusBar->SetText(Form("%s: %s", dh2->GetName(), dh2->GetTitle()), 0);
+
+  lastpixel = {-1, -1};
+  lastbin = {-1, -1};
 }
 
 
@@ -221,6 +244,7 @@ void MainFrame::DoSlider()
   pad1->cd();
 
   dh2 = data->Draw(y);
+  ShowH2Name();
 
   if (geo)
     geo->Draw(y);
@@ -277,24 +301,32 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 }
 
 void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected)
-{
-//  Writes the event status in the status bar parts
+/*!
+  Writes the event status in the status bar parts.
 
+  This runs on every motion event, so nothing is written that cannot have
+  changed since the last one.  The name of the histogram is not written here at
+  all - ShowH2Name() does that when another slice is drawn.  The region under
+  the pointer is sampled far more finely than the data mesh, so it goes with
+  the pixel; the value under the pointer only with the bin, which also keeps
+  the line printed to the terminal - a flushed write per event, the most
+  expensive thing in here - down to the times it has something new to say.
+ */
+{
   (void)selected;
 
   const Double_t x  = gPad->PadtoX(gPad->AbsPixeltoX(px));
   const Double_t y  = gPad->PadtoY(gPad->AbsPixeltoY(py));
 
-  fStatusBar->SetText(Form("%s: %s", dh2->GetName(), dh2->GetTitle()),0);
+  const bool moved = (px != lastpixel.first) || (py != lastpixel.second);
+  lastpixel = {px, py};
 
-  if (geo)
+  if (moved && geo)
     fStatusBar->SetText(geo->StatusText(x, y).data(), 1);
-  else
-    fStatusBar->SetText("Geometry file not specified", 1);
 
    if (event == kKeyPress)
      fStatusBar->SetText(Form("%c %c", static_cast<char>(px), static_cast<char>(py)), 2);
-   else
+   else if (moved)
      fStatusBar->SetText(Form("%d,%d", px, py), 2);
 
    // data value and error
@@ -302,21 +334,26 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    const Int_t binx = dh2->GetXaxis()->FindFixBin(x);
    const Int_t biny = dh2->GetYaxis()->FindFixBin(y);
 
-   const Double_t val = dh2->GetBinContent(binx, biny);
-   const Double_t err = dh2->GetBinError(binx, biny);
-   Double_t relerr = 100.0;
-   if (std::abs(val)>0.0)
-     relerr = err/val * 100.0;
+   if ((binx != lastbin.first) || (biny != lastbin.second))
+     {
+       lastbin = {binx, biny};
 
-   std::cout << spaces << '\r';
-   if (data->GetArgs()->IsErrors()) {
-     fStatusBar->SetText(Form("%g %%", val),3);
-     std::cout << val << " % \r" << std::flush;
-   }
-   else {
-     fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
-     std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
-   }
+       const Double_t val = dh2->GetBinContent(binx, biny);
+       const Double_t err = dh2->GetBinError(binx, biny);
+       Double_t relerr = 100.0;
+       if (std::abs(val)>0.0)
+	 relerr = err/val * 100.0;
+
+       std::cout << spaces << '\r';
+       if (data->GetArgs()->IsErrors()) {
+	 fStatusBar->SetText(Form("%g %%", val),3);
+	 std::cout << val << " % \r" << std::flush;
+       }
+       else {
+	 fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
+	 std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
+       }
+     }
 
    /*!
      The middle mouse button pops the object under the cursor - usually the

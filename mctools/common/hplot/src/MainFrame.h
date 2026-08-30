@@ -29,7 +29,20 @@ class MainFrame : public TGMainFrame {
 
   std::unique_ptr<DynamicSlice> slice;
 
+  /*!
+    Where the pointer was when the status bar was last written, and which bin
+    of the data histogram it was over.
+
+    EventInfo() runs on every motion event, so it recomputes only what these
+    say can have changed.  Both are reset by ShowH2Name() when another slice is
+    drawn: the value shown belongs to the histogram it was read from, not to
+    the bin number alone.
+  */
+  std::pair<Int_t,Int_t> lastpixel;
+  std::pair<Int_t,Int_t> lastbin;
+
   void GrabMouseWheel() const;
+  void ShowH2Name();
 
   /*!
     TGVSlider is an integer widget whose positions count downwards - the
