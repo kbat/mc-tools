@@ -7,7 +7,7 @@
 # hplot build products
 mctools/common/hplot/hplot
 mctools/common/hplot/minimal
-mctools/common/hplot/extern/
+mctools/common/hplot/.extern/
 *Dict.cxx
 perf.data*
 perf.hist*

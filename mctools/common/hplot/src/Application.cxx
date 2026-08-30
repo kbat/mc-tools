@@ -71,7 +71,8 @@ TVirtualPad *Application::SetUpCanvas(int& argc, const char **argv)
 
   if (args->IsSlice() && !args->IsBatch())
     {
-      canvas->Divide(1,2);
+      // the margin is named so that Arguments can size the plot the same way
+      canvas->Divide(1, 2, Arguments::divideMargin, Arguments::divideMargin);
       canvas->cd(1);
       h2pad = canvas->GetPad(1);
     }

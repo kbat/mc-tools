@@ -46,6 +46,7 @@ class Arguments {
     bool ztitle{false};
     double maxerr{-1.0};
     size_t height{0};
+    size_t plotwidth{0}, plotheight{0};
   } hot;
 
   void Cache();
@@ -80,6 +81,25 @@ class Arguments {
 
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
   size_t      GetHeight() const { return hot.height; }
+
+  /*!
+    The size in pixels of the area the data are actually drawn in: one pad of
+    the canvas, less that pad's margins.
+
+    A quarter of the canvas goes on axis labels and the colour bar, and with
+    -slice more than half of what is left goes on the projection below - so
+    the plot is a good deal smaller than the window, and -rebin has no reason
+    to keep more bins than there are pixels to draw them in.
+
+    It is worked out here because -rebin needs it in the Data3 constructor,
+    before there is a canvas to ask; Application::SetUpCanvas() lays the canvas
+    out from the same numbers, so that the two cannot drift apart.
+  */
+  size_t      GetPlotWidth()  const { return hot.plotwidth; }
+  size_t      GetPlotHeight() const { return hot.plotheight; }
+
+  /// The margin TPad::Divide() leaves around each pad when -slice splits the canvas
+  static constexpr float divideMargin = 0.01f;
   Plane       GetPlane() const { return vm["plane"].as<Plane>(); }
   const std::vector<unsigned short>& GetSlice() const
   { return vm["slice"].as<std::vector<unsigned short> >(); }

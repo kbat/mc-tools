@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <sys/ioctl.h>
 
+#include <TStyle.h>
+
 #include "Arguments.h"
 #include "Error.h"
 
@@ -58,9 +60,13 @@ Arguments::Arguments(int ac, const char **av) :
       ("width", po::value<size_t>()->default_value(800), "Canvas width.")
       ("height", po::value<size_t>()->default_value(unset_height),
        "Canvas height. If not specified, it is calculated from the width with the golden ratio rule.")
-      ("rebin", "Rebin the 2D histograms such that they are not larger than width x height "
-       "(specified by the above arguments). This argument drastically speeds up histogram drawing, "
-       "especially in the case when the data histogram is larger than the screen resolution.")
+      ("rebin", "Rebin the 2D histograms such that they are not larger than the area they are "
+       "drawn in - the canvas (see the width and height arguments) less the margins around the plot "
+       "and, with the slice option, the pad the projection takes. This argument drastically speeds "
+       "up histogram drawing, which costs one box per bin: a bin smaller than a pixel is paid for "
+       "and not seen. Bins are merged in groups that divide the axis exactly where such a group "
+       "size can be found, because whatever does not make up a whole group is dropped from the end "
+       "of the axis; -v reports it when that happens.")
       ("right_margin", po::value<float>()->default_value(0.12),
        "Right margin of the canvas in order to allocate enough space for the TH2 z-axis title. "
        "Used only if ZTITLE is set and DOPTION is \"colz\".")
@@ -213,6 +219,29 @@ void Arguments::Cache()
   */
   hot.ztitle = ((GetZTitle() != "None") && (!GetZTitle().empty()) &&
 		(GetDoption() == "colz")) || hot.errors;
+
+  /*
+    The pad the data are drawn in.  Application::SetUpCanvas() divides the
+    canvas in two when the live slice is shown, and TPad::Divide() leaves
+    divideMargin around each of the pads it makes.
+  */
+  const bool divided = hot.slice && !hot.batch;
+  const double padw = divided ? 1.0 - 2*divideMargin : 1.0;
+  const double padh = divided ? 0.5 - 2*divideMargin : 1.0;
+
+  /*
+    And the frame inside that pad, which is the pad less its margins.  The
+    wider right margin -ztitle asks for is set on the canvas, so it only
+    reaches the plot while the canvas is the plot's own pad.
+  */
+  const double left   = gStyle->GetPadLeftMargin();
+  const double top    = gStyle->GetPadTopMargin();
+  const double bottom = gStyle->GetPadBottomMargin();
+  const double right  = (hot.ztitle && !divided) ? GetRightMargin()
+                                                 : gStyle->GetPadRightMargin();
+
+  hot.plotwidth  = std::max<size_t>(1, std::lround(GetWidth()*padw*(1.0-left-right)));
+  hot.plotheight = std::max<size_t>(1, std::lround(hot.height*padh*(1.0-top-bottom)));
 }
 
 bool Arguments::test() const

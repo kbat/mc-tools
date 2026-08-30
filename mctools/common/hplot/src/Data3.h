@@ -103,6 +103,7 @@ class Data3 {
   Float_t offset; // (initial) normal axis offset - can be changed with MainFrame::slider
 
   void SetH2(std::shared_ptr<TH2> h2) const;
+  static Int_t RebinFactor(Int_t nbins, Int_t npixels);
   void Rebin();
   std::shared_ptr<TH2> MakeH2(std::string& name, std::string& title) const;
   std::shared_ptr<TH2> MakeSlice(Int_t bin) const;

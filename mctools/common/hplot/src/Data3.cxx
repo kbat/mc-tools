@@ -254,27 +254,42 @@ void Data3::ErrorHist(std::shared_ptr<TH2> h) const
   return;
 }
 
+Int_t Data3::RebinFactor(Int_t nbins, Int_t npixels)
+/*!
+  How many bins to merge into one so that no more of them are left than there
+  are pixels to draw them in.
+
+  TH3::Rebin3D() drops whatever does not make up a whole group at the end of
+  the axis, and shortens the axis with it - a plot half a centimetre narrower
+  than the data, with the geometry outlines still drawn over the part that went
+  missing.  So a factor that divides the axis exactly is preferred, as long as
+  one can be had without merging away twice as much as asked; failing that the
+  smallest factor that fits is used and -v says what it costs.
+ */
+{
+  const Int_t least = std::max<Int_t>(1, TMath::Ceil(nbins/static_cast<float>(npixels)));
+
+  for (Int_t f=least; (f<=2*least) && (f<=nbins); ++f)
+    if (nbins % f == 0)
+      return f;
+
+  return least;
+}
+
 void Data3::Rebin()
 {
   /*!
-    Rebin the histogram so that it is not larger than width x height
+    Rebin the histogram so that it is not larger than the area it is drawn in
    */
 
-  const Int_t width = args->GetWidth();
-  const Int_t height = args->GetHeight();
+  const Int_t width = args->GetPlotWidth();
+  const Int_t height = args->GetPlotHeight();
 
   const Int_t nh = GetHorizontalAxis()->GetNbins();
   const Int_t nv = GetVerticalAxis()->GetNbins();
 
-  const Int_t scaleH =
-    TMath::Ceil(nh/static_cast<float>(width));
-  if (scaleH==0)
-    throw HPlotError("horizontal rebin factor = 0");
-
-  const Int_t scaleV =
-    TMath::Ceil(nv/static_cast<float>(height));
-  if (scaleV==0)
-    throw HPlotError("vertical rebin factor = 0");
+  const Int_t scaleH = RebinFactor(nh, width);
+  const Int_t scaleV = RebinFactor(nv, height);
 
   if ((scaleH>=2) || (scaleV>=2)) {
     const std::array<Int_t,3> f = plane.RebinFactors(scaleV, scaleH);
@@ -293,7 +308,16 @@ void Data3::Rebin()
     {
       std::cout << "Rebinning " << h3->GetName() << ": before: " << nh << " x " << nv;
       std::cout << "\t after: " << GetHorizontalAxis()->GetNbins() << " x " << GetVerticalAxis()->GetNbins();
-      std::cout << "\t by factor " << scaleH << " x " << scaleV << std::endl;
+      std::cout << "\t by factor " << scaleH << " x " << scaleV;
+      std::cout << "\t to fit " << width << " x " << height << " pixels" << std::endl;
+
+      // see RebinFactor(): what did not make up a whole group is gone
+      if (nh%scaleH)
+	std::cout << "Warning: the last " << nh%scaleH
+		  << " bins of the horizontal axis are not plotted" << std::endl;
+      if (nv%scaleV)
+	std::cout << "Warning: the last " << nv%scaleV
+		  << " bins of the vertical axis are not plotted" << std::endl;
     }
   return;
 }

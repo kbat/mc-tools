@@ -410,26 +410,65 @@ def testMaxError(fname="testerr.root", hname="h3"):
     return nerrors
 
 
+def plotSize(width, height):
+    """The pixel size of the area hplot draws the data in, which is what -rebin
+    aims at: the canvas less the pad margins.  These are the ROOT defaults of
+    0.1 on each side, and the tests run in batch mode, where the canvas is not
+    divided for the live slice."""
+
+    return round(width*0.8), round(height*0.8)
+
+
+def rebinFactor(nbins, npixels):
+    """The group size hplot merges bins in - see Data3::RebinFactor().  The
+    smallest one that fits, moved up to a group size that divides the axis
+    exactly if one can be had for less than twice the merging, because
+    TH3::Rebin3D() drops whatever is left over at the end of the axis."""
+
+    least = max(1, -(-nbins//npixels))
+    for f in range(least, min(2*least, nbins)+1):
+        if nbins % f == 0:
+            return f
+    return least
+
+
 def testRebin(fname="uniform.root", hname="h3"):
-    """-rebin averages the projection down to at most width x height bins.
-    A uniform histogram must stay uniform, and the bin counts must shrink by
-    ceil(nbins/size)."""
+    """-rebin averages the projection down to at most as many bins as the plot
+    has pixels to draw them in - the canvas less its margins, not the whole
+    canvas.  A uniform histogram must stay uniform, and no bin may be dropped
+    off the end of an axis."""
 
     nerrors = 0
     print("Testing  -rebin")
     width, height = 10, 10
+    # buildUniform() made this one 40 x 60 x 2, so with -plane xy the
+    # horizontal axis (y) has 60 bins and the vertical one (x) has 40
+    nhoriz, nvert = 60, 40
+
     f, (h,) = run("%s %s -plane xy -offset 0 -rebin -width %d -height %d" %
                   (fname, hname, width, height))
     if not f:
         return 1
 
-    # horizontal axis is y (60 bins -> 10), vertical axis is x (40 bins -> 10)
-    if h.GetNbinsX() != width:
-        print("Rebinned horizontal axis has", h.GetNbinsX(), "bins, expected", width)
-        nerrors += 1
-    if h.GetNbinsY() != height:
-        print("Rebinned vertical axis has", h.GetNbinsY(), "bins, expected", height)
-        nerrors += 1
+    pwidth, pheight = plotSize(width, height)
+
+    for what, nbins, npixels, got in (
+            ("horizontal", nhoriz, pwidth,  h.GetNbinsX()),
+            ("vertical",   nvert,  pheight, h.GetNbinsY())):
+        group = rebinFactor(nbins, npixels)
+
+        if got != nbins // group:
+            print("Rebinned %s axis has %d bins, expected %d" %
+                  (what, got, nbins // group))
+            nerrors += 1
+        if got > npixels:
+            print("Rebinned %s axis has %d bins for %d pixels" %
+                  (what, got, npixels))
+            nerrors += 1
+        if got*group != nbins:
+            print("Rebinning dropped %d bins off the %s axis" %
+                  (nbins - got*group, what))
+            nerrors += 1
 
     for i in range(1, h.GetNbinsX()+1):
         for j in range(1, h.GetNbinsY()+1):
