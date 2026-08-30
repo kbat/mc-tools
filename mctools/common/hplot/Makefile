@@ -43,10 +43,20 @@ $(EXTDIR):
 # makes this recipe run on every invocation of make, but it only touches the
 # target file - and so only triggers rebuilds of things depending on it -
 # when the content actually changed.
+#
+# curl leaves the local file alone when it cannot fetch, so a build without a
+# network is only fatal the first time: after that it carries on with the copy
+# it already has, which is what makes this a download and not a dependency.
 FORCE:
 
 $(EXTDIR)/%: FORCE | $(EXTDIR)
-	@curl -fsSL -R -z $@ -o $@ $(GEOENGINE_URL)/$*
+	@curl -fsSL -R -z $@ -o $@ $(GEOENGINE_URL)/$* || \
+	  if [ -s $@ ]; then \
+	    echo "Warning: $(GEOENGINE_URL) is unreachable, keeping the local $@"; \
+	  else \
+	    echo "Error: $@ is not here and $(GEOENGINE_URL) is unreachable" >&2; \
+	    exit 1; \
+	  fi
 
 obj/%.o: src/%.cxx | obj
 	@echo "Compiling $@"

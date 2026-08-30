@@ -43,6 +43,7 @@ class MainFrame : public TGMainFrame {
 
   void GrabMouseWheel() const;
   void ShowH2Name();
+  Bool_t OnHistogramPad(Int_t px, Int_t py) const;
 
   /*!
     TGVSlider is an integer widget whose positions count downwards - the

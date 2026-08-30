@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <cmath>
 
@@ -16,9 +17,12 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
 			TVirtualPad *h2pad,
 			TVirtualPad *slicepad)
 {
-  if (gPad!=h2pad)
-    return;
-
+  /*
+    Whether the pointer is over the plot at all is the caller's to decide -
+    MainFrame::OnHistogramPad() - because gPad cannot be trusted to say so on a
+    motion event, and testing it here used to suppress the redraw in the one
+    case and let it run with the wrong coordinates in the other.
+  */
   pad = slicepad;
 
   // Fix to draw the mouse position lines:
@@ -99,7 +103,8 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   const std::string yx = xy == "X" ? "Y" : "X";
 
   const TAxis *axis = xy == "X" ? histo->GetXaxis() : histo->GetYaxis();
-  const Int_t bin1 = axis->FindBin(value);
+  // the cursor may sit outside the axis, where FindBin() answers 0 or nbins+1
+  const Int_t bin1 = std::min(axis->GetNbins(), std::max(1, axis->FindBin(value)));
 
   /*
     Projecting the slice and repainting its pad costs far more than the
@@ -117,7 +122,17 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   pad->SetGrid();
   pad->cd();
 
-  const Int_t bin2 = bin1+nbins-1;
+  /*!
+    The requested band of bins, cut down to the ones the histogram actually
+    has.  Near the far edge bin1+nbins-1 runs past the last bin, and
+    TH2::Projection[XY]() would then take in the overflow bin - which is empty,
+    so the average below would come out low, over a range the title claimed was
+    wider than the plot.
+  */
+  const Int_t bin2 = std::min(axis->GetNbins(),
+			      static_cast<Int_t>(bin1+nbins-1));
+  const size_t nused = static_cast<size_t>(bin2-bin1+1);
+
   const Double_t vmin = axis->GetBinLowEdge(bin1);
   const Double_t vmax = axis->GetBinUpEdge(bin2);
 
@@ -129,14 +144,14 @@ std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> his
   hp->SetLineColor(kBlack);
 
   hname = Form("%s Projection of %zu %s bins: %g < %s < %g (#Delta %s = %g)",
-		       xy.data(), nbins, yx.data(), vmin, yx.data(), vmax, yx.data(), vmax-vmin);
+		       xy.data(), nused, yx.data(), vmin, yx.data(), vmax, yx.data(), vmax-vmin);
   hp->SetTitle(hname);
 
   if (ngroup>=1)
     hp->Rebin(ngroup);
 
-  if ((nbins>1) || (ngroup>=1))
-    hp->Scale(1.0/(nbins*ngroup));
+  if ((nused>1) || (ngroup>=1))
+    hp->Scale(1.0/(nused*ngroup));
 
   hp->Draw("hist,e");
   TAxis *yaxis = hp->GetYaxis();

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 #include <TMath.h>
 #include <TFile.h>
 #include <TGaxis.h>
@@ -736,30 +737,34 @@ void Data3::Project()
 }
 
 Float_t Data3::GetOffset(const std::string& val) const
-{
-  float v(0.0);
-  try {
-    v = std::stof(val);
-  }
-  catch (std::invalid_argument const &e) {
-    TAxis *a = GetNormalAxis();
-    if (val == "centre")
-      {
-	v = (a->GetXmax()+a->GetXmin())/2.0;
-      }
-    else if (val == "min")
-      {
-	v = a->GetBinCenter(1);
-      }
-    else if (val == "max")
-      {
-	v = a->GetBinCenter(a->GetLast());
-      }
-    else
-      std::cerr << "Data3::GetOffset(): unknown argument: " << val << std::endl;
-  }
+/*!
+  The -offset argument as a position on the normal axis: either a number, or
+  one of the names of a bin of that axis.
 
-  return v;
+  The names are tried first, so that std::stof() is asked only about something
+  that is meant to be a number - and anything it cannot make one of is an error
+  rather than a warning.  Silently plotting the slice at zero instead is worse
+  than not plotting at all: the picture looks exactly like a good one.
+ */
+{
+  const TAxis *a = GetNormalAxis();
+
+  if (val == "centre")
+    return (a->GetXmax()+a->GetXmin())/2.0;
+  else if (val == "min")
+    return a->GetBinCenter(1);
+  else if (val == "max")
+    return a->GetBinCenter(a->GetLast());
+
+  try {
+    return std::stof(val);
+  }
+  catch (const std::invalid_argument&) {
+    throw HPlotError("offset: neither a number nor one of centre, min, max: " + val);
+  }
+  catch (const std::out_of_range&) {
+    throw HPlotError("offset: number out of range: " + val);
+  }
 }
 
 std::shared_ptr<TH2> Data3::GetH2(const std::string val) const

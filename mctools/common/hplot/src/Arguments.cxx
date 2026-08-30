@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 #include <sys/ioctl.h>
 
 #include "Arguments.h"
@@ -188,13 +189,26 @@ bool Arguments::test() const
 
   val = val & CheckSlice();
 
+  /*
+    The names first, so that std::stof() is asked only about something that is
+    meant to be a number - and so that a number too large for a float is
+    reported here rather than thrown out of this function, which is how
+    -offset 1e400 used to leave hplot saying nothing but "stof".
+    Data3::GetOffset() reads the value the same way round.
+  */
   const std::string offset = GetOffset();
-  try {
-    std::stof(offset);
-  }
-  catch (std::invalid_argument const &e) {
-    if ((offset != "centre") && (offset != "min") && (offset != "max")) {
-      std::cerr << "Arguments::test(): unknown 'offset' value: " << offset << std::endl;
+  if ((offset != "centre") && (offset != "min") && (offset != "max")) {
+    try {
+      std::stof(offset);
+    }
+    catch (const std::invalid_argument&) {
+      std::cerr << "Arguments::test(): 'offset' is neither a number nor one of "
+	"centre, min, max: " << offset << std::endl;
+      val = false;
+    }
+    catch (const std::out_of_range&) {
+      std::cerr << "Arguments::test(): 'offset' is out of the range of a float: "
+		<< offset << std::endl;
       val = false;
     }
   }

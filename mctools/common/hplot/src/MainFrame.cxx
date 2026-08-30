@@ -214,6 +214,26 @@ TVirtualPad *MainFrame::GetSlicePad() const
     return nullptr;
 }
 
+Bool_t MainFrame::OnHistogramPad(Int_t px, Int_t py) const
+/*!
+  Is the given canvas pixel inside the pad holding the data histogram?
+
+  gPad cannot answer this.  It is the pad ROOT last selected, and on a plain
+  motion event that is still the pad the pointer has already left: only the
+  enter and leave events carry the pad it is really over.  Reading gPad instead
+  is how the status bar came to show a value and a region for a point of the
+  -slice projection, converted as though it were a point of the plot.
+
+  The pad knows whereabouts on the canvas it is, so ask it instead.
+ */
+{
+  const TVirtualPad *pad = GetHistogramPad();
+
+  // v runs up the pad and pixels run down the canvas, so v=1 is the top edge
+  return (px >= pad->UtoAbsPixel(0.0)) && (px <= pad->UtoAbsPixel(1.0)) &&
+         (py >= pad->VtoAbsPixel(1.0)) && (py <= pad->VtoAbsPixel(0.0));
+}
+
 Int_t MainFrame::CoordToSlider(Double_t x) const
 {
   const TAxis *a = data->GetNormalAxis();
@@ -315,44 +335,56 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 {
   (void)selected;
 
-  const Double_t x  = gPad->PadtoX(gPad->AbsPixeltoX(px));
-  const Double_t y  = gPad->PadtoY(gPad->AbsPixeltoY(py));
-
   const bool moved = (px != lastpixel.first) || (py != lastpixel.second);
   lastpixel = {px, py};
-
-  if (moved && geo)
-    fStatusBar->SetText(geo->StatusText(x, y).data(), 1);
 
    if (event == kKeyPress)
      fStatusBar->SetText(Form("%c %c", static_cast<char>(px), static_cast<char>(py)), 2);
    else if (moved)
      fStatusBar->SetText(Form("%d,%d", px, py), 2);
 
-   // data value and error
+   /*!
+     The region and the value are read at a point of the data histogram, so
+     they may only be read while the pointer is over its pad - with -slice the
+     canvas is divided, and below the plot lies the projection, whose
+     coordinates name something else entirely.  What was last read over the
+     plot stays in the status bar meanwhile.
+   */
+   TVirtualPad *h2pad = GetHistogramPad();
 
-   const Int_t binx = dh2->GetXaxis()->FindFixBin(x);
-   const Int_t biny = dh2->GetYaxis()->FindFixBin(y);
-
-   if ((binx != lastbin.first) || (biny != lastbin.second))
+   if (OnHistogramPad(px, py))
      {
-       lastbin = {binx, biny};
+       const Double_t x  = h2pad->PadtoX(h2pad->AbsPixeltoX(px));
+       const Double_t y  = h2pad->PadtoY(h2pad->AbsPixeltoY(py));
 
-       const Double_t val = dh2->GetBinContent(binx, biny);
-       const Double_t err = dh2->GetBinError(binx, biny);
-       Double_t relerr = 100.0;
-       if (std::abs(val)>0.0)
-	 relerr = err/val * 100.0;
+       if (moved && geo)
+	 fStatusBar->SetText(geo->StatusText(x, y).data(), 1);
 
-       std::cout << spaces << '\r';
-       if (data->GetArgs()->IsErrors()) {
-	 fStatusBar->SetText(Form("%g %%", val),3);
-	 std::cout << val << " % \r" << std::flush;
-       }
-       else {
-	 fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
-	 std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
-       }
+       // data value and error
+
+       const Int_t binx = dh2->GetXaxis()->FindFixBin(x);
+       const Int_t biny = dh2->GetYaxis()->FindFixBin(y);
+
+       if ((binx != lastbin.first) || (biny != lastbin.second))
+	 {
+	   lastbin = {binx, biny};
+
+	   const Double_t val = dh2->GetBinContent(binx, biny);
+	   const Double_t err = dh2->GetBinError(binx, biny);
+	   Double_t relerr = 100.0;
+	   if (std::abs(val)>0.0)
+	     relerr = err/val * 100.0;
+
+	   std::cout << spaces << '\r';
+	   if (data->GetArgs()->IsErrors()) {
+	     fStatusBar->SetText(Form("%g %%", val),3);
+	     std::cout << val << " % \r" << std::flush;
+	   }
+	   else {
+	     fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
+	     std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
+	   }
+	 }
      }
 
    /*!
@@ -361,18 +393,20 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      (TCanvas::HandleInput), so that it is painted last, hiding the geometry
      drawn on top of it.  Put the geometry back in front.
    */
-   if (geo && ((event == kButton2Down) || (event == kButton2Up))) {
-     TVirtualPad *h2pad = GetHistogramPad();
-     if (gPad == h2pad) {
-       geo->Pop();
-       h2pad->Modified();
-       h2pad->Update();
-       h2pad->cd(); // Update() may leave another pad current
-     }
+   if (geo && ((event == kButton2Down) || (event == kButton2Up)) &&
+       OnHistogramPad(px, py)) {
+     geo->Pop();
+     h2pad->Modified();
+     h2pad->Update();
+     h2pad->cd(); // Update() may leave another pad current
    }
 
-   if (slice)
-     slice->Draw(dh2, GetHistogramPad(), GetSlicePad());
+   /*
+     The live slice follows the pointer over the plot, and only there - the
+     same reason the readings above do.
+   */
+   if (slice && OnHistogramPad(px, py))
+     slice->Draw(dh2, h2pad, GetSlicePad());
 }
 
 Bool_t MainFrame::HandleButton(Event_t *event)
