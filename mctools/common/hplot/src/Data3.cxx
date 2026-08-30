@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -53,6 +54,49 @@ Plane::Index H2Indexer(const TH2& h2, Int_t nv, bool flip)
   return i;
 }
 
+/*!
+  The smallest and the largest bin content of a projection, and which bin each
+  was found in.
+
+  This is -v output and nothing else uses it, so it may not cost the redraw it
+  reports on more than it has to: TH1::GetMinimumBin() and GetMaximumBin() are
+  a pass over the histogram each, and this is the same answer in one.
+ */
+struct Extrema {
+  Double_t min{0.0}, max{0.0};
+  Int_t imin{0}, jmin{0}, imax{0}, jmax{0};
+};
+
+Extrema MinMax(const TH2& h)
+{
+  const Int_t nx = h.GetNbinsX();
+  const Int_t ny = h.GetNbinsY();
+
+  // the bins lie in one flat array, so walking it is an addition per bin
+  const Int_t base = h.GetBin(0,0);
+  const Int_t di = h.GetBin(1,0) - base;
+  const Int_t dj = h.GetBin(0,1) - base;
+
+  Extrema e;
+  bool first = true;
+
+  for (Int_t j=1; j<=ny; ++j)
+    {
+      Int_t g = base + dj*j + di;
+
+      for (Int_t i=1; i<=nx; ++i, g += di)
+	{
+	  const Double_t v = h.GetBinContent(g);
+
+	  if (first || (v<e.min)) { e.min = v; e.imin = i; e.jmin = j; }
+	  if (first || (v>e.max)) { e.max = v; e.imax = i; e.jmax = j; }
+	  first = false;
+	}
+    }
+
+  return e;
+}
+
 } // namespace
 
 TH3 *Data3::ReadTH3(const std::string& fname, const std::string& hname)
@@ -85,7 +129,7 @@ Data3::Data3(const std::string& fname, const std::string& hname,
 Data3::Data3(TH3 *h3, const std::shared_ptr<Arguments> args) :
   yrev(nullptr), args(args), plane(args->GetPlane()), h3(h3), h2max(nullptr),
   kind(Kind(*h3)), dscale(args->GetScale()), flip(args->IsFlipped()),
-  maxCached(1)
+  maxCached(1), lastPrefetch(0)
 {
   /*
     The worker threads read the arrays of the TH3 directly, so nothing below
@@ -273,10 +317,16 @@ void Data3::ReverseYAxis(std::shared_ptr<TH2> h) const
   ay->SetLabelOffset(999);
   ay->SetTickLength(0);
 
-  // Redraw the new axis
-  gPad->Update();
+  /*
+    The replacement axis is placed in the user coordinates of the pad, which
+    ROOT only works out when it paints the frame - so the first one costs a
+    paint of its own.  Only the first: the axis is the same for every slice,
+    and painting here again doubled the cost of every -flipwithaxis redraw,
+    the pad being repainted a moment later anyway by whoever asked for it.
+  */
   if (!yrev)
     {
+      gPad->Update();
       yrev = std::make_shared<TGaxis>(gPad->GetUxmin(),
       				      gPad->GetUymax(),
       				      gPad->GetUxmin()-0.001,
@@ -691,7 +741,12 @@ std::shared_ptr<TH2> Data3::Projection(Int_t bin) const
 void Data3::Prefetch(Float_t val) const
 /*!
   The slider moves on to a neighbouring slice far more often than anywhere
-  else, so project both of them while the user is looking at this one.
+  else, so project them while the user is looking at this one.
+
+  Which neighbours depends on where it came from: once it is going one way, the
+  next two slices that way are wanted and the one behind is not.  maxPending is
+  the whole queue, so a projection that will not be looked at does not merely
+  waste a core - it keeps the one that will be from starting.
 
   Nothing to do with -max: the whole normal axis is already in the plot.
  */
@@ -704,7 +759,15 @@ void Data3::Prefetch(Float_t val) const
   const Int_t nn = GetNormalAxis()->GetNbins();
   const Int_t bin = NormalBin(val);
 
-  for (const Int_t b : {bin+1, bin-1})
+  const Int_t dir = (bin>lastPrefetch) - (bin<lastPrefetch);
+  lastPrefetch = bin;
+
+  // both sides while there is no direction yet - at start-up, or when the
+  // slider was let go where it already was
+  const std::array<Int_t,2> next = dir ? std::array<Int_t,2>{bin+dir, bin+2*dir}
+                                       : std::array<Int_t,2>{bin+1, bin-1};
+
+  for (const Int_t b : next)
     if ((b >= 1) && (b <= nn))
       Launch(b);
 }
@@ -722,6 +785,7 @@ void Data3::Project()
   // asked for - only one of them is on screen at any time.
   vh2.assign(GetNormalAxis()->GetNbins(), nullptr);
   maxCached = Budget();
+  lastPrefetch = NormalBin(offset);
 
   if (args->IsVerbose())
     std::cout << "Projections: at most " << maxCached << " of "
@@ -801,9 +865,19 @@ std::shared_ptr<TH2> Data3::Draw(const Float_t val) const
 
   if (args->IsVerbose())
     {
-      Int_t locmix, locmax, locmiy, locmay, locmiz, locmaz;
-      std::cout << "min: " << h2->GetBinContent(h2->GetMinimumBin(locmix,locmiy,locmiz)) << " at (" << h2->GetXaxis()->GetBinCenter(locmix) << ", " << h2->GetYaxis()->GetBinCenter(locmiy) << ")\t" << std::flush;
-      std::cout << "max: " << h2->GetBinContent(h2->GetMaximumBin(locmax,locmay,locmaz)) << " at (" << h2->GetXaxis()->GetBinCenter(locmax) << ", " << h2->GetYaxis()->GetBinCenter(locmay) << ")" << std::endl;
+      // timed like everything else -v reports, so that the pass it takes over
+      // the projection is not silently added to the redraw it is describing
+      Chrono t(true, " Data3: min/max");
+
+      const TAxis *ax = h2->GetXaxis();
+      const TAxis *ay = h2->GetYaxis();
+      const Extrema e = MinMax(*h2);
+
+      std::cout << "min: " << e.min
+		<< " at (" << ax->GetBinCenter(e.imin) << ", " << ay->GetBinCenter(e.jmin) << ")\t"
+		<< "max: " << e.max
+		<< " at (" << ax->GetBinCenter(e.imax) << ", " << ay->GetBinCenter(e.jmax) << ")"
+		<< std::endl;
     }
 
   return h2;

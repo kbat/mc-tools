@@ -8,9 +8,9 @@
 #include <TAxis.h>
 
 #include "MainFrame.h"
+#include "Chrono.h"
 
 #include <algorithm>
-#include <iomanip>
 
 enum MainFrameMessageTypes {
   M_FILE_SAVEAS,
@@ -269,7 +269,17 @@ void MainFrame::DoSlider()
   if (geo)
     geo->Draw(y);
 
-  pad1->Update();
+  /*
+    Painting the picture is what a slice change actually costs - ROOT draws one
+    box per bin, so it is linear in the size of the projection and, on a mesh
+    of a few hundred bins each way, an order of magnitude more than projecting
+    the data and cutting the geometry put together.  -rebin is the only lever
+    on it, so -v says how big it is.
+  */
+  {
+    Chrono t(data->GetArgs()->IsVerbose(), " MainFrame: repaint");
+    pad1->Update();
+  }
 
   /*
     The slider is most likely to move on to one of the neighbouring slices, so
@@ -351,8 +361,9 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      plot stays in the status bar meanwhile.
    */
    TVirtualPad *h2pad = GetHistogramPad();
+   const bool onh2 = OnHistogramPad(px, py);
 
-   if (OnHistogramPad(px, py))
+   if (onh2)
      {
        const Double_t x  = h2pad->PadtoX(h2pad->AbsPixeltoX(px));
        const Double_t y  = h2pad->PadtoY(h2pad->AbsPixeltoY(py));
@@ -382,7 +393,13 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 	   }
 	   else {
 	     fStatusBar->SetText(Form("%g +- %.0f %%", val,relerr),3);
-	     std::cout << val << " ± " << err << "   " << std::setprecision(3) << relerr << " % \r" << std::flush;
+	     /*
+	       setprecision() stays on the stream, so setting it here used to
+	       round down every later line hplot printed - the -v min and max
+	       among them.  Format the one number that wants it instead.
+	     */
+	     std::cout << val << " ± " << err << "   "
+		       << Form("%.3g", relerr) << " % \r" << std::flush;
 	   }
 	 }
      }
@@ -393,8 +410,7 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      (TCanvas::HandleInput), so that it is painted last, hiding the geometry
      drawn on top of it.  Put the geometry back in front.
    */
-   if (geo && ((event == kButton2Down) || (event == kButton2Up)) &&
-       OnHistogramPad(px, py)) {
+   if (geo && ((event == kButton2Down) || (event == kButton2Up)) && onh2) {
      geo->Pop();
      h2pad->Modified();
      h2pad->Update();
@@ -405,7 +421,7 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      The live slice follows the pointer over the plot, and only there - the
      same reason the readings above do.
    */
-   if (slice && OnHistogramPad(px, py))
+   if (slice && onh2)
      slice->Draw(dh2, h2pad, GetSlicePad());
 }
 

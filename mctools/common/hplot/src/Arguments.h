@@ -22,29 +22,56 @@ class Arguments {
  private:
   po::variables_map vm;
   bool help;
+
+  /*!
+    The options that are read on every mouse move or every redraw, looked up
+    once.
+
+    Every accessor below is a std::map lookup, and the typed ones a
+    boost::any cast on top of it - IsSlice() also used to copy the -slice
+    vector, and MainFrame asks it four times per motion event, through
+    GetHistogramPad() and OnHistogramPad().  Nothing changes the command line
+    once it has been parsed, so these are filled in as soon as it has been.
+  */
+  struct Hot {
+    bool batch{false};
+    bool errors{false};
+    bool flipped{false};
+    bool flippedaxis{false};
+    bool logz{true};
+    bool max{false};
+    bool rebin{false};
+    bool slice{false};
+    bool verbose{false};
+    bool ztitle{false};
+    double maxerr{-1.0};
+    size_t height{0};
+  } hot;
+
+  void Cache();
   bool CheckMinMax(const float &vmin, const float &vmax, const std::string &title) const;
   bool CheckSlice() const;
 
  public:
   Arguments(int ac, const char **av);
 
-  bool IsBatch() const;
-  bool IsErrors() const { return vm.count("errors"); }
-  bool IsFlipped() const { return vm.count("flip") || vm.count("flipwithaxis"); }
-  bool IsFlippedAxis() const { return vm.count("flipwithaxis"); }
+  bool IsBatch() const { return hot.batch; }
+  bool IsErrors() const { return hot.errors; }
+  bool IsFlipped() const { return hot.flipped; }
+  bool IsFlippedAxis() const { return hot.flippedaxis; }
   bool IsHelp() const { return help; }
-  bool IsLogz() const { return !vm.count("no-logz"); }
-  bool IsMax() const { return vm.count("max"); }
-  bool IsRebin() const { return vm.count("rebin"); }
-  bool IsVerbose() const { return vm.count("v"); }
+  bool IsLogz() const { return hot.logz; }
+  bool IsMax() const { return hot.max; }
+  bool IsRebin() const { return hot.rebin; }
+  bool IsVerbose() const { return hot.verbose; }
   bool  IsXmin() const { return GetXmin()>std::numeric_limits<float>::lowest(); }
   bool  IsXmax() const { return GetXmax()<std::numeric_limits<float>::max(); }
   bool  IsYmin() const { return GetYmin()>std::numeric_limits<float>::lowest(); }
   bool  IsYmax() const { return GetYmax()<std::numeric_limits<float>::max(); }
   bool  IsZmin() const { return GetZmin()>std::numeric_limits<float>::lowest(); }
   bool  IsZmax() const { return GetZmax()<std::numeric_limits<float>::max(); }
-  bool  IsZTitle() const;
-  bool        IsSlice() const;
+  bool  IsZTitle() const { return hot.ztitle; }
+  bool        IsSlice() const { return hot.slice; }
 
   // positional arguments
   std::string GetDataFile() const { return vm["dfile"].as<std::string>(); }
@@ -52,7 +79,7 @@ class Arguments {
   std::string GetGeoFile()  const { return vm["gfile"].as<std::string>(); }
 
   std::string GetOffset()  const { return vm["offset"].as<std::string>(); }
-  size_t      GetHeight() const;
+  size_t      GetHeight() const { return hot.height; }
   Plane       GetPlane() const { return vm["plane"].as<Plane>(); }
   const std::vector<unsigned short>& GetSlice() const
   { return vm["slice"].as<std::vector<unsigned short> >(); }
@@ -84,8 +111,8 @@ class Arguments {
   std::string GetGlcolor() const { return vm["glcolor"].as<std::string>(); }
   float       GetGlalpha() const { return vm["glalpha"].as<float>(); }
 
-  inline double GetMaxErr() const { return vm["maxerror"].as<double>(); }
-  inline bool   IsMaxErr()  const { return vm["maxerror"].as<double>()>0.0; }
+  double GetMaxErr() const { return hot.maxerr; }
+  bool   IsMaxErr()  const { return hot.maxerr>0.0; }
   bool   IsMaxErr(const double&, const double&) const;
   bool test() const;
 };

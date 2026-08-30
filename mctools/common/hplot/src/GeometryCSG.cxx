@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
@@ -52,7 +54,7 @@ std::string MakeTempFile()
 
 GeometryCSG::GeometryCSG(const std::shared_ptr<Arguments> args,
 			 const std::shared_ptr<Data3> data) :
-  args(args), data(data), drawn(nullptr), drawnOffset(0.0)
+  args(args), data(data), cached(0), drawn(nullptr), drawnOffset(0.0), drawnBin(0)
 {
   const std::string fname = InputFile();
 
@@ -68,6 +70,7 @@ GeometryCSG::GeometryCSG(const std::shared_ptr<Arguments> args,
   SetUpCut();
 
   drawnOffset = CutOffset(data->GetOffset());
+  drawnBin = data->GetNormalAxis()->FindBin(drawnOffset);
 }
 
 GeometryCSG::~GeometryCSG()
@@ -214,8 +217,76 @@ void GeometryCSG::Harvest() const
 	  continue;
 	}
 
-      cache[it->first] = MakeMultiGraph(it->second.get());
+      Store(it->first, MakeMultiGraph(it->second.get()));
       it = pending.erase(it);
+    }
+}
+
+size_t GeometryCSG::Size(const TMultiGraph& mg)
+/*!
+  Roughly how much memory a cut takes: its points, plus what a TGraph costs
+  around each polyline.
+
+  Roughly is enough - the number decides how many cuts are kept, and nothing a
+  user ever sees.
+ */
+{
+  const TList *graphs = mg.GetListOfGraphs();
+  if (!graphs)
+    return 0;
+
+  size_t bytes = 0;
+
+  TIter next(graphs);
+  while (const TObject *o = next())
+    bytes += sizeof(TGraph) +
+      2*sizeof(Double_t)*static_cast<const TGraph*>(o)->GetN();
+
+  return bytes;
+}
+
+void GeometryCSG::Store(Double_t offset, const std::shared_ptr<TMultiGraph>& mg) const
+{
+  Cut& slot = cache[offset];
+
+  cached -= slot.bytes; // zero for an offset that was not cached before
+  slot.mg = mg;
+  slot.bytes = Size(*mg);
+  cached += slot.bytes;
+
+  if (args->IsVerbose() && (cache.size() == 1))
+    std::cout << "Geometry: a cut is about " << slot.bytes/1024 << " kB, so at most "
+	      << std::max(minCached, cacheBudget/std::max<size_t>(1, slot.bytes))
+	      << " of them are kept" << std::endl;
+
+  Touch(offset);
+}
+
+void GeometryCSG::Touch(Double_t offset) const
+/*!
+  Note that this cut has just been used, and release the ones that have not
+  been for the longest time.
+
+  A cut is a TGraph per material boundary on the plane, which for a detailed
+  geometry comes to megabytes; keeping one for every offset the user has ever
+  scrolled past is a leak in all but name.  Moving it to the back rather than
+  counting it again is what keeps scrolling back and forth over the same few
+  slices from cutting any of them twice.  Only this object's reference is
+  dropped, so the cut on the canvas - which drawn holds - survives eviction.
+ */
+{
+  lru.erase(std::remove(lru.begin(), lru.end(), offset), lru.end());
+  lru.push_back(offset);
+
+  while ((cached > cacheBudget) && (lru.size() > minCached))
+    {
+      const auto it = cache.find(lru.front());
+      if (it != cache.end())
+	{
+	  cached -= it->second.bytes;
+	  cache.erase(it);
+	}
+      lru.pop_front();
     }
 }
 
@@ -241,9 +312,12 @@ void GeometryCSG::Prefetch(Float_t offset) const
 
 std::shared_ptr<TMultiGraph> GeometryCSG::GetMultiGraph(Double_t offset) const
 {
-  const auto cached = cache.find(offset);
-  if (cached != cache.end())
-    return cached->second;
+  const auto hit = cache.find(offset);
+  if (hit != cache.end())
+    {
+      Touch(offset);
+      return hit->second.mg;
+    }
 
   std::shared_ptr<TMultiGraph> mg(nullptr);
 
@@ -262,7 +336,7 @@ std::shared_ptr<TMultiGraph> GeometryCSG::GetMultiGraph(Double_t offset) const
       mg = MakeMultiGraph(engine.Contours(c));
     }
 
-  cache[offset] = mg;
+  Store(offset, mg);
 
   return mg;
 }
@@ -302,10 +376,14 @@ std::shared_ptr<TMultiGraph> GeometryCSG::MakeMultiGraph(const std::vector<CSGPo
 void GeometryCSG::Draw(Float_t offset)
 {
   const Double_t off = CutOffset(offset);
+  const TAxis *a = data->GetNormalAxis();
+  const Int_t bin = a->FindBin(off);
+  const Int_t was = drawnBin;
 
   drawn = GetMultiGraph(off);
   drawn->Draw("l");
   drawnOffset = off;
+  drawnBin = bin;
 
   /*
     The slider is most likely to move on to one of the neighbouring slices, so
@@ -315,9 +393,21 @@ void GeometryCSG::Draw(Float_t offset)
   if (args->IsMax())
     return;
 
-  const TAxis *a = data->GetNormalAxis();
-  const Int_t bin = a->FindBin(off);
-  for (const Int_t b : {bin-1, bin+1})
+  /*
+    Once the user is scrolling, the two neighbours are no longer equally
+    likely: the next two cuts in the same direction are.  Which matters more
+    than it looks, because a cut cannot be called off once it has started - the
+    engine offers no way of interrupting one - so cutting a slice that will not
+    be looked at does not merely waste a core, it holds up the slice that will
+    be: maxPending is the whole queue.  Both sides only when there is no
+    direction yet, at start-up or after the slider was dragged back to where it
+    already was.
+  */
+  const Int_t dir = (bin>was) - (bin<was);
+  const std::array<Int_t,2> next = dir ? std::array<Int_t,2>{bin+dir, bin+2*dir}
+                                       : std::array<Int_t,2>{bin+1, bin-1};
+
+  for (const Int_t b : next)
     if ((b >= 1) && (b <= a->GetNbins()))
       Prefetch(a->GetBinCenter(b));
 }

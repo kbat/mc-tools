@@ -150,6 +150,8 @@ Arguments::Arguments(int ac, const char **av) :
     po::store(parsed, vm);
     po::notify(vm);
 
+    Cache();
+
     if (help)
       {
 	std::stringstream stream;
@@ -177,9 +179,40 @@ Arguments::Arguments(int ac, const char **av) :
   return;
 }
 
-bool Arguments::IsBatch() const
+void Arguments::Cache()
+/*!
+  Read the options that are asked for again and again, now that the command
+  line has been parsed.
+
+  Order matters only in that ztitle is derived from two of the others.
+ */
 {
-  return !GetOutputFile().empty();
+  hot.batch       = !GetOutputFile().empty();
+  hot.errors      = vm.count("errors");
+  hot.flippedaxis = vm.count("flipwithaxis");
+  hot.flipped     = vm.count("flip") || hot.flippedaxis;
+  hot.logz        = !vm.count("no-logz");
+  hot.max         = vm.count("max");
+  hot.rebin       = vm.count("rebin");
+  hot.verbose     = vm.count("v");
+  hot.maxerr      = vm["maxerror"].as<double>();
+
+  // the default is the single element 0, which means the option was not given
+  const std::vector<unsigned short>& slice = GetSlice();
+  hot.slice = !((slice.size() == 1) && (slice[0] == 0));
+
+  hot.height = vm["height"].as<size_t>();
+  if (hot.height == 0) {
+    constexpr float sqrt5 = 2.236068;
+    hot.height = round(GetWidth()*2.0/(1.0+sqrt5)); // golden ratio
+  }
+
+  /*
+    The z axis title needs room on the right of the canvas, and -errors puts
+    one there whether the user asked for it or not - see ErrorHist().
+  */
+  hot.ztitle = ((GetZTitle() != "None") && (!GetZTitle().empty()) &&
+		(GetDoption() == "colz")) || hot.errors;
 }
 
 bool Arguments::test() const
@@ -244,8 +277,8 @@ bool Arguments::CheckMinMax(const float &vmin, const float &vmax, const std::str
 
 bool Arguments::CheckSlice() const
 {
-  const std::vector<unsigned short> slice = GetSlice();
-  size_t size = slice.size();
+  const std::vector<unsigned short>& slice = GetSlice();
+  const size_t size = slice.size();
 
   if ((size == 1) && (slice[0] == 0)) // default value - slice not specified
     return true;
@@ -266,39 +299,6 @@ std::string Arguments::GetWindowTitle() const
     GetDataHist() + " " + GetPlane().GetValue();
 
   return title;
-}
-
-size_t Arguments::GetHeight() const
-{
-  const size_t width = GetWidth();
-  size_t height = vm["height"].as<size_t>();
-
-  if (height==0) {
-    constexpr float sqrt5 = 2.236068;
-    height = round(width*2.0/(1.0+sqrt5)); // golden ratio
-  }
-
-  return height;
-}
-
-bool Arguments::IsSlice() const
-{
-  /*
-    Return true if slice is needed
-   */
-  const std::vector<unsigned short> slice = GetSlice();
-
-  return (!((slice.size() == 1) && (slice[0] == 0)));
-}
-
-bool Arguments::IsZTitle() const
-/*!
-  Return true if z-title is shown
-  (and therefore canvas right margin should be set)
- */
-{
-  return ((GetZTitle() != "None") && (!GetZTitle().empty()) &&
-	  (GetDoption() == "colz")) || IsErrors();
 }
 
 bool Arguments::IsMaxErr(const double& val, const double& err) const

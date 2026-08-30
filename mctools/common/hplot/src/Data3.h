@@ -90,6 +90,9 @@ class Data3 {
   /// which slots of vh2 are filled, least recently used first
   mutable std::deque<Int_t> lru;
   size_t maxCached; ///< how many of them may be kept - see Budget()
+  /// the slice Prefetch() was last called about, so that it can tell which way
+  /// the slider is going
+  mutable Int_t lastPrefetch;
 
   /*! How many projections may be built at once, so that a fast slider does not
       leave a worker thread behind for every slice it went past */
