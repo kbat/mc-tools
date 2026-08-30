@@ -440,6 +440,123 @@ def testRebin(fname="uniform.root", hname="h3"):
     return nerrors
 
 
+def testScale(fname="testf.root", hname="h3"):
+    """-scale multiplies every bin by the given factor.  The errors go with its
+    absolute value, the way TH1::Scale() scales them - so a negative factor
+    negates the values but leaves the errors positive."""
+
+    nerrors = 0
+    print("Testing  -scale")
+    k, off = 3, bins(nz, zmin, zmax)[2]
+    for scale in (2.5, -1.0):
+        f, (h,) = run("%s %s -plane xy -offset %g -scale %g -no-logz" %
+                      (fname, hname, off, scale))
+        if not f:
+            nerrors += 1
+            continue
+
+        for i in range(1,nx+1):
+            for j in range(1,ny+1):
+                err = k*10+j+i                 # as set by buildFloat()
+                nerrors += checkClose("scaled bin (%d,%d,%d)" % (i,j,k),
+                                      scale*content(i,j,k), h.GetBinContent(j,i))
+                nerrors += checkClose("scaled error (%d,%d,%d)" % (i,j,k),
+                                      abs(scale)*err, h.GetBinError(j,i))
+        f.Close()
+
+    return nerrors
+
+
+def testScaleRebin(fname="uniform.root", hname="h3"):
+    """-scale and the averaging -rebin does are folded into one factor, so they
+    must still compose: a uniform histogram of ones scaled by 3 stays 3."""
+
+    nerrors = 0
+    print("Testing  -scale -rebin")
+    f, (h,) = run("%s %s -plane xy -offset 0 -scale 3 -rebin -width 10 -height 10" %
+                  (fname, hname))
+    if not f:
+        return 1
+
+    for i in range(1, h.GetNbinsX()+1):
+        for j in range(1, h.GetNbinsY()+1):
+            nerrors += checkClose("scaled rebinned bin (%d,%d)" % (i,j),
+                                  3.0, h.GetBinContent(i,j))
+    f.Close()
+
+    return nerrors
+
+
+def testMaxFlip(fname="test.root", hname="h3"):
+    """-max and -flip together: the largest value along the normal axis, in a
+    projection mirrored along its vertical axis."""
+
+    nerrors = 0
+    print("Testing  -max -flip")
+    f, (h,) = run("%s %s -plane xy -max -flip" % (fname, hname))
+    if not f:
+        return 1
+
+    for i in range(1,nx+1):                    # vertical axis is x
+        for j in range(1,ny+1):
+            val = content(nx+1-i,j,nz)
+            err = error(nx+1-i,j,nz)
+            nerrors += check(i,j,nz,val,h.GetBinContent(j,i),err,h.GetBinError(j,i))
+    f.Close()
+
+    return nerrors
+
+
+def testMaxMaxError(fname="testerr.root", hname="h3"):
+    """-maxerror applies to -max as well: a bin whose relative error is at or
+    above the limit may not be picked as the maximum.  Even i has a 50% error
+    everywhere along the normal axis, so those bins stay empty."""
+
+    nerrors = 0
+    print("Testing  -max -maxerror")
+    f, (h,) = run("%s %s -plane xy -max -maxerror 0.1" % (fname, hname))
+    if not f:
+        return 1
+
+    for i in range(1,nx+1):
+        for j in range(1,ny+1):
+            expected = content(i,j,nz) if i % 2 else 0.0
+            nerrors += checkClose("bin (%d,%d)" % (i,j),
+                                  expected, h.GetBinContent(j,i))
+    f.Close()
+
+    return nerrors
+
+
+def testOffsetEnds(fname="test.root", hname="h3"):
+    """-offset min and -offset max select the first and the last bin of the
+    normal axis - the two ends the slider stops at.  The title names the slab
+    the projection covers."""
+
+    nerrors = 0
+    print("Testing  -offset min/max")
+    width = (zmax-zmin)/nz
+    for what, k in (("min", 1), ("max", nz)):
+        f, (h,) = run("%s %s -plane xy -offset %s" % (fname, hname, what))
+        if not f:
+            nerrors += 1
+            continue
+
+        expected = "%g< z < %g" % (zmin+width*(k-1), zmin+width*k)
+        if not h.GetTitle().endswith(expected):
+            print("-offset", what, "title is", repr(h.GetTitle()),
+                  "expected it to end with", repr(expected))
+            nerrors += 1
+
+        for i in range(1,nx+1):
+            for j in range(1,ny+1):
+                nerrors += check(i,j,k, content(i,j,k), h.GetBinContent(j,i),
+                                 error(i,j,k), h.GetBinError(j,i))
+        f.Close()
+
+    return nerrors
+
+
 def testGeometry(fname="test.root", hname="h3", gname="geometry.inp"):
     """With a geometry file hplot cuts it on the plane the data are projected
     on and draws the material boundaries as a TMultiGraph on top.
@@ -571,6 +688,11 @@ def main():
     nerrors += testErrors()
     nerrors += testMaxError()
     nerrors += testRebin()
+    nerrors += testScale()
+    nerrors += testScaleRebin()
+    nerrors += testMaxFlip()
+    nerrors += testMaxMaxError()
+    nerrors += testOffsetEnds()
     nerrors += testGeometry()
     nerrors += testGeometryMacro()
     nerrors += testGeometryMax()

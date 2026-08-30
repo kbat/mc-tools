@@ -1,5 +1,6 @@
 #include <TError.h>
 #include <TGClient.h>
+#include <TH1.h>
 #include <TStyle.h>
 
 #include "Application.h"
@@ -12,6 +13,14 @@ Application::Application(const std::shared_ptr<Arguments>& args) :
 {
   gStyle->SetOptStat(kFALSE);
   SetColourMap(args->GetPalette());
+
+  /*
+    Every histogram here is owned by a shared_ptr, so none of them may also be
+    registered in the current directory and deleted a second time when it goes
+    - which is what happens if one is created while a TFile is open.  This says
+    so once, before the first of them exists.
+  */
+  TH1::AddDirectory(kFALSE);
 
   data = std::make_shared<Data3>(args->GetDataFile(), args->GetDataHist(), args);
 

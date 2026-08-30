@@ -30,6 +30,22 @@ class MainFrame : public TGMainFrame {
   std::unique_ptr<DynamicSlice> slice;
 
   void GrabMouseWheel() const;
+
+  /*!
+    TGVSlider is an integer widget whose positions count downwards - the
+    smallest one at the top.  Neither suits the axis normal to the projection
+    plane, which is a float coordinate in cm that SetRange()/SetPosition()
+    would silently truncate (an axis spanning less than a couple of cm would
+    collapse onto a single position), and whose value the user expects to grow
+    as the knob goes up.
+
+    So the slider is run in bin numbers counted from the top: bin b sits at
+    position nbins+1-b.  One notch of the wheel is then exactly one bin,
+    nothing is lost to truncation, and the knob moves the way the coordinate
+    does.
+  */
+  Int_t    CoordToSlider(Double_t x) const;
+  Double_t SliderToCoord(Int_t pos) const;
  public:
   MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 	    const std::shared_ptr<Data3> data);

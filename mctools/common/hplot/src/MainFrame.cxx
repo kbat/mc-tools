@@ -9,6 +9,7 @@
 
 #include "MainFrame.h"
 
+#include <algorithm>
 #include <iomanip>
 
 enum MainFrameMessageTypes {
@@ -75,17 +76,18 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
     {
       const Int_t nbins = a->GetNbins();
 
-      Int_t bin = a->FindBin(data->GetOffset());
-      if (bin > nbins)
-	bin = nbins;
-      else if (bin==0)
-	bin = 1;
-
       fSlider = new TGVSlider(hframe, 40, kSlider1 | kScaleBoth);
       fSlider->Associate(this);
-      fSlider->SetRange(a->GetXmin(), a->GetXmax());
-      fSlider->SetPosition(a->GetBinCenter(bin));
-      fSlider->SetScale(1000.0/nbins);
+      // in bin numbers counted from the top - see CoordToSlider()
+      fSlider->SetRange(1, nbins);
+      fSlider->SetPosition(CoordToSlider(data->GetOffset()));
+      /*
+	The tick marks are spaced in pixels, not in bins: one per bin, but
+	never closer together than this - a fine mesh would otherwise draw a
+	tick on every pixel row and leave the scale a solid bar.
+      */
+      const Int_t minspacing = 25;
+      fSlider->SetScale(std::max<Int_t>(minspacing, h/nbins));
       hframe->AddFrame(fSlider,new TGLayoutHints(kLHintsBottom | kLHintsExpandY, 10,10,10,1));
       //      fSlider->Connect("Released()", "MainFrame", this, "DoSlider()");
       //      fSlider->SetObject(this);
@@ -106,6 +108,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   MapWindow();
 
   dh2 = data->GetH2(); // default data histogram
+  data->Prefetch(data->GetOffset()); // the first move of the slider is then free
 
   if (data->GetArgs()->IsSlice())
     slice = std::make_unique<DynamicSlice>(data->GetArgs()->GetSlice(0),
@@ -188,10 +191,31 @@ TVirtualPad *MainFrame::GetSlicePad() const
     return nullptr;
 }
 
+Int_t MainFrame::CoordToSlider(Double_t x) const
+{
+  const TAxis *a = data->GetNormalAxis();
+  const Int_t nbins = a->GetNbins();
+
+  // an offset on the edge of the axis falls into the underflow/overflow bin
+  const Int_t bin = std::min(nbins, std::max(1, a->FindBin(x)));
+
+  return nbins + 1 - bin;
+}
+
+Double_t MainFrame::SliderToCoord(Int_t pos) const
+{
+  const TAxis *a = data->GetNormalAxis();
+  const Int_t nbins = a->GetNbins();
+
+  return a->GetBinCenter(nbins + 1 - std::min(nbins, std::max(1, pos)));
+}
+
 void MainFrame::DoSlider()
 {
   //  std::cout << __PRETTY_FUNCTION__ << ": DoSlider" << std::endl;
-  const float y = fSlider->GetPosition();
+  const Double_t y = SliderToCoord(fSlider->GetPosition());
+
+  data->SetOffset(y);
 
   TVirtualPad *pad1 = GetHistogramPad();
   pad1->cd();
@@ -202,6 +226,13 @@ void MainFrame::DoSlider()
     geo->Draw(y);
 
   pad1->Update();
+
+  /*
+    The slider is most likely to move on to one of the neighbouring slices, so
+    project them while the user is looking at this one.  After Update(), so
+    that the picture is on the screen before the worker threads take the cores.
+  */
+  data->Prefetch(y);
 }
 
 Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
@@ -215,14 +246,13 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
   }
 
   switch (GET_MSG(msg)) {
-  case kC_HSLIDER: // 6, mouse wheel scroll, see gui/gui/inc/WidgetMessageTypes.h
-    switch (GET_SUBMSG(msg)) {
-    case kSL_POS:
-      DoSlider();
-      break;
-    }
-    break;
-  case kC_VSLIDER: // 7
+    /*!
+      Only the release of the slider redraws: a live drag would cut the
+      geometry once per bin it went past, and one cut takes a noticeable
+      fraction of a second.  The mouse wheel does not come through here at all
+      - see HandleButton().
+    */
+  case kC_VSLIDER: // 7, see gui/gui/inc/WidgetMessageTypes.h
     switch (GET_SUBMSG(msg)) {
     case kSL_RELEASE:
       DoSlider();
@@ -239,6 +269,7 @@ Bool_t MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
     default:
       break;
     }
+    break;
   default:
     break;
   }
@@ -308,30 +339,34 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 }
 
 Bool_t MainFrame::HandleButton(Event_t *event)
+/*!
+  Move the slider by one bin per notch of the mouse wheel.
+
+  GrabMouseWheel() asks for both the press and the release of buttons 4 and 5,
+  and every notch delivers both, so only one of the two may be acted upon -
+  otherwise a notch would step two bins.
+
+  Anything else goes to the base class rather than being swallowed here.
+ */
 {
-  // Handle wheel mouse to scroll.
+  // no slider created (e.g. with the -max option or a single bin)
+  if (!fSlider || (event->fType != kButtonPress))
+    return TGMainFrame::HandleButton(event);
 
-  if (!fSlider) return kTRUE; // no slider created (e.g. with the -max option or single bin)
+  Int_t step;
+  if (event->fCode == kButton4)       // wheel up: the knob goes up, and the
+    step = -1;                        // slider counts downwards
+  else if (event->fCode == kButton5)  // wheel down
+    step = +1;
+  else
+    return TGMainFrame::HandleButton(event);
 
-  //std::cout << __PRETTY_FUNCTION__ << ": here" << std::endl;
+  const Int_t pos = fSlider->GetPosition() + step;
+  if ((pos < fSlider->GetMinPosition()) || (pos > fSlider->GetMaxPosition()))
+    return kTRUE; // already at the end of the axis - nothing to redraw
 
-  if (event->fCode == kButton4 || event->fCode == kButton5) { // 4=up, 5=down
-    const float   y =  fSlider->GetPosition();
-    const TAxis  *a = data->GetNormalAxis();
-    const Int_t bin = a->FindBin(y);
-    Double_t offset;
-    Int_t direction;
+  fSlider->SetPosition(pos);
+  DoSlider();
 
-    if (event->fCode == kButton4) { // scroll up
-      //      std::cout << __PRETTY_FUNCTION__ << ": Button4 (scroll up)" << std::endl;
-      direction = 1;
-    } else { //if (event->fCode == kButton5) { // scroll down
-      //      std::cout << __PRETTY_FUNCTION__ << ": Button5 (scroll down)" << std::endl;
-      direction = -1;
-    }
-    offset = a->GetBinWidth(bin+direction);
-    fSlider->SetPosition(y+direction*offset/2);
-    DoSlider();
-  }
   return kTRUE;
 }

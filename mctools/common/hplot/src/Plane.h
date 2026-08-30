@@ -67,6 +67,43 @@ class Plane {
   */
   std::array<Int_t,3> RebinFactors(Int_t v, Int_t h) const { return Bin3(v,h,1); }
 
+  /*!
+    Where the bin (v,h,n) of the plane sits in a histogram's global bin
+    numbering, and how far apart neighbouring bins are there.
+
+    ROOT keeps the bins of a TH2 or a TH3 in one flat array, so a step along
+    any of the three directions is a constant step in that array.  The
+    projection loops walk it with these strides rather than asking the
+    histogram for one bin at a time, which turns the index arithmetic and the
+    virtual calls of GetBinContent(i,j,k) into a single addition per bin.
+  */
+  struct Index {
+    Int_t base{0};              ///< global bin of (v,h,n) = (0,0,0)
+    Int_t dv{0}, dh{0}, dn{0};  ///< global bins per vertical/horizontal/normal bin
+
+    Int_t operator()(Int_t v, Int_t h, Int_t n=0) const
+    { return base + dv*v + dh*h + dn*n; }
+  };
+
+  /*!
+    The Index of the given histogram.
+
+    The steps are measured rather than derived: one unit step along each
+    direction, handed to the histogram's own GetBin().  So the mapping from the
+    plane onto the axes is still written down in Bin3() alone, and how a
+    histogram numbers its bins is still known to ROOT alone.
+  */
+  template <class H> Index Indexer(const H& h) const
+  {
+    const std::array<Int_t,3> o = Bin3(0,0,0);
+    const Int_t base = h.GetBin(o[0], o[1], o[2]);
+
+    auto step = [&h,base](const std::array<Int_t,3>& b)
+      { return h.GetBin(b[0], b[1], b[2]) - base; };
+
+    return Index{base, step(Bin3(1,0,0)), step(Bin3(0,1,0)), step(Bin3(0,0,1))};
+  }
+
   friend std::ostream& operator<<(std::ostream& os, const Plane& p);
 };
 

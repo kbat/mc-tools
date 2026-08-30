@@ -90,4 +90,23 @@ class Arguments {
   bool test() const;
 };
 
+/*!
+  The -maxerror cut, with the option already looked up.
+
+  Arguments reads its options out of a map of boost::any, which is far too slow
+  to do once per bin of a projection - and the projection loops run on worker
+  threads, which have no business reaching into the command line at all.
+*/
+class MaxErr {
+ private:
+  double limit; ///< <= 0: every bin passes
+
+ public:
+  MaxErr() : limit(-1.0) {}
+  explicit MaxErr(const Arguments& a) : limit(a.GetMaxErr()) {}
+
+  bool operator()(double val, double err) const
+  { return (limit<=0.0) || ((val!=0.0) && (err/val<limit)); }
+};
+
 #endif

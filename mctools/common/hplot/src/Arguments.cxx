@@ -290,16 +290,11 @@ bool Arguments::IsZTitle() const
 bool Arguments::IsMaxErr(const double& val, const double& err) const
 /*!
   Return true if err/val < GetMaxErr()
+
+  The rule itself lives in MaxErr, which is what the projection loops use - so
+  that it is written down once, and so that they do not pay for the option
+  lookup this convenience wrapper does.
 */
 {
-  //  std::cout << IsMaxErr() << " " << (err/val<GetMaxErr()) << std::endl;
-
-  if (!IsMaxErr())
-    return true;
-  else if (val==0.0)
-    return false;
-  else if (err/val<GetMaxErr())
-    return true;
-  else
-    return false;
+  return MaxErr(*this)(val, err);
 }
