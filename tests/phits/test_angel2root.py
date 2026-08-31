@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,7 @@ import pytest
 ROOT = pytest.importorskip("ROOT")
 
 
-PHITS_ROOT = Path(os.environ.get("PHITS_TEST_ROOT", "/home/kbat/usr/local/phits"))
+PHITS_ROOT = Path(os.environ.get("PHITSPATH", ""))
 CONVERTER = Path(__file__).resolve().parents[2] / "mctools/phits/angel2root.py"
 
 
@@ -124,10 +125,22 @@ def test_phits_tally_outputs_convert_to_root(tmp_path):
     if limit:
         sources = sources[: int(limit)]
 
+    case_dirs = []
     for case_number, source in enumerate(sources):
         case_dir = tmp_path / str(case_number)
         case_dir.mkdir()
-        result, root_path = run_converter(source, case_dir)
+        case_dirs.append((source, case_dir))
+
+    workers = int(os.environ.get("PHITS_TEST_WORKERS", "8"))
+    workers = max(1, min(workers, len(case_dirs)))
+    # Conversion is performed in subprocesses, so parallel workers do not
+    # share PyROOT state.  ROOT inspection remains serial below.
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        converted = list(
+            executor.map(lambda case: run_converter(*case), case_dirs)
+        )
+
+    for (source, _), (result, root_path) in zip(case_dirs, converted):
         if result.returncode != 0:
             failures.append(f"{source}: exit {result.returncode}\n{result.stderr}")
             continue
