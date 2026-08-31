@@ -131,7 +131,7 @@ def test_phits_tally_outputs_convert_to_root(tmp_path):
         case_dir.mkdir()
         case_dirs.append((source, case_dir))
 
-    workers = int(os.environ.get("PHITS_TEST_WORKERS", "8"))
+    workers = int(os.environ.get("PHITS_TEST_WORKERS", str(os.cpu_count() or 1)))
     workers = max(1, min(workers, len(case_dirs)))
     # Conversion is performed in subprocesses, so parallel workers do not
     # share PyROOT state.  ROOT inspection remains serial below.

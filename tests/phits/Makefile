@@ -1,6 +1,6 @@
 PYTHON ?= python3
 PYTEST ?= $(PYTHON) -m pytest
-PHITS_TEST_WORKERS ?= 8
+PHITS_TEST_WORKERS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
 .PHONY: test
 
