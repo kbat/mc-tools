@@ -200,9 +200,7 @@ class Case:
                 n = len(combo_parts)
                 escaped_parts = [escape_latex(p) for p in combo_parts]
                 escaped_path = escape_latex(path)
-                value_str = getPrintedValue(
-                    value=self.scenarios[scenario][combo].value
-                )
+                value_str = getPrintedValue(value=self.scenarios[scenario][combo].value)
                 for i, (escaped_part, arg_num) in enumerate(
                     zip(escaped_parts, range(2, n + 2))
                 ):
@@ -323,11 +321,7 @@ class Case:
                 while len(combo_parts) < 3:
                     combo_parts.append("")
                 escaped_combo_parts = [escape_latex(p) for p in combo_parts]
-                buffer.append(
-                    r"\def\combo{"
-                    f"{escape_latex(path)}"
-                    "}\n"
-                )
+                buffer.append(r"\def\combo{" f"{escape_latex(path)}" "}\n")
                 buffer.append(
                     r"\def\rateval{\rate{"
                     f"{escaped_scenario}"

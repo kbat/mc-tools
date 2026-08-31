@@ -5,7 +5,13 @@ import ROOT
 
 from mctools.common.risk.level import Level
 from mctools.common.risk.test.input_histogram import create_test_histogram
-from mctools.common.risk.zone import Limits, Limits3D, ROOTFileInput, ROOTInputCache, Zone
+from mctools.common.risk.zone import (
+    BoxLimits3D,
+    Limits,
+    ROOTFileInput,
+    ROOTInputCache,
+    Zone,
+)
 
 
 class TestRootInput(unittest.TestCase):
@@ -101,11 +107,11 @@ class TestRootInput(unittest.TestCase):
             )
             low_zone = Zone(
                 hist=root_input,
-                lim=Limits3D(zlim=Limits(upper=-0.1)),
+                lim=[BoxLimits3D(zlim=Limits(upper=-0.1))],
             )
             high_zone = Zone(
                 hist=root_input,
-                lim=Limits3D(zlim=Limits(lower=0.1)),
+                lim=[BoxLimits3D(zlim=Limits(lower=0.1))],
             )
 
             with ROOTInputCache() as root_input_cache:

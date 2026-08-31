@@ -1,7 +1,8 @@
 """BaseLevel associated with a ROOT TH3 histogram"""
 
+from abc import ABC, abstractmethod
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from uuid import uuid4
 from warnings import warn
 
@@ -27,13 +28,49 @@ class Limits:
             self.lower, self.upper = self.upper, self.lower
 
 
-@dataclass
-class Limits3D:
-    """Box limits for a 3D variable"""
+class Limits3D(ABC):
+    """Abstract base class for constraints that restrict which bins of a TH3
+    histogram are searched for the maximum value"""
 
-    xlim: Limits = field(default_factory=Limits)
-    ylim: Limits = field(default_factory=Limits)
-    zlim: Limits = field(default_factory=Limits)
+    @abstractmethod
+    def bin_in_range(
+        self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
+    ) -> bool:
+        """Return True if bin (n_x, n_y, n_z) of hist lies within these limits"""
+
+
+class BoxLimits3D(Limits3D):
+    """Box limits for a 3D variable
+
+    If inverted is True, a bin is in range if it lies outside the box instead of
+    inside it.
+    """
+
+    def __init__(
+        self,
+        xlim: Limits | None = None,
+        ylim: Limits | None = None,
+        zlim: Limits | None = None,
+        inverted: bool = False,
+    ):
+        self.xlim = Limits() if xlim is None else xlim
+        self.ylim = Limits() if ylim is None else ylim
+        self.zlim = Limits() if zlim is None else zlim
+        self.inverted = inverted
+
+    def bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
+        x_axis = hist.GetXaxis()
+        y_axis = hist.GetYaxis()
+        z_axis = hist.GetZaxis()
+        in_box = (
+            self.xlim.upper >= x_axis.GetBinLowEdge(n_x)
+            and self.xlim.lower <= x_axis.GetBinUpEdge(n_x)
+            and self.ylim.upper >= y_axis.GetBinLowEdge(n_y)
+            and self.ylim.lower <= y_axis.GetBinUpEdge(n_y)
+            and self.zlim.upper >= z_axis.GetBinLowEdge(n_z)
+            and self.zlim.lower <= z_axis.GetBinUpEdge(n_z)
+        )
+        return in_box != self.inverted
 
 
 @dataclass
@@ -106,7 +143,9 @@ class ROOTInputCache:
                     f"Could not open scale file '{scale_file_name}'."
                 ) from exc
             except OSError as exc:
-                raise OSError(f"Could not read scale file '{scale_file_name}'.") from exc
+                raise OSError(
+                    f"Could not read scale file '{scale_file_name}'."
+                ) from exc
 
             with scale_file:
                 try:
@@ -118,34 +157,31 @@ class ROOTInputCache:
         return self.scales[scale_file_name]
 
 
-def bin_in_range(n_bin: int, axis: ROOT.TAxis, limits: Limits) -> bool:
-    if limits.upper < axis.GetBinLowEdge(n_bin) or limits.lower > axis.GetBinUpEdge(
-        n_bin
-    ):
-        return False
-    return True
-
-
 class Zone(BaseLevel):
     """BaseLevel associated with a ROOT TH3 histogram
 
-    It is possible to use box constraints to limit the range of bins that are searched
-    for the maximum value.
-    For each axis individually, a minimum and maximum value can be given.
-    If the minimum value is larger than the upper edge of a bin or the maximum value is
-    smaller than the lower edge of a bin, the bin is not included in the search.
+    A list of Limits3D instances can be given to restrict the bins that are searched
+    for the maximum value to a certain region of the histogram. A bin is only
+    included in the search if it is in range of every Limits3D in the list (i.e. the
+    limits are combined with a logical AND). By default, a single BoxLimits3D with no
+    constraints is used, i.e. the whole histogram is searched.
     """
 
     def __init__(
         self,
         hist: ROOT.TH3F | ROOT.TH3D | ROOTFileInput | str,
-        lim: Limits3D | None = None,
+        lim: Limits3D | list[Limits3D] | None = None,
         name: str = "",
         title: str = "",
     ):
         super().__init__(name=name, title=title)
         self.hist = hist
-        self.lim = Limits3D() if lim is None else lim
+        if lim is None:
+            self.lim: list[Limits3D] = [BoxLimits3D()]
+        elif isinstance(lim, Limits3D):
+            self.lim = [lim]
+        else:
+            self.lim = lim
 
     def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
@@ -169,30 +205,19 @@ class Zone(BaseLevel):
         max_val = float("-inf")
         max_err = max_x = max_y = max_z = 0.0
         for n_x in range(hist.GetNbinsX()):
-            if bin_in_range(n_bin=n_x + 1, axis=hist.GetXaxis(), limits=self.lim.xlim):
-                for n_y in range(hist.GetNbinsY()):
-                    if bin_in_range(
-                        n_bin=n_y + 1, axis=hist.GetYaxis(), limits=self.lim.ylim
+            for n_y in range(hist.GetNbinsY()):
+                for n_z in range(hist.GetNbinsZ()):
+                    if all(
+                        lim.bin_in_range(n_x + 1, n_y + 1, n_z + 1, hist)
+                        for lim in self.lim
                     ):
-                        for n_z in range(hist.GetNbinsZ()):
-                            if bin_in_range(
-                                n_bin=n_z + 1,
-                                axis=hist.GetZaxis(),
-                                limits=self.lim.zlim,
-                            ):
-                                if (
-                                    hist.GetBinContent(n_x + 1, n_y + 1, n_z + 1)
-                                    > max_val
-                                ):
-                                    max_val = hist.GetBinContent(
-                                        n_x + 1, n_y + 1, n_z + 1
-                                    )
-                                    max_err = hist.GetBinError(
-                                        n_x + 1, n_y + 1, n_z + 1
-                                    )
-                                    max_x = hist.GetXaxis().GetBinCenter(n_x + 1)
-                                    max_y = hist.GetYaxis().GetBinCenter(n_y + 1)
-                                    max_z = hist.GetZaxis().GetBinCenter(n_z + 1)
+                        bin_content = hist.GetBinContent(n_x + 1, n_y + 1, n_z + 1)
+                        if bin_content > max_val:
+                            max_val = bin_content
+                            max_err = hist.GetBinError(n_x + 1, n_y + 1, n_z + 1)
+                            max_x = hist.GetXaxis().GetBinCenter(n_x + 1)
+                            max_y = hist.GetYaxis().GetBinCenter(n_y + 1)
+                            max_z = hist.GetZaxis().GetBinCenter(n_z + 1)
         self.value = Value(
             val=max_val,
             err=max_err,
