@@ -1,0 +1,11 @@
+title = Simple map
+mesh = xy
+axis = xy
+file = map.out
+  newpage:
+x: x [cm]
+y: y [cm]
+h2: y = 1.5 to 0.5 by 1.0 ; x = 0.5 to 1.5 by 1.0 ;
+1.0 2.0
+3.0 4.0
+
