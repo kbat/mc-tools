@@ -106,6 +106,12 @@ def is_gshow_only(source):
             text, re.MULTILINE | re.IGNORECASE)
         has_data = re.search(r"^\s*h(?:2|c2?|d):", text,
                              re.MULTILINE | re.IGNORECASE)
+        # Geometry overlays use ANGEL drawing declarations such as
+        # ``h: x ny1,0 ...``.  Ordinary 1D tally sections use ``h:`` too and
+        # may contain legitimate plot directives such as ``ny21``.
+        has_data = has_data or re.search(
+            r"^[ \t]*h:(?![ \t]*x[ \t]+ny\d+[ \t]*,)[ \t]*.+$", text,
+            re.MULTILINE | re.IGNORECASE)
         return bool(has_gshow and not has_data)
     except OSError:
         return False
