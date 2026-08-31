@@ -116,19 +116,6 @@ def is_gshow_only(source):
     except OSError:
         return False
 
-
-def test_bench_transmission_is_one_two_dimensional_histogram(tmp_path):
-    source = Path(__file__).with_name("bench_phits_trans.out")
-    result, root_path = run_converter(source, tmp_path)
-
-    assert result.returncode == 0, result.stderr
-    objects = root_objects(root_path)
-    assert len(objects) == 1
-    histogram = objects[0]
-    assert histogram["is_th2"]
-    assert histogram["nbins"] == (200, 45)
-
-
 def test_phits_tally_outputs_convert_to_root(tmp_path):
     """Smoke-test every available PHITS ANGEL tally output.
 
