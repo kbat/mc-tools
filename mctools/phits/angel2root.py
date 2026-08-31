@@ -15,7 +15,7 @@ import ROOT
 # The line below is needed to prevent command-line arguments from
 # stolen by PyROOT and handed to TApplication
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from ROOT import TH1F, TH2F, TFile, TObjArray, TGraphErrors
+from ROOT import TH1F, TH2F, TH3F, TFile, TObjArray, TGraphErrors
 
 """
 def isData(line):
@@ -126,6 +126,21 @@ class Angel:
         self.axis = []
         self.subtitles = []
         self.ihist = 0
+        self.title = None
+        self.xtitle = None
+        self.ytitle = None
+        self.ztitle = None
+        self.mesh = None
+        self.output = None
+        self.output_title = None
+        self.unit = None
+        self.unit_title = None
+        self.file = None
+        self.part = []
+        self.return_value = 0
+        self.numPlotPages = 0
+        self.histogram_records = []
+        self.page_info = {}
 #        global DEBUG
         #: a python list which contains the numbers of lines which separate
         #: pages
@@ -279,6 +294,7 @@ class Angel:
         ##################################################
         for npage in range(1, len(pageLST)):
             if DEBUG: print("========== Page {} ==========".format(npage))
+            self.page_info[npage] = self.GetPageInfo(pageLST[npage])
             # first scan: extract header info in advance to the data extraction
             if DEBUG: print("---------- 1st scan ----------")
             hLST = [] # list of 'H-tuples', (Line#OfH,"typeOfH"). ("typeOfH" is redundant)
@@ -339,7 +355,7 @@ class Angel:
                             if re.search("^h2", line): print("h2: two dimentional contour plot section")
                             if re.search("^hd", line): print("hd: two dimentional cluster plot section")
                             if re.search("^hc", line): print("hc: two dimentional colour cluster plot section")
-                        self.Read2DHist(igline)
+                        self.Read2DHist(igline, npage)
                         break # no need to scan further, only to find color palette etc.
                     elif 'reg' in self.axis: # line starts with 'h' and axis is 'reg' => 1D histo in region mesh. For instance, this is whe case with [t-deposit] tally and mesh = reg.
                         if DEBUG: print("calling Read1DHist() (region mesh)")
@@ -347,15 +363,7 @@ class Angel:
                         continue
 
 #        print(self.dict_edges_array)
-        if self.is1D():
-            if DEBUG: print("1D")
-        else:
-            if DEBUG: print("2D")
-            # PHITS writes a T-Cross tally with an angular mesh as a series
-            # of ANGEL pages: one TH1-like section per angular bin.  Combine
-            # those sections into the actual 2D tally before writing the
-            # output file.
-            self.Make2Dfrom1D()
+        self.CombinePageHistograms()
 
 
         if DEBUG: print("self.histos.GetEntries(): ", self.histos.GetEntries())
@@ -369,19 +377,166 @@ class Angel:
             fout.Close()
             os.remove(fname_out) # Nothing to write, remove the output file
 
-    def is1D(self):
-        """
-        Trying to guess if we have many 1D histograms which actually form a 2D one.
-        """
-        nn1 = 0 # number of cases when number of bins is not 1
-        for key in self.dict_nbins:
-            if int(self.dict_nbins[key])>1: nn1 += 1
-        if DEBUG: print("nn1:", nn1)
+    def GetPageInfo(self, page):
+        """Extract mesh coordinates and particle name from an ANGEL page."""
+        info = {}
+        text = '\n'.join(page)
+        for key, value in re.findall(
+                r"\b(ia|ie|ix|iy|iz|it|il)\s*=\s*([+-]?\d+)", text):
+            info[key] = int(value)
+        particle = re.search(r"\bpart\.?\s*=\s*([^\s]+)", text)
+        if particle:
+            info['part'] = particle.group(1)
+        return info
 
-        if nn1 <= 1:
-            return True
-        else:
-            return False
+    def AddHistogram(self, histogram, page_num, slot=0):
+        """Add a ROOT object and retain the page information used for merging."""
+        self.histos.Add(histogram)
+        self.histogram_records.append({
+            'histogram': histogram,
+            'page': page_num,
+            'slot': slot,
+            'page_info': self.page_info.get(page_num, {}),
+        })
+
+    def PageAxis(self):
+        """Return the ANGEL page index and its PHITS bin edges, if present."""
+        edge_names = {
+            'ia': 'na', 'ie': 'ne', 'ix': 'nx', 'iy': 'ny', 'iz': 'nz',
+            'it': 'nt', 'il': 'nl',
+        }
+        for page_key in ('ia', 'ie', 'ix', 'iy', 'iz', 'it', 'il'):
+            edge_key = edge_names[page_key]
+            if edge_key not in self.dict_edges_array:
+                continue
+            edges = self.dict_edges_array[edge_key]
+            if len(edges) <= 2 or not self.histogram_records:
+                continue
+            values = [r['page_info'].get(page_key) for r in self.histogram_records]
+            if None not in values and len(set(values)) == len(edges) - 1:
+                return page_key, edge_key, edges
+        return None
+
+    def CombinePageHistograms(self):
+        """Combine ANGEL pages into the lowest-dimensional ROOT histogram.
+
+        ANGEL represents an N-dimensional PHITS tally as one lower-dimensional
+        plot per value of an additional mesh coordinate.  A 1D page therefore
+        becomes a TH2F and a 2D page becomes a TH3F.  Objects that cannot be
+        grouped unambiguously are kept as emitted by ANGEL.
+        """
+        page_axis = self.PageAxis()
+        if not page_axis or not self.histogram_records:
+            return
+
+        page_key, edge_key, page_edges = page_axis
+        page_bins = len(page_edges) - 1
+        records = self.histogram_records
+        if any(r['histogram'].InheritsFrom('TGraph') for r in records):
+            return
+
+        # Group by the histogram column (slot) and particle.  The latter is
+        # needed for mesh tallies such as T-Track, which emit one page series
+        # for each requested particle.
+        groups = {}
+        for record in records:
+            value = record['page_info'].get(page_key)
+            if value is None:
+                return
+            key = (record['slot'], record['page_info'].get('part', ''))
+            groups.setdefault(key, []).append(record)
+
+        if not groups or any(len(group) != page_bins for group in groups.values()):
+            return
+
+        combined = []
+        for (slot, particle), group in groups.items():
+            group.sort(key=lambda r: r['page_info'][page_key])
+            if [r['page_info'][page_key] for r in group] != list(range(1, page_bins + 1)):
+                return
+
+            first = group[0]['histogram']
+            if any(r['histogram'].ClassName() != first.ClassName() for r in group):
+                return
+            if first.InheritsFrom('TH1') and not first.InheritsFrom('TH2'):
+                result = self.Combine1DGroup(first, group, page_edges, page_key, particle, slot)
+            elif first.InheritsFrom('TH2') and not first.InheritsFrom('TH3'):
+                result = self.Combine2DGroup(first, group, page_edges, page_key, particle, slot)
+            else:
+                return
+            if result is None:
+                return
+            combined.append(result)
+
+        # Replace the page objects so callers and the output file see the
+        # actual tally histogram(s), not the intermediate ANGEL projections.
+        self.histos = TObjArray()
+        for histogram in combined:
+            self.histos.Add(histogram)
+
+    def PageAxisTitle(self, page_key):
+        return {
+            'ia': 'cos(#theta)', 'ie': 'Energy', 'ix': 'x', 'iy': 'y',
+            'iz': 'z', 'it': 'Time', 'il': 'LET',
+        }.get(page_key, page_key)
+
+    def CombinedName(self, base, suffix, slot, particle):
+        name = '%s_%s' % (base, suffix)
+        if slot:
+            name += '_%d' % slot
+        if particle:
+            name += '_%s' % particle
+        return name
+
+    def CompatibleAxes(self, first, group, axes):
+        """Check that every page in a group has identical binning."""
+        reference = [self.getAxisEdges(getattr(first, 'Get%saxis' % axis)())
+                     for axis in axes]
+        for record in group[1:]:
+            current = [self.getAxisEdges(getattr(record['histogram'],
+                                                  'Get%saxis' % axis)())
+                       for axis in axes]
+            if current != reference:
+                return False
+        return True
+
+    def Combine1DGroup(self, first, group, page_edges, page_key, particle, slot):
+        if not self.CompatibleAxes(first, group, ('X',)):
+            return None
+        xedges = self.getXarray(first)
+        yedges = array('f', [float(edge) for edge in page_edges])
+        name = self.CombinedName(self.file or first.GetName(), '2d', slot, particle)
+        title = '%s;%s;%s' % (self.title, first.GetXaxis().GetTitle(),
+                              self.PageAxisTitle(page_key))
+        histogram = TH2F(name, title, first.GetNbinsX(), array('f', xedges),
+                         len(page_edges) - 1, yedges)
+        for iy, record in enumerate(group, 1):
+            source = record['histogram']
+            for ix in range(1, source.GetNbinsX() + 1):
+                histogram.SetBinContent(ix, iy, source.GetBinContent(ix))
+                histogram.SetBinError(ix, iy, source.GetBinError(ix))
+        return histogram
+
+    def Combine2DGroup(self, first, group, page_edges, page_key, particle, slot):
+        if not self.CompatibleAxes(first, group, ('X', 'Y')):
+            return None
+        xedges = self.getXarray(first)
+        yedges = self.getYarray(first)
+        zedges = array('f', [float(edge) for edge in page_edges])
+        name = self.CombinedName(self.file or first.GetName(), '3d', slot, particle)
+        title = '%s;%s;%s;%s' % (self.title, first.GetXaxis().GetTitle(),
+                                 first.GetYaxis().GetTitle(),
+                                 self.PageAxisTitle(page_key))
+        histogram = TH3F(name, title, first.GetNbinsX(), array('f', xedges),
+                         first.GetNbinsY(), array('f', yedges),
+                         len(page_edges) - 1, zedges)
+        for iz, record in enumerate(group, 1):
+            source = record['histogram']
+            for iy in range(1, source.GetNbinsY() + 1):
+                for ix in range(1, source.GetNbinsX() + 1):
+                    histogram.SetBinContent(ix, iy, iz, source.GetBinContent(ix, iy))
+                    histogram.SetBinError(ix, iy, iz, source.GetBinError(ix, iy))
+        return histogram
 
     # def GetBinEdgesOrig(self, iline):
     #     print("iline:", iline)
@@ -547,7 +702,7 @@ class Angel:
                     h.GetXaxis().SetBinLabel(i+1, bin_labels[i])
                 h.GetXaxis().SetTitle("Region number")
 
-            self.histos.Add(h)
+            self.AddHistogram(h, pageNum, ihist)
         del self.subtitles[:]
 
     def Read1DGraphErrors(self, iline, pageNum, tet=False):
@@ -627,7 +782,7 @@ class Angel:
                 g.SetPoint(i, x, y)
                 g.SetPointError(i, 0, ey*y)
 
-            self.histos.Add(g)
+            self.AddHistogram(g, pageNum, igraph)
         del self.subtitles[:]
 
 
@@ -641,7 +796,7 @@ class Angel:
         self.title = self.title.replace("cm^2", "cm^{2}")
         self.title = self.title.replace("cm^3", "cm^{3}")
 
-    def Read2DHist(self, iline):
+    def Read2DHist(self, iline, pageNum=None):
         """
         Read 2D histogram section
         """
@@ -699,49 +854,38 @@ class Angel:
         if DEBUG > 1: print("Read2DHist(): data = ", data)
 
         # self.ihist+1 - start from ONE as in Angel - easy to compare
-        h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, self.subtitles[self.ihist], self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
+        subtitle = self.subtitles[-1] if self.subtitles else ''
+        h = TH2F("h%d" % (self.ihist+1), "%s - %s;%s;%s;%s" % (self.title, subtitle, self.xtitle, self.ytitle, self.ztitle), nx, xmin, xmax, ny, ymin, ymax)
         self.ihist += 1
 
         for y in range(ny-1, -1, -1):
             for x in range(nx):
                 d = data[x+(ny-1-y)*nx]
                 h.SetBinContent(x+1, y+1, d)
-        self.histos.Add(h)
-
-    def isSameXaxis(self):
-        """
-        Return True if all the histograms in self.histos have the same x-axis
-        """
-        nhist = self.histos.GetEntries()
-        if nhist == 0:
-            return False
-        nbins0 = self.histos[0].GetNbinsX()
-        for i in range(1,nhist):
-            h = self.histos[i]
-            if nbins0 != self.histos[i].GetNbinsX():
-                print("not the same bin number", i)
-                return False
-            for ibin in range(nbins0 + 1):
-                if self.histos[0].GetBinLowEdge(ibin+1) != h.GetBinLowEdge(ibin+1):
-                    print("Low edge differ for bin %d of histo %d" % (ibin, i))
-                    return False
-        return True
+        self.AddHistogram(h, pageNum, 0)
+        del self.subtitles[:]
 
     def getXarray(self, h):
         """
         Return the tuple with x-low-edges of TH1 'h'
         """
-        nbins = h.GetNbinsX()
-        xarray = []
-        for i in range(nbins+1):
-            xarray.append(float(h.GetBinLowEdge(i+1)))
+        return self.getAxisEdges(h.GetXaxis())
 
-        return xarray
+    def getYarray(self, h):
+        """Return the y-axis bin edges of a ROOT histogram."""
+        return self.getAxisEdges(h.GetYaxis())
+
+    def getAxisEdges(self, axis):
+        """Return all low edges plus the upper edge of a ROOT axis."""
+        return [float(axis.GetBinLowEdge(i)) for i in range(1, axis.GetNbins() + 2)]
 
     def Make2Dfrom1D(self):
         """
         Makes a 2D histogram from a set of 1D !!! works only with 1 set of particles requested !!!
         """
+        # Kept as a compatibility wrapper for callers of older versions.
+        return self.CombinePageHistograms()
+
         # This conversion is intended for a single-particle T-Cross output:
         # the number of pages must equal the number of angular bins and each
         # page must contain one energy spectrum.
