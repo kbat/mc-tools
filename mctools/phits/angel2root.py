@@ -140,6 +140,8 @@ class Angel:
         self.return_value = 0
         self.numPlotPages = 0
         self.ignored = False
+        self.has_gshow = False
+        self.geometry_only = False
         self.histogram_records = []
         self.page_info = {}
 #        global DEBUG
@@ -295,12 +297,14 @@ class Angel:
         # Keep an empty ROOT file for the ignored tally so batch conversion
         # callers still receive a successful, inspectable result.
         has_gshow = re.search(r"^\s*gshow\s*=\s*[1-9]", '\n'.join(pageLST[0]), re.IGNORECASE)
-        has_gshow = has_gshow or any(
+        has_gshow = bool(has_gshow or any(
             re.search(r"^\s*#\s*gshow\s*$", '\n'.join(page), re.IGNORECASE | re.MULTILINE)
             for page in pageLST[1:]
-        )
-        if has_gshow:
-            print("Ignoring tally with gshow output: %s" % (self.file or fname_in))
+        ))
+        self.has_gshow = has_gshow
+        self.geometry_only = bool(re.search(r"t\s*-\s*gshow", self.title or '', re.IGNORECASE))
+        if self.geometry_only:
+            print("Ignoring tally: %s (T-Gshow)" % (self.file or fname_in))
             self.ignored = True
             fout.Close()
             self.return_value = 0
@@ -345,6 +349,7 @@ class Angel:
             #              scan only within the current page, pass the corresponding
             #              global line number for data decoding
             if DEBUG: print("---------- 2nd scan ----------")
+            in_gshow = False
             for iline, line in enumerate(pageLST[npage]):
                 # skip to the last histogram in this page
                 if self.sangel and iline < hLST[-1][0]: continue
@@ -353,6 +358,13 @@ class Angel:
                 #: The counting of local line number (iline) start just after
                 #: the location of "^[\s#]newpage:$" and therefore '+1'
                 igline = iline + pageSepLineLST[npage-1] + 1
+                if re.search(r"^\s*#\s*gshow\s*$", line, re.IGNORECASE):
+                    in_gshow = True
+                    continue
+                if in_gshow and not re.search(r"^h2:", line):
+                    continue
+                if re.search(r"^h2:", line):
+                    in_gshow = False
                 if re.search("^h", line):
                     if re.search("^h: [nx]", line): # !!! We are looking for 'h: n' instead of 'h' due to rz-plots.
                         if DEBUG: print("one dimentional graph section")
@@ -390,6 +402,12 @@ class Angel:
             fout.Close()
             self.return_value = 0
         else:
+            if self.has_gshow:
+                print("Ignoring tally with gshow output: %s" % (self.file or fname_in))
+                self.ignored = True
+                fout.Close()
+                self.return_value = 0
+                return
             print("Have not found any histograms/graphs in this file")
             self.return_value = 1
             fout.Close()
