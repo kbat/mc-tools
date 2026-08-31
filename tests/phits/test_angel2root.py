@@ -96,10 +96,10 @@ def root_objects(root_path):
     return metadata
 
 
-def is_ignored_gshow_tally(source):
-    """Return whether an ANGEL output contains a geometry-only gshow page."""
+def is_tgshow_only(source):
+    """Return whether the output is a geometry-only T-Gshow tally."""
     try:
-        return bool(re.search(r"^\s*#?\s*gshow\s*$|^\s*gshow\s*=\s*[1-9]",
+        return bool(re.search(r"^\s*\[\s*T\s*-\s*Gshow\s*\]",
                               source.read_text(errors="replace"),
                               re.MULTILINE | re.IGNORECASE))
     except OSError:
@@ -153,9 +153,16 @@ def test_phits_tally_outputs_convert_to_root(tmp_path):
         if result.returncode != 0:
             failures.append(f"{source}: exit {result.returncode}\n{result.stderr}")
             continue
+        if is_tgshow_only(source):
+            if root_path.exists():
+                failures.append(f"{source}: T-Gshow-only output created a ROOT file")
+            continue
         try:
+            if not root_path.exists():
+                failures.append(f"{source}: converter did not create a ROOT file")
+                continue
             objects = root_objects(root_path)
-            if not objects and not is_ignored_gshow_tally(source):
+            if not objects:
                 failures.append(f"{source}: no ROOT objects")
         except Exception as error:  # report all bad files in one test run
             failures.append(f"{source}: {error}")

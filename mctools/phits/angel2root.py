@@ -307,6 +307,7 @@ class Angel:
             print("Ignoring tally: %s (T-Gshow)" % (self.file or fname_in))
             self.ignored = True
             fout.Close()
+            os.remove(fname_out)
             self.return_value = 0
             return
 
@@ -406,6 +407,7 @@ class Angel:
                 print("Ignoring tally with gshow output: %s" % (self.file or fname_in))
                 self.ignored = True
                 fout.Close()
+                os.remove(fname_out)
                 self.return_value = 0
                 return
             print("Have not found any histograms/graphs in this file")
