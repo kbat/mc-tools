@@ -86,11 +86,11 @@ class Case:
                     )
             return
 
-        for n_scenario, scenario in enumerate(self.scenarios):
-            self.scenarios[scenario].evaluate()
+        for n_scenario, scenario_name in enumerate(self.scenarios):
+            self.scenarios[scenario_name].evaluate()
             print(
                 f"Scenario {n_scenario+1:3d}/{n_scenarios:3d}: "
-                f"{(time()-t_start):4.2e} seconds ({scenario})"
+                f"{(time()-t_start):4.2e} seconds ({scenario_name})"
             )
 
     def toLaTeX(
