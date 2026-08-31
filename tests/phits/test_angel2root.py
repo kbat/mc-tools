@@ -96,12 +96,17 @@ def root_objects(root_path):
     return metadata
 
 
-def is_tgshow_only(source):
-    """Return whether the output is a geometry-only T-Gshow tally."""
+def is_gshow_only(source):
+    """Return whether the output contains gshow drawing but no tally data."""
     try:
-        return bool(re.search(r"^\s*\[\s*T\s*-\s*Gshow\s*\]",
-                              source.read_text(errors="replace"),
-                              re.MULTILINE | re.IGNORECASE))
+        text = source.read_text(errors="replace")
+        has_gshow = re.search(
+            r"^\s*\[\s*T\s*-\s*Gshow\s*\]|"
+            r"^\s*gshow\s*=\s*[1-9]|^\s*#\s*gshow\s*$",
+            text, re.MULTILINE | re.IGNORECASE)
+        has_data = re.search(r"^\s*h(?:2|c2?|d):", text,
+                             re.MULTILINE | re.IGNORECASE)
+        return bool(has_gshow and not has_data)
     except OSError:
         return False
 
@@ -153,9 +158,9 @@ def test_phits_tally_outputs_convert_to_root(tmp_path):
         if result.returncode != 0:
             failures.append(f"{source}: exit {result.returncode}\n{result.stderr}")
             continue
-        if is_tgshow_only(source):
+        if is_gshow_only(source):
             if root_path.exists():
-                failures.append(f"{source}: T-Gshow-only output created a ROOT file")
+                failures.append(f"{source}: gshow-only output created a ROOT file")
             continue
         try:
             if not root_path.exists():
