@@ -118,6 +118,14 @@ class Angel:
 
     ihist = 0 # histogram number - must start from ZERO
     def __init__(self, fname_in, fname_out, **kwargs):
+#       These values describe one input file.  Keep them per-instance; the
+#       class attributes above are only kept for backwards compatibility.
+        self.dict_nbins = {}
+        self.last_nbins_read = None
+        self.dict_edges_array = {}
+        self.axis = []
+        self.subtitles = []
+        self.ihist = 0
 #        global DEBUG
         #: a python list which contains the numbers of lines which separate
         #: pages
@@ -343,7 +351,11 @@ class Angel:
             if DEBUG: print("1D")
         else:
             if DEBUG: print("2D")
-#            self.Make2Dfrom1D()
+            # PHITS writes a T-Cross tally with an angular mesh as a series
+            # of ANGEL pages: one TH1-like section per angular bin.  Combine
+            # those sections into the actual 2D tally before writing the
+            # output file.
+            self.Make2Dfrom1D()
 
 
         if DEBUG: print("self.histos.GetEntries(): ", self.histos.GetEntries())
@@ -701,15 +713,17 @@ class Angel:
         Return True if all the histograms in self.histos have the same x-axis
         """
         nhist = self.histos.GetEntries()
+        if nhist == 0:
+            return False
         nbins0 = self.histos[0].GetNbinsX()
         for i in range(1,nhist):
             h = self.histos[i]
             if nbins0 != self.histos[i].GetNbinsX():
                 print("not the same bin number", i)
-                return false
-            for bin in range(nbins0):
-                if self.histos[0].GetBinLowEdge(i+1) != self.histos[i].GetBinLowEdge(i+1):
-                    print("Low edge differ for bin %d of histo %d" % (bin, i))
+                return False
+            for ibin in range(nbins0 + 1):
+                if self.histos[0].GetBinLowEdge(ibin+1) != h.GetBinLowEdge(ibin+1):
+                    print("Low edge differ for bin %d of histo %d" % (ibin, i))
                     return False
         return True
 
@@ -728,29 +742,30 @@ class Angel:
         """
         Makes a 2D histogram from a set of 1D !!! works only with 1 set of particles requested !!!
         """
+        # This conversion is intended for a single-particle T-Cross output:
+        # the number of pages must equal the number of angular bins and each
+        # page must contain one energy spectrum.
+        second_dimention = None
+        second_dimention_nbins = None
+        for key, edges in self.dict_edges_array.items():
+            nbins = len(edges) - 1
+            if nbins > 1 and (second_dimention is None or key == 'na'):
+                second_dimention = key
+                second_dimention_nbins = nbins
+
+        nhist = self.histos.GetEntries()
+        if second_dimention is None or nhist != second_dimention_nbins:
+            if DEBUG:
+                print("Make2Dfrom1D: not a single angular T-Cross tally")
+            return
+
         # check if all histograms have the same x-range:
         if not self.isSameXaxis():
             print("ERROR in Make2Dfrom1D: x-axes are different")
             sys.exit(1)
 
-        # guess which dict_edges_array correspond to 1D histos
         nbins0 = self.histos[0].GetNbinsX()
-        second_dimention = None
-        second_dimention_nbins = None
-        for key in self.dict_edges_array:
-            nbins = len(self.dict_edges_array[key])-1
-            if nbins==1: continue # we do not care
-            if nbins0 != nbins:
-                second_dimention = key
-                second_dimention_nbins = nbins
-
-        if second_dimention:
-            if DEBUG: print("the second dimention is", second_dimention, second_dimention_nbins)
-        else:
-            if DEBUG: print("Second dimention was not found based on the number of bins -> bin edges comparing needed")
-            sys.exit(3)
-
-#        h2 = TH2F("hall%s" % second_dimention, "", nbins0, 0, 1, 20, 0, 1)
+        if DEBUG: print("the second dimention is", second_dimention, second_dimention_nbins)
 
 #        if DEBUG: print(array('f', self.getXarray(self.histos[0])))
         second_dimention_xarray = []
@@ -758,11 +773,15 @@ class Angel:
 #        for w in self.dict_edges_array[second_dimention]: if DEBUG: print(float(w))
 #        array('f', second_dimention_xarray)
 
-        h2 = TH2F("hall%s" % second_dimention, "%s;%s;%s;%s" % (self.histos[0].GetYaxis().GetTitle(), self.histos[0].GetXaxis().GetTitle(), "Time [nsec]", self.histos[0].GetYaxis().GetTitle()),
+        h2 = TH2F("%s" % self.file,
+                  "%s;%s;cos(#theta);%s" % (self.title,
+                                             self.histos[0].GetXaxis().GetTitle(),
+                                             self.histos[0].GetYaxis().GetTitle()),
                   nbins0, array('f', self.getXarray(self.histos[0])),
                   second_dimention_nbins, array('f', second_dimention_xarray))
 
-        nhist = self.histos.GetEntries() # number of 1D histograms
+        # Pages are emitted in increasing angular-bin order, which is also
+        # the order expected by the PHITS angular mesh.
         for biny in range(nhist):
             h1 = self.histos[biny]
             for binx in range(nbins0):
@@ -770,6 +789,9 @@ class Angel:
                 h2.SetBinError(binx+1, biny+1, h1.GetBinError(binx+1))
 
 
+        # Do not write the temporary per-angle spectra as well: the contract
+        # of this conversion is one TH2F for the T-Cross tally.
+        self.histos = TObjArray()
         self.histos.Add(h2)
 
 
