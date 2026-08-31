@@ -518,8 +518,8 @@ class Angel:
             'iz': 'z', 'it': 'Time', 'il': 'LET',
         }.get(page_key, page_key)
 
-    def CombinedName(self, base, suffix, slot, particle):
-        name = '%s_%s' % (base, suffix)
+    def CombinedName(self, base, slot, particle):
+        name = base
         if slot:
             name += '_%d' % slot
         if particle:
@@ -543,7 +543,7 @@ class Angel:
             return None
         xedges = self.getXarray(first)
         yedges = array('f', [float(edge) for edge in page_edges])
-        name = self.CombinedName(self.file or first.GetName(), '2d', slot, particle)
+        name = self.CombinedName(self.file or first.GetName(), slot, particle)
         title = '%s;%s;%s' % (self.title, first.GetXaxis().GetTitle(),
                               self.PageAxisTitle(page_key))
         histogram = TH2F(name, title, first.GetNbinsX(), array('f', xedges),
@@ -561,7 +561,7 @@ class Angel:
         xedges = self.getXarray(first)
         yedges = self.getYarray(first)
         zedges = array('f', [float(edge) for edge in page_edges])
-        name = self.CombinedName(self.file or first.GetName(), '3d', slot, particle)
+        name = self.CombinedName(self.file or first.GetName(), slot, particle)
         title = '%s;%s;%s;%s' % (self.title, first.GetXaxis().GetTitle(),
                                  first.GetYaxis().GetTitle(),
                                  self.PageAxisTitle(page_key))
