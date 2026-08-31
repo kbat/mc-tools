@@ -96,6 +96,16 @@ def root_objects(root_path):
     return metadata
 
 
+def is_ignored_gshow_tally(source):
+    """Return whether an ANGEL output contains a geometry-only gshow page."""
+    try:
+        return bool(re.search(r"^\s*#?\s*gshow\s*$|^\s*gshow\s*=\s*[1-9]",
+                              source.read_text(errors="replace"),
+                              re.MULTILINE | re.IGNORECASE))
+    except OSError:
+        return False
+
+
 def test_bench_transmission_is_one_two_dimensional_histogram(tmp_path):
     source = Path(__file__).with_name("bench_phits_trans.out")
     result, root_path = run_converter(source, tmp_path)
@@ -111,10 +121,9 @@ def test_bench_transmission_is_one_two_dimensional_histogram(tmp_path):
 def test_phits_tally_outputs_convert_to_root(tmp_path):
     """Smoke-test every available PHITS ANGEL tally output.
 
-    This deliberately checks that a tally is represented by ROOT histogram
-    objects rather than checking a fixed number of objects: a tally may have
-    one object per requested particle, while still keeping all mesh
-    dimensions in that object's TH1/TH2/TH3 type.
+    This checks that each output is a valid ROOT file containing at least one
+    ROOT object.  ANGEL output can contain histograms, graphs, or other ROOT
+    objects; histogram-only output is asserted by the focused tests above.
     """
     sources = phits_tally_outputs()
     if not sources:
@@ -146,8 +155,8 @@ def test_phits_tally_outputs_convert_to_root(tmp_path):
             continue
         try:
             objects = root_objects(root_path)
-            if not objects or not all(obj["is_histogram"] for obj in objects):
-                failures.append(f"{source}: no ROOT histogram objects")
+            if not objects and not is_ignored_gshow_tally(source):
+                failures.append(f"{source}: no ROOT objects")
         except Exception as error:  # report all bad files in one test run
             failures.append(f"{source}: {error}")
 

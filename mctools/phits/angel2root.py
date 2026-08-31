@@ -139,6 +139,7 @@ class Angel:
         self.part = []
         self.return_value = 0
         self.numPlotPages = 0
+        self.ignored = False
         self.histogram_records = []
         self.page_info = {}
 #        global DEBUG
@@ -265,7 +266,7 @@ class Angel:
                 self.unit_title = ' '.join(words[6:])
                 if self.output_title != None: self.ztitle = self.output_title + " " + self.unit_title
                 iline += 1
-            elif re.search("file = ", line):
+            elif re.search("file = ", line) and not line.startswith('#'):
                 words = line.split()
                 self.file, ext = os.path.splitext(words[2])
                 iline += 1
@@ -287,6 +288,23 @@ class Angel:
             else:
                 iline += 1 # just advance one line
         if DEBUG: print("========== Finish processing the header page ==========")
+
+        # A gshow page contains ANGEL geometry-drawing commands, not tally
+        # data.  In particular, its lines beginning with ``h:`` look like
+        # histogram declarations but are actually drawing instructions.
+        # Keep an empty ROOT file for the ignored tally so batch conversion
+        # callers still receive a successful, inspectable result.
+        has_gshow = re.search(r"^\s*gshow\s*=\s*[1-9]", '\n'.join(pageLST[0]), re.IGNORECASE)
+        has_gshow = has_gshow or any(
+            re.search(r"^\s*#\s*gshow\s*$", '\n'.join(page), re.IGNORECASE | re.MULTILINE)
+            for page in pageLST[1:]
+        )
+        if has_gshow:
+            print("Ignoring tally with gshow output: %s" % (self.file or fname_in))
+            self.ignored = True
+            fout.Close()
+            self.return_value = 0
+            return
 
         ##################################################
         # scan the remaining data pages one by one
@@ -640,10 +658,13 @@ class Angel:
                 if DEBUG: print("Read1DHist(): reg")
                 xarray.append(   float(words[0])-0.5)
                 xmax =           float(words[0])+0.5
-                bin_labels.append(words[1]) # region number
+                value_idx = len(words) - 2 * nhist
+                if value_idx < 1 or value_idx + 2 * nhist > len(words):
+                    raise ValueError("invalid region histogram row: %s" % line)
+                bin_labels.append(words[1] if value_idx > 2 else words[0])
                 for ihist in range(nhist):
-                    data[ihist].append(  float(words[(ihist+1)*2+1])    )
-                    errors[ihist].append(float(words[(ihist+1)*2+2])    )
+                    data[ihist].append(  float(words[value_idx + ihist * 2])    )
+                    errors[ihist].append(float(words[value_idx + ihist * 2 + 1]))
             else:
                 if DEBUG > 1: print("Read1DHist(): else")
                 xarray.append(float(words[0]))
