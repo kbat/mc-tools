@@ -19,7 +19,7 @@ ROOT = pytest.importorskip("ROOT")
 
 
 PHITS_ROOT = Path(os.environ.get("PHITSPATH", ""))
-CONVERTER = Path(__file__).resolve().parents[2] / "mctools/phits/angel2root.py"
+CONVERTER = Path(os.environ.get("MCTOOLS", "")) / "mctools/phits/angel2root.py"
 
 
 def phits_tally_outputs():
