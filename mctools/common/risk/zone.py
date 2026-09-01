@@ -1,6 +1,7 @@
 """BaseLevel associated with a ROOT TH3 histogram"""
 
 from abc import ABC, abstractmethod
+from itertools import product
 from pathlib import Path
 from dataclasses import dataclass
 from uuid import uuid4
@@ -74,17 +75,32 @@ class BoxLimits3D(Limits3D):
         self.zlim = Limits() if zlim is None else zlim
 
     def _bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
-        x_axis = hist.GetXaxis()
-        y_axis = hist.GetYaxis()
-        z_axis = hist.GetZaxis()
         return (
-            self.xlim.upper >= x_axis.GetBinLowEdge(n_x)
-            and self.xlim.lower <= x_axis.GetBinUpEdge(n_x)
-            and self.ylim.upper >= y_axis.GetBinLowEdge(n_y)
-            and self.ylim.lower <= y_axis.GetBinUpEdge(n_y)
-            and self.zlim.upper >= z_axis.GetBinLowEdge(n_z)
-            and self.zlim.lower <= z_axis.GetBinUpEdge(n_z)
+            self.bin_in_x_range(n_x, hist)
+            and self.bin_in_y_range(n_y, hist)
+            and self.bin_in_z_range(n_z, hist)
         )
+
+    def bin_in_x_range(self, n_x: int, hist) -> bool:
+        """Return True if bin n_x lies within xlim, ignoring the inverted option"""
+        x_axis = hist.GetXaxis()
+        return self.xlim.upper >= x_axis.GetBinLowEdge(
+            n_x
+        ) and self.xlim.lower <= x_axis.GetBinUpEdge(n_x)
+
+    def bin_in_y_range(self, n_y: int, hist) -> bool:
+        """Return True if bin n_y lies within ylim, ignoring the inverted option"""
+        y_axis = hist.GetYaxis()
+        return self.ylim.upper >= y_axis.GetBinLowEdge(
+            n_y
+        ) and self.ylim.lower <= y_axis.GetBinUpEdge(n_y)
+
+    def bin_in_z_range(self, n_z: int, hist) -> bool:
+        """Return True if bin n_z lies within zlim, ignoring the inverted option"""
+        z_axis = hist.GetZaxis()
+        return self.zlim.upper >= z_axis.GetBinLowEdge(
+            n_z
+        ) and self.zlim.lower <= z_axis.GetBinUpEdge(n_z)
 
 
 @dataclass
@@ -216,22 +232,52 @@ class Zone(BaseLevel):
             raise ValueError(f"Input histogram for Zone '{self.name}' missing.")
 
     def _evaluate_histogram(self, hist):
+        n_bins_x = hist.GetNbinsX()
+        n_bins_y = hist.GetNbinsY()
+        n_bins_z = hist.GetNbinsZ()
+
+        # A box constraint that is not inverted restricts each axis independently,
+        # so the per-axis bin masks can be precomputed once instead of re-evaluating
+        # the full box condition for every (n_x, n_y, n_z) triple. An inverted box
+        # constraint excludes bins if any axis is out of range, which is not
+        # separable into independent per-axis masks, so it falls back to the
+        # general case below.
+        if all(isinstance(lim, BoxLimits3D) and not lim.inverted for lim in self.lim):
+            bins_x = [
+                n_x
+                for n_x in range(1, n_bins_x + 1)
+                if all(lim.bin_in_x_range(n_x, hist) for lim in self.lim)
+            ]
+            bins_y = [
+                n_y
+                for n_y in range(1, n_bins_y + 1)
+                if all(lim.bin_in_y_range(n_y, hist) for lim in self.lim)
+            ]
+            bins_z = [
+                n_z
+                for n_z in range(1, n_bins_z + 1)
+                if all(lim.bin_in_z_range(n_z, hist) for lim in self.lim)
+            ]
+            bin_indices = product(bins_x, bins_y, bins_z)
+        else:
+            bin_indices = (
+                (n_x, n_y, n_z)
+                for n_x in range(1, n_bins_x + 1)
+                for n_y in range(1, n_bins_y + 1)
+                for n_z in range(1, n_bins_z + 1)
+                if all(lim.bin_in_range(n_x, n_y, n_z, hist) for lim in self.lim)
+            )
+
         max_val = float("-inf")
         max_err = max_x = max_y = max_z = 0.0
-        for n_x in range(hist.GetNbinsX()):
-            for n_y in range(hist.GetNbinsY()):
-                for n_z in range(hist.GetNbinsZ()):
-                    if all(
-                        lim.bin_in_range(n_x + 1, n_y + 1, n_z + 1, hist)
-                        for lim in self.lim
-                    ):
-                        bin_content = hist.GetBinContent(n_x + 1, n_y + 1, n_z + 1)
-                        if bin_content > max_val:
-                            max_val = bin_content
-                            max_err = hist.GetBinError(n_x + 1, n_y + 1, n_z + 1)
-                            max_x = hist.GetXaxis().GetBinCenter(n_x + 1)
-                            max_y = hist.GetYaxis().GetBinCenter(n_y + 1)
-                            max_z = hist.GetZaxis().GetBinCenter(n_z + 1)
+        for n_x, n_y, n_z in bin_indices:
+            bin_content = hist.GetBinContent(n_x, n_y, n_z)
+            if bin_content > max_val:
+                max_val = bin_content
+                max_err = hist.GetBinError(n_x, n_y, n_z)
+                max_x = hist.GetXaxis().GetBinCenter(n_x)
+                max_y = hist.GetYaxis().GetBinCenter(n_y)
+                max_z = hist.GetZaxis().GetBinCenter(n_z)
         self.value = Value(
             val=max_val,
             err=max_err,
