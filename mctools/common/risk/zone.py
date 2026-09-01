@@ -30,13 +30,28 @@ class Limits:
 
 class Limits3D(ABC):
     """Abstract base class for constraints that restrict which bins of a TH3
-    histogram are searched for the maximum value"""
+    histogram are searched for the maximum value
+
+    If inverted is True, a bin is in range if it lies outside the limits instead of
+    inside them.
+    """
+
+    def __init__(self, inverted: bool = False):
+        self.inverted = inverted
 
     @abstractmethod
+    def _bin_in_range(
+        self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
+    ) -> bool:
+        """Return True if bin (n_x, n_y, n_z) of hist lies within these limits,
+        ignoring the inverted option"""
+
     def bin_in_range(
         self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
     ) -> bool:
-        """Return True if bin (n_x, n_y, n_z) of hist lies within these limits"""
+        """Return True if bin (n_x, n_y, n_z) of hist lies within these limits,
+        applying the inverted option"""
+        return self._bin_in_range(n_x, n_y, n_z, hist) != self.inverted
 
 
 class BoxLimits3D(Limits3D):
@@ -53,16 +68,16 @@ class BoxLimits3D(Limits3D):
         zlim: Limits | None = None,
         inverted: bool = False,
     ):
+        super().__init__(inverted=inverted)
         self.xlim = Limits() if xlim is None else xlim
         self.ylim = Limits() if ylim is None else ylim
         self.zlim = Limits() if zlim is None else zlim
-        self.inverted = inverted
 
-    def bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
+    def _bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
         x_axis = hist.GetXaxis()
         y_axis = hist.GetYaxis()
         z_axis = hist.GetZaxis()
-        in_box = (
+        return (
             self.xlim.upper >= x_axis.GetBinLowEdge(n_x)
             and self.xlim.lower <= x_axis.GetBinUpEdge(n_x)
             and self.ylim.upper >= y_axis.GetBinLowEdge(n_y)
@@ -70,7 +85,6 @@ class BoxLimits3D(Limits3D):
             and self.zlim.upper >= z_axis.GetBinLowEdge(n_z)
             and self.zlim.lower <= z_axis.GetBinUpEdge(n_z)
         )
-        return in_box != self.inverted
 
 
 @dataclass
