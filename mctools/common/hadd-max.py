@@ -44,13 +44,15 @@ def fixFirstHisto(h, maxerror):
 
 
 def getHistograms(fname, only, maxerror):
-    """ Return list of histograms found in the given file
+    """ Return the list of histograms and the list of other objects found in the given file
+
+        Histograms (TH1-derived) are filtered by 'only' if it is given.
+        Other objects are kept as-is, and only when 'only' is not given.
     """
     logging.info("getHistograms")
     vhist = []
+    vother = []
     f = ROOT.TFile(fname)
-#    t = [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
-#    print(t)
     for key in f.GetListOfKeys():
         obj = key.ReadObj()
         if obj.Class().InheritsFrom(ROOT.TH1.Class()):
@@ -59,13 +61,15 @@ def getHistograms(fname, only, maxerror):
                 vhist.append(obj)
             elif obj.GetName() in only:
                 vhist.append(obj)
+        elif not only:
+            vother.append(obj)
 
     f.Close()
 
     for h in vhist:
         fixFirstHisto(h, maxerror)
 
-    return vhist
+    return vhist, vother
 
 def getHist(vhist, hname, fname):
     """ Return the histogram from the vhist array with the given name
@@ -122,7 +126,7 @@ def main():
 
 
 
-    vhist = getHistograms(args.sources[0], args.only, args.maxerror)
+    vhist, vother = getHistograms(args.sources[0], args.only, args.maxerror)
 
     if args.verbose:
         print(args.sources[0])
@@ -153,6 +157,8 @@ def main():
     f = ROOT.TFile(args.target, "RECREATE")
     for h in vhist:
         h.Write()
+    for obj in vother:
+        obj.Write()
     f.Close()
 
 if __name__ == "__main__":
