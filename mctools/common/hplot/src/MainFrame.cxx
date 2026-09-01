@@ -441,15 +441,12 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    /*
      The live slice follows the pointer over the plot, and only there - the
      same reason the readings above do.  Off the plot the lines marking the
-     band it projects have to go: nothing else takes them off the screen, and
-     they would otherwise sit there pointing at a band the pointer has left.
-
-     kMouseLeave is asked about as well as the frame, because the pointer can
-     leave the canvas through an edge of the plot - the leave event then
-     carries a pixel OnHistogramFrame() still calls its own.
+     band it projects have to go: they are drawn onto the window rather than
+     into the pad, so unless they are wiped they sit there pointing at a band
+     the pointer has left - over the title, if that is where it went.
    */
    if (slice) {
-     if (OnHistogramFrame(px, py) && (event != kMouseLeave))
+     if (OnHistogramFrame(px, py))
        slice->Draw(dh2, h2pad, GetSlicePad());
      else
        slice->Erase(h2pad);
