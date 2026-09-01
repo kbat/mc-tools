@@ -1,4 +1,5 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from decimal import Decimal
 from os import cpu_count
 from pathlib import Path
 from time import time
@@ -26,29 +27,99 @@ def escape_latex(text: str) -> str:
     return escaped
 
 
-def getPrintedValue(val=None, err=None, value: Value | None = None):
-    """Return a string with the value to be printed
+def get_exponent(value: float) -> int:
+    """Find base-10 exponent of a floating-point number
 
-    If value is zero, no error is printed
+    Parameters
+    ----------
+    value: float
+        Input number
+
+    Result
+    ------
+    int
+        Exponent
     """
-    if value is not None:
-        val = value.val
-        err = value.err
+    _, v_digits, v_raw_exponent = Decimal(value).as_tuple()
+    if isinstance(v_raw_exponent, int):
+        return len(v_digits) + v_raw_exponent - 1
+    raise ValueError("Cannot handle NaN or Infinity.")
 
-    epsilon = 1e-10
+
+def getPrintedValue(
+    value: Value, epsilon: float | None = None, exponent_threshold: int = 0
+) -> str:
+    r"""Create a LaTeX representation for a value with an uncertainty
+
+    The representation uses the \num macro of the siunitx [1] package.
+    In particular, the value and the uncertainty are separated by a "+-" string.
+
+    For pasting values into the LaTeX expression, the default f-string formatting of
+    Python for floating-point numbers is used. This will almost certainly result in
+    undesirably long expressions. To mitigate this, the 'round-mode' option of siunitx
+    is recommended.
+    This also means that in cases where the uncertainty is many orders of magnitude
+    smaller than the value, the value will be displayed as an exact number without an
+    uncertainty.
+
+    [1] https://ctan.org/pkg/siunitx
+
+    Parameters
+    ----------
+    value: Value
+        Value to be represented in LaTeX.
+    epsilon: float or None
+        Threshold for the absolute value. If the value is below the threshold, it will
+        be represented as '\num{0.0}'. Default: None, i.e. represent all values as they
+        are.
+    exponent_threshold: int
+        Numbers with an (absolute value of the) exponent above this threshold will be
+        displayed in scientific notation, i.e. '\num{1.0 +- 0.1 e3}' instead of
+        '\num{1000 +- 100}' for exponent_threshold <= 3. Scientific notation is used if
+        any of the value's or the error's exponent is above the threshold, i.e.
+        1.0 +- 1000.0 is converted to '\num{0.001 +- 1.0 e3}' for a threshold of 3.
+        Note that the 'exponent-mode = threshold' option of siunitx overrides this
+        option.
+        Default: 0, i.e. use scientific notation for all input.
+
+    Returns
+    -------
+    str
+        LaTeX representation of the value.
+    """
+
+    if epsilon is not None:
+        if abs(value.val) < epsilon:
+            return "\\num{0.0}"
+
     color = ""
     bigerror = ""
-    if val > 0.25:
+    if value.val > 0.25:
         color = "[color=abovequater]"
-    if val > 0.5:
+    if value.val > 0.5:
         color = "[color=abovehalf]"
 
-    if abs(val) > epsilon and err / val > 0.2:
+    if value.val == 0.0:
+        if value.err == 0.0:
+            return "\\num{0.0}"
+        return "\\num{" "0.0 +- {value.err}" "}"
+
+    if value.err / value.val > 0.2:
         bigerror = "\\bigerror"
+
+    max_exponent = max(get_exponent(value.val), get_exponent(value.err))
+    if abs(max_exponent) < exponent_threshold:
+        return (
+            "\\num" f"{color}" "{" f"{value.val:f} +- {value.err:f}" "}" f"{bigerror}"
+        )
     return (
-        "\\num{0.0}"
-        if abs(val) < epsilon
-        else "\\num%s{%f +- %f}%s" % (color, val, err, bigerror)
+        "\\num"
+        f"{color}"
+        "{"
+        f"{value.val*10**-max_exponent:f} +- "
+        f"{value.err*10**-max_exponent:f} e{max_exponent}"
+        "}"
+        f"{bigerror}"
     )
 
 
@@ -86,11 +157,11 @@ class Case:
                     )
             return
 
-        for n_scenario, scenario in enumerate(self.scenarios):
-            self.scenarios[scenario].evaluate()
+        for n_scenario, scenario_name in enumerate(self.scenarios):
+            self.scenarios[scenario_name].evaluate()
             print(
                 f"Scenario {n_scenario+1:3d}/{n_scenarios:3d}: "
-                f"{(time()-t_start):4.2e} seconds ({scenario})"
+                f"{(time()-t_start):4.2e} seconds ({scenario_name})"
             )
 
     def toLaTeX(
@@ -173,12 +244,14 @@ class Case:
                     for zone in self.scenarios[scenario][region][area].sub_levels:
                         escaped_zone = escape_latex(zone)
                         buffer.append(
-                            r"      \ifthenelse{\equal{#4}{"
-                            f"{escaped_zone}"
-                            "}}{"
-                            f"{getPrintedValue(value=self.scenarios[scenario][region][area][zone].value)}"
-                            "}{"
-                            f"% {escape_latex(self.scenarios[scenario][region][area][zone].path)}\n"
+                            r"      \ifthenelse{\equal{#4}{" f"{escaped_zone}" "}}{" f"{
+                                getPrintedValue(
+                                    value=self.scenarios[scenario][region][area][zone].value
+                                )
+                            }" "}{" f"% {
+                                escape_latex(
+                                    self.scenarios[scenario][region][area][zone].path)
+                            }\n"
                         )
                     buffer.append(
                         "        "
@@ -200,9 +273,7 @@ class Case:
                 n = len(combo_parts)
                 escaped_parts = [escape_latex(p) for p in combo_parts]
                 escaped_path = escape_latex(path)
-                value_str = getPrintedValue(
-                    value=self.scenarios[scenario][combo].value
-                )
+                value_str = getPrintedValue(value=self.scenarios[scenario][combo].value)
                 for i, (escaped_part, arg_num) in enumerate(
                     zip(escaped_parts, range(2, n + 2))
                 ):
@@ -323,11 +394,7 @@ class Case:
                 while len(combo_parts) < 3:
                     combo_parts.append("")
                 escaped_combo_parts = [escape_latex(p) for p in combo_parts]
-                buffer.append(
-                    r"\def\combo{"
-                    f"{escape_latex(path)}"
-                    "}\n"
-                )
+                buffer.append(r"\def\combo{" f"{escape_latex(path)}" "}\n")
                 buffer.append(
                     r"\def\rateval{\rate{"
                     f"{escaped_scenario}"

@@ -174,12 +174,12 @@ class TestCaseClass(unittest.TestCase):
                     sequential_case[scenario_name].data.sources["Region1"].value.val,
                 )
                 self.assertEqual(
-                    parallel_case[scenario_name].data.arbitrary_level_combos[
-                        "Region0.Max"
-                    ].value.val,
-                    sequential_case[scenario_name].data.arbitrary_level_combos[
-                        "Region0.Max"
-                    ].value.val,
+                    parallel_case[scenario_name]
+                    .data.arbitrary_level_combos["Region0.Max"]
+                    .value.val,
+                    sequential_case[scenario_name]
+                    .data.arbitrary_level_combos["Region0.Max"]
+                    .value.val,
                 )
 
     def test_latex_escapes_special_characters(self):
