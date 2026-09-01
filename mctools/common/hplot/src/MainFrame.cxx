@@ -419,10 +419,20 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
 
    /*
      The live slice follows the pointer over the plot, and only there - the
-     same reason the readings above do.
+     same reason the readings above do.  Off the plot the lines marking the
+     band it projects have to go: nothing else takes them off the screen, and
+     they would otherwise sit there pointing at a band the pointer has left.
+
+     kMouseLeave is asked about as well as the pad, because the pointer can
+     leave the canvas through the top or a side edge of the plot - the leave
+     event then carries a pixel OnHistogramPad() still calls its own.
    */
-   if (slice && onh2)
-     slice->Draw(dh2, h2pad, GetSlicePad());
+   if (slice) {
+     if (onh2 && (event != kMouseLeave))
+       slice->Draw(dh2, h2pad, GetSlicePad());
+     else
+       slice->Erase(h2pad);
+   }
 }
 
 Bool_t MainFrame::HandleButton(Event_t *event)

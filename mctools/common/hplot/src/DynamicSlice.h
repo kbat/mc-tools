@@ -10,6 +10,17 @@ class DynamicSlice {
   bool projection;
   bool logy;
   std::pair<double, double> range;
+
+  /*!
+    Where the feedback lines marking the projected band are on the screen, in
+    canvas pixels, or (0,0) if none are drawn.
+
+    They are not primitives of the pad: they go straight onto the window with
+    gVirtualX (see Draw()), so nothing repaints them and nothing takes them
+    away either - what removes them is the canvas being copied back over the
+    window by the update at the end of DrawSlice().  Erase() exists because
+    that update stops happening as soon as the pointer leaves the plot.
+  */
   std::pair<int, int> old;
   TVirtualPad *pad; // pad with slice
 
@@ -31,6 +42,7 @@ class DynamicSlice {
  public:
   DynamicSlice(size_t nbins, size_t ngroup);
   void Draw(const std::shared_ptr<TH2> h2, TVirtualPad *h2pad, TVirtualPad *slicePad);
+  void Erase(TVirtualPad *h2pad);
 };
 
 #endif

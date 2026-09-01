@@ -97,6 +97,30 @@ void DynamicSlice::Draw(const std::shared_ptr<TH2> h2,
   return;
 }
 
+void DynamicSlice::Erase(TVirtualPad *h2pad)
+/*!
+  Take the feedback lines off the plot.
+
+  The pointer has left the plot, so there is no band to mark and no line may be
+  drawn anywhere - not even the one Draw() would have put at the last position
+  it saw.  The lines already on the screen were drawn straight onto the window,
+  over a pad whose picture is still in the canvas pixmap, so copying that back
+  over the window is all it takes to be rid of them: TCanvas::Update() does
+  that, and repaints nothing, since the pointer moving over the frame leaves no
+  pad modified.
+
+  Nothing drawn, nothing to do - which is also what makes this cheap enough to
+  call on every motion event that happens off the plot.
+ */
+{
+  if ((old.first <= 0) && (old.second <= 0))
+    return;
+
+  old = {0, 0};
+
+  h2pad->GetCanvas()->Update();
+}
+
 std::pair<double, double> DynamicSlice::DrawSlice(const std::shared_ptr<TH2> histo,
 						  const Double_t value, const std::string& xy)
 {
