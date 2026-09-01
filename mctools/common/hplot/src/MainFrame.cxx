@@ -234,6 +234,27 @@ Bool_t MainFrame::OnHistogramPad(Int_t px, Int_t py) const
          (py >= pad->VtoAbsPixel(1.0)) && (py <= pad->VtoAbsPixel(0.0));
 }
 
+Bool_t MainFrame::OnHistogramFrame(Int_t px, Int_t py) const
+/*!
+  Is the given canvas pixel inside the frame of the data histogram - the box
+  the axes enclose, rather than the pad drawn around it?
+
+  The margins of the pad are on the pad but off the plot: the title sits above
+  the frame, the labels below and to the left of it, the palette to its right.
+  A point there names no bin, so the lines marking the band -slice projects
+  have nothing to mark and are not drawn - the frame, not the pad, is as far as
+  they go.
+ */
+{
+  const TVirtualPad *pad = GetHistogramPad();
+
+  // pixels run down the canvas, so the top edge of the frame is Uymax
+  return (px >= pad->XtoAbsPixel(pad->GetUxmin())) &&
+         (px <= pad->XtoAbsPixel(pad->GetUxmax())) &&
+         (py >= pad->YtoAbsPixel(pad->GetUymax())) &&
+         (py <= pad->YtoAbsPixel(pad->GetUymin()));
+}
+
 Int_t MainFrame::CoordToSlider(Double_t x) const
 {
   const TAxis *a = data->GetNormalAxis();
@@ -423,12 +444,12 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
      band it projects have to go: nothing else takes them off the screen, and
      they would otherwise sit there pointing at a band the pointer has left.
 
-     kMouseLeave is asked about as well as the pad, because the pointer can
-     leave the canvas through the top or a side edge of the plot - the leave
-     event then carries a pixel OnHistogramPad() still calls its own.
+     kMouseLeave is asked about as well as the frame, because the pointer can
+     leave the canvas through an edge of the plot - the leave event then
+     carries a pixel OnHistogramFrame() still calls its own.
    */
    if (slice) {
-     if (onh2 && (event != kMouseLeave))
+     if (OnHistogramFrame(px, py) && (event != kMouseLeave))
        slice->Draw(dh2, h2pad, GetSlicePad());
      else
        slice->Erase(h2pad);
