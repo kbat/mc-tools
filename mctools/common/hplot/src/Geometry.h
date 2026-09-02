@@ -24,6 +24,14 @@ class Geometry {
   virtual void Draw(Float_t offset) = 0;
 
   /*!
+    Cut over this rectangle from now on, given in the coordinates of the plot
+    axes.  Whatever was cut over the previous one is dropped, so the next
+    Draw() cuts again.
+  */
+  virtual void SetRange(Double_t hmin, Double_t hmax,
+			Double_t vmin, Double_t vmax) = 0;
+
+  /*!
     Move the geometry to the end of the list of primitives of the current pad,
     so that it is painted last, on top of the data.
   */

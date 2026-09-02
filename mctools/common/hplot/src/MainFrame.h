@@ -7,6 +7,7 @@
 #include <TGMenu.h>
 #include <TGSlider.h>
 #include <TGStatusBar.h>
+#include <TTimer.h>
 #include <Buttons.h>
 #include <TVirtualPad.h>
 
@@ -22,6 +23,7 @@ class MainFrame : public TGMainFrame {
   TGPopupMenu         *fMenuHelp;
   TGVSlider           *fSlider;
   TGStatusBar         *fStatusBar;
+  TTimer              *fRangeTimer;
 
   std::shared_ptr<Data3> data;
   std::shared_ptr<Geometry> geo;
@@ -40,6 +42,29 @@ class MainFrame : public TGMainFrame {
   */
   std::pair<Int_t,Int_t> lastpixel;
   std::pair<Int_t,Int_t> lastbin;
+
+  /// The rectangle the plot axes show, in their own coordinates
+  struct Range {
+    Double_t hmin{0.0}, hmax{0.0}, vmin{0.0}, vmax{0.0};
+    Bool_t Same(const Range& r) const;
+  };
+
+  /*!
+    What the axes showed when the geometry was last cut, and whether that has
+    been seen at all yet - the pad has no user range before it is first
+    painted, which is after this window is built.
+
+    The user may zoom the plot with the mouse at any time, and the geometry is
+    cut over the rectangle that was on the screen rather than read from a file,
+    so the outlines only stay as precise as the picture if they are cut again
+    for the new one.  CheckRange() compares these numbers with the pad a few
+    times a second: no signal covers every way the range can change - the box
+    zoom, an axis dragged, a double click, the axis context menu - and a timer
+    also keeps the recut out of the painting it would otherwise happen inside.
+  */
+  Range fGeoRange;
+  Bool_t fGeoRangeSet;
+  Bool_t fInCheckRange; ///< CheckRange() calls Update(), which may come back
 
   void GrabMouseWheel() const;
   void ShowH2Name();
@@ -72,6 +97,8 @@ class MainFrame : public TGMainFrame {
   TVirtualPad *GetHistogramPad() const;
   TVirtualPad *GetSlicePad() const;
   void DoSlider();
+  /// Re-cut and redraw the geometry if the plotted range has changed
+  void CheckRange();
   void CloseWindow() override;
   Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) override;
 

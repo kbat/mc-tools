@@ -48,6 +48,11 @@ class GeometryCSG : public Geometry {
 
   /// the cuts being computed, and the ones already turned into a TMultiGraph
   mutable std::map<Double_t, std::shared_future<std::vector<CSGPolyline> > > pending;
+  /*! The cuts that were being computed when the plotted range changed.  They
+      are for the rectangle that is no longer shown, and a cut cannot be called
+      off once it has started - the engine offers no way of interrupting one -
+      so they are kept only to be waited for and thrown away. */
+  mutable std::vector<std::shared_future<std::vector<CSGPolyline> > > stale;
   mutable std::map<Double_t, Cut> cache;
   /// which offsets the cache holds, least recently used first
   mutable std::deque<Double_t> lru;
@@ -68,6 +73,8 @@ class GeometryCSG : public Geometry {
 
   std::string InputFile();
   void SetUpCut();
+  void SetUpGrid();
+  void ReportCut() const;
   void Harvest() const;
   static size_t Size(const TMultiGraph& mg);
   void Store(Double_t offset, const std::shared_ptr<TMultiGraph>& mg) const;
@@ -87,6 +94,8 @@ class GeometryCSG : public Geometry {
 
   void Draw() override { Draw(data->GetOffset()); }
   void Draw(Float_t offset) override;
+  void SetRange(Double_t hmin, Double_t hmax,
+		Double_t vmin, Double_t vmax) override;
   void Pop() override { if (drawn) drawn->Pop(); }
   std::string StatusText(Double_t x, Double_t y) const override;
 };

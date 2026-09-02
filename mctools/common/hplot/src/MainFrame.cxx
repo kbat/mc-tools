@@ -11,6 +11,7 @@
 #include "Chrono.h"
 
 #include <algorithm>
+#include <cmath>
 
 enum MainFrameMessageTypes {
   M_FILE_SAVEAS,
@@ -28,8 +29,9 @@ const std::string spaces(line_width, ' ');
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
 		     const std::shared_ptr<Data3> data) :
-  TGMainFrame(p,w,h), fSlider(nullptr), data(data), geo(nullptr), slice(nullptr),
-  lastpixel(-1,-1), lastbin(-1,-1)
+  TGMainFrame(p,w,h), fSlider(nullptr), fRangeTimer(nullptr), data(data),
+  geo(nullptr), slice(nullptr), lastpixel(-1,-1), lastbin(-1,-1),
+  fGeoRangeSet(kFALSE), fInCheckRange(kFALSE)
 {
   GrabMouseWheel();
 
@@ -134,8 +136,94 @@ void MainFrame::SetGeometry(const std::shared_ptr<Geometry> g)
   geo = g;
 
   // without a geometry this part of the status bar never says anything else
-  if (!geo)
+  if (!geo) {
     fStatusBar->SetText("Geometry file not specified", 1);
+    return;
+  }
+
+  /*
+    Watch the plotted range from here on - see CheckRange().  Often enough that
+    the outlines are back a moment after the zoom, rarely enough that four
+    comparisons is all an idle window costs.
+  */
+  fRangeTimer = new TTimer(200); // ms
+  fRangeTimer->Connect("Timeout()", "MainFrame", this, "CheckRange()");
+  fRangeTimer->TurnOn();
+}
+
+Bool_t MainFrame::Range::Same(const Range& r) const
+/*!
+  The same rectangle, to within a rounding error of its own size.
+
+  The numbers come from the pad, which recomputes them from the same bin edges
+  on every paint, so they would normally compare equal to the bit; the
+  tolerance is there so that an exact comparison of doubles is not what decides
+  whether the geometry is cut again.
+ */
+{
+  const Double_t eps = 1e-9 * std::max(hmax-hmin, vmax-vmin);
+
+  return (std::abs(hmin-r.hmin) <= eps) && (std::abs(hmax-r.hmax) <= eps) &&
+         (std::abs(vmin-r.vmin) <= eps) && (std::abs(vmax-r.vmax) <= eps);
+}
+
+void MainFrame::CheckRange()
+/*!
+  Cut the geometry again if the user has changed the range the plot shows.
+
+  The geometry is not read from a file prepared in advance: hplot cuts it
+  itself, sampling the plotted rectangle on a grid of a fixed number of cells.
+  Zooming into a twentieth of the plot therefore magnifies the sampling twenty
+  times as well, and what were smooth outlines become a staircase - unless they
+  are cut again over the rectangle now on the screen, which is what this does.
+
+  The pad is asked rather than the histogram: its user range is what the frame
+  actually shows, however the range came to change, and it is in the
+  coordinates of the plot.
+ */
+{
+  if (!geo || fInCheckRange)
+    return;
+
+  TVirtualPad *pad = GetHistogramPad();
+
+  // there is no user range before the frame has been painted for the first time
+  if (pad->GetUxmax() <= pad->GetUxmin())
+    return;
+
+  const Range now{pad->GetUxmin(), pad->GetUxmax(),
+		  pad->GetUymin(), pad->GetUymax()};
+
+  if (!fGeoRangeSet) {
+    // the range of the first picture, which the geometry was already cut for
+    fGeoRange = now;
+    fGeoRangeSet = kTRUE;
+    return;
+  }
+
+  if (now.Same(fGeoRange))
+    return;
+
+  fGeoRange = now;
+
+  /*
+    Cutting is a noticeable fraction of a second during which the event loop is
+    not running, and Update() below may let events through: without this the
+    next timeout could arrive in the middle of this one.
+  */
+  fInCheckRange = kTRUE;
+
+  geo->SetRange(now.hmin, now.hmax, now.vmin, now.vmax);
+
+  pad->cd();
+  geo->Draw(data->GetOffset()); // cuts: SetRange() dropped what was cached
+
+  {
+    Chrono t(data->GetArgs()->IsVerbose(), " MainFrame: repaint");
+    pad->Update();
+  }
+
+  fInCheckRange = kFALSE;
 }
 
 void MainFrame::ShowH2Name()
@@ -182,6 +270,15 @@ MainFrame::~MainFrame()
   */
   c1->Disconnect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)", this,
 		 "EventInfo(EEventType,Int_t,Int_t,TObject*)");
+
+  // for the same reason, and before the pad CheckRange() reads is deleted
+  if (fRangeTimer) {
+    fRangeTimer->TurnOff();
+    fRangeTimer->Disconnect("Timeout()", this, "CheckRange()");
+    delete fRangeTimer;
+    fRangeTimer = nullptr;
+  }
+
   delete c1;
 
   // .help TGMainFrame::Cleanup
@@ -285,6 +382,19 @@ void MainFrame::DoSlider()
   pad1->cd();
 
   dh2 = data->Draw(y);
+
+  /*
+    Every slice is a histogram of its own, drawn at its full range, so without
+    this the slider would throw away whatever the user had zoomed into.  It
+    also keeps the geometry cut where it is: the range does not change, so
+    CheckRange() finds nothing to do and the cuts prefetched for the
+    neighbouring slices - made over this same rectangle - stay usable.
+  */
+  if (fGeoRangeSet) {
+    dh2->GetXaxis()->SetRangeUser(fGeoRange.hmin, fGeoRange.hmax);
+    dh2->GetYaxis()->SetRangeUser(fGeoRange.vmin, fGeoRange.vmax);
+  }
+
   ShowH2Name();
 
   if (geo)

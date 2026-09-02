@@ -11,6 +11,7 @@
 #include <TFile.h>
 #include <TGraph.h>
 #include <TMacro.h>
+#include <TVirtualPad.h>
 
 #include "Chrono.h"
 #include "Error.h"
@@ -85,6 +86,10 @@ GeometryCSG::~GeometryCSG()
     p.second.wait();
   pending.clear();
 
+  for (auto& f : stale)
+    f.wait();
+  stale.clear();
+
   if (!tmpfile.empty())
     unlink(tmpfile.data());
 }
@@ -137,9 +142,8 @@ void GeometryCSG::SetUpCut()
   projection plane and the sampled rectangle come from the data histogram, so
   that the outlines cover exactly what is plotted.
 
-  The sample grid is proportional to the canvas rather than to the rectangle in
-  cm, which keeps the sampling uniform in the picture - the plot is stretched
-  to the canvas, and a feature is worth resolving when it is visible there.
+  This is the rectangle of the first picture; SetRange() puts another one in
+  its place when the user zooms.
  */
 {
   const Plane& plane = data->GetPlane();
@@ -160,17 +164,91 @@ void GeometryCSG::SetUpCut()
   cut.vmin = args->IsYmin() ? args->GetYmin() : va->GetXmin();
   cut.vmax = args->IsYmin() ? args->GetYmax() : va->GetXmax();
 
+  SetUpGrid();
+  ReportCut();
+}
+
+void GeometryCSG::SetUpGrid()
+/*!
+  How finely the rectangle is sampled.
+
+  The sample grid is proportional to the canvas rather than to the rectangle in
+  cm, which keeps the sampling uniform in the picture - the plot is stretched
+  to the canvas, and a feature is worth resolving when it is visible there.
+  Which is also why it does not change when the user zooms in: the same number
+  of samples over a smaller rectangle is exactly the finer cut the zoomed
+  picture asks for.
+ */
+{
   const size_t nh = args->GetGres();
   const double ratio = static_cast<double>(args->GetHeight()) / args->GetWidth();
 
   cut.nh = static_cast<int>(nh);
   cut.nv = std::max(1, static_cast<int>(std::lround(nh*ratio)));
+}
 
-  if (args->IsVerbose())
-    std::cout << "Geometry: " << cut.nh << "x" << cut.nv << " sample grid over "
-	      << AxisName(plane.Horizontal()) << " [" << cut.hmin << ", " << cut.hmax << "], "
-	      << AxisName(plane.Vertical())   << " [" << cut.vmin << ", " << cut.vmax << "] cm"
-	      << std::endl;
+void GeometryCSG::ReportCut() const
+{
+  if (!args->IsVerbose())
+    return;
+
+  const Plane& plane = data->GetPlane();
+
+  std::cout << "Geometry: " << cut.nh << "x" << cut.nv << " sample grid over "
+	    << AxisName(plane.Horizontal()) << " [" << cut.hmin << ", " << cut.hmax << "], "
+	    << AxisName(plane.Vertical())   << " [" << cut.vmin << ", " << cut.vmax << "] cm"
+	    << std::endl;
+}
+
+void GeometryCSG::SetRange(Double_t hmin, Double_t hmax,
+			   Double_t vmin, Double_t vmax)
+/*!
+  The counterpart of SetUpCut(): the plotted rectangle again, but this time as
+  the user has just zoomed it rather than as it was at start-up.
+
+  The arguments are in the coordinates of the plot axes, which with -flip are
+  not the geometry's own: undo there the mirroring MakeMultiGraph() applies to
+  the points.
+
+  Everything cut over the old rectangle is dropped - the cache is keyed on the
+  offset alone, so nothing in it is usable any more - and the next Draw() cuts
+  again.
+ */
+{
+  if (args->IsFlipped())
+    {
+      const Double_t vflip = FlipOffset();
+      const Double_t v = vflip - vmax; // the pair swaps ends as it is mirrored
+      vmax = vflip - vmin;
+      vmin = v;
+    }
+
+  // the same rectangle to the last bit is not worth throwing a cache away for
+  const Double_t eps = 1e-9 * std::max(hmax-hmin, vmax-vmin);
+  if ((std::abs(hmin-cut.hmin) <= eps) && (std::abs(hmax-cut.hmax) <= eps) &&
+      (std::abs(vmin-cut.vmin) <= eps) && (std::abs(vmax-cut.vmax) <= eps))
+    return;
+
+  cut.hmin = hmin;
+  cut.hmax = hmax;
+  cut.vmin = vmin;
+  cut.vmax = vmax;
+
+  cache.clear();
+  lru.clear();
+  cached = 0;
+
+  /*
+    The cuts under way are for the rectangle that has just gone.  They cannot
+    be stopped, so they are moved out of the way instead: Harvest() drops them
+    as they finish, and until then they count for nothing but the cores they
+    hold.
+  */
+  for (auto& p : pending)
+    stale.push_back(p.second);
+  pending.clear();
+
+  ReportCut();
 }
 
 Double_t GeometryCSG::CutOffset(Float_t offset) const
@@ -206,9 +284,18 @@ Double_t GeometryCSG::FlipOffset() const
 void GeometryCSG::Harvest() const
 /*!
   Collect the cuts the worker threads have finished, so that Prefetch() can
-  tell how many of them are still busy.
+  tell how many of them are still busy.  The ones the plotted range left behind
+  are collected too, and thrown away.
  */
 {
+  for (auto it = stale.begin(); it != stale.end(); )
+    {
+      if (it->wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+	it = stale.erase(it);
+      else
+	++it;
+    }
+
   for (auto it = pending.begin(); it != pending.end(); )
     {
       if (it->second.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
@@ -375,6 +462,17 @@ std::shared_ptr<TMultiGraph> GeometryCSG::MakeMultiGraph(const std::vector<CSGPo
 
 void GeometryCSG::Draw(Float_t offset)
 {
+  /*
+    The outlines already on the pad are about to be replaced, so they have to
+    come off the list of primitives first.  On the way through DoSlider() this
+    is a no-op - the histogram drawn a moment earlier cleared the whole pad -
+    but a redraw of the geometry alone, after the user zoomed, clears nothing,
+    and every zoom would otherwise leave a dead TMultiGraph on the pad.  Only
+    this pad's reference is dropped; the graphs belong to the cache.
+  */
+  if (drawn && gPad)
+    gPad->GetListOfPrimitives()->Remove(drawn.get());
+
   const Double_t off = CutOffset(offset);
   const TAxis *a = data->GetNormalAxis();
   const Int_t bin = a->FindBin(off);
