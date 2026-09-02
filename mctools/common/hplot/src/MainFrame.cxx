@@ -34,6 +34,7 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h,
   fGeoRangeSet(kFALSE), fInCheckRange(kFALSE)
 {
   GrabMouseWheel();
+  GrabPageKeys();
 
   // Menu bar
   fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
@@ -129,6 +130,13 @@ void MainFrame::GrabMouseWheel() const
   gVirtualX->GrabButton(fId, kButton5, kAnyModifier,
 			kButtonPressMask | kButtonReleaseMask,
 			kNone, kNone);
+}
+
+void MainFrame::GrabPageKeys() const
+{
+  // PgUp/PgDown as a keyboard alternative to the mouse wheel - see HandleKey()
+  gVirtualX->GrabKey(fId, gVirtualX->KeysymToKeycode(kKey_PageUp), kAnyModifier);
+  gVirtualX->GrabKey(fId, gVirtualX->KeysymToKeycode(kKey_PageDown), kAnyModifier);
 }
 
 void MainFrame::SetGeometry(const std::shared_ptr<Geometry> g)
@@ -563,6 +571,23 @@ void MainFrame::EventInfo(EEventType event, Int_t px, Int_t py, TObject *selecte
    }
 }
 
+Bool_t MainFrame::MoveSlider(Int_t step)
+/*!
+  Moves the slider by step bins - positive downwards, matching TGVSlider's own
+  position count - and redraws, or does nothing if that runs off either end of
+  the axis. Shared by HandleButton() (mouse wheel) and HandleKey() (PgUp/PgDn).
+ */
+{
+  const Int_t pos = fSlider->GetPosition() + step;
+  if ((pos < fSlider->GetMinPosition()) || (pos > fSlider->GetMaxPosition()))
+    return kTRUE; // already at the end of the axis - nothing to redraw
+
+  fSlider->SetPosition(pos);
+  DoSlider();
+
+  return kTRUE;
+}
+
 Bool_t MainFrame::HandleButton(Event_t *event)
 /*!
   Move the slider by one bin per notch of the mouse wheel.
@@ -586,12 +611,30 @@ Bool_t MainFrame::HandleButton(Event_t *event)
   else
     return TGMainFrame::HandleButton(event);
 
-  const Int_t pos = fSlider->GetPosition() + step;
-  if ((pos < fSlider->GetMinPosition()) || (pos > fSlider->GetMaxPosition()))
-    return kTRUE; // already at the end of the axis - nothing to redraw
+  return MoveSlider(step);
+}
 
-  fSlider->SetPosition(pos);
-  DoSlider();
+Bool_t MainFrame::HandleKey(Event_t *event)
+/*!
+  PgUp/PgDown move the slider by one bin, as an alternative to the mouse wheel
+  - see GrabPageKeys(). Anything else goes to the base class.
+ */
+{
+  // no slider created (e.g. with the -max option or a single bin)
+  if (!fSlider || (event->fType != kGKeyPress))
+    return TGMainFrame::HandleKey(event);
 
-  return kTRUE;
+  UInt_t keysym;
+  char tmp[10];
+  gVirtualX->LookupString(event, tmp, sizeof(tmp), keysym);
+
+  Int_t step;
+  if (keysym == (UInt_t)kKey_PageUp)
+    step = -1;
+  else if (keysym == (UInt_t)kKey_PageDown)
+    step = +1;
+  else
+    return TGMainFrame::HandleKey(event);
+
+  return MoveSlider(step);
 }

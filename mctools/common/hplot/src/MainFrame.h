@@ -9,6 +9,7 @@
 #include <TGStatusBar.h>
 #include <TTimer.h>
 #include <Buttons.h>
+#include <KeySymbols.h>
 #include <TVirtualPad.h>
 
 #include "Data3.h"
@@ -67,6 +68,8 @@ class MainFrame : public TGMainFrame {
   Bool_t fInCheckRange; ///< CheckRange() calls Update(), which may come back
 
   void GrabMouseWheel() const;
+  void GrabPageKeys() const;
+  Bool_t MoveSlider(Int_t step);
   void ShowH2Name();
   Bool_t OnHistogramPad(Int_t px, Int_t py) const;
   Bool_t OnHistogramFrame(Int_t px, Int_t py) const;
@@ -104,6 +107,7 @@ class MainFrame : public TGMainFrame {
 
   void EventInfo(EEventType event, Int_t px, Int_t py, TObject *selected);
   Bool_t HandleButton(Event_t *event) override;
+  Bool_t HandleKey(Event_t *event) override;
 
   ClassDefOverride(MainFrame,0);
 };
