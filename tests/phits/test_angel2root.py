@@ -150,8 +150,21 @@ y: y [cm]
 h2: y = 1.5 to 0.5 by 1.0 ; x = 0.5 to 1.5 by 1.0 ;
 1.0 2.0
 3.0 4.0
+
+# gshow
+hb: line clip z
+clip:
+0.0 0.0
+1.0 1.0
+
 """
-    text = "title = Particle maps\nfile = maps.out\npart = proton neutron photon\n"
+    text = """[ T-Track ]
+title = Particle maps
+mesh = xyz
+file = maps.out
+part = proton neutron photon
+gshow = 1
+"""
     text += "".join(page.format(particle=particle)
                     for particle in ("proton", "neutron", "photon"))
     result, root_path = run_text_converter(tmp_path, text)
@@ -159,7 +172,11 @@ h2: y = 1.5 to 0.5 by 1.0 ; x = 0.5 to 1.5 by 1.0 ;
     assert result.returncode == 0, result.stderr
     root_file = ROOT.TFile.Open(str(root_path))
     assert {key.GetName() for key in root_file.GetListOfKeys()} == {
-        "maps_proton", "maps_neutron", "maps_photon"}
+        "maps_proton", "maps_neutron", "maps_photon", "maps_geometry"}
+    geometry = root_file.Get("maps_geometry")
+    assert geometry.ClassName() == "TMultiGraph"
+    assert geometry.GetListOfGraphs().GetSize() == 1
+    assert geometry.GetListOfGraphs()[0].GetN() == 2
     root_file.Close()
 
 

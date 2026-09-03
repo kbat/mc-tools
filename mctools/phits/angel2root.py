@@ -21,7 +21,8 @@ import ROOT
 # The line below is needed to prevent command-line arguments from
 # stolen by PyROOT and handed to TApplication
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from ROOT import TH1F, TH2F, TH3F, TFile, TObjArray, TGraphErrors
+from ROOT import (TH1F, TH2F, TH3F, TFile, TGraph, TGraphErrors,
+                  TMultiGraph, TObjArray)
 
 SUBT = re.compile(r"""
 \(
@@ -114,6 +115,8 @@ class Angel:
         self.numPlotPages = 0
         self.ignored = False
         self.has_gshow = False
+        self.gshow = 0
+        self.tally = None
         self.geometry_only = False
         self.histogram_records = []
         self._objects = []
@@ -153,6 +156,11 @@ class Angel:
 
     def parse_header(self, header):
         """Extract tally-wide configuration from the ANGEL header page."""
+        compact_header = re.sub(r"\s+", "", ''.join(header))
+        tally = re.search(r"\[T-([^\]]+)\]", compact_header, re.IGNORECASE)
+        if tally:
+            self.tally = tally.group(1).lower()
+
         iline = 0
         while iline < len(header):
             line = header[iline].strip()
@@ -243,13 +251,19 @@ class Angel:
             elif re.match(r"^sangel\s*=", line):
                 self.sangel = True
                 iline += 1
+            elif re.match(r"^gshow\s*=", line):
+                words = line.split()
+                try:
+                    self.gshow = int(words[2])
+                except (IndexError, ValueError):
+                    self.fail("malformed gshow declaration", line=iline + 1)
+                iline += 1
             else:
                 iline += 1
 
         if not self.file:
             self.file = Path(self.fname).stem
-        has_gshow = re.search(r"^\s*gshow\s*=\s*[1-9]", '\n'.join(header),
-                              re.IGNORECASE | re.MULTILINE)
+        has_gshow = self.gshow > 0
         has_gshow = bool(has_gshow or any(
             re.search(r"^\s*#\s*gshow\s*$", '\n'.join(page), re.IGNORECASE | re.MULTILINE)
             for page in self.pageLST[1:]
@@ -331,6 +345,7 @@ class Angel:
                 self.ignored = True
                 return
             self.fail("no supported histograms or graphs found")
+        self.BuildGeometry()
 
     def write(self, filename):
         """Write converted objects to *filename* after successful parsing."""
@@ -494,6 +509,78 @@ class Angel:
         if matching_pages == 1:
             return "%s_%s" % (self.file, particle)
         return "%s_%s_%d" % (self.file, particle, page_num)
+
+    def GshowPolylines(self, page):
+        """Extract ANGEL ``clip:`` polylines from a page's gshow section."""
+        marker = next((index for index, line in enumerate(page)
+                       if re.match(r"^\s*#\s*gshow\s*$", line,
+                                   re.IGNORECASE)), None)
+        if marker is None:
+            return []
+
+        polylines = []
+        index = marker + 1
+        while index < len(page):
+            if page[index].strip().lower() != 'clip:':
+                index += 1
+                continue
+
+            points = []
+            index += 1
+            while index < len(page):
+                words = page[index].split()
+                if len(words) != 2:
+                    break
+                try:
+                    point = tuple(float(word.replace('D', 'E').replace('d', 'e'))
+                                  for word in words)
+                except ValueError:
+                    break
+                if not all(math.isfinite(value) for value in point):
+                    break
+                points.append(point)
+                index += 1
+            if len(points) >= 2:
+                polylines.append(points)
+        return polylines
+
+    def BuildGeometry(self):
+        """Create TMultiGraph geometry overlays for T-Track xyz tallies."""
+        if self.tally != 'track' or self.mesh != 'xyz' or self.gshow != 1:
+            return
+
+        # Geometry depends on the selected spatial slice, not on particle or
+        # energy.  PHITS repeats the same gshow section for those pages, so
+        # parse it only once per spatial index combination.
+        geometries = {}
+        for page_num in range(1, len(self.pageLST)):
+            info = self.page_info.get(page_num, {})
+            slice_key = tuple((key, info[key]) for key in ('ix', 'iy', 'iz')
+                              if key in info)
+            if slice_key in geometries:
+                continue
+            polylines = self.GshowPolylines(self.pageLST[page_num])
+            if polylines:
+                geometries[slice_key] = polylines
+
+        multiple = len(geometries) > 1
+        for slice_key, polylines in geometries.items():
+            name = "%s_geometry" % self.file
+            if multiple:
+                name += ''.join("_%s%d" % item for item in slice_key)
+            multigraph = TMultiGraph(
+                name, "%s geometry;%s;%s" %
+                (self.title, self.xtitle, self.ytitle))
+            for graph_num, points in enumerate(polylines, 1):
+                graph = TGraph(
+                    len(points), array('d', (point[0] for point in points)),
+                    array('d', (point[1] for point in points)))
+                graph.SetName("%s_%d" % (name, graph_num))
+                graph.SetLineColor(ROOT.kBlack)
+                multigraph.Add(graph, 'L')
+                ROOT.SetOwnership(graph, False)
+            self._objects.append(multigraph)
+            self.histos.Add(multigraph)
 
     def CompatibleAxes(self, first, group, axes):
         """Check that every page in a group has identical binning."""
