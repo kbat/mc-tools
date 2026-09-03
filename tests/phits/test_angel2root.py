@@ -142,6 +142,26 @@ def test_simple_2d_fixture_has_expected_dimensions(tmp_path):
     assert objects[0]["class"] == "TH2F"
     assert objects[0]["nbins"] == (2, 2)
 
+    page = """
+newpage:
+part. = {particle}
+x: x [cm]
+y: y [cm]
+h2: y = 1.5 to 0.5 by 1.0 ; x = 0.5 to 1.5 by 1.0 ;
+1.0 2.0
+3.0 4.0
+"""
+    text = "title = Particle maps\nfile = maps.out\npart = proton neutron photon\n"
+    text += "".join(page.format(particle=particle)
+                    for particle in ("proton", "neutron", "photon"))
+    result, root_path = run_text_converter(tmp_path, text)
+
+    assert result.returncode == 0, result.stderr
+    root_file = ROOT.TFile.Open(str(root_path))
+    assert {key.GetName() for key in root_file.GetListOfKeys()} == {
+        "maps_proton", "maps_neutron", "maps_photon"}
+    root_file.Close()
+
 
 def test_page_series_is_combined_into_2d_histogram(tmp_path):
     result, root_path = run_converter(FIXTURES / "page_series.angel", tmp_path)

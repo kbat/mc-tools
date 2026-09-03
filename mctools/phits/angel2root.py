@@ -264,9 +264,12 @@ class Angel:
         """Decode all plot pages into in-memory ROOT objects."""
         if self.ignored:
             return
+        self.page_info = {
+            npage: self.GetPageInfo(self.pageLST[npage])
+            for npage in range(1, len(self.pageLST))
+        }
         for npage in range(1, len(self.pageLST)):
             page = self.pageLST[npage]
-            self.page_info[npage] = self.GetPageInfo(page)
             hLST = []
             page_subtitle = ""
             for iline, line in enumerate(page):
@@ -476,6 +479,21 @@ class Angel:
         elif slot:
             name += '_%d' % slot
         return name
+
+    def PageHistogramName(self, page_num):
+        """Name an unmerged page histogram using its particle identifier."""
+        if self.numPlotPages == 1:
+            return self.file
+
+        particle = self.page_info.get(page_num, {}).get('part', '')
+        if not particle:
+            return "%s_%d" % (self.file, page_num)
+
+        matching_pages = sum(
+            info.get('part') == particle for info in self.page_info.values())
+        if matching_pages == 1:
+            return "%s_%s" % (self.file, particle)
+        return "%s_%s_%d" % (self.file, particle, page_num)
 
     def CompatibleAxes(self, first, group, axes):
         """Check that every page in a group has identical binning."""
@@ -824,7 +842,7 @@ class Angel:
             self.fail("2D histogram expected %d values, found %d" %
                       (expected, len(data)), line=iline + 1, page=pageNum)
 
-        hname = self.file if self.numPlotPages == 1 else "%s_%d" % (self.file, pageNum)
+        hname = self.PageHistogramName(pageNum)
         title = self.title + (" - " + page_subtitle if page_subtitle else "")
         h = TH2F(hname, "%s;%s;%s;%s" %
                  (title, self.xtitle, self.ytitle, self.ztitle),
