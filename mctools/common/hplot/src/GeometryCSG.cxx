@@ -486,9 +486,10 @@ void GeometryCSG::Draw(Float_t offset)
   /*
     The slider is most likely to move on to one of the neighbouring slices, so
     cut them while the user is looking at this one.  Nothing to do when there
-    is no slider: with -max the whole normal axis is already in the plot.
+    is no slider: with -max the whole normal axis is already in the plot, and
+    in batch mode there is no slider to move at all.
   */
-  if (args->IsMax())
+  if (args->IsMax() || args->IsBatch())
     return;
 
   /*
