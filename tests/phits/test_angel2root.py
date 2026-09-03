@@ -237,27 +237,38 @@ newpage:
 
 
 def test_multiple_particle_page_series_are_combined_separately(tmp_path):
-    text = (FIXTURES / "page_series.angel").read_text() + """
+    text = """title = Angular spectrum
+mesh = eng
+axis = eng
+na = 2
+$    data =
+$ 0.0 0.5 1.0
+part = proton neutron
+file = angular.out
 newpage:
-ia = 1 part = neutron
+ia = 1
 x: Energy [MeV]
 y: Fluence
-h: n x y
-0.0 1.0 4.0 0.1
+h: n x y(proton) n y(neutron)
+0.0 1.0 2.0 0.1 4.0 0.2
 
 newpage:
-ia = 2 part = neutron
+ia = 2
 x: Energy [MeV]
 y: Fluence
-h: n x y
-0.0 1.0 5.0 0.1
+h: n x y(proton) n y(neutron)
+0.0 1.0 3.0 0.1 5.0 0.2
 """
     result, root_path = run_text_converter(tmp_path, text)
 
     assert result.returncode == 0, result.stderr
     root_file = ROOT.TFile.Open(str(root_path))
-    assert root_file.Get("angular_proton").ClassName() == "TH2F"
-    assert root_file.Get("angular_neutron").ClassName() == "TH2F"
+    proton = root_file.Get("angular_proton")
+    neutron = root_file.Get("angular_neutron")
+    assert proton.ClassName() == "TH2F"
+    assert neutron.ClassName() == "TH2F"
+    assert proton.GetBinContent(1, 2) == pytest.approx(3.0)
+    assert neutron.GetBinContent(1, 1) == pytest.approx(4.0)
     root_file.Close()
 
 

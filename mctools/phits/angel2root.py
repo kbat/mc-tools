@@ -190,14 +190,17 @@ class Angel:
                     self.fail("malformed bin-count declaration", line=iline + 1)
                 self.last_nbins_read = words[0]
                 iline += 1
-            elif re.search(r"^#\s*data\s*=", line):
+            elif re.search(r"^[#$]\s*data\s*=", line):
                 if self.last_nbins_read is None:
                     self.fail("bin-edge data has no preceding bin count", line=iline + 1)
                 self.dict_edges_array[self.last_nbins_read] = self.GetBinEdges(iline)
                 iline += 1
             elif re.match(r"^part\s*=", line):
                 words = line.split()
-                self.part = words[2:]
+                # Multiplier blocks can contain another ``part =`` line.
+                # Keep the tally's first particle list for naming columns.
+                if not self.part:
+                    self.part = words[2:]
                 iline += 1
             elif re.match(r"^output\s*=", line):
                 words = line.split()
@@ -364,7 +367,7 @@ class Angel:
             info['part'] = particle.group(1)
         return info
 
-    def AddHistogram(self, histogram, page_num, slot=0):
+    def AddHistogram(self, histogram, page_num, slot=0, label=''):
         """Add a ROOT object and retain the page information used for merging."""
         if histogram.InheritsFrom('TH1'):
             histogram.SetDirectory(0)
@@ -374,6 +377,7 @@ class Angel:
             'histogram': histogram,
             'page': page_num,
             'slot': slot,
+            'label': label,
             'page_info': self.page_info.get(page_num, {}),
         })
 
@@ -413,15 +417,20 @@ class Angel:
         if any(r['histogram'].InheritsFrom('TGraph') for r in records):
             return
 
-        # Group by the histogram column (slot) and particle.  The latter is
-        # needed for mesh tallies such as T-Track, which emit one page series
-        # for each requested particle.
+        # Group by the histogram column (slot) and particle.  Some tallies
+        # identify the particle on each page, while others (such as
+        # T-Product DDX output) put one particle in each histogram column.
         groups = {}
         for record in records:
             value = record['page_info'].get(page_key)
             if value is None:
                 return
-            key = (record['slot'], record['page_info'].get('part', ''))
+            particle = record['page_info'].get('part', '')
+            if not particle and record['slot'] < len(self.part):
+                particle = self.part[record['slot']]
+            if not particle:
+                particle = record['label']
+            key = (record['slot'], particle)
             groups.setdefault(key, []).append(record)
 
         if not groups or any(len(group) != page_bins for group in groups.values()):
@@ -456,16 +465,16 @@ class Angel:
 
     def PageAxisTitle(self, page_key):
         return {
-            'ia': 'cos(#theta)', 'ie': 'Energy', 'ix': 'x', 'iy': 'y',
+            'ia': 'Angle', 'ie': 'Energy', 'ix': 'x', 'iy': 'y',
             'iz': 'z', 'it': 'Time', 'il': 'LET',
         }.get(page_key, page_key)
 
     def CombinedName(self, base, slot, particle):
         name = base
-        if slot:
-            name += '_%d' % slot
         if particle:
             name += '_%s' % particle
+        elif slot:
+            name += '_%d' % slot
         return name
 
     def CompatibleAxes(self, first, group, axes):
@@ -524,7 +533,7 @@ class Angel:
             words = line.split()
             if not words:
                 break
-            if line.lstrip().startswith('#'):
+            if line.lstrip().startswith(('#', '$')):
                 candidates = words[1:]
             elif is_float(words[0]):
                 candidates = words
@@ -673,7 +682,7 @@ class Angel:
                     h.GetXaxis().SetBinLabel(i+1, bin_labels[i])
                 h.GetXaxis().SetTitle("Region number")
 
-            self.AddHistogram(h, pageNum, ihist)
+            self.AddHistogram(h, pageNum, ihist, section_subtitle)
 
     def Read1DGraphErrors(self, iline, pageNum, tet=False, page_subtitle=""):
         """
@@ -741,7 +750,7 @@ class Angel:
                 g.SetPoint(i, x, y)
                 g.SetPointError(i, 0, abs(ey * y))
 
-            self.AddHistogram(g, pageNum, igraph)
+            self.AddHistogram(g, pageNum, igraph, section_subtitle)
 
 
     def FixTitles(self):
