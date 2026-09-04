@@ -174,3 +174,81 @@ class TestZone(unittest.TestCase):
         zone_0.lim[0].xlim.lower = 0.0
 
         self.assertEqual(zone_1.lim[0].xlim.lower, float("-inf"))
+
+    def test_limits_str(self):
+        self.assertEqual(str(Limits()), "")
+        self.assertEqual(str(Limits(variable_name="y")), "")
+
+        self.assertEqual(str(Limits(lower=0.0)), "0.0 <= x")
+        self.assertEqual(str(Limits(lower=0.0, variable_name="y")), "0.0 <= y")
+
+        self.assertEqual(str(Limits(upper=0.0)), "x <= 0.0")
+        self.assertEqual(str(Limits(upper=0.0, variable_name="y")), "y <= 0.0")
+
+        self.assertEqual(str(Limits(lower=0.0, upper=0.0)), "x = 0.0")
+        self.assertEqual(
+            str(Limits(lower=0.0, upper=0.0, variable_name="y")), "y = 0.0"
+        )
+
+        self.assertEqual(str(Limits(lower=0.0, upper=1.0)), "0.0 <= x <= 1.0")
+        self.assertEqual(
+            str(Limits(lower=0.0, upper=1.0, variable_name="y")), "0.0 <= y <= 1.0"
+        )
+
+        self.assertEqual(str(BoxLimits3D()), "")
+
+        self.assertEqual(
+            str(BoxLimits3D(xlim=Limits(lower=0.0, upper=1.0))), "0.0 <= x <= 1.0"
+        )
+        self.assertEqual(
+            str(BoxLimits3D(ylim=Limits(lower=0.0, upper=1.0))), "0.0 <= y <= 1.0"
+        )
+        self.assertEqual(
+            str(BoxLimits3D(zlim=Limits(lower=0.0, upper=1.0))), "0.0 <= z <= 1.0"
+        )
+
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=1.0), ylim=Limits(lower=0.0, upper=1.0)
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=1.0), zlim=Limits(lower=0.0, upper=1.0)
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= z <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    ylim=Limits(lower=0.0, upper=1.0), zlim=Limits(lower=0.0, upper=1.0)
+                )
+            ),
+            "0.0 <= y <= 1.0 && 0.0 <= z <= 1.0",
+        )
+
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=1.0),
+                    ylim=Limits(lower=0.0, upper=1.0),
+                    zlim=Limits(lower=0.0, upper=1.0),
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0 && 0.0 <= z <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=0.0),
+                    ylim=Limits(upper=1.0),
+                    zlim=Limits(lower=0.0),
+                )
+            ),
+            "x = 0.0 && y <= 1.0 && 0.0 <= z",
+        )

@@ -20,6 +20,7 @@ class Limits:
 
     lower: float = float("-inf")
     upper: float = float("inf")
+    variable_name: str = "x"
 
     def __post_init__(self):
         if self.upper < self.lower:
@@ -28,6 +29,15 @@ class Limits:
                 "Assigning Limits.lower = upper and Limits.upper = lower."
             )
             self.lower, self.upper = self.upper, self.lower
+
+    def __str__(self) -> str:
+        if self.lower == float("-inf") and self.upper == float("inf"):
+            return ""
+        if self.lower == self.upper:
+            return f"{self.variable_name} = {self.lower}"
+        lower = "" if self.lower == float("-inf") else f"{self.lower} <= "
+        upper = "" if self.upper == float("inf") else f" <= {self.upper}"
+        return f"{lower}{self.variable_name}{upper}"
 
 
 class Limits3D(ABC):
@@ -81,8 +91,25 @@ class BoxLimits3D(Limits3D):
     ):
         super().__init__(inverted=inverted)
         self.xlim = Limits() if xlim is None else xlim
+        self.xlim.variable_name = "x"
         self.ylim = Limits() if ylim is None else ylim
+        self.ylim.variable_name = "y"
         self.zlim = Limits() if zlim is None else zlim
+        self.zlim.variable_name = "z"
+
+    def __str__(self) -> str:
+        xlim = str(self.xlim)
+        ylim = str(self.ylim)
+        zlim = str(self.zlim)
+        result = xlim
+        if xlim != "" and (ylim != "" or zlim != ""):
+            result += " && "
+        result += ylim
+        if zlim != "" and result != "":
+            if len(result) >= 4 and result[-4:] != " && ":
+                result += " && "
+        result += zlim
+        return result
 
     def _bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
         return (
