@@ -159,41 +159,13 @@ class ROOTInputCache:
 
     def _get_root_file(self, root_file_name: str):
         if root_file_name not in self.root_files:
-            if not Path(root_file_name).is_file():
-                raise FileNotFoundError(f"Could not open ROOT file '{root_file_name}'.")
-            try:
-                root_file = ROOT.TFile.Open(root_file_name)
-            except OSError as exc:
-                raise FileNotFoundError(
-                    f"Could not open ROOT file '{root_file_name}'."
-                ) from exc
-            if root_file is None or not root_file or root_file.IsZombie():
-                if root_file:
-                    root_file.Close()
-                raise FileNotFoundError(f"Could not open ROOT file '{root_file_name}'.")
-            self.root_files[root_file_name] = root_file
+            self.root_files[root_file_name] = ROOT.TFile.Open(root_file_name)
         return self.root_files[root_file_name]
 
     def _get_scale(self, scale_file_name: str) -> float:
         if scale_file_name not in self.scales:
-            try:
-                scale_file = open(scale_file_name, encoding="utf-8")
-            except FileNotFoundError as exc:
-                raise FileNotFoundError(
-                    f"Could not open scale file '{scale_file_name}'."
-                ) from exc
-            except OSError as exc:
-                raise OSError(
-                    f"Could not read scale file '{scale_file_name}'."
-                ) from exc
-
-            with scale_file:
-                try:
-                    self.scales[scale_file_name] = float(scale_file.readline())
-                except ValueError as exc:
-                    raise ValueError(
-                        f"Could not parse scale factor in '{scale_file_name}'."
-                    ) from exc
+            with open(scale_file_name, encoding="utf-8") as scale_file:
+                self.scales[scale_file_name] = float(scale_file.readline())
         return self.scales[scale_file_name]
 
 

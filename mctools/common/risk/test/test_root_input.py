@@ -206,7 +206,7 @@ class TestRootInput(unittest.TestCase):
             )
 
             with ROOTInputCache() as root_input_cache:
-                with self.assertRaisesRegex(FileNotFoundError, "missing.root"):
+                with self.assertRaisesRegex(OSError, "Failed to open file"):
                     zone.evaluate(root_input_cache=root_input_cache)
 
     def test_root_input_cache_missing_scale_file(self):
@@ -252,5 +252,7 @@ class TestRootInput(unittest.TestCase):
             )
 
             with ROOTInputCache() as root_input_cache:
-                with self.assertRaisesRegex(ValueError, tmp_scale.name):
+                with self.assertRaisesRegex(
+                    ValueError, "could not convert string to float"
+                ):
                     zone.evaluate(root_input_cache=root_input_cache)
