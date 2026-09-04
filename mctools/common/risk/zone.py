@@ -75,6 +75,27 @@ class Limits3D(ABC):
         raise NotImplementedError()
 
 
+class CombinedLimits3D:
+    def __init__(self, lim: Limits3D | list[Limits3D] | None = None):
+        if lim is None:
+            self.lim: list[Limits3D] = [BoxLimits3D()]
+        elif isinstance(lim, Limits3D):
+            self.lim = [lim]
+        else:
+            self.lim = lim
+
+    def __str__(self) -> str:
+        result = ""
+        for l in self.lim:
+            l_str = str(l)
+            if l_str != "":
+                if result != "":
+                    if len(result) >= 4 and result[-4:] != "&&":
+                        result += " && "
+                result += l_str
+        return result
+
+
 class BoxLimits3D(Limits3D):
     """Box limits for a 3D variable
 
@@ -109,6 +130,8 @@ class BoxLimits3D(Limits3D):
             if len(result) >= 4 and result[-4:] != " && ":
                 result += " && "
         result += zlim
+        if self.inverted:
+            return f"!({result})"
         return result
 
     def _bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
