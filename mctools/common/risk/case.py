@@ -195,7 +195,7 @@ class Case:
             "\nBuild document with\n\t"
             f"LATEX {variable_output_file_name} && "
             f"LATEX {variable_output_file_name}\n"
-            "where LATEX is your LATEX compiler.\n"
+            "where LATEX is your LaTeX compiler.\n"
             "(LATEX is invoked twice to build the table of contents.)"
         )
 

@@ -161,6 +161,6 @@ class TestLaTeX(unittest.TestCase):
             "The 'test_latex' unit test has created an output file 'test_latex.tex'"
             "which demonstrates how different input is formatted in a LaTeX document."
             "\n\nBuild document with\n\tLATEX test_latex.tex\nwhere LATEX is your "
-            "LATEX compiler.\nNote that the LaTeX packages 'geometry', 'siunitx', and "
+            "LaTeX compiler.\nNote that the LaTeX packages 'geometry', 'siunitx', and "
             "'xcolor' are required."
         )
