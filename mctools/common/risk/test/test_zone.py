@@ -153,6 +153,10 @@ class TestZone(unittest.TestCase):
 
         self.assertEqual(zone.lim, CombinedLimits3D([box]))
 
+    def test_zone_limits3d_invalid_input(self):
+        with self.assertRaisesRegex(ValueError, "Invalid input for lim."):
+            Zone(hist="hist", lim=[[BoxLimits3D(zlim=Limits(upper=-0.1))]])
+
     def test_zone_combined_limits(self):
         # Inner box, inverted: everywhere except the (0.5, 0.5, 0.5) corner bin.
         # Excludes the global maximum.
