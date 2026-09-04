@@ -38,8 +38,10 @@ class Scenario:
                         )
                     else:
                         raise ValueError(
-                            "Scenario assumes that all histograms are"
-                            "given by name (str)."
+                            "Scenario assumes that all data are taken from a single "
+                            "ROOT file. Consequently, all Zone.hist entries should be "
+                            "the names of the histograms in that ROOT file, i.e. of "
+                            "type str."
                         )
         self.set_sub_level_paths()
 
