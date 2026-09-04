@@ -1,6 +1,7 @@
 """BaseLevel associated with a ROOT TH3 histogram"""
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from itertools import product
 from pathlib import Path
 from dataclasses import dataclass
@@ -53,6 +54,15 @@ class Limits3D(ABC):
         """Return True if bin (n_x, n_y, n_z) of hist lies within these limits,
         applying the inverted option"""
         return self._bin_in_range(n_x, n_y, n_z, hist) != self.inverted
+
+    def bin_in_x_range(self, n_x: int, hist) -> bool:
+        raise NotImplementedError()
+
+    def bin_in_y_range(self, n_y: int, hist) -> bool:
+        raise NotImplementedError()
+
+    def bin_in_z_range(self, n_z: int, hist) -> bool:
+        raise NotImplementedError()
 
 
 class BoxLimits3D(Limits3D):
@@ -111,7 +121,7 @@ class ROOTFileInput:
 
 
 class ROOTInputCache:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root_files: dict[str, ROOT.TFile] = {}
         self.scales: dict[str, float] = {}
         self.histograms: dict[tuple[str, str, str], ROOT.TH3F | ROOT.TH3D] = {}
@@ -231,7 +241,7 @@ class Zone(BaseLevel):
         else:
             raise ValueError(f"Input histogram for Zone '{self.name}' missing.")
 
-    def _evaluate_histogram(self, hist):
+    def _evaluate_histogram(self, hist: ROOT.TH3F | ROOT.TH3D):
         n_bins_x = hist.GetNbinsX()
         n_bins_y = hist.GetNbinsY()
         n_bins_z = hist.GetNbinsZ()
@@ -258,7 +268,9 @@ class Zone(BaseLevel):
                 for n_z in range(1, n_bins_z + 1)
                 if all(lim.bin_in_z_range(n_z, hist) for lim in self.lim)
             ]
-            bin_indices = product(bins_x, bins_y, bins_z)
+            bin_indices: Iterable[tuple[int, int, int]] = product(
+                bins_x, bins_y, bins_z
+            )
         else:
             bin_indices = (
                 (n_x, n_y, n_z)
