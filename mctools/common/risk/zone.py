@@ -84,6 +84,17 @@ class CombinedLimits3D:
         else:
             self.lim = lim
 
+    def __iter__(self):
+        return iter(self.lim)
+
+    def __getitem__(self, index):
+        return self.lim[index]
+
+    def __eq__(self, other):
+        if not isinstance(other, CombinedLimits3D):
+            return NotImplemented
+        return self.lim == other.lim
+
     def __str__(self) -> str:
         result = ""
         for l in self.lim:
@@ -232,18 +243,22 @@ class Zone(BaseLevel):
     def __init__(
         self,
         hist: ROOT.TH3F | ROOT.TH3D | ROOTFileInput | str,
-        lim: Limits3D | list[Limits3D] | None = None,
+        lim: CombinedLimits3D | Limits3D | list[Limits3D] | None = None,
         name: str = "",
         title: str = "",
     ):
         super().__init__(name=name, title=title)
         self.hist = hist
         if lim is None:
-            self.lim: list[Limits3D] = [BoxLimits3D()]
+            self.lim: CombinedLimits3D = CombinedLimits3D()
         elif isinstance(lim, Limits3D):
-            self.lim = [lim]
-        else:
+            self.lim = CombinedLimits3D(lim=[lim])
+        elif isinstance(lim, list) and all(isinstance(l, Limits3D) for l in lim):
+            self.lim = CombinedLimits3D(lim=lim)
+        elif isinstance(lim, CombinedLimits3D):
             self.lim = lim
+        else:
+            raise ValueError("Invalid input for lim.")
 
     def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
