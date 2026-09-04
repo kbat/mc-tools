@@ -206,6 +206,10 @@ class TestRootInput(unittest.TestCase):
             )
 
             with ROOTInputCache() as root_input_cache:
+                # Actually, the ROOT library prints an error message first in this
+                # case, but neither uses standard Python error handling nor stops
+                # program execution.
+                # The first error that can be asserted is this OSError.
                 with self.assertRaisesRegex(OSError, "Failed to open file"):
                     zone.evaluate(root_input_cache=root_input_cache)
 
