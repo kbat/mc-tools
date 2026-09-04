@@ -1,3 +1,4 @@
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from decimal import Decimal
 from os import cpu_count
@@ -143,7 +144,10 @@ class Case:
             else:
                 max_workers = min(max_workers, n_scenarios)
             print(f"Evaluating {n_scenarios} scenarios with {max_workers} workers.")
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            mp_context = multiprocessing.get_context("spawn")
+            with ProcessPoolExecutor(
+                max_workers=max_workers, mp_context=mp_context
+            ) as executor:
                 futures = [
                     executor.submit(_evaluate_scenario, item)
                     for item in self.scenarios.items()
