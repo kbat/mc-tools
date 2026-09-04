@@ -237,6 +237,13 @@ class Zone(BaseLevel):
             else:
                 hist = self.hist
 
+            if isinstance(self.hist, str):
+                raise ValueError(
+                    "Unable to evaluate Zone because only the name of "
+                    "the histogram is known. Instead of passing the "
+                    "histogram as a name, pass the TH3 object or include "
+                    "the zone in a context like Scenario."
+                )
             self._evaluate_histogram(hist)
         else:
             raise ValueError(f"Input histogram for Zone '{self.name}' missing.")
