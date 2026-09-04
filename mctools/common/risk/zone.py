@@ -226,27 +226,24 @@ class Zone(BaseLevel):
     def evaluate(self, root_input_cache=None):
         """Find the maximum value in the (constrained) TH3"""
 
-        if self.hist is not None:
-            if isinstance(self.hist, ROOTFileInput):
-                if root_input_cache is None:
-                    with ROOTInputCache() as root_input_cache:
-                        hist = root_input_cache.get_histogram(self.hist)
-                        self._evaluate_histogram(hist)
-                    return
-                hist = root_input_cache.get_histogram(self.hist)
-            else:
-                hist = self.hist
-
-            if isinstance(self.hist, str):
-                raise ValueError(
-                    "Unable to evaluate Zone because only the name of "
-                    "the histogram is known. Instead of passing the "
-                    "histogram as a name, pass the TH3 object or include "
-                    "the zone in a context like Scenario."
-                )
-            self._evaluate_histogram(hist)
+        if isinstance(self.hist, ROOTFileInput):
+            if root_input_cache is None:
+                with ROOTInputCache() as root_input_cache:
+                    hist = root_input_cache.get_histogram(self.hist)
+                    self._evaluate_histogram(hist)
+                return
+            hist = root_input_cache.get_histogram(self.hist)
         else:
-            raise ValueError(f"Input histogram for Zone '{self.name}' missing.")
+            hist = self.hist
+
+        if isinstance(self.hist, str):
+            raise ValueError(
+                "Unable to evaluate Zone because only the name of "
+                "the histogram is known. Instead of passing the "
+                "histogram as a name, pass the TH3 object or include "
+                "the zone in a context like Scenario."
+            )
+        self._evaluate_histogram(hist)
 
     def _evaluate_histogram(self, hist: ROOT.TH3F | ROOT.TH3D):
         n_bins_x = hist.GetNbinsX()
