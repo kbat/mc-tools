@@ -1,0 +1,21 @@
+title = Angular spectrum
+mesh = eng
+axis = eng
+na = 2
+#    data =
+# 0.0 0.5 1.0
+file = angular.out
+newpage:
+ia = 1 part = proton
+x: Energy [MeV]
+y: Fluence
+h: n x y
+0.0 1.0 2.0 0.1
+
+newpage:
+ia = 2 part = proton
+x: Energy [MeV]
+y: Fluence
+h: n x y
+0.0 1.0 3.0 0.1
+

@@ -1,0 +1,11 @@
+title = Simple spectrum
+mesh = eng
+axis = eng
+file = spectrum.out
+# newpage:
+x: Energy [MeV]
+y: Fluence
+h: n x y(proton)
+0.0 1.0 2.0 0.1
+1.0 2.0 4.0 0.2
+
