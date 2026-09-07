@@ -142,8 +142,9 @@ class TestCaseClass(unittest.TestCase):
                 scale_file_name=tmp_scale.name,
                 scenario_names=["S_0", "S_1"],
             )
-            str_rep = case["S_0"].__str__()
-            str_rep += "\n"
+            str_rep = "S_0\n"
+            str_rep += case["S_0"].__str__()
+            str_rep += "\nS_1\n"
             str_rep += case["S_1"].__str__()
             self.assertEqual(case.__str__(), str_rep)
 

@@ -172,6 +172,7 @@ class Case:
         buffer = ""
         n_scenarios = len(self.scenarios)
         for n_scenario, scenario in enumerate(self.scenarios):
+            buffer += f"{scenario}\n"
             buffer += self[scenario].__str__()
             if n_scenario < n_scenarios - 1:
                 buffer += "\n"
