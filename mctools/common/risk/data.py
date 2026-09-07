@@ -56,7 +56,8 @@ class Data:
             f"{"PATH":{max_path_length}}   {"VALUE":11}  {"ERROR":11}  "
             f"{"X":11}  {"Y":11}  {"Z":10}\n"
         )
-        for result in results:
+        n_results = len(results)
+        for n_result, result in enumerate(results):
             buffer += (
                 f"{result[1].path:{max_path_length}}  "
                 f"{result[1].value.val: 10.4e}  "
@@ -64,8 +65,9 @@ class Data:
                 f"{result[1].value.x: 10.4e}  "
                 f"{result[1].value.y: 10.4e}  "
                 f"{result[1].value.z: 10.4e}"
-                "\n"
             )
+            if n_result < n_results - 1:
+                buffer += "\n"
         return buffer
 
     def print(
