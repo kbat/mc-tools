@@ -94,7 +94,8 @@ def splitHline(inLine):
 class Angel:
     """Parse an ANGEL file and convert its plots to ROOT objects."""
 
-    def __init__(self, fname_in, fname_out=None, *, avBitSet=False):
+    def __init__(self, fname_in, fname_out=None, *, avBitSet=False,
+                 load_companion_errors=True):
         self.dict_nbins = {}
         self.last_nbins_read = None
         self.dict_edges_array = {}
@@ -125,6 +126,7 @@ class Angel:
         self.fname_out = str(fname_out) if fname_out is not None else None
         self.histos = TObjArray()
         self.avBitSet = avBitSet
+        self.load_companion_errors = load_companion_errors
         self.sangel = False # existence of additional angel instruction w/ "sangel = "
         self.lines = tuple(Path(self.fname).read_text(errors="replace").splitlines(True))
         self.pageSepLineLST = []
@@ -132,6 +134,8 @@ class Angel:
 
         self.parse()
         self.build_objects()
+        if not self.ignored and self.load_companion_errors:
+            self.LoadCompanionErrors()
         if self.fname_out is not None:
             self.write(self.fname_out)
 
@@ -581,6 +585,74 @@ class Angel:
                 ROOT.SetOwnership(graph, False)
             self._objects.append(multigraph)
             self.histos.Add(multigraph)
+
+    def CompanionErrorPath(self):
+        """Return the PHITS ``_err`` file corresponding to this output."""
+        path = Path(self.fname)
+        if path.stem.lower().endswith('_err'):
+            return None
+        if path.suffix:
+            return path.with_name('%s_err%s' % (path.stem, path.suffix))
+        return path.with_name(path.name + '_err')
+
+    def HistogramObjects(self):
+        """Return the histogram objects currently selected for ROOT output."""
+        return [self.histos[index] for index in range(self.histos.GetEntries())
+                if self.histos[index].InheritsFrom('TH1')]
+
+    def LoadCompanionErrors(self):
+        """Load relative errors for PHITS two-dimensional tally outputs."""
+        two_dimensional_axes = {'xy', 'yz', 'xz', 'rz', 'chart'}
+        if not two_dimensional_axes.intersection(
+                axis.lower() for axis in self.axis):
+            return
+
+        error_path = self.CompanionErrorPath()
+        if error_path is None:
+            return
+        if not error_path.is_file():
+            LOGGER.warning(
+                "statistical uncertainties were not set for %s: "
+                "companion file %s does not exist", self.fname, error_path)
+            return
+
+        error_output = Angel(error_path, avBitSet=self.avBitSet,
+                             load_companion_errors=False)
+        if error_output.ignored:
+            self.fail("companion error file contains no tally data: %s" %
+                      error_path)
+
+        error_histograms = {
+            histogram.GetName(): histogram
+            for histogram in error_output.HistogramObjects()
+        }
+        histograms = self.HistogramObjects()
+        if set(error_histograms) != {histogram.GetName()
+                                    for histogram in histograms}:
+            self.fail("companion error file has different histograms: %s" %
+                      error_path)
+
+        for histogram in histograms:
+            relative_errors = error_histograms[histogram.GetName()]
+            if (relative_errors.ClassName() != histogram.ClassName() or
+                    relative_errors.GetNcells() != histogram.GetNcells()):
+                self.fail("companion error histogram %s is incompatible: %s" %
+                          (histogram.GetName(), error_path))
+            dimensions = histogram.GetDimension()
+            axes = ('X', 'Y', 'Z')[:dimensions]
+            if any(self.getAxisEdges(
+                       getattr(histogram, 'Get%saxis' % axis)()) !=
+                   self.getAxisEdges(
+                       getattr(relative_errors, 'Get%saxis' % axis)())
+                   for axis in axes):
+                self.fail("companion error histogram %s has different binning: %s" %
+                          (histogram.GetName(), error_path))
+
+            for global_bin in range(histogram.GetNcells()):
+                value = histogram.GetBinContent(global_bin)
+                relative_error = relative_errors.GetBinContent(global_bin)
+                histogram.SetBinError(global_bin,
+                                      abs(value * relative_error))
 
     def CompatibleAxes(self, first, group, axes):
         """Check that every page in a group has identical binning."""

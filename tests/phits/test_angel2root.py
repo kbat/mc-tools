@@ -58,6 +58,9 @@ def run_converter(source, workdir):
     """Copy *source* into *workdir* and convert the copy."""
     input_path = workdir / source.name
     shutil.copyfile(source, input_path)
+    error_source = source.with_name(f"{source.stem}_err{source.suffix}")
+    if error_source.is_file():
+        shutil.copyfile(error_source, workdir / error_source.name)
     try:
         result = subprocess.run(
             [sys.executable, str(CONVERTER), str(input_path)],
@@ -137,10 +140,26 @@ def test_simple_2d_fixture_has_expected_dimensions(tmp_path):
     result, root_path = run_converter(FIXTURES / "simple_2d.angel", tmp_path)
 
     assert result.returncode == 0, result.stderr
+    assert "statistical uncertainties were not set" in result.stderr
     objects = root_objects(root_path)
     assert len(objects) == 1
     assert objects[0]["class"] == "TH2F"
     assert objects[0]["nbins"] == (2, 2)
+
+    text = (FIXTURES / "simple_2d.angel").read_text()
+    error_text = text.replace("1.0 2.0\n3.0 4.0", "0.1 0.2\n0.3 0.4")
+    (tmp_path / "input_err.out").write_text(error_text)
+    result, root_path = run_text_converter(tmp_path, text)
+
+    assert result.returncode == 0, result.stderr
+    assert "statistical uncertainties were not set" not in result.stderr
+    root_file = ROOT.TFile.Open(str(root_path))
+    histogram = root_file.Get("map")
+    assert histogram.GetBinError(1, 1) == pytest.approx(0.9)
+    assert histogram.GetBinError(2, 1) == pytest.approx(1.6)
+    assert histogram.GetBinError(1, 2) == pytest.approx(0.1)
+    assert histogram.GetBinError(2, 2) == pytest.approx(0.4)
+    root_file.Close()
 
     page = """
 newpage:
