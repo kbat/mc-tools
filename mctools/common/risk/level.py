@@ -29,7 +29,7 @@ class BaseLevel:
         """Evaluate the maximum value"""
 
     @abstractmethod
-    def set_sub_level_paths(self, path_prefix: str = "", separator: str = "."): ...
+    def set_sub_level_paths(self, separator: str = "."): ...
 
 
 class Level(BaseLevel):
@@ -55,7 +55,7 @@ class Level(BaseLevel):
             for sub_level in self.sub_levels
         )
 
-    def set_sub_level_paths(self, path_prefix: str = "", separator: str = "."):
+    def set_sub_level_paths(self, separator: str = "."):
         for sub_level in self.sub_levels:
             self[sub_level].path = self.path + separator + sub_level
             self[sub_level].set_sub_level_paths(separator=separator)
