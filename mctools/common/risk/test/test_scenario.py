@@ -101,3 +101,5 @@ class TestScenario(unittest.TestCase):
 
             self.assertEqual(scenario["L1_0"]["L0_0"].path, "test.L1_0.L0_0")
             self.assertEqual(scenario["compare_l00"].path, "test.compare_l00")
+
+        self.assertEqual(scenario.__str__(), scenario.data.__str__())

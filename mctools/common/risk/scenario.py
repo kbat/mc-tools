@@ -45,6 +45,9 @@ class Scenario:
                         )
         self.set_sub_level_paths()
 
+    def __str__(self) -> str:
+        return self.data.__str__()
+
     def set_sub_level_paths(self, separator: str = "."):
         self.data.set_sub_level_paths(
             separator=separator, path_prefix=self.name + separator
