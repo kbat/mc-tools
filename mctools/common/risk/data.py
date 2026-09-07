@@ -23,6 +23,7 @@ class SourceCombination(BaseLevel):
         values: list[Value] = []
         for source in self.combination:
             level: BaseLevel = self.sources[source[0]]
+            # Step down in the level hierarchy using the given keys.
             for lvl in source[1:]:
                 level = level[lvl]
             values.append(level.get_max_value(root_input_cache=root_input_cache))
