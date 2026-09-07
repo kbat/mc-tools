@@ -265,8 +265,8 @@ class Zone(BaseLevel):
 
         if isinstance(self.hist, ROOTFileInput):
             if root_input_cache is None:
-                with ROOTInputCache() as root_input_cache:
-                    hist = root_input_cache.get_histogram(self.hist)
+                with ROOTInputCache() as cache:
+                    hist = cache.get_histogram(self.hist)
                     self._evaluate_histogram(hist)
                 return
             hist = root_input_cache.get_histogram(self.hist)
@@ -339,5 +339,5 @@ class Zone(BaseLevel):
             z=max_z,
         )
 
-    def set_sub_level_paths(self, path_prefix="", separator="."):
+    def set_sub_level_paths(self, separator="."):
         pass

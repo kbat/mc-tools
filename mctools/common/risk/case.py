@@ -332,9 +332,7 @@ class Case:
         buffer.append("}%\n")
         return "".join(buffer)
 
-    def createAllVariableLaTeX(
-        self, command_output_file_name: Path, large_error_warnings: bool = True
-    ) -> str:
+    def createAllVariableLaTeX(self, command_output_file_name: Path) -> str:
         buffer = [
             r"\documentclass{article}"
             "\n\n"

@@ -35,7 +35,6 @@ class SourceCombination(BaseLevel):
         A SourceCombination has no sub-levels, therefore this inherited method does
         nothing.
         """
-        pass
 
 
 class Data:
@@ -52,9 +51,7 @@ class Data:
     def get_max_path_length(self) -> int:
         max_length = 0
         for result in self.get_results(include_top_level=True):
-            l = len(result[1].path)
-            if l > max_length:
-                max_length = l
+            max_length = max(max_length, len(result[1].path))
         return max_length
 
     def __str__(self):
