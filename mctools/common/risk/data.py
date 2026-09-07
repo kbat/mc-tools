@@ -29,6 +29,14 @@ class SourceCombination(BaseLevel):
             values.append(level.get_max_value(root_input_cache=root_input_cache))
         self.value = max(values)
 
+    def set_sub_level_paths(self, separator="."):
+        """Set sub-level paths
+
+        A SourceCombination has no sub-levels, therefore this inherited method does
+        nothing.
+        """
+        pass
+
 
 class Data:
     def __init__(
