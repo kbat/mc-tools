@@ -40,6 +40,33 @@ class Data:
         if arbitrary_level_combos is not None:
             self.arbitrary_level_combos = arbitrary_level_combos
 
+    def get_max_path_length(self) -> int:
+        max_length = 0
+        for result in self.get_results(include_top_level=True):
+            l = len(result[1].path)
+            if l > max_length:
+                max_length = l
+        return max_length
+
+    def __str__(self):
+        results = self.get_results(include_top_level=True)
+        max_path_length = self.get_max_path_length()
+        buffer = (
+            f"{"PATH":{max_path_length}}   {"VALUE":11}  {"ERROR":11}  "
+            f"{"X":11}  {"Y":11}  {"Z":10}\n"
+        )
+        for result in results:
+            buffer += (
+                f"{result[1].path:{max_path_length}}  "
+                f"{result[1].value.val: 10.4e}  "
+                f"{result[1].value.err: 10.4e}  "
+                f"{result[1].value.x: 10.4e}  "
+                f"{result[1].value.y: 10.4e}  "
+                f"{result[1].value.z: 10.4e}"
+                "\n"
+            )
+        return buffer
+
     def print(
         self,
         threshold: float = float("inf"),

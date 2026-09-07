@@ -13,7 +13,7 @@ class TestData(unittest.TestCase):
                 "L2_0": Level(
                     title="Level 2, Sublevel 0",
                     sub_levels={
-                        "L1_0": Zone(hist=create_test_histogram("L1_0", 1.0)),
+                        "L1_0": Zone(hist=create_test_histogram("L1_0", 1.0, dx=-2.0)),
                         "L1_1": Zone(hist=create_test_histogram("L1_1", 2.0)),
                     },
                 ),
@@ -79,7 +79,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(
             data.print(),
             "Level 2, Sublevel 0: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0\n"
-            "L2_0.L1_0: 7 ± 0.7 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_0\n"
+            "L2_0.L1_0: 7 ± 0.7 (10.0 %) at -1.5000 0.5000 0.5000\tL2_0.L1_0\n"
             "L2_0.L1_1: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_1\n"
             "L2_1: 42 ± 4 (10.0 %) at 0.5000 0.5000 0.5000\tL2_1\n"
             "L2_1.L1_0.L0_0: 21 ± 2 (10.0 %) at 0.5000 0.5000 0.5000\tL2_1.L1_0.L0_0\n"
@@ -93,7 +93,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(
             data.print(threshold=40.0, unit="a.u."),
             "Level 2, Sublevel 0: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0\n"
-            "L2_0.L1_0: 7 ± 0.7 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_0\n"
+            "L2_0.L1_0: 7 ± 0.7 (10.0 %) at -1.5000 0.5000 0.5000\tL2_0.L1_0\n"
             "L2_0.L1_1: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_1\n"
             "L2_1: 42 ± 4 (10.0 %) at 0.5000 0.5000 0.5000\tL2_1\n"
             "\033[31m Above 40.0 a.u.: \033[0m L2_1: 42 ± 4 (10.0 %)\n"
@@ -105,4 +105,20 @@ class TestData(unittest.TestCase):
             "custom0: 28 ± 3 (10.0 %) at 0.5000 0.5000 0.5000\tcustom0\n"
             "custom1: 42 ± 4 (10.0 %) at 0.5000 0.5000 0.5000\tcustom1\n"
             "\033[31m Above 40.0 a.u.: \033[0m custom1: 42 ± 4 (10.0 %)\n",
+        )
+
+        self.assertEqual(data.get_max_path_length(), 14)
+        self.assertEqual(
+            data.__str__(),
+            "PATH             VALUE        ERROR        X            Y            Z         \n"
+            "L2_0             1.4000e+01   1.4000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "L2_0.L1_0        7.0000e+00   7.0000e-01  -1.5000e+00   5.0000e-01   5.0000e-01\n"
+            "L2_0.L1_1        1.4000e+01   1.4000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "L2_1             4.2000e+01   4.2000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "L2_1.L1_0.L0_0   2.1000e+01   2.1000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "L2_1.L1_0.L0_1   2.8000e+01   2.8000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "L2_1.L1_1.L0_0   3.5000e+01   3.5000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "L2_1.L1_1.L0_1   4.2000e+01   4.2000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "custom0          2.8000e+01   2.8000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n"
+            "custom1          4.2000e+01   4.2000e+00   5.0000e-01   5.0000e-01   5.0000e-01\n",
         )
