@@ -40,7 +40,7 @@ class Data:
         if arbitrary_level_combos is not None:
             self.arbitrary_level_combos = arbitrary_level_combos
 
-    def __str__(
+    def print(
         self,
         threshold: float = float("inf"),
         unit: str = "",

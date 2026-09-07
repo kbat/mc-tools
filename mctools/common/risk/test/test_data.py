@@ -77,7 +77,7 @@ class TestData(unittest.TestCase):
 
         # Test string representation
         self.assertEqual(
-            data.__str__(),
+            data.print(),
             "Level 2, Sublevel 0: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0\n"
             "L2_0.L1_0: 7 ± 0.7 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_0\n"
             "L2_0.L1_1: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_1\n"
@@ -91,7 +91,7 @@ class TestData(unittest.TestCase):
         )
 
         self.assertEqual(
-            data.__str__(threshold=40.0, unit="a.u."),
+            data.print(threshold=40.0, unit="a.u."),
             "Level 2, Sublevel 0: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0\n"
             "L2_0.L1_0: 7 ± 0.7 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_0\n"
             "L2_0.L1_1: 14 ± 1 (10.0 %) at 0.5000 0.5000 0.5000\tL2_0.L1_1\n"
