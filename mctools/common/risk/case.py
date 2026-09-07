@@ -168,6 +168,15 @@ class Case:
                 f"{(time()-t_start):4.2e} seconds ({scenario_name})"
             )
 
+    def __str__(self) -> str:
+        buffer = ""
+        n_scenarios = len(self.scenarios)
+        for n_scenario, scenario in enumerate(self.scenarios):
+            buffer += self[scenario].__str__()
+            if n_scenario < n_scenarios - 1:
+                buffer += "\n"
+        return buffer
+
     def toLaTeX(
         self,
         command_output_file_name: Path,

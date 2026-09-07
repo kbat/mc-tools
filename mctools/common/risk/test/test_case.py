@@ -12,7 +12,9 @@ from mctools.common.risk.test.input_histogram import create_test_histogram
 from mctools.common.risk.zone import Zone
 
 
-def make_test_case(root_file_name, scale_file_name, scenario_names):
+def make_test_case(
+    root_file_name: Path, scale_file_name: Path, scenario_names: list[str]
+):
     scenarios = {}
     for scenario_name in scenario_names:
         scenarios[scenario_name] = Scenario(
@@ -129,6 +131,21 @@ class TestCaseClass(unittest.TestCase):
                 command_output_file_name=command_output_file.name,
                 variable_output_file_name=variable_output_file.name,
             )
+
+    def test_string_representation(self):
+        with (
+            tempfile.NamedTemporaryFile(suffix=".root") as tmp_root,
+            tempfile.NamedTemporaryFile(suffix=".txt") as tmp_scale,
+        ):
+            case = make_test_case(
+                root_file_name=tmp_root.name,
+                scale_file_name=tmp_scale.name,
+                scenario_names=["S_0", "S_1"],
+            )
+            str_rep = case["S_0"].__str__()
+            str_rep += "\n"
+            str_rep += case["S_1"].__str__()
+            self.assertEqual(case.__str__(), str_rep)
 
     def test_parallel_evaluate_matches_sequential(self):
         with (
