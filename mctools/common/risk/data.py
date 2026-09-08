@@ -17,10 +17,13 @@ class SourceCombination(BaseLevel):
     def set_sources(self, sources: dict[str, Level]):
         self.sources = sources
 
-    def evaluate(self, root_input_cache=None):
+    def evaluate(self, root_input_cache=None) -> None:
         values: list[Value] = []
         for source in self.combination:
-            level: BaseLevel = self.sources[source[0]]
+            if self.sources is not None:
+                level: Level = self.sources[source[0]]
+            else:
+                raise ValueError("Sources have not been initialized.")
             # Step down in the level hierarchy using the given keys.
             for lvl in source[1:]:
                 level = level[lvl]
