@@ -70,14 +70,3 @@ def depth_first_search(obj: BaseLevel) -> Iterator[BaseLevel]:
             yield from depth_first_search(obj[level])
     else:
         yield obj
-
-
-def depth_first_search_with_path(
-    obj: BaseLevel, path: tuple[str, ...] = ()
-) -> Iterator[tuple[tuple[str, ...], BaseLevel]]:
-    if isinstance(obj, Level):
-        for level in obj.sub_levels:
-            new_path = path + (level,)
-            yield from depth_first_search_with_path(obj[level], new_path)
-    else:
-        yield path, obj

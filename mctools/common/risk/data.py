@@ -1,7 +1,5 @@
-from mctools.common.risk.level import BaseLevel, depth_first_search_with_path, Level
+from mctools.common.risk.level import BaseLevel, depth_first_search, Level
 from mctools.common.risk.value import Value
-
-Result = tuple[tuple[str, ...], BaseLevel]
 
 
 class SourceCombination(BaseLevel):
@@ -51,7 +49,7 @@ class Data:
     def get_max_path_length(self) -> int:
         max_length = 0
         for result in self.get_results(include_top_level=True):
-            max_length = max(max_length, len(result[1].path))
+            max_length = max(max_length, len(result.path))
         return max_length
 
     def __str__(self):
@@ -64,12 +62,12 @@ class Data:
         n_results = len(results)
         for n_result, result in enumerate(results):
             buffer += (
-                f"{result[1].path:{max_path_length}}  "
-                f"{result[1].value.val: 10.4e}  "
-                f"{result[1].value.err: 10.4e}  "
-                f"{result[1].value.x: 10.4e}  "
-                f"{result[1].value.y: 10.4e}  "
-                f"{result[1].value.z: 10.4e}"
+                f"{result.path:{max_path_length}}  "
+                f"{result.value.val: 10.4e}  "
+                f"{result.value.err: 10.4e}  "
+                f"{result.value.x: 10.4e}  "
+                f"{result.value.y: 10.4e}  "
+                f"{result.value.z: 10.4e}"
             )
             if n_result < n_results - 1:
                 buffer += "\n"
@@ -84,16 +82,16 @@ class Data:
         buffer = []
         results = self.get_results(include_top_level=include_top_level)
         for result in results:
-            title = result[1].title if result[1].title != "" else result[1].path
+            title = result.title if result.title != "" else result.path
             buffer.append(
                 f"{title}:"
-                f" {result[1].value} at {result[1].value.x:.4f} "
-                f"{result[1].value.y:.4f} {result[1].value.z:.4f}"
-                f"\t{result[1].path}\n"
+                f" {result.value} at {result.value.x:.4f} "
+                f"{result.value.y:.4f} {result.value.z:.4f}"
+                f"\t{result.path}\n"
             )
-            if result[1].value.val > threshold:
+            if result.value.val > threshold:
                 buffer.append(
-                    f"\033[31m Above {threshold} {unit}: \033[0m {title}: {result[1].value}\n"
+                    f"\033[31m Above {threshold} {unit}: \033[0m {title}: {result.value}\n"
                 )
         return "".join(buffer)
 
@@ -105,21 +103,16 @@ class Data:
             self.arbitrary_level_combos[combo].name = combo
             self.arbitrary_level_combos[combo].path = path_prefix + combo
 
-    def get_results(self, include_top_level: bool = True) -> list[Result]:
+    def get_results(self, include_top_level: bool = True) -> list[BaseLevel]:
         """Return the results as a flat list"""
-        data: list[Result] = []
+        data: list[BaseLevel] = []
         for source in self.sources:
             if include_top_level:
-                data.append(((self.sources[source].path,), self.sources[source]))
-            for path, level in depth_first_search_with_path(self.sources[source]):
-                data.append((path, level))
+                data.append(self.sources[source])
+            for level in depth_first_search(self.sources[source]):
+                data.append(level)
         for combo in self.arbitrary_level_combos:
-            data.append(
-                (
-                    (self.arbitrary_level_combos[combo].path,),
-                    self.arbitrary_level_combos[combo],
-                )
-            )
+            data.append(self.arbitrary_level_combos[combo])
         return data
 
     def __getitem__(self, key: str):
