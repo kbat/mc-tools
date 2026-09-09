@@ -1,12 +1,7 @@
 import unittest
 
-from mctools.common.risk.zone import (
-    BoxLimits3D,
-    CombinedLimits3D,
-    Limits,
-    Limits3D,
-    Zone,
-)
+from mctools.common.risk.limits import BoxLimits3D, CombinedLimits3D, Limits, Limits3D
+from mctools.common.risk.zone import Zone
 from mctools.common.risk.test.input_histogram import create_test_histogram
 
 
