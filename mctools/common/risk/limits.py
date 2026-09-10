@@ -430,18 +430,25 @@ class PathLimit3D(Limits3D):
     """
 
     def __init__(
-        self, x: np.ndarray, y: np.ndarray, z: np.ndarray, inverted: bool = False
+        self,
+        x: np.ndarray | float,
+        y: np.ndarray | float,
+        z: np.ndarray | float,
+        inverted: bool = False,
     ):
         """Initialization
 
         Parameters
         ----------
-        x: (n_points,) ndarray
-            x coordinates of the points.
-        y: (n_points,) ndarray
-            y coordinates of the points.
-        z: (n_points,) ndarray
-            z coordinates of the points.
+        x: (n_points,) ndarray | float
+            x coordinates of the points. If a float is given, it will be assumed that
+            the x coordinate is the same for all points on the path.
+        y: (n_points,) ndarray | float
+            y coordinates of the points. If a float is given, it will be assumed that
+            the y coordinate is the same for all points on the path.
+        z: (n_points,) ndarray | float
+            z coordinates of the points. If a float is given, it will be assumed that
+            the z coordinate is the same for all points on the path.
         inverted: bool
             Determines whether the limits or their inverse will be applied.
             Default: False, i.e. do not invert the limits.
@@ -452,16 +459,59 @@ class PathLimit3D(Limits3D):
             If list input is inconsistent or does not constitute a path.
         """
         super().__init__(inverted=inverted)
-        self.n_points = len(x)
+        n_float_inputs = 0
+        if isinstance(x, float):
+            n_float_inputs += 1
+            if isinstance(y, np.ndarray):
+                x_input: np.ndarray = np.full(np.shape(y), x)
+            else:
+                raise ValueError(
+                    "Only one of x, y, or z can be a float. Otherwise, the path would "
+                    "be trivial."
+                )
+        else:
+            x_input = x
+        if isinstance(y, float):
+            n_float_inputs += 1
+            if isinstance(x, np.ndarray):
+                y_input: np.ndarray = np.full(np.shape(x), y)
+            else:
+                raise ValueError(
+                    "Only one of x, y, or z can be a float. Otherwise, the path would "
+                    "be trivial."
+                )
+        else:
+            y_input = y
+        if isinstance(z, float):
+            n_float_inputs += 1
+            if isinstance(x, np.ndarray):
+                z_input: np.ndarray = np.full(np.shape(x), z)
+            else:
+                raise ValueError(
+                    "Only one of x, y, or z can be a float. Otherwise, the path would "
+                    "be trivial."
+                )
+        else:
+            z_input = z
+        if n_float_inputs > 1:
+            raise ValueError(
+                "Only one of x, y, or z can be a float. Otherwise, the path would "
+                "be trivial."
+            )
+        self.n_points = len(x_input)
         if self.n_points < 2:
             raise ValueError("A path must have at least two points.")
-        if len(np.shape(x)) != 1 or len(np.shape(y)) != 1 or len(np.shape(z)) != 1:
+        if (
+            len(np.shape(x_input)) != 1
+            or len(np.shape(y_input)) != 1
+            or len(np.shape(z_input)) != 1
+        ):
             raise ValueError(
                 "All input arrays must be one-dimensional (numpy.shape() == (N,).)"
             )
-        if len(y) != self.n_points or len(z) != self.n_points:
+        if len(y_input) != self.n_points or len(z_input) != self.n_points:
             raise ValueError("All input arrays must have the same number of points.")
-        self.xyz = np.transpose(np.array([x, y, z]))
+        self.xyz = np.transpose(np.array([x_input, y_input, z_input]))
         self.xyz_min = np.min(self.xyz, axis=0)
         self.xyz_max = np.max(self.xyz, axis=0)
 
@@ -587,7 +637,11 @@ class OrthogonalPathLimit3D(PathLimit3D):
     """
 
     def __init__(
-        self, x: np.ndarray, y: np.ndarray, z: np.ndarray, inverted: bool = False
+        self,
+        x: np.ndarray | float,
+        y: np.ndarray | float,
+        z: np.ndarray | float,
+        inverted: bool = False,
     ):
         """Initialization
 
@@ -611,12 +665,15 @@ class OrthogonalPathLimit3D(PathLimit3D):
 
         Parameters
         ----------
-        x: (n_points,) ndarray
-            x coordinates of the points.
-        y: (n_points,) ndarray
-            y coordinates of the points.
-        z: (n_points,) ndarray
-            z coordinates of the points.
+        x: (n_points,) ndarray | float
+            x coordinates of the points. If a float is given, it will be assumed that
+            the x coordinate is the same for all points on the path.
+        y: (n_points,) ndarray | float
+            y coordinates of the points. If a float is given, it will be assumed that
+            the y coordinate is the same for all points on the path.
+        z: (n_points,) ndarray | float
+            z coordinates of the points. If a float is given, it will be assumed that
+            the z coordinate is the same for all points on the path.
         inverted: bool
             Determines whether the limits or their inverse will be applied.
             Default: False, i.e. do not invert the limits.

@@ -25,6 +25,39 @@ class TestPath(unittest.TestCase):
                 y=np.array([0.0, 1.0]),
                 z=np.array([0.0, 1.0]),
             )
+        # Error: More than one variable passed as a single float
+        with self.assertRaisesRegex(ValueError, "Only one of x, y, or z"):
+            PathLimit3D(
+                x=np.array([0.0, 1.0]),
+                y=0.0,
+                z=0.0,
+            )
+        with self.assertRaisesRegex(ValueError, "Only one of x, y, or z"):
+            PathLimit3D(
+                x=0.0,
+                y=np.array([0.0, 1.0]),
+                z=0.0,
+            )
+        with self.assertRaisesRegex(ValueError, "Only one of x, y, or z"):
+            PathLimit3D(
+                x=0.0,
+                y=0.0,
+                z=np.array([0.0, 1.0]),
+            )
+        with self.assertRaisesRegex(ValueError, "Only one of x, y, or z"):
+            PathLimit3D(
+                x=0.0,
+                y=0.0,
+                z=0.0,
+            )
+        # Initialization with a single variable as float.
+        pl = PathLimit3D(
+            x=np.array([0.0, 1.0]),
+            y=np.array([0.0, 1.0]),
+            z=3.0,
+        )
+        self.assertEqual(pl.xyz[0][2], 3.0)
+        self.assertEqual(pl.xyz[1][2], 3.0)
 
     def test_orthogonal_path_limit_3d_initialization(self):
         # Test whether the attributes are initialized correctly.
