@@ -1,8 +1,11 @@
+"""Limits for selecting subsets of all histogram bins"""
+
 from abc import ABC, abstractmethod
 
 from dataclasses import dataclass
 from warnings import warn
 
+import numpy as np
 import ROOT
 
 
@@ -41,33 +44,133 @@ class Limits3D(ABC):
     """
 
     def __init__(self, inverted: bool = False):
+        """Initialization
+
+        Parameters
+        ----------
+        inverted: bool
+            Determines whether the limits or their inverse will be applied.
+            Default: False, i.e. do not invert the limits.
+        """
         self.inverted = inverted
 
     @abstractmethod
     def _bin_in_range(
         self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
     ) -> bool:
-        """Return True if bin (n_x, n_y, n_z) of hist lies within these limits,
-        ignoring the inverted option"""
+        """Test whether a bin lies within the given limits.
+
+        This function ignores the inverted parameter of Limits3D.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+        bool
+            True, if bin (n_x, n_y, n_z) lies within the given limits. False otherwise.
+        """
 
     def bin_in_range(
         self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
     ) -> bool:
-        """Return True if bin (n_x, n_y, n_z) of hist lies within these limits,
-        applying the inverted option"""
+        """Test whether a bin lies within the given limits.
+
+        The limits can be inverted using a parameter of Limits3D.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+        bool
+            If not inverted: True, if bin (n_x, n_y, n_z) lies within the given limits.
+            False otherwise.
+            If inverted: False, if bin (n_x, n_y, n_z) lies within the given limits.
+            True otherwise.
+        """
         return self._bin_in_range(n_x, n_y, n_z, hist) != self.inverted
 
     def bin_in_x_range(self, n_x: int, hist) -> bool:
+        """Test whether a bin lies within the given limits imposed on the x axis
+
+        This function is intended for cases where the independence of x can be
+        exploited.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Raises
+        ------
+        NotImplementedError
+        """
         raise NotImplementedError()
 
     def bin_in_y_range(self, n_y: int, hist) -> bool:
+        """Test whether a bin lies within the given limits imposed on the y axis
+
+        This function is intended for cases where the independence of y can be
+        exploited.
+
+        Parameters
+        ----------
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYAxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Raises
+        ------
+        NotImplemtedError
+        """
         raise NotImplementedError()
 
     def bin_in_z_range(self, n_z: int, hist) -> bool:
+        """Test whether a bin lies within the given limits imposed on the z axis
+
+        This function is intended for cases where the independence of z can be
+        exploited.
+
+        Parameters
+        ----------
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZAxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Raises
+        ------
+        NotImplemtedError
+        """
         raise NotImplementedError()
 
 
 class CombinedLimits3D:
+    """Container class for multiple limits
+
+    Supports iteration, access with square brackets, and comparison.
+    """
+
     def __init__(self, lim: Limits3D | list[Limits3D] | None = None):
         if lim is None:
             self.lim: list[Limits3D] = [BoxLimits3D()]
@@ -164,3 +267,127 @@ class BoxLimits3D(Limits3D):
         return self.zlim.upper >= z_axis.GetBinLowEdge(
             n_z
         ) and self.zlim.lower <= z_axis.GetBinUpEdge(n_z)
+
+
+class PathLimit3D(Limits3D):
+    def __init__(
+        self, x: np.ndarray, y: np.ndarray, z: np.ndarray, inverted: bool = False
+    ):
+        super().__init__(inverted=inverted)
+        self.n_points = len(x)
+        if self.n_points < 2:
+            raise ValueError("A path must have at least two points.")
+        if len(np.shape(x)) != 1 or len(np.shape(y)) != 1 or len(np.shape(z)) != 1:
+            raise ValueError(
+                "All input arrays must be one-dimensional (numpy.shape() == (N,).)"
+            )
+        if len(y) != self.n_points or len(z) != self.n_points:
+            raise ValueError("All input arrays must have the same number of points.")
+        self.xyz = np.transpose(np.array([x, y, z]))
+        self.xyz_min = np.min(self.xyz, axis=0)
+        self.xyz_max = np.max(self.xyz, axis=0)
+
+    def _bin_in_range(
+        self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
+    ) -> bool:
+        rmin = np.array(
+            [
+                hist.GetXaxis().GetBinLowEdge(n_x),
+                hist.GetYaxis().GetBinLowEdge(n_y),
+                hist.GetZaxis().GetBinLowEdge(n_z),
+            ]
+        )
+        rmax = np.array(
+            [
+                hist.GetXaxis().GetBinUpEdge(n_x),
+                hist.GetYaxis().GetBinUpEdge(n_y),
+                hist.GetZaxis().GetBinUpEdge(n_z),
+            ]
+        )
+        if all(rmin <= self.xyz_max) and all(rmax >= self.xyz_min):
+            for n in range(self.n_points - 1):
+                if self.bin_on_connection(
+                    p0=self.xyz[n],
+                    p1=self.xyz[n + 1],
+                    rmin=rmin,
+                    rmax=rmax,
+                ):
+                    return True
+        return False
+
+    @staticmethod
+    def bin_on_connection(
+        p0: np.ndarray,
+        p1: np.ndarray,
+        rmin: np.ndarray,
+        rmax: np.ndarray,
+    ) -> bool:
+        tmin, tmax = 0.0, 1.0
+        d = p1 - p0
+        for i in range(3):
+            if d[i] != 0.0:
+                t1 = (rmin[i] - p0[i]) / d[i]
+                t2 = (rmax[i] - p0[i]) / d[i]
+                if t1 > t2:
+                    t1, t2 = t2, t1
+                tmin = max(tmin, t1)
+                tmax = min(tmax, t2)
+                if tmin > tmax:
+                    return False
+            else:
+                if p0[i] < rmin[i] or p0[i] > rmax[i]:
+                    return False
+
+        return True
+
+
+class OrthogonalPathLimit3D(PathLimit3D):
+    def __init__(
+        self, x: np.ndarray, y: np.ndarray, z: np.ndarray, inverted: bool = False
+    ):
+        super().__init__(x=x, y=y, z=z, inverted=inverted)
+        self.step_axis = self.orthogonalize()
+
+    def orthogonalize(self) -> list[int]:
+        step_axis = [0] * (self.n_points - 1)
+        for n in range(self.n_points - 1):
+            d = np.abs(self.xyz[n + 1] - self.xyz[n])
+            step_ax = np.argmax(d)
+            step_axis[n] = step_ax
+            for axis in range(3):
+                if axis != step_ax:
+                    self.xyz[n + 1][axis] = self.xyz[n][axis]
+
+        return step_axis
+
+    def _bin_in_range(self, n_x, n_y, n_z, hist):
+        rmin = np.array(
+            [
+                hist.GetXaxis().GetBinLowEdge(n_x),
+                hist.GetYaxis().GetBinLowEdge(n_y),
+                hist.GetZaxis().GetBinLowEdge(n_z),
+            ]
+        )
+        rmax = np.array(
+            [
+                hist.GetXaxis().GetBinUpEdge(n_x),
+                hist.GetYaxis().GetBinUpEdge(n_y),
+                hist.GetZaxis().GetBinUpEdge(n_z),
+            ]
+        )
+        if all(rmin <= self.xyz_max) and all(rmax >= self.xyz_min):
+            for n in range(self.n_points - 1):
+                bin_on_connection = True
+                for axis in range(3):
+                    if axis == self.step_axis[n]:
+                        pmin = min(self.xyz[n][axis], self.xyz[n + 1][axis])
+                        pmax = max(self.xyz[n][axis], self.xyz[n + 1][axis])
+                        if rmin[axis] > pmax or rmax[axis] < pmin:
+                            bin_on_connection = False
+                            break
+                    elif not (rmin[axis] <= self.xyz[n][axis] <= rmax[axis]):
+                        bin_on_connection = False
+                        break
+                if bin_on_connection:
+                    return True
+        return False
