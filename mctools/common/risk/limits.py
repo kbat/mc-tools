@@ -1,4 +1,10 @@
-"""Limits for selecting subsets of all histogram bins"""
+"""Limits for selecting subsets of all histogram bins
+
+This module defines classes that determine whether a given histogram bin is inside or
+outside a region.
+A bin is defined as inside if any part of it is within the limits, i.e. it does not
+need to be fully contained within the limits.
+"""
 
 from abc import ABC, abstractmethod
 
@@ -172,6 +178,16 @@ class CombinedLimits3D:
     """
 
     def __init__(self, lim: Limits3D | list[Limits3D] | None = None):
+        """Initialization
+
+        Parameters
+        ----------
+        lim: Limits3D | list[Limits3D] | None
+            Set of limits. A single Limits3D object will be turned into a list
+            with the input as the only element. None as an input will result in
+            a list that contains an unlimited BoxLimits3D object.
+            Default: None.
+        """
         if lim is None:
             self.lim: list[Limits3D] = [BoxLimits3D()]
         elif isinstance(lim, Limits3D):
@@ -180,17 +196,25 @@ class CombinedLimits3D:
             self.lim = lim
 
     def __iter__(self):
+        """Iteration"""
         return iter(self.lim)
 
     def __getitem__(self, index):
+        """Item access"""
         return self.lim[index]
 
     def __eq__(self, other):
+        """Test equality"""
         if not isinstance(other, CombinedLimits3D):
             return NotImplemented
         return self.lim == other.lim
 
     def __str__(self) -> str:
+        """String representation
+
+        Prints the set of limits connected by AND (&&) because this is the currently
+        intended use.
+        """
         result = ""
         for l in self.lim:
             l_str = str(l)
@@ -205,8 +229,19 @@ class CombinedLimits3D:
 class BoxLimits3D(Limits3D):
     """Box limits for a 3D variable
 
-    If inverted is True, a bin is in range if it lies outside the box instead of
-    inside it.
+    Independent lower and upper limits for the x-, y-, and z coordinate.
+
+    Parameters
+    ----------
+    xlim: Limits | None
+        Lower and upper limit for the x coordinate. Default: None, i.e. no limits.
+    ylim: Limits | None
+        Lower and upper limit for the y coordinate. Default: None, i.e. no limits.
+    zlim: Limits | None
+        Lower and upper limit for the z coordinate. Default: None, i.e. no limits.
+    inverted: bool
+        Determines whether the limits or their inverse will be applied.
+        Default: False, i.e. do not invert the limits.
     """
 
     def __init__(
@@ -225,6 +260,7 @@ class BoxLimits3D(Limits3D):
         self.zlim.variable_name = "z"
 
     def __str__(self) -> str:
+        """String representation"""
         xlim = str(self.xlim)
         ylim = str(self.ylim)
         zlim = str(self.zlim)
@@ -241,6 +277,28 @@ class BoxLimits3D(Limits3D):
         return result
 
     def _bin_in_range(self, n_x: int, n_y: int, n_z: int, hist) -> bool:
+        """Test whether a bin lies within the given limits.
+
+        Calls the bin-in-range functions for each axis.
+
+        This function ignores the inverted parameter of Limits3D.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+        bool
+            True, if bin (n_x, n_y, n_z) lies within the given limits. False otherwise.
+        """
         return (
             self.bin_in_x_range(n_x, hist)
             and self.bin_in_y_range(n_y, hist)
@@ -248,21 +306,66 @@ class BoxLimits3D(Limits3D):
         )
 
     def bin_in_x_range(self, n_x: int, hist) -> bool:
-        """Return True if bin n_x lies within xlim, ignoring the inverted option"""
+        """Test whether a bin lies within the given limits imposed on the x axis
+
+        This function is intended for cases where the independence of x can be
+        exploited.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+            True, if bin n_x lies within the given limits. False otherwise.
+        """
         x_axis = hist.GetXaxis()
         return self.xlim.upper >= x_axis.GetBinLowEdge(
             n_x
         ) and self.xlim.lower <= x_axis.GetBinUpEdge(n_x)
 
     def bin_in_y_range(self, n_y: int, hist) -> bool:
-        """Return True if bin n_y lies within ylim, ignoring the inverted option"""
+        """Test whether a bin lies within the given limits imposed on the y axis
+
+        This function is intended for cases where the independence of y can be
+        exploited.
+
+        Parameters
+        ----------
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+            True, if bin n_y lies within the given limits. False otherwise.
+        """
         y_axis = hist.GetYaxis()
         return self.ylim.upper >= y_axis.GetBinLowEdge(
             n_y
         ) and self.ylim.lower <= y_axis.GetBinUpEdge(n_y)
 
     def bin_in_z_range(self, n_z: int, hist) -> bool:
-        """Return True if bin n_z lies within zlim, ignoring the inverted option"""
+        """Test whether a bin lies within the given limits imposed on the z axis
+
+        This function is intended for cases where the independence of z can be
+        exploited.
+
+        Parameters
+        ----------
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+            True, if bin n_z lies within the given limits. False otherwise.
+        """
         z_axis = hist.GetZaxis()
         return self.zlim.upper >= z_axis.GetBinLowEdge(
             n_z
