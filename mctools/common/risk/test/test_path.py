@@ -184,7 +184,7 @@ class TestPath(unittest.TestCase):
         for n_x in range(1, 6):
             for n_y in range(1, 6):
                 for n_z in range(1, 6):
-                    if (n_x == n_y or n_x == n_y + 1) and n_z == 1:
+                    if n_x in (n_y, n_y + 1) and n_z == 1:
                         self.assertTrue(
                             opl.bin_in_range(n_x=n_x, n_y=n_y, n_z=n_z, hist=hist)
                         )
@@ -230,7 +230,7 @@ class TestPath(unittest.TestCase):
         for n_x in range(1, 6):
             for n_y in range(1, 6):
                 for n_z in range(1, 6):
-                    if (n_x == n_y or n_x == n_y + 1) and n_z == 1:
+                    if n_x in (n_y, n_y + 1) and n_z == 1:
                         self.assertTrue(
                             pl.bin_in_range(n_x=n_x, n_y=n_y, n_z=n_z, hist=hist)
                         )
