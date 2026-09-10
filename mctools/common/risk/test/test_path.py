@@ -7,24 +7,29 @@ from mctools.common.risk.limits import PathLimit3D, OrthogonalPathLimit3D
 
 
 class TestPath(unittest.TestCase):
-    def test_orthogonal_path_3d_initialization(self):
+    def test_path_limit_3d_initialization(self):
+        # Error: Path must have at least 2 points.
         with self.assertRaisesRegex(ValueError, "A path must have at least two"):
-            OrthogonalPathLimit3D(
-                x=np.array([0.0]), y=np.array([0.0]), z=np.array([0.0])
-            )
+            PathLimit3D(x=np.array([0.0]), y=np.array([0.0]), z=np.array([0.0]))
+        # Error: Inconsistent input.
         with self.assertRaisesRegex(ValueError, "All input arrays must have the "):
-            OrthogonalPathLimit3D(
+            PathLimit3D(
                 x=np.array([0.0, 1.0]),
                 y=np.array([0.0, 1.0]),
                 z=np.array([0.0, 1.0, 2.0]),
             )
+        # Error: Only 1D lists as input.
         with self.assertRaisesRegex(ValueError, "All input arrays must be one-"):
-            OrthogonalPathLimit3D(
+            PathLimit3D(
                 x=np.array([[0.0, 1.0], [0.0, 1.0]]),
                 y=np.array([0.0, 1.0]),
                 z=np.array([0.0, 1.0]),
             )
 
+    def test_orthogonal_path_limit_3d_initialization(self):
+        # Test whether the attributes are initialized correctly.
+        # Since OrthogonalPathLimit3D calls the base-class constructor, this also tests
+        # PathLimit3D.__init__().
         x = np.array([0.0, 1.0, 2.0, 2.0, 2.0])
         y = np.array([0.0, 0.0, 0.0, 1.0, 1.0])
         z = np.array([0.0, 0.0, 0.0, 0.0, 3.0])
@@ -39,6 +44,7 @@ class TestPath(unittest.TestCase):
         self.assertTrue(all(opl.xyz[:, 1] == y))
         self.assertTrue(all(opl.xyz[:, 2] == z))
 
+        # Test orthogonalization
         x = np.array([0.0, 1.0, 2.0, 1.7, 2.0])
         y = np.array([0.0, 0.1, -0.1, 1.1, 1.0])
         z = np.array([0.0, 0.2, 0.3, 0.4, -3.0])
@@ -49,7 +55,13 @@ class TestPath(unittest.TestCase):
         self.assertTrue(all(opl.xyz[:, 2] == np.array([0.0, 0.0, 0.0, 0.0, -3.0])))
 
     def test_orthogonal_path_3d(self):
+        # 5 x 5 x 5 - bin sample histogram with regular binning, but different bin
+        # sizes on each axis.
         hist = ROOT.TH3F("h", "h", 5, -0.25, 0.25, 5, -2.5, 2.5, 5, -25.0, 25.0)
+        # Test path that runs first along the x = y line on the lowest z plane
+        # (step along x, then step along y), then along
+        # the z axis to the central bin, then along the x axis to the central bin, and
+        # lastly along the y axis to the central bin.
         opl = OrthogonalPathLimit3D(
             x=np.array([-0.2, -0.1, -0.1, 0.0, 0.0, 0.1, 0.1, 0.2, 0.2, 0.2, 0.0, 0.0]),
             y=np.array(
