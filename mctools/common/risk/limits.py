@@ -646,7 +646,7 @@ class OrthogonalPathLimit3D(PathLimit3D):
         step_axis = [0] * (self.n_points - 1)
         for n in range(self.n_points - 1):
             d = np.abs(self.xyz[n + 1] - self.xyz[n])
-            step_ax = np.argmax(d)
+            step_ax = int(np.argmax(d))
             step_axis[n] = step_ax
             for axis in range(3):
                 if axis != step_ax:
