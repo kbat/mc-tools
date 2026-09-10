@@ -1,17 +1,20 @@
 """BaseLevel associated with a ROOT TH3 histogram"""
 
-from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from itertools import product
 from pathlib import Path
 from dataclasses import dataclass
 from uuid import uuid4
-from warnings import warn
 
 import ROOT
 
 from mctools.common.risk.level import BaseLevel
-from mctools.common.risk.limits import CombinedLimits3D, Limits3D, BoxLimits3D
+from mctools.common.risk.limits import (
+    BoxLimits3D,
+    CombinedLimits3D,
+    Limits3D,
+    PathLimit3D,
+)
 from mctools.common.risk.value import Value
 
 
@@ -153,6 +156,34 @@ class Zone(BaseLevel):
             bin_indices: Iterable[tuple[int, int, int]] = product(
                 bins_x, bins_y, bins_z
             )
+        elif (
+            len(self.lim.lim) == 1
+            and isinstance(self.lim.lim[0], PathLimit3D)
+            and not self.lim.lim[0].inverted
+        ):
+            bins_x = [
+                n_x
+                for n_x in range(1, n_bins_x + 1)
+                if self.lim.lim[0].bin_in_x_range(n_x, hist)
+            ]
+            bins_y = [
+                n_y
+                for n_y in range(1, n_bins_y + 1)
+                if self.lim.lim[0].bin_in_y_range(n_y, hist)
+            ]
+            bins_z = [
+                n_z
+                for n_z in range(1, n_bins_z + 1)
+                if self.lim.lim[0].bin_in_z_range(n_z, hist)
+            ]
+            bin_indices_in_bounding_box: Iterable[tuple[int, int, int]] = product(
+                bins_x, bins_y, bins_z
+            )
+            bin_indices = [
+                (n_x, n_y, n_z)
+                for n_x, n_y, n_z in bin_indices_in_bounding_box
+                if self.lim.lim[0].bin_in_range(n_x=n_x, n_y=n_y, n_z=n_z, hist=hist)
+            ]
         else:
             bin_indices = (
                 (n_x, n_y, n_z)
