@@ -4,6 +4,10 @@ This module defines classes that determine whether a given histogram bin is insi
 outside a region.
 A bin is defined as inside if any part of it is within the limits, i.e. it does not
 need to be fully contained within the limits.
+
+Note that getmax is assuming input from ROOT histograms that have bins aligned with
+the canonical x-, y-, and z axes. Bins with arbitrary orientation are not in the scope
+of this module.
 """
 
 from abc import ABC, abstractmethod
@@ -12,6 +16,7 @@ from dataclasses import dataclass
 from warnings import warn
 
 import numpy as np
+import ROOT
 
 
 @dataclass
@@ -407,9 +412,45 @@ class BoxLimits3D(Limits3D):
 
 
 class PathLimit3D(Limits3D):
+    """Path limit for a 3D variable
+
+    Determines whether a bin lies on a path determined by a set of 3D points connected
+    by straight lines.
+
+    Attributes
+    ----------
+    n_points: int
+        Number of points.
+    xyz: (n_points,3) ndarray
+        Coordinates of the points.
+    xyz_min: (3,) ndarray
+        Lower limits of the bounding box of the path.
+    xyz_max: (3,) ndarray
+        Upper limits of the bounding box of the path.
+    """
+
     def __init__(
         self, x: np.ndarray, y: np.ndarray, z: np.ndarray, inverted: bool = False
     ):
+        """Initialization
+
+        Parameters
+        ----------
+        x: (n_points,) ndarray
+            x coordinates of the points.
+        y: (n_points,) ndarray
+            y coordinates of the points.
+        z: (n_points,) ndarray
+            z coordinates of the points.
+        inverted: bool
+            Determines whether the limits or their inverse will be applied.
+            Default: False, i.e. do not invert the limits.
+
+        Raises
+        ------
+        ValueError
+            If list input is inconsistent or does not constitute a path.
+        """
         super().__init__(inverted=inverted)
         self.n_points = len(x)
         if self.n_points < 2:
@@ -427,27 +468,51 @@ class PathLimit3D(Limits3D):
     def _bin_in_range(
         self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
     ) -> bool:
-        rmin = np.array(
+        """Test whether a bin lies within the given limits.
+
+        Checks first whether the bin is within the bounding box of the path.
+        If the bin is within the bounding box, then checks whether any of the
+        connecting lines of the path is contained in the bin.
+
+        This function ignores the inverted parameter of Limits3D.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+        bool
+            True, if bin (n_x, n_y, n_z) lies within the given limits. False otherwise.
+        """
+        bmin = np.array(
             [
                 hist.GetXaxis().GetBinLowEdge(n_x),
                 hist.GetYaxis().GetBinLowEdge(n_y),
                 hist.GetZaxis().GetBinLowEdge(n_z),
             ]
         )
-        rmax = np.array(
+        bmax = np.array(
             [
                 hist.GetXaxis().GetBinUpEdge(n_x),
                 hist.GetYaxis().GetBinUpEdge(n_y),
                 hist.GetZaxis().GetBinUpEdge(n_z),
             ]
         )
-        if all(rmin <= self.xyz_max) and all(rmax >= self.xyz_min):
+        if all(bmin <= self.xyz_max) and all(bmax >= self.xyz_min):
             for n in range(self.n_points - 1):
                 if self.bin_on_connection(
                     p0=self.xyz[n],
                     p1=self.xyz[n + 1],
-                    rmin=rmin,
-                    rmax=rmax,
+                    bmin=bmin,
+                    bmax=bmax,
                 ):
                     return True
         return False
@@ -456,15 +521,37 @@ class PathLimit3D(Limits3D):
     def bin_on_connection(
         p0: np.ndarray,
         p1: np.ndarray,
-        rmin: np.ndarray,
-        rmax: np.ndarray,
+        bmin: np.ndarray,
+        bmax: np.ndarray,
     ) -> bool:
+        """Test whether a bin lies on a connecting line between two points
+
+        Calculates the intersection points of the infinite line with the 6 surfaces of
+        the bin and checks whether the intersection points are on the connection.
+
+        Parameters
+        ----------
+        p0: (3,) ndarray
+            Start point of the line.
+        p1: (3,) ndarray
+            End point of the line.
+        bmin: (3,) ndarray
+            Lower limits of the bin.
+        bmax: (3,) ndarray
+            Upper limits of the bin.
+
+        Returns
+        -------
+        bool
+            True, if bin (n_x, n_y, n_z) lies on the connecting line.
+            False otherwise.
+        """
         tmin, tmax = 0.0, 1.0
         d = p1 - p0
         for i in range(3):
             if d[i] != 0.0:
-                t1 = (rmin[i] - p0[i]) / d[i]
-                t2 = (rmax[i] - p0[i]) / d[i]
+                t1 = (bmin[i] - p0[i]) / d[i]
+                t2 = (bmax[i] - p0[i]) / d[i]
                 if t1 > t2:
                     t1, t2 = t2, t1
                 tmin = max(tmin, t1)
@@ -472,20 +559,90 @@ class PathLimit3D(Limits3D):
                 if tmin > tmax:
                     return False
             else:
-                if p0[i] < rmin[i] or p0[i] > rmax[i]:
+                if p0[i] < bmin[i] or p0[i] > bmax[i]:
                     return False
 
         return True
 
 
 class OrthogonalPathLimit3D(PathLimit3D):
+    """Orthogonal path limit for a 3D variable
+
+    An orthogonal path consists of connecting lines ('steps') that are parallel to the
+    x-, y-, or z axis.
+
+    Attributes
+    ----------
+    n_points: int
+        Number of points.
+    xyz: (n_points,3) ndarray
+        Coordinates of the points.
+    xyz_min: (3,) ndarray
+        Lower limits of the bounding box of the path.
+    xyz_max: (3,) ndarray
+        Upper limits of the bounding box of the path.
+    step_axis: list[int] with length n_points-1
+        For each step, indicates along which axis the step occurs.
+        0 = x, 1 = y, 2 = z.
+    """
+
     def __init__(
         self, x: np.ndarray, y: np.ndarray, z: np.ndarray, inverted: bool = False
     ):
+        """Initialization
+
+        The input path will be 'orthogonalized' to be in compliance with the
+        assumptions of this class. The orthogonalization proceeds as follows:
+        For each pair of points (p0, p1) along the path that define a connecting line,
+        determine the step lengths dx, dy, dz along the axes:
+
+            dx = abs(p1[0]-p0[0])
+            dy = abs(p1[0]-p0[0])
+            dz = abs(p1[0]-p0[0])
+
+        The largest of the step lengths defines the step axis (see step_axis
+        attribute). For the remaining two axes, the coordinates of the end point are
+        set to the value of the start point:
+
+            p1[i] = p0[i]       where i is not the step axis
+
+        Possible problems with this algorithm are precision issues (a very small step
+        may be obscured by rounding errors along another axis).
+
+        Parameters
+        ----------
+        x: (n_points,) ndarray
+            x coordinates of the points.
+        y: (n_points,) ndarray
+            y coordinates of the points.
+        z: (n_points,) ndarray
+            z coordinates of the points.
+        inverted: bool
+            Determines whether the limits or their inverse will be applied.
+            Default: False, i.e. do not invert the limits.
+
+        Raises
+        ------
+        ValueError
+            If list input is inconsistent or does not constitute a path.
+        """
         super().__init__(x=x, y=y, z=z, inverted=inverted)
         self.step_axis = self.orthogonalize()
 
     def orthogonalize(self) -> list[int]:
+        """Orthogonalize the steps between the points of the path
+
+        Analyzes the step lengths along individual axes to find the step axis for each
+        step.
+        May shift all points except the first one such that all steps are exactly
+        parallel to the step axis.
+
+        Returns
+        -------
+        step_axis: list[int] with length n_points-1
+            For each step, indicates along which axis the step occurs.
+            0 = x, 1 = y, 2 = z.
+        """
         step_axis = [0] * (self.n_points - 1)
         for n in range(self.n_points - 1):
             d = np.abs(self.xyz[n + 1] - self.xyz[n])
@@ -497,7 +654,34 @@ class OrthogonalPathLimit3D(PathLimit3D):
 
         return step_axis
 
-    def _bin_in_range(self, n_x, n_y, n_z, hist):
+    def _bin_in_range(
+        self, n_x: int, n_y: int, n_z: int, hist: "ROOT.TH3F | ROOT.TH3D"
+    ) -> bool:
+        """Test whether a bin lies within the given limits.
+
+        Checks first whether the bin is within the bounding box of the path.
+        If the bin is within the bounding box, check whether any of the connecting
+        lines lies within the bin. For each connecting line, distinguish between
+        the step axis and the remaining two axis.
+
+        This function ignores the inverted parameter of Limits3D.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+        bool
+            True, if bin (n_x, n_y, n_z) lies within the given limits. False otherwise.
+        """
         rmin = np.array(
             [
                 hist.GetXaxis().GetBinLowEdge(n_x),
