@@ -54,7 +54,104 @@ class TestPath(unittest.TestCase):
         self.assertTrue(all(opl.xyz[:, 1] == np.array([0.0, 0.0, 0.0, 1.1, 1.1])))
         self.assertTrue(all(opl.xyz[:, 2] == np.array([0.0, 0.0, 0.0, 0.0, -3.0])))
 
-    def test_orthogonal_path_3d(self):
+    def test_path_limit_3d(self):
+        # Dimensions of the bin.
+        bmin = [-1.0, -1.0, -1.0]
+        bmax = [1.0, 1.0, 1.0]
+
+        # Both points outside bin
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([0.0, 0.0, -2.0]),
+                np.array([0.0, 0.0, 2.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # Start point inside
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([0.0, 0.0, 0.0]),
+                np.array([0.0, 0.0, 2.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # End point inside
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([0.0, 0.0, -2.0]),
+                np.array([0.0, 0.0, 0.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # Start point = end point, inside
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([0.0, 0.0, 0.0]),
+                np.array([0.0, 0.0, 0.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # Start point = end point, outside
+        self.assertFalse(
+            PathLimit3D.bin_on_connection(
+                np.array([0.0, 0.0, 3.0]),
+                np.array([0.0, 0.0, 3.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # No intersection
+        self.assertFalse(
+            PathLimit3D.bin_on_connection(
+                np.array([3.0, 0.0, 0.0]),
+                np.array([0.0, 0.0, 3.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # Connecting line on edge
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([1.0, 1.0, -2.0]),
+                np.array([1.0, 1.0, 2.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # Connecting line slightly outside
+        almost_on_edge = 1.0 + 1e-10
+        self.assertFalse(
+            PathLimit3D.bin_on_connection(
+                np.array([almost_on_edge, almost_on_edge, -2.0]),
+                np.array([almost_on_edge, almost_on_edge, 2.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # Start point on surface
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([1.0, 0.0, 0.0]),
+                np.array([3.0, 0.0, 0.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+        # End point on surface
+        self.assertTrue(
+            PathLimit3D.bin_on_connection(
+                np.array([3.0, 0.0, 0.0]),
+                np.array([1.0, 0.0, 0.0]),
+                bmin=bmin,
+                bmax=bmax,
+            )
+        )
+
+    def test_orthogonal_path_limit_3d(self):
         # 5 x 5 x 5 - bin sample histogram with regular binning, but different bin
         # sizes on each axis.
         hist = ROOT.TH3F("h", "h", 5, -0.25, 0.25, 5, -2.5, 2.5, 5, -25.0, 25.0)
