@@ -192,11 +192,8 @@ class Case:
             "\n"
             r"It is assumed that the \rate commands are defined in a file "
             f"called '{command_output_file_name}'."
-            "\nBuild document with\n\t"
-            f"LATEX {variable_output_file_name} && "
-            f"LATEX {variable_output_file_name}\n"
-            "where LATEX is your LATEX compiler.\n"
-            "(LATEX is invoked twice to build the table of contents.)"
+            "\nBuild the list of all variables with\n\t"
+            f"latexmk {variable_output_file_name}"
         )
 
     def createLaTeXCommands(self, large_error_warnings: bool = True) -> str:
