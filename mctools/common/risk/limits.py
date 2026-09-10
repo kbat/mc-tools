@@ -12,18 +12,28 @@ from dataclasses import dataclass
 from warnings import warn
 
 import numpy as np
-import ROOT
 
 
 @dataclass
 class Limits:
-    """Limits for a 1D variable"""
+    """Limits for a 1D variable
+
+    Attributes
+    ----------
+    lower: float
+        Lower limit. Default: -inf, i.e. no lower limit.
+    upper: float
+        Upper limit. Default: inf, i.e. no upper limit.
+    variable_name: str
+        Name of the variable used in the string representation of Limits. Default: 'x'.
+    """
 
     lower: float = float("-inf")
     upper: float = float("inf")
     variable_name: str = "x"
 
     def __post_init__(self):
+        """Post Init"""
         if self.upper < self.lower:
             warn(
                 "Given lower limit is larger than upper limit."
@@ -32,6 +42,7 @@ class Limits:
             self.lower, self.upper = self.upper, self.lower
 
     def __str__(self) -> str:
+        """String representation"""
         if self.lower == float("-inf") and self.upper == float("inf"):
             return ""
         if self.lower == self.upper:
@@ -47,6 +58,11 @@ class Limits3D(ABC):
 
     If inverted is True, a bin is in range if it lies outside the limits instead of
     inside them.
+
+    Attributes
+    ----------
+    inverted: bool
+        Determines whether the limits or their inverse will be applied.
     """
 
     def __init__(self, inverted: bool = False):
@@ -175,6 +191,11 @@ class CombinedLimits3D:
     """Container class for multiple limits
 
     Supports iteration, access with square brackets, and comparison.
+
+    Attributes
+    ----------
+    lim: list[Limits3D]
+        Set of limits.
     """
 
     def __init__(self, lim: Limits3D | list[Limits3D] | None = None):
@@ -231,17 +252,16 @@ class BoxLimits3D(Limits3D):
 
     Independent lower and upper limits for the x-, y-, and z coordinate.
 
-    Parameters
+    Attributes
     ----------
-    xlim: Limits | None
-        Lower and upper limit for the x coordinate. Default: None, i.e. no limits.
-    ylim: Limits | None
-        Lower and upper limit for the y coordinate. Default: None, i.e. no limits.
-    zlim: Limits | None
-        Lower and upper limit for the z coordinate. Default: None, i.e. no limits.
+    xlim: Limits
+        Lower and upper limit for the x coordinate.
+    ylim: Limits
+        Lower and upper limit for the y coordinate.
+    zlim: Limits
+        Lower and upper limit for the z coordinate.
     inverted: bool
         Determines whether the limits or their inverse will be applied.
-        Default: False, i.e. do not invert the limits.
     """
 
     def __init__(
@@ -251,6 +271,20 @@ class BoxLimits3D(Limits3D):
         zlim: Limits | None = None,
         inverted: bool = False,
     ):
+        """Initialization
+
+        Parameters
+        ----------
+        xlim: Limits | None
+            Lower and upper limit for the x coordinate. Default: None, i.e. no limits.
+        ylim: Limits | None
+            Lower and upper limit for the y coordinate. Default: None, i.e. no limits.
+        zlim: Limits | None
+            Lower and upper limit for the z coordinate. Default: None, i.e. no limits.
+        inverted: bool
+            Determines whether the limits or their inverse will be applied.
+            Default: False, i.e. do not invert the limits.
+        """
         super().__init__(inverted=inverted)
         self.xlim = Limits() if xlim is None else xlim
         self.xlim.variable_name = "x"
@@ -488,7 +522,7 @@ class OrthogonalPathLimit3D(PathLimit3D):
                         if rmin[axis] > pmax or rmax[axis] < pmin:
                             bin_on_connection = False
                             break
-                    elif not (rmin[axis] <= self.xyz[n][axis] <= rmax[axis]):
+                    elif not rmin[axis] <= self.xyz[n][axis] <= rmax[axis]:
                         bin_on_connection = False
                         break
                 if bin_on_connection:
