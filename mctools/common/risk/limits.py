@@ -567,6 +567,69 @@ class PathLimit3D(Limits3D):
                     return True
         return False
 
+    def bin_in_x_range(self, n_x, hist):
+        """Test whether a bin lies within the bounding-box range on the x axis
+
+        This function is intended for preprocessing a histogram.
+
+        Parameters
+        ----------
+        n_x: int
+            Number of the bin on the x axis between 1 and hist.GetXaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+            True, if bin n_x lies within the bounding box. False otherwise.
+        """
+        x_axis = hist.GetXaxis()
+        return self.xyz_max[0] >= x_axis.GetBinLowEdge(n_x) and self.xyz_min[
+            0
+        ] <= x_axis.GetBinUpEdge(n_x)
+
+    def bin_in_y_range(self, n_y, hist):
+        """Test whether a bin lies within the bounding-box range on the y axis
+
+        This function is intended for preprocessing a histogram.
+
+        Parameters
+        ----------
+        n_y: int
+            Number of the bin on the y axis between 1 and hist.GetYaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+            True, if bin n_y lies within the bounding box. False otherwise.
+        """
+        y_axis = hist.GetYaxis()
+        return self.xyz_max[1] >= y_axis.GetBinLowEdge(n_y) and self.xyz_min[
+            1
+        ] <= y_axis.GetBinUpEdge(n_y)
+
+    def bin_in_z_range(self, n_z, hist):
+        """Test whether a bin lies within the bounding-box range on the z axis
+
+        This function is intended for preprocessing a histogram.
+
+        Parameters
+        ----------
+        n_z: int
+            Number of the bin on the z axis between 1 and hist.GetZaxis().GetNbins().
+        hist: ROOT.TH3F or ROOT.TH3D
+            ROOT histogram.
+
+        Returns
+        -------
+            True, if bin n_z lies within the bounding box. False otherwise.
+        """
+        z_axis = hist.GetZaxis()
+        return self.xyz_max[2] >= z_axis.GetBinLowEdge(n_z) and self.xyz_min[
+            2
+        ] <= z_axis.GetBinUpEdge(n_z)
+
     @staticmethod
     def bin_on_connection(
         p0: np.ndarray,
