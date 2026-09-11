@@ -1,3 +1,4 @@
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from decimal import Decimal
 from os import cpu_count
@@ -143,7 +144,10 @@ class Case:
             else:
                 max_workers = min(max_workers, n_scenarios)
             print(f"Evaluating {n_scenarios} scenarios with {max_workers} workers.")
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            mp_context = multiprocessing.get_context("spawn")
+            with ProcessPoolExecutor(
+                max_workers=max_workers, mp_context=mp_context
+            ) as executor:
                 futures = [
                     executor.submit(_evaluate_scenario, item)
                     for item in self.scenarios.items()
@@ -163,6 +167,16 @@ class Case:
                 f"Scenario {n_scenario+1:3d}/{n_scenarios:3d}: "
                 f"{(time()-t_start):4.2e} seconds ({scenario_name})"
             )
+
+    def __str__(self) -> str:
+        buffer = ""
+        n_scenarios = len(self.scenarios)
+        for n_scenario, scenario in enumerate(self.scenarios):
+            buffer += f"{scenario}\n"
+            buffer += self[scenario].__str__()
+            if n_scenario < n_scenarios - 1:
+                buffer += "\n"
+        return buffer
 
     def toLaTeX(
         self,
@@ -316,9 +330,7 @@ class Case:
         buffer.append("}%\n")
         return "".join(buffer)
 
-    def createAllVariableLaTeX(
-        self, command_output_file_name: Path, large_error_warnings: bool = True
-    ) -> str:
+    def createAllVariableLaTeX(self, command_output_file_name: Path) -> str:
         buffer = [
             r"\documentclass{article}"
             "\n\n"

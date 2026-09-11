@@ -4,10 +4,9 @@ import unittest
 import ROOT
 
 from mctools.common.risk.level import Level
+from mctools.common.risk.limits import BoxLimits3D, Limits
 from mctools.common.risk.test.input_histogram import create_test_histogram
 from mctools.common.risk.zone import (
-    BoxLimits3D,
-    Limits,
     ROOTFileInput,
     ROOTInputCache,
     Zone,
@@ -206,7 +205,11 @@ class TestRootInput(unittest.TestCase):
             )
 
             with ROOTInputCache() as root_input_cache:
-                with self.assertRaisesRegex(FileNotFoundError, "missing.root"):
+                # Actually, the ROOT library prints an error message first in this
+                # case, but neither uses standard Python error handling nor stops
+                # program execution.
+                # The first error that can be asserted is this OSError.
+                with self.assertRaisesRegex(OSError, "Failed to open file"):
                     zone.evaluate(root_input_cache=root_input_cache)
 
     def test_root_input_cache_missing_scale_file(self):
@@ -252,5 +255,7 @@ class TestRootInput(unittest.TestCase):
             )
 
             with ROOTInputCache() as root_input_cache:
-                with self.assertRaisesRegex(ValueError, tmp_scale.name):
+                with self.assertRaisesRegex(
+                    ValueError, "could not convert string to float"
+                ):
                     zone.evaluate(root_input_cache=root_input_cache)

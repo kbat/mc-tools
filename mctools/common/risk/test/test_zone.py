@@ -1,6 +1,7 @@
 import unittest
 
-from mctools.common.risk.zone import BoxLimits3D, Limits, Limits3D, Zone
+from mctools.common.risk.limits import BoxLimits3D, CombinedLimits3D, Limits, Limits3D
+from mctools.common.risk.zone import Zone
 from mctools.common.risk.test.input_histogram import create_test_histogram
 
 
@@ -141,12 +142,15 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.z, 0.5)
 
     def test_zone_accepts_single_limits3d(self):
-        hist = create_test_histogram(name="th3_6")
         box = BoxLimits3D(zlim=Limits(upper=-0.1))
 
-        zone = Zone(hist=hist, lim=box)
+        zone = Zone(hist="hist", lim=box)
 
-        self.assertEqual(zone.lim, [box])
+        self.assertEqual(zone.lim, CombinedLimits3D([box]))
+
+    def test_zone_limits3d_invalid_input(self):
+        with self.assertRaisesRegex(ValueError, "Invalid input for lim."):
+            Zone(hist="hist", lim=[[BoxLimits3D(zlim=Limits(upper=-0.1))]])
 
     def test_zone_combined_limits(self):
         # Inner box, inverted: everywhere except the (0.5, 0.5, 0.5) corner bin.
@@ -168,9 +172,162 @@ class TestZone(unittest.TestCase):
         self.assertEqual(zone.value.z, 0.5)
 
     def test_zone_default_limits_are_not_shared(self):
-        zone_0 = Zone(hist=create_test_histogram(name="th3_2"))
-        zone_1 = Zone(hist=create_test_histogram(name="th3_3"))
+        zone_0 = Zone(hist="hist")
+        zone_1 = Zone(hist="hist")
 
         zone_0.lim[0].xlim.lower = 0.0
 
         self.assertEqual(zone_1.lim[0].xlim.lower, float("-inf"))
+
+    def test_limits_str(self):
+        self.assertEqual(str(Limits()), "")
+        self.assertEqual(str(Limits(variable_name="y")), "")
+
+        self.assertEqual(str(Limits(lower=0.0)), "0.0 <= x")
+        self.assertEqual(str(Limits(lower=0.0, variable_name="y")), "0.0 <= y")
+
+        self.assertEqual(str(Limits(upper=0.0)), "x <= 0.0")
+        self.assertEqual(str(Limits(upper=0.0, variable_name="y")), "y <= 0.0")
+
+        self.assertEqual(str(Limits(lower=0.0, upper=0.0)), "x = 0.0")
+        self.assertEqual(
+            str(Limits(lower=0.0, upper=0.0, variable_name="y")), "y = 0.0"
+        )
+
+        self.assertEqual(str(Limits(lower=0.0, upper=1.0)), "0.0 <= x <= 1.0")
+        self.assertEqual(
+            str(Limits(lower=0.0, upper=1.0, variable_name="y")), "0.0 <= y <= 1.0"
+        )
+
+        self.assertEqual(str(BoxLimits3D()), "")
+
+        self.assertEqual(
+            str(BoxLimits3D(xlim=Limits(lower=0.0, upper=1.0))), "0.0 <= x <= 1.0"
+        )
+        self.assertEqual(
+            str(BoxLimits3D(ylim=Limits(lower=0.0, upper=1.0))), "0.0 <= y <= 1.0"
+        )
+        self.assertEqual(
+            str(BoxLimits3D(zlim=Limits(lower=0.0, upper=1.0))), "0.0 <= z <= 1.0"
+        )
+
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=1.0), ylim=Limits(lower=0.0, upper=1.0)
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=1.0), zlim=Limits(lower=0.0, upper=1.0)
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= z <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    ylim=Limits(lower=0.0, upper=1.0), zlim=Limits(lower=0.0, upper=1.0)
+                )
+            ),
+            "0.0 <= y <= 1.0 && 0.0 <= z <= 1.0",
+        )
+
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=1.0),
+                    ylim=Limits(lower=0.0, upper=1.0),
+                    zlim=Limits(lower=0.0, upper=1.0),
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0 && 0.0 <= z <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=0.0),
+                    ylim=Limits(upper=1.0),
+                    zlim=Limits(lower=0.0),
+                )
+            ),
+            "x = 0.0 && y <= 1.0 && 0.0 <= z",
+        )
+        self.assertEqual(
+            str(
+                BoxLimits3D(
+                    xlim=Limits(lower=0.0, upper=0.0),
+                    ylim=Limits(upper=1.0),
+                    zlim=Limits(lower=0.0),
+                    inverted=True,
+                )
+            ),
+            "!(x = 0.0 && y <= 1.0 && 0.0 <= z)",
+        )
+
+        self.assertEqual(str(CombinedLimits3D(lim=[])), "")
+        self.assertEqual(
+            str(
+                CombinedLimits3D(
+                    lim=[
+                        BoxLimits3D(),
+                    ]
+                )
+            ),
+            "",
+        )
+        self.assertEqual(
+            str(
+                CombinedLimits3D(
+                    lim=[
+                        BoxLimits3D(
+                            xlim=Limits(lower=0.0, upper=1.0),
+                            ylim=Limits(lower=0.0, upper=1.0),
+                            zlim=Limits(lower=0.0, upper=1.0),
+                        ),
+                        BoxLimits3D(),
+                    ]
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0 && 0.0 <= z <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                CombinedLimits3D(
+                    lim=[
+                        BoxLimits3D(),
+                        BoxLimits3D(
+                            xlim=Limits(lower=0.0, upper=1.0),
+                            ylim=Limits(lower=0.0, upper=1.0),
+                            zlim=Limits(lower=0.0, upper=1.0),
+                        ),
+                    ]
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0 && 0.0 <= z <= 1.0",
+        )
+        self.assertEqual(
+            str(
+                CombinedLimits3D(
+                    lim=[
+                        BoxLimits3D(
+                            xlim=Limits(lower=0.0, upper=1.0),
+                            ylim=Limits(lower=0.0, upper=1.0),
+                            zlim=Limits(lower=0.0, upper=1.0),
+                        ),
+                        BoxLimits3D(),
+                        BoxLimits3D(
+                            xlim=Limits(lower=0.5, upper=0.6),
+                            ylim=Limits(lower=0.5, upper=0.6),
+                            zlim=Limits(lower=0.5, upper=0.6),
+                            inverted=True,
+                        ),
+                    ]
+                )
+            ),
+            "0.0 <= x <= 1.0 && 0.0 <= y <= 1.0 && 0.0 <= z <= 1.0 && "
+            "!(0.5 <= x <= 0.6 && 0.5 <= y <= 0.6 && 0.5 <= z <= 0.6)",
+        )

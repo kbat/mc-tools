@@ -34,7 +34,10 @@ class Value:
         return NotImplemented
 
     def __str__(self):
-        return f"{self.val:.3g} ± {self.err:.1g}   {self.relerr:.1f} %"
+        relerr = ""
+        if self.relerr != float("inf"):
+            relerr = f" ({self.relerr:.1f} %)"
+        return f"{self.val:.3g} ± {self.err:.1g}{relerr}"
 
     def __repr__(self):
         return f"Value({self.val}, {self.err})"

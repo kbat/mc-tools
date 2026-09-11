@@ -1,8 +1,9 @@
 import unittest
 
 from mctools.common.risk.level import Level
+from mctools.common.risk.limits import BoxLimits3D, Limits
 from mctools.common.risk.test.input_histogram import create_test_histogram
-from mctools.common.risk.zone import BoxLimits3D, Limits, Zone
+from mctools.common.risk.zone import Zone
 
 
 class TestLevels(unittest.TestCase):
