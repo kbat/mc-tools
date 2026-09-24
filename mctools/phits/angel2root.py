@@ -290,24 +290,20 @@ class Angel:
             page = self.pageLST[npage]
             hLST = []
             page_subtitle = ""
+            page_xtitle = self.xtitle
+            page_ytitle = self.ytitle
+            histogram_titles = {}
             for iline, line in enumerate(page):
                 if re.search("^x:", line):
-                    words = line.split()
-                    self.xtitle = ' '.join(words[1:])
-                    continue
+                    page_xtitle = ' '.join(line.split()[1:])
                 elif re.search("^y:", line):
-                    words = line.split()
-                    self.ytitle = ' '.join(words[1:])
-                    continue
-                elif re.search("^z:", line):
-                    if not re.search("xorg", line):
-                        LOGGER.warning("page %d contains an unsupported z graph", npage)
-                    continue
+                    page_ytitle = ' '.join(line.split()[1:])
                 elif re.search("'no. =", line):
                     page_subtitle = (' '.join(line[line.find(',') + 1:].split())
                                      .replace("'", '').strip())
                 elif re.search("^h", line):
                     hLST.append((iline, line.split()[0]))
+                    histogram_titles[iline] = (page_xtitle, page_ytitle)
             if self.sangel and not hLST:
                 self.fail("sangel page contains no histogram section", page=npage)
 
@@ -316,6 +312,16 @@ class Angel:
                 if self.sangel and iline < hLST[-1][0]:
                     continue
                 igline = iline + self.pageSepLineLST[npage - 1] + 1
+                if re.search("^x:", line):
+                    self.xtitle = ' '.join(line.split()[1:])
+                    continue
+                if re.search("^y:", line):
+                    self.ytitle = ' '.join(line.split()[1:])
+                    continue
+                if re.search("^z:", line):
+                    if not re.search("xorg", line):
+                        LOGGER.warning("page %d contains an unsupported z graph", npage)
+                    continue
                 if re.search(r"^\s*#\s*gshow\s*$", line, re.IGNORECASE):
                     in_gshow = True
                     continue
@@ -324,6 +330,7 @@ class Angel:
                 if re.search(r"^h2:", line):
                     in_gshow = False
                 if re.search("^h", line):
+                    self.xtitle, self.ytitle = histogram_titles[iline]
                     if re.search("^h: [nx]", line):
                         self.Read1DHist(igline, npage, page_subtitle)
                         continue
@@ -337,6 +344,9 @@ class Angel:
                                                page_subtitle=page_subtitle)
                         continue
                     elif re.search("^h([2d]|c2?):", line):
+                        value_title = self.Get2DValueTitle(page, iline)
+                        if value_title:
+                            self.ztitle = value_title
                         self.Read2DHist(igline, npage, page_subtitle)
                         break
                     elif 'reg' in self.axis:
@@ -382,12 +392,19 @@ class Angel:
         info = {}
         text = '\n'.join(page)
         for key, value in re.findall(
-                r"\b(ia|ie|ix|iy|iz|it|il)\s*=\s*([+-]?\d+)", text):
+                r"\b(ia|ie|ir|ix|iy|iz|it|il)\s*=\s*([+-]?\d+)", text):
             info[key] = int(value)
         particle = re.search(r"\bpart\.?\s*=\s*([^\s]+)", text)
         if particle:
             info['part'] = particle.group(1)
         return info
+
+    def Get2DValueTitle(self, page, histogram_line):
+        """Return the color/value-axis title following a 2D matrix."""
+        for line in page[histogram_line + 1:]:
+            if re.search(r"^y:", line):
+                return ' '.join(line.split()[1:])
+        return self.ztitle
 
     def AddHistogram(self, histogram, page_num, slot=0, label=''):
         """Add a ROOT object and retain the page information used for merging."""
@@ -406,10 +423,10 @@ class Angel:
     def PageAxis(self):
         """Return the ANGEL page index and its PHITS bin edges, if present."""
         edge_names = {
-            'ia': 'na', 'ie': 'ne', 'ix': 'nx', 'iy': 'ny', 'iz': 'nz',
+            'ia': 'na', 'ie': 'ne', 'ir': 'nr', 'ix': 'nx', 'iy': 'ny', 'iz': 'nz',
             'it': 'nt', 'il': 'nl',
         }
-        for page_key in ('ia', 'ie', 'ix', 'iy', 'iz', 'it', 'il'):
+        for page_key in ('ia', 'ie', 'ir', 'ix', 'iy', 'iz', 'it', 'il'):
             edge_key = edge_names[page_key]
             if edge_key not in self.dict_edges_array:
                 continue
@@ -487,7 +504,7 @@ class Angel:
 
     def PageAxisTitle(self, page_key):
         return {
-            'ia': 'Angle', 'ie': 'Energy', 'ix': 'x', 'iy': 'y',
+            'ia': 'Angle', 'ie': 'Energy', 'ir': 'r [cm]', 'ix': 'x', 'iy': 'y',
             'iz': 'z', 'it': 'Time', 'il': 'LET',
         }.get(page_key, page_key)
 
@@ -672,8 +689,9 @@ class Angel:
         xedges = self.getXarray(first)
         yedges = array('f', [float(edge) for edge in page_edges])
         name = self.CombinedName(self.file or first.GetName(), slot, particle)
-        title = '%s;%s;%s' % (self.title, first.GetXaxis().GetTitle(),
-                              self.PageAxisTitle(page_key))
+        title = '%s;%s;%s;%s' % (self.title, first.GetXaxis().GetTitle(),
+                                 self.PageAxisTitle(page_key),
+                                 first.GetYaxis().GetTitle())
         histogram = TH2F(name, title, first.GetNbinsX(), array('f', xedges),
                          len(page_edges) - 1, yedges)
         for iy, record in enumerate(group, 1):
@@ -935,10 +953,11 @@ class Angel:
         Makes some ROOT fixes
 
         """
-        self.ytitle = self.ytitle.replace("cm^2", "cm^{2}")
-        self.ytitle = self.ytitle.replace("cm^3", "cm^{3}")
-        self.title = self.title.replace("cm^2", "cm^{2}")
-        self.title = self.title.replace("cm^3", "cm^{3}")
+        for attribute in ('title', 'xtitle', 'ytitle', 'ztitle'):
+            value = getattr(self, attribute)
+            value = value.replace("cm^2", "cm^{2}")
+            value = value.replace("cm^3", "cm^{3}")
+            setattr(self, attribute, value)
 
     def Read2DHist(self, iline, pageNum=None, page_subtitle=""):
         """
@@ -1001,6 +1020,7 @@ class Angel:
             self.fail("2D histogram expected %d values, found %d" %
                       (expected, len(data)), line=iline + 1, page=pageNum)
 
+        self.FixTitles()
         hname = self.PageHistogramName(pageNum)
         title = self.title + (" - " + page_subtitle if page_subtitle else "")
         h = TH2F(hname, "%s;%s;%s;%s" %

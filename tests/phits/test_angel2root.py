@@ -147,6 +147,19 @@ def test_simple_2d_fixture_has_expected_dimensions(tmp_path):
     assert objects[0]["nbins"] == (2, 2)
 
     text = (FIXTURES / "simple_2d.angel").read_text()
+    text = text.replace("x: x [cm]", "x: z [cm]")
+    text = text.replace("y: y [cm]", "y: r [cm]")
+    text += "y: Flux [1/cm^2/source]\n"
+    result, root_path = run_text_converter(tmp_path, text)
+
+    assert result.returncode == 0, result.stderr
+    root_file = ROOT.TFile.Open(str(root_path))
+    histogram = root_file.Get("map")
+    assert histogram.GetXaxis().GetTitle() == "z [cm]"
+    assert histogram.GetYaxis().GetTitle() == "r [cm]"
+    assert histogram.GetZaxis().GetTitle() == "Flux [1/cm^{2}/source]"
+    root_file.Close()
+
     error_text = text.replace("1.0 2.0\n3.0 4.0", "0.1 0.2\n0.3 0.4")
     (tmp_path / "input_err.out").write_text(error_text)
     result, root_path = run_text_converter(tmp_path, text)
@@ -209,6 +222,45 @@ def test_page_series_is_combined_into_2d_histogram(tmp_path):
     assert (histogram.GetNbinsX(), histogram.GetNbinsY()) == (1, 2)
     assert histogram.GetBinContent(1, 1) == pytest.approx(2.0)
     assert histogram.GetBinContent(1, 2) == pytest.approx(3.0)
+    root_file.Close()
+
+    text = """[ T-Track ]
+title = Non-uniform radial mesh
+mesh = r-z
+nr = 2
+$ data =
+ 0.0 10.0 20.0
+axis = z
+file = radial.out
+part = photon
+newpage:
+ir = 1
+x: z [cm]
+y: Flux [1/cm^2/source]
+h: n x y(photon)
+0.0 1.0 2.0 0.1
+1.0 2.0 3.0 0.2
+
+newpage:
+ir = 2
+x: z [cm]
+y: Flux [1/cm^2/source]
+h: n x y(photon)
+0.0 1.0 4.0 0.3
+1.0 2.0 5.0 0.4
+"""
+    result, root_path = run_text_converter(tmp_path, text)
+
+    assert result.returncode == 0, result.stderr
+    root_file = ROOT.TFile.Open(str(root_path))
+    histogram = root_file.Get("radial_photon")
+    assert histogram.ClassName() == "TH2F"
+    assert (histogram.GetNbinsX(), histogram.GetNbinsY()) == (2, 2)
+    assert histogram.GetXaxis().GetTitle() == "z [cm]"
+    assert histogram.GetYaxis().GetTitle() == "r [cm]"
+    assert histogram.GetZaxis().GetTitle() == "Flux [1/cm^{2}/source]"
+    assert histogram.GetBinContent(2, 2) == pytest.approx(5.0)
+    assert histogram.GetBinError(2, 2) == pytest.approx(2.0)
     root_file.Close()
 
 
