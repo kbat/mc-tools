@@ -10,11 +10,13 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 def GetAsymmGraphs(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name):
     graphs = ROOT.TObjArray()
+    graphs.SetOwner(True)
     GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name, graphs, 0)
     return graphs
 
 def GetGraphs(colx, colex, coly, coley, fname, l1, l2, name, title, relerr):
     graphs = ROOT.TObjArray()
+    graphs.SetOwner(True)
     GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, 0, relerr)
     return graphs
 
@@ -80,6 +82,7 @@ def GetAsymmGraph(colx, exlow, exhigh, coly, eylow, eyhigh, fname, l1, l2, name,
     if npoints>0:
 
         gr = ROOT.TGraphAsymmErrors(npoints)
+        ROOT.SetOwnership(gr, False)
 
         if  name_index==0:
             gr.SetName(name)
@@ -166,6 +169,7 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
 
         if not colex and not coley: gr = ROOT.TGraph(npoints)
         else:                       gr = ROOT.TGraphErrors(npoints)
+        ROOT.SetOwnership(gr, False)
         if len(xtitle) or len(ytitle):
 #            gr.SetTitle("%s;%s;%s;" % (title, xtitle, ytitle))
             gr.SetTitle(title)
@@ -201,7 +205,7 @@ def GetGraph(colx, colex, coly, coley, fname, l1, l2, name, title, graphs, name_
 #    print("nlines:", nline, l2)
     if nline<l2:
 #        print("again")
-        GetGraph(colx, colex, coly, coley, fname, nline+1, l2, name, graphs, name_index)
+        GetGraph(colx, colex, coly, coley, fname, nline+1, l2, name, title, graphs, name_index, relerr)
 
 def main():
     """
@@ -250,11 +254,14 @@ def main():
 
     fout = ROOT.TFile(fname_out, fout_option)
     if results.eylow is None:
-        GetGraphs(results.colx, results.colex, results.coly, results.coley, fname_in, results.start, results.end, results.name, results.title, results.relerr).Write()
+        graphs = GetGraphs(results.colx, results.colex, results.coly, results.coley,
+                           fname_in, results.start, results.end, results.name,
+                           results.title, results.relerr)
     else:
-        GetAsymmGraphs(results.colx, results.exlow, results.exhigh,
-                       results.coly, results.eylow, results.eyhigh,
-                       fname_in, results.start, results.end, results.grname).Write()
+        graphs = GetAsymmGraphs(results.colx, results.exlow, results.exhigh,
+                                results.coly, results.eylow, results.eyhigh,
+                                fname_in, results.start, results.end, results.name)
+    graphs.Write()
     fout.ls()
     fout.Close()
 
