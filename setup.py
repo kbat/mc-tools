@@ -83,6 +83,7 @@ setup(
             "mcnpxview    = mctools.mcnp.mcnpview:main",
             # PHITS
             "angel2root   = mctools.phits.angel2root:main",
+            "phits2root   = mctools.phits.phits2root:main",
             "rotate3dshow = mctools.phits.rotate3dshow:main",
         ]
     },
