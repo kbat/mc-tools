@@ -3,6 +3,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --output=fluka-%A_%a.log
+#SBATCH --time=7-00:00:00
 
 # Outside of a SLURM job: submit one array task per input file
 if [ -z "$SLURM_JOB_ID" ]; then
