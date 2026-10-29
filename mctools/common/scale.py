@@ -49,8 +49,9 @@ def main():
                 obj.Scale(scale)
                 vobj.append(obj)
             else:
-                print("%s not scaled" % h.GetName(), file=sys.stderr)
-                return 1
+                print("%s not scaled" % obj.GetName(), file=sys.stderr)
+                vobj.append(obj)
+#                return 1
 
     fout = ROOT.TFile(args.fout, "recreate")
     for obj in vobj:
