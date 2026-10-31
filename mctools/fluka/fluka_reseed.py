@@ -108,8 +108,10 @@ def main():
     if seed0 + args.n >= MAX_SEED:
         parser.error(f"seed {seed0 + args.n} exceeds the FLUKA limit of {MAX_SEED}")
 
+    outdir = os.path.dirname(args.inp)
     stem = os.path.splitext(os.path.basename(args.inp))[0]
-    outputs = [(f"{stem}-{seed0+j}.inp", seed0+j) for j in range(1, args.n+1)]
+    outputs = [(os.path.join(outdir, f"{stem}-{seed0+j}.inp"), seed0+j)
+               for j in range(1, args.n+1)]
 
     if not args.force:
         exist = [out for out, _ in outputs if os.path.exists(out)]
